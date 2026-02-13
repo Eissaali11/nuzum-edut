@@ -1,0 +1,30 @@
+{% extends "layout/base.html" %}
+{% block title %}تسجيل الدخول — نُظم{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="text-primary mb-4">تسجيل الدخول</h2>
+          <form method="post" action="{{ url_for('auth.login') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% from 'macros/forms.html' import input, submit %}
+            {{ input('email', 'البريد الإلكتروني', type='email', required=true, placeholder='admin@nuzum.com') }}
+            {{ input('password', 'كلمة المرور', type='password', required=true, placeholder='كلمة المرور') }}
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="remember" name="remember" value="1">
+              <label class="form-check-label" for="remember">تذكرني</label>
+            </div>
+            {{ submit('تسجيل الدخول') }}
+          </form>
+          <p class="mt-3 text-muted small mb-0">
+            بعد التشغيل من النواة الجديدة: البريد <code>admin@nuzum.com</code> وكلمة المرور <code>admin123</code> (إن وُجد حساب من ensure_admin أو quick_reset).
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

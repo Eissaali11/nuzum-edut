@@ -1,0 +1,44 @@
+modules = ["python-3.11", "python3", "nodejs-20", "postgresql-16"]
+
+[nix]
+channel = "stable-24_05"
+packages = ["cacert", "cairo", "fontconfig", "freefont_ttf", "freetype", "gdk-pixbuf", "ghostscript", "glib", "glibcLocales", "harfbuzz", "lcms2", "libaom", "libde265", "libffi", "libheif", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "nasm", "openjpeg", "pango", "pkg-config", "tcl", "tk", "x265", "xcodebuild", "zlib"]
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["gunicorn", "--bind", "0.0.0.0:5000",   "--timeout", "600",
+ "main:app"]
+
+[workflows]
+runButton = "Start application"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "gunicorn --bind 0.0.0.0:5000 --timeout 600 --reuse-port --reload main:app"
+waitForPort = 5000
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[agent]
+integrations = ["python_sendgrid:1.0.0", "python_openai:1.0.0", "sendgrid:1.0.0"]

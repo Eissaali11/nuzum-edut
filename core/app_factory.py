@@ -1,0 +1,292 @@
+"""
+مصنع التطبيق (Factory Pattern) — نواة نُظم.
+تهيئة SQLAlchemy, Migrate, LoginManager, CORS وربط المجلدات.
+لا يتجاوز 400 سطر (قاعدة المشروع).
+استخدم shared.utils.responses لردود JSON الموحدة.
+"""
+import os
+from pathlib import Path
+
+from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def create_app(config_name=None):
+    """إنشاء تطبيق Flask (Factory Pattern)."""
+    if config_name is None:
+        config_name = os.environ.get("FLASK_ENV", "development")
+
+    from config import config
+    cfg = config.get(config_name) or config["default"]
+
+    # مسارات العرض الجديد (presentation/web)
+    templates_dir = str(BASE_DIR / "presentation" / "web" / "templates")
+    static_dir = str(BASE_DIR / "presentation" / "web" / "static")
+
+    app = Flask(
+        __name__,
+        template_folder=templates_dir,
+        static_folder=static_dir,
+        static_url_path="/static",
+    )
+    # بحث القوالب في مجلدين: النواة الجديدة أولاً ثم قوالب المسارات القديمة
+    root_templates = str(BASE_DIR / "templates")
+    from jinja2 import ChoiceLoader, FileSystemLoader
+    app.jinja_loader = ChoiceLoader([
+        FileSystemLoader(templates_dir),
+        FileSystemLoader(root_templates),
+    ])
+    app.config.from_object(cfg)
+    if hasattr(cfg, "init_app") and cfg.init_app:
+        cfg.init_app(app)
+
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+    _init_extensions(app)
+    _register_blueprints(app)
+    _register_error_handlers(app)
+    _register_template_filters(app)
+    _register_context_processors(app)
+
+    return app
+
+
+def _init_extensions(app):
+    """تهيئة الملحقات (DB, Login, CSRF, Migrate)."""
+    from core.extensions import init_extensions
+    init_extensions(app)
+
+
+def _register_blueprints(app):
+    """تسجيل Blueprints: ويب، API، مصادقة (النواة الجديدة)، ثم Legacy."""
+    from presentation.web.routes import web_bp
+    from presentation.web.api_routes import api_bp
+    from presentation.web.auth_routes import auth_bp
+    app.register_blueprint(web_bp)
+    app.register_blueprint(api_bp)
+    app.register_blueprint(auth_bp, url_prefix="/auth")
+    _register_legacy_blueprints(app)
+    if "root" not in app.view_functions:
+        app.add_url_rule("/", "root", app.view_functions.get("web.index"))
+
+
+def _register_legacy_blueprints(app):
+    """تسجيل Blueprints القديمة من routes/ لتفعيل المسارات والقائمة الجانبية."""
+    import sys
+    from core.extensions import db
+    # جعل "from app import db" يعمل دون تحميل app.py (لتجنب 404 عند استيراد المسارات)
+    class _AppStub:
+        pass
+    _stub = _AppStub()
+    _stub.db = db
+    sys.modules["app"] = _stub
+
+    def _reg(bp, prefix=None):
+        if prefix:
+            app.register_blueprint(bp, url_prefix=prefix)
+        else:
+            app.register_blueprint(bp)
+
+    try:
+        from routes.dashboard import dashboard_bp
+        _reg(dashboard_bp, "/dashboard")
+    except ImportError:
+        pass
+    try:
+        from routes.employees import employees_bp
+        _reg(employees_bp, "/employees")
+    except ImportError:
+        pass
+    try:
+        from routes.departments import departments_bp
+        _reg(departments_bp, "/departments")
+    except ImportError:
+        pass
+    try:
+        from routes.attendance import attendance_bp
+        _reg(attendance_bp, "/attendance")
+    except ImportError:
+        pass
+    try:
+        from routes.salaries import salaries_bp
+        _reg(salaries_bp, "/salaries")
+    except ImportError:
+        pass
+    try:
+        from routes.vehicles import vehicles_bp
+        _reg(vehicles_bp, "/vehicles")
+    except ImportError:
+        pass
+    try:
+        from routes.accounting import accounting_bp
+        _reg(accounting_bp, "/accounting")
+    except ImportError:
+        pass
+    try:
+        from routes.reports import reports_bp
+        _reg(reports_bp, "/reports")
+    except ImportError:
+        pass
+    try:
+        from routes.documents import documents_bp
+        _reg(documents_bp, "/documents")
+    except ImportError:
+        pass
+    try:
+        from routes.users import users_bp
+        _reg(users_bp, "/users")
+    except ImportError:
+        pass
+    try:
+        from routes.notifications import notifications_bp
+        app.register_blueprint(notifications_bp)
+    except ImportError:
+        pass
+    try:
+        from routes.powerbi_dashboard import powerbi_bp
+        app.register_blueprint(powerbi_bp)
+    except ImportError:
+        pass
+    try:
+        from routes.employee_requests import employee_requests
+        app.register_blueprint(employee_requests)
+    except ImportError:
+        pass
+    try:
+        from routes.mobile_devices import mobile_devices_bp
+        _reg(mobile_devices_bp, "/mobile-devices")
+    except ImportError:
+        pass
+    try:
+        from routes.device_management import device_management_bp
+        _reg(device_management_bp, "/device-management")
+    except ImportError:
+        pass
+    try:
+        from routes.sim_management import sim_management_bp
+        _reg(sim_management_bp, "/sim-management")
+    except ImportError:
+        pass
+    try:
+        from routes.device_assignment import device_assignment_bp
+        _reg(device_assignment_bp, "/device-assignment")
+    except ImportError:
+        pass
+    try:
+        from routes.external_safety import external_safety_bp
+        _reg(external_safety_bp, "/external-safety")
+    except ImportError:
+        pass
+    try:
+        from routes.vehicle_operations import vehicle_operations_bp
+        _reg(vehicle_operations_bp, "/vehicle-operations")
+    except ImportError:
+        pass
+    try:
+        from routes.drive_browser import drive_browser_bp
+        _reg(drive_browser_bp, "/drive")
+    except ImportError:
+        pass
+    try:
+        from routes.database_backup import database_backup_bp
+        _reg(database_backup_bp, "/backup")
+    except ImportError:
+        pass
+    try:
+        from routes.operations import operations_bp
+        _reg(operations_bp, "/operations")
+    except ImportError:
+        pass
+    try:
+        from routes.properties import properties_bp
+        _reg(properties_bp, "/properties")
+    except ImportError:
+        pass
+    try:
+        from routes.voicehub import voicehub_bp
+        _reg(voicehub_bp, "/voicehub")
+    except ImportError:
+        pass
+    try:
+        from routes.fees_costs import fees_costs_bp
+        _reg(fees_costs_bp, "/fees-costs")
+    except ImportError:
+        pass
+
+
+def _register_error_handlers(app):
+    """معالجات الأخطاء العامة."""
+
+    @app.errorhandler(404)
+    def not_found(e):
+        from flask import render_template
+        return render_template("pages/error.html", code=404, message="الصفحة المطلوبة غير موجودة"), 404
+
+    @app.errorhandler(500)
+    def server_error(e):
+        from flask import render_template
+        from core.extensions import db
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return render_template("pages/error.html", code=500, message="خطأ داخلي في الخادم"), 500
+
+
+def _register_template_filters(app):
+    """فلاتر القوالب المشتركة."""
+
+    @app.template_filter("format_date")
+    def format_date(value, fmt="%Y-%m-%d"):
+        if value is None:
+            return ""
+        try:
+            return value.strftime(fmt)
+        except Exception:
+            return str(value)
+
+    @app.template_filter("nl2br")
+    def nl2br(s):
+        if s is None:
+            return ""
+        from markupsafe import Markup
+        return Markup(s.replace("\n", "<br>"))
+
+
+def _register_context_processors(app):
+    """متغيرات القوالب العامة."""
+
+    @app.context_processor
+    def inject_globals():
+        from datetime import datetime
+        from flask import url_for
+        from flask_login import current_user
+        from werkzeug.routing import BuildError
+
+        def safe_url_for(endpoint, **values):
+            try:
+                return url_for(endpoint, **values)
+            except BuildError:
+                return "#"
+
+        out = {
+            "now": datetime.utcnow(),
+            "current_user": current_user,
+            "url_for": safe_url_for,
+        }
+        try:
+            from models import Module, UserRole
+            from utils.user_helpers import check_module_access
+            def _check_module_access(user, module, permission=None):
+                if not user or not user.is_authenticated:
+                    return False
+                from models import Permission
+                return check_module_access(user, module, permission or Permission.VIEW)
+            out["Module"] = Module
+            out["UserRole"] = UserRole
+            out["check_module_access"] = _check_module_access
+        except Exception:
+            pass
+        return out

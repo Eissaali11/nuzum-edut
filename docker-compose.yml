@@ -1,0 +1,75 @@
+# نُظم — بيئة تشغيل (PostgreSQL, Redis) — توافق linux/amd64
+# تشغيل: docker-compose up -d
+
+version: "3.9"
+
+services:
+  db:
+    platform: linux/amd64
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nuzm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nuzm_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-nuzm}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nuzm} -d ${POSTGRES_DB:-nuzm}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    platform: linux/amd64
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  web:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nuzm}:${POSTGRES_PASSWORD:-nuzm_secret}@db:5432/${POSTGRES_DB:-nuzm}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      FLASK_ENV: production
+    ports:
+      - "5000:5000"
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    volumes:
+      - ./static/uploads:/app/static/uploads
+      - ./instance:/app/instance
+
+  worker:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nuzm}:${POSTGRES_PASSWORD:-nuzm_secret}@db:5432/${POSTGRES_DB:-nuzm}
+      CELERY_BROKER_URL: redis://redis:6379/1
+      FLASK_ENV: production
+    command: celery -A core.celery_app worker --loglevel=info
+    depends_on:
+      - web
+      - redis
+      - db
+
+volumes:
+  postgres_data:
+  redis_data:

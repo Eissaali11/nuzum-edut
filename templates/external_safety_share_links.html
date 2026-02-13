@@ -1,0 +1,664 @@
+{% extends 'layout.html' %}
+
+{% block title %}مشاركة روابط فحص السلامة الخارجي{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #eaeaea;
+    }
+
+    .page-container {
+        padding: 1.5rem 0;
+    }
+
+    .header-card {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        border-radius: 12px;
+        padding: 1.75rem 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        color: white;
+    }
+
+    .header-card h2 {
+        font-size: 1.85rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .header-card p {
+        margin: 0;
+        opacity: 0.95;
+        font-size: 0.95rem;
+    }
+
+    .info-card {
+        background: #1e3a5c;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+        color: white;
+    }
+
+    .info-card h6 {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #4fd1c7;
+    }
+
+    .info-card ul {
+        margin: 0;
+        padding-right: 1.25rem;
+    }
+
+    .info-card li {
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: rgba(255,255,255,0.9);
+    }
+
+    .filter-card {
+        background: #1e3a5c;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+        color: white;
+    }
+
+    .filter-card h6 {
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-card label {
+        color: rgba(255,255,255,0.85);
+        font-size: 0.875rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .table-card {
+        background: #1e3a5c;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, #2a4f7a 0%, #1e3c72 100%);
+        color: white;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .table-header h6 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .table-wrapper {
+        max-height: 550px;
+        overflow-y: auto;
+    }
+
+    .table-wrapper::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .table-wrapper::-webkit-scrollbar-track {
+        background: #1a3450;
+    }
+
+    .table-wrapper::-webkit-scrollbar-thumb {
+        background: #2a4f7a;
+        border-radius: 4px;
+    }
+
+    .custom-table {
+        width: 100%;
+        margin: 0;
+        color: white;
+    }
+
+    .custom-table thead th {
+        background: #2a4f7a;
+        color: white;
+        font-weight: 600;
+        padding: 1rem 1.25rem;
+        font-size: 0.9rem;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .custom-table tbody td {
+        padding: 1.1rem 1.25rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+
+    .custom-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .plate-number {
+        font-weight: 600;
+        color: #4fd1c7;
+        font-size: 1.05rem;
+    }
+
+    .vehicle-type {
+        color: rgba(255,255,255,0.75);
+        font-size: 0.875rem;
+    }
+
+    .color-display {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .color-circle {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .driver-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .driver-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #2a5298, #1e3c72);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.4rem 0.85rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-align: center;
+        min-width: 80px;
+    }
+
+    .status-available {
+        background: #2ab190;
+        color: white;
+    }
+
+    .status-rented {
+        background: #4895ef;
+        color: white;
+    }
+
+    .status-project {
+        background: #4b74cc;
+        color: white;
+    }
+
+    .status-workshop {
+        background: #ffaa2c;
+        color: white;
+    }
+
+    .status-accident {
+        background: #e63946;
+        color: white;
+    }
+
+    .btn-actions {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.45rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        gap: 0.4rem;
+    }
+
+    .btn-copy {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-copy:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .btn-copy.copied {
+        background: #2ab190;
+        border-color: #2ab190;
+    }
+
+    .btn-share {
+        background: linear-gradient(135deg, #2a5298, #1e3c72);
+        color: white;
+    }
+
+    .btn-share:hover {
+        opacity: 0.9;
+    }
+
+    .btn-email {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-email:hover {
+        background: rgba(255,255,255,0.15);
+    }
+
+    .btn-whatsapp {
+        background: #25D366;
+        color: white;
+    }
+
+    .btn-whatsapp:hover {
+        background: #1ebd59;
+    }
+
+    .btn-open {
+        background: #4fd1c7;
+        color: white;
+    }
+
+    .btn-open:hover {
+        background: #3fb8ae;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3.5rem 2rem;
+        color: rgba(255,255,255,0.7);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1.25rem;
+        opacity: 0.5;
+    }
+
+    .empty-state h6 {
+        color: white;
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-state p {
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .header-card {
+            padding: 1.5rem;
+        }
+
+        .header-card h2 {
+            font-size: 1.5rem;
+        }
+
+        .btn-actions {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid page-container">
+    <!-- Header -->
+    <div class="header-card">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <h2>
+                    <i class="fas fa-share-alt"></i>
+                    مشاركة روابط فحص السلامة
+                </h2>
+                <p>إنشاء وإدارة روابط الفحص الخارجي للمركبات</p>
+            </div>
+            <a href="{{ url_for('vehicles.index') }}" class="btn btn-light btn-sm">
+                <i class="fas fa-arrow-right ms-1"></i>
+                العودة
+            </a>
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="info-card">
+        <h6><i class="fas fa-lightbulb"></i> كيفية الاستخدام</h6>
+        <ul>
+            <li>اضغط على <strong>"نسخ"</strong> لنسخ رابط النموذج إلى الحافظة</li>
+            <li>استخدم <strong>"مشاركة"</strong> لإرسال الرابط عبر الوسائل المختلفة</li>
+            <li>أرسل الرابط مباشرة عبر <strong>البريد</strong> أو <strong>واتساب</strong></li>
+            <li>افتح النموذج مباشرة بالضغط على أيقونة <strong>الفتح</strong></li>
+        </ul>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="filter-card">
+        <h6><i class="fas fa-filter"></i> البحث والتصفية</h6>
+        <form method="GET" action="{{ url_for('external_safety.share_links') }}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">رقم اللوحة</label>
+                    <input type="text" name="search_plate" class="form-control" 
+                           placeholder="ابحث..." value="{{ search_plate }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">الحالة</label>
+                    <select name="status" class="form-select">
+                        <option value="">الكل</option>
+                        {% for status in statuses %}
+                        <option value="{{ status }}" {% if status_filter == status %}selected{% endif %}>
+                            {% if status == 'available' %}متاحة
+                            {% elif status == 'rented' %}مؤجرة
+                            {% elif status == 'in_project' %}في المشروع
+                            {% elif status == 'in_workshop' %}في الورشة
+                            {% elif status == 'accident' %}حادث
+                            {% else %}{{ status }}{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">الشركة المصنعة</label>
+                    <select name="make" class="form-select">
+                        <option value="">الكل</option>
+                        {% for make in makes %}
+                        <option value="{{ make }}" {% if make_filter == make %}selected{% endif %}>{{ make }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">المشروع</label>
+                    <select name="project" class="form-select">
+                        <option value="">الكل</option>
+                        {% for project in projects %}
+                        <option value="{{ project }}" {% if project_filter == project %}selected{% endif %}>{{ project }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-search ms-1"></i> بحث
+                    </button>
+                    <a href="{{ url_for('external_safety.share_links') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-undo ms-1"></i> إعادة تعيين
+                    </a>
+                </div>
+                <small style="color: rgba(255,255,255,0.75);">
+                    <i class="fas fa-car ms-1"></i>
+                    المجموع: <strong>{{ vehicles|length }}</strong>
+                </small>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <div class="table-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0"><i class="fas fa-list"></i> قائمة المركبات</h6>
+            <a href="{{ url_for('external_safety.export_share_links_excel', status=status_filter, make=make_filter, search_plate=search_plate, project=project_filter) }}" 
+               class="btn btn-success btn-sm">
+                <i class="fas fa-file-excel ms-1"></i>
+                تصدير Excel
+            </a>
+        </div>
+        
+        {% if vehicles %}
+        <div class="table-wrapper">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>رقم اللوحة</th>
+                        <th>النوع</th>
+                        <th>اللون</th>
+                        <th>السائق</th>
+                        <th>المشروع</th>
+                        <th>الحالة</th>
+                        <th style="width: 280px;">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in vehicles %}
+                    <tr>
+                        <td>
+                            <div class="plate-number">{{ vehicle.plate_number }}</div>
+                        </td>
+                        <td>
+                            <div class="vehicle-type">{{ vehicle.make }} {{ vehicle.model }}</div>
+                        </td>
+                        <td>
+                            <div class="color-display">
+                                <span class="color-circle" style="background-color: {{ vehicle.color }};"></span>
+                                <span>{{ vehicle.color }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if all_current_drivers_with_emil[vehicle.id] %}
+                            <div class="driver-info">
+                                <div class="driver-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <span>{{ all_current_drivers_with_emil[vehicle.id].name }}</span>
+                            </div>
+                            {% else %}
+                            <span style="color: rgba(255,255,255,0.5);">
+                                <i class="fas fa-user-slash ms-1"></i>
+                                غير مسند
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if vehicle.project %}
+                            <span class="badge bg-info">{{ vehicle.project }}</span>
+                            {% else %}
+                            <span style="color: rgba(255,255,255,0.5);">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if vehicle.status == 'available' %}
+                            <span class="status-badge status-available">متاحة</span>
+                            {% elif vehicle.status == 'rented' %}
+                            <span class="status-badge status-rented">مؤجرة</span>
+                            {% elif vehicle.status == 'in_project' %}
+                            <span class="status-badge status-project">في مشروع</span>
+                            {% elif vehicle.status == 'in_workshop' %}
+                            <span class="status-badge status-workshop">في ورشة</span>
+                            {% elif vehicle.status == 'accident' %}
+                            <span class="status-badge status-accident">حادث</span>
+                            {% else %}
+                            <span class="status-badge bg-secondary">{{ vehicle.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-actions">
+                                <button type="button" class="btn-action btn-copy" 
+                                        title="نسخ"
+                                        onclick="copyLink('{{ url_for('external_safety.external_safety_check_form', vehicle_id=vehicle.id, _external=True) }}', this)">
+                                    <i class="fas fa-copy"></i>
+                                    <span class="d-none d-xl-inline">نسخ</span>
+                                </button>
+                                
+                                <button class="btn-action btn-share" 
+                                        title="مشاركة"
+                                        onclick="shareForm('{{ vehicle.id }}', '{{ vehicle.plate_number }}', '{{ vehicle.make }} {{ vehicle.model }}')">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+
+                                <button class="btn-action btn-email"
+                                        title="بريد"
+                                        onclick="sendEmail(this, '{{ vehicle.id }}')">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+
+                                <button class="btn-action btn-whatsapp"
+                                        title="واتساب"
+                                        onclick="sendWhatsApp(this, '{{ vehicle.id }}', '{{ vehicle.plate_number }}', '{{ vehicle.make }} {{ vehicle.model }}')">
+                                    <i class="fab fa-whatsapp"></i>
+                                </button>
+
+                                <a href="{{ url_for('external_safety.external_safety_check_form', vehicle_id=vehicle.id) }}" 
+                                   class="btn-action btn-open" 
+                                   target="_blank"
+                                   title="فتح">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h6>لا توجد مركبات</h6>
+            <p>لا توجد مركبات مطابقة للمعايير</p>
+            <a href="{{ url_for('vehicles.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus ms-1"></i>
+                إضافة مركبة
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
+
+<script>
+    const drivers = {{ all_current_drivers | tojson | safe }};
+    const driversEmail = {{ all_current_drivers_with_emil | tojson | safe }};
+
+    function showMsg(msg, type = 'info') {
+        const c = document.getElementById('toast-container');
+        const id = 'toast-' + Date.now();
+        const bg = type === 'success' ? 'bg-success' : type === 'danger' ? 'bg-danger' : 'bg-info';
+        
+        c.insertAdjacentHTML('beforeend', `
+            <div id="${id}" class="toast show align-items-center text-white ${bg} border-0">
+                <div class="d-flex">
+                    <div class="toast-body">${msg}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `);
+
+        const el = document.getElementById(id);
+        new bootstrap.Toast(el, { delay: 2500 }).show();
+        el.addEventListener('hidden.bs.toast', () => el.remove());
+    }
+
+    function copyLink(url, btn) {
+        navigator.clipboard.writeText(url).then(() => {
+            const orig = btn.innerHTML;
+            btn.classList.add('copied');
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            showMsg('تم النسخ', 'success');
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                btn.innerHTML = orig;
+            }, 1500);
+        }).catch(() => showMsg('فشل', 'danger'));
+    }
+
+    function shareForm(id, plate, type) {
+        const url = `${window.location.origin}/external-safety/external-safety-check/${id}`;
+        if (navigator.share) {
+            navigator.share({
+                title: `فحص السلامة - ${plate}`,
+                text: `${type} - ${plate}`,
+                url: url
+            }).then(() => showMsg('تمت المشاركة', 'success')).catch(() => {});
+        } else {
+            copyLink(url, event.target);
+        }
+    }
+
+    function sendEmail(btn, id) {
+        const d = driversEmail[id];
+        if (!d || !d.email || d.email === 'لايوجد') {
+            showMsg('لا يوجد بريد', 'danger');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch('/external-safety/send-safety-check-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ vehicle_id: id })
+        })
+        .then(r => r.json())
+        .then(d => showMsg(d.message || (d.success ? 'تم' : 'فشل'), d.success ? 'success' : 'danger'))
+        .catch(() => showMsg('خطأ', 'danger'))
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-envelope"></i>';
+        });
+    }
+
+    function sendWhatsApp(btn, id, plate, type) {
+        const d = drivers[id];
+        if (!d || !d.mobile || d.mobile === 'لايوجد') {
+            showMsg('لا يوجد جوال', 'danger');
+            return;
+        }
+
+        const url = `${window.location.origin}/external-safety/external-safety-check/${id}`;
+        const msg = `السلام عليكم\n\nالرجاء تعبئة نموذج فحص السلامة:\n${type} - ${plate}\n\n${url}`;
+        window.open(`https://wa.me/${d.mobile.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+        showMsg('تم فتح واتساب', 'success');
+    }
+</script>
+{% endblock %}

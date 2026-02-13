@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>فحص السلامة الخارجي - السيارة {{ vehicle.plate_number }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+            overflow-x: hidden;
+        }
+        
+        .main-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                max-width: 100%;
+                margin: 0 10px;
+                border-radius: 15px;
+            }
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>');
+            background-size: 50px 50px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .form-container {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 15px;
+            border-right: 4px solid #667eea;
+        }
+        
+        .section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .form-control {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .form-control:disabled {
+            background-color: #f8f9fa;
+        }
+        
+        .image-upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            background: rgba(102, 126, 234, 0.02);
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .image-upload-area:hover {
+            background: rgba(102, 126, 234, 0.05);
+            border-color: #5a6fd8;
+        }
+        
+        .image-upload-area.dragover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #5a6fd8;
+        }
+        
+        .image-upload-area i {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .image-upload-area p {
+            color: #666;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        
+        .image-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .image-preview-item {
+            position: relative;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        .image-container {
+            position: relative;
+            width: 100%;
+            height: auto;
+            min-height: 200px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .image-preview-item img {
+            width: 100%;
+            height: auto;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        
+        .image-preview-item .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .image-preview-item .remove-btn:hover {
+            background: rgba(255, 0, 0, 1);
+        }
+        
+        .description-input {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-top: 15px !important;
+            margin-bottom: 15px !important;
+            border: 2px solid #667eea !important;
+            border-radius: 8px !important;
+            padding: 15px !important;
+            font-size: 1.1rem !important;
+            background: white !important;
+            color: #333 !important;
+            font-family: 'Cairo', sans-serif !important;
+            transition: all 0.3s ease !important;
+            box-sizing: border-box !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            min-height: 55px !important;
+            outline: none !important;
+        }
+        
+        .description-input:focus {
+            outline: none !important;
+            border-color: #5a6fd8 !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+        }
+        
+        .description-input::placeholder {
+            color: #999 !important;
+            font-style: italic !important;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .employee-verification {
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #155724;
+        }
+        
+        .employee-verification i {
+            color: #28a745;
+            margin-left: 10px;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid #28a745;
+            color: #155724;
+        }
+        
+        .alert-danger {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3em;
+            border-color: #667eea transparent #667eea transparent;
+        }
+
+
+.instructions-box {
+    background-color: rgba(255, 193, 7, 0.1); /* خلفية صفراء خفيفة للتنبيه */
+    border-right: 4px solid #ffc107; /* شريط جانبي أصفر */
+    border-left: none; /* تأكد من عدم وجود شريط آخر */
+}
+
+.instructions-box h4 {
+    color: #b08800; /* لون أغمق للنص ليتناسب مع الخلفية */
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.instructions-box h4 i {
+    margin-left: 10px;
+}
+
+.instructions-content {
+    display: flex;
+    align-items: center; /* محاذاة عمودية للمحتوى */
+    gap: 20px; /* مسافة بين النص والصورة */
+    margin-top: 15px;
+}
+
+.instructions-text {
+    flex-grow: 1; /* النص يأخذ المساحة المتبقية */
+}
+
+.instructions-text p {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.instructions-text ul {
+    padding-right: 20px; /* مسافة للداخل لقائمة النقاط */
+    margin-top: 10px;
+}
+
+.instructions-text li {
+    margin-bottom: 10px;
+}
+
+.instructions-image {
+    flex-shrink: 0; /* نمنع الصورة من التقلص */
+    width: 150px; /* عرض ثابت للصورة التوضيحية */
+}
+
+.instructions-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    background-color: #fff;
+    padding: 5px;
+    border: 1px solid #ddd;
+}
+
+/* تعديل مهم للهواتف والشاشات الصغيرة */
+@media (max-width: 768px) {
+    .instructions-content {
+        flex-direction: column-reverse; /* وضع الصورة فوق النص في الهواتف */
+    }
+
+    .instructions-image {
+        width: 120px; /* تصغير حجم الصورة قليلاً على الهواتف */
+        margin-bottom: 15px;
+    }
+}
+/* ### نهاية كود CSS الخاص بإرشادات التصوير (جديد) ### */
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 5px;
+                padding-bottom: 5px;
+            }
+            
+            .main-container {
+                margin-left: 5px;
+                margin-right: 5px;
+                /* استخدم calc لضمان وجود هوامش وعدم الالتصاق بالحواف */
+                width: calc(100% - 10px);
+                max-width: calc(100% - 10px);
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .form-container, .section {
+                padding: 15px;
+            }
+            
+            .image-upload-area {
+                padding: 20px;
+            }
+            
+            .image-upload-area i {
+                font-size: 2rem;
+            }
+            
+            .image-upload-area p {
+                font-size: 1rem;
+            }
+            
+            /* --- هذا هو الإصلاح الرئيسي للمشكلة --- */
+            /* لقد تم حذف القاعدة الخاطئة التي كانت تحدد العرض والارتفاع بـ 100px */
+            /* وتم تبسيط القواعد لتعمل بشكل صحيح على الهواتف */
+            
+            .image-preview {
+                /* هذا الكلاس يضمن أن الحاويات الفرعية ستكون تحت بعضها البعض */
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .image-preview-item {
+                /* العرض الكامل للحاوية على الشاشات الصغيرة */
+                width: 100%;
+                padding: 10px;
+            }
+
+            .image-container {
+                 /* الحاوية الداخلية للصورة، الارتفاع يتحدد تلقائيا */
+                min-height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            
+            <h1><i class="fas fa-shield-alt"></i> فحص السلامة الخارجي</h1>
+            <p>السيارة {{ vehicle.plate_number }} - {{ vehicle.make }} {{ vehicle.model }}</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>إرشادات مهمة:</strong> يرجى ملء جميع البيانات المطلوبة وإرفاق الصور اللازمة لفحص السلامة. سيتم مراجعة الطلب من قبل المسؤول المختص.
+            </div>
+            
+            <form id="safetyForm" method="POST" enctype="multipart/form-data">
+                <!-- حقول مخفية -->
+                <input type="hidden" name="vehicle_id" value="{{ vehicle.id }}">
+                <input type="hidden" name="vehicle_plate_number" value="{{ vehicle.plate_number }}">
+                <input type="hidden" name="vehicle_make_model" value="{{ vehicle.make }} {{ vehicle.model }}">
+                
+                <!-- بيانات السائق -->
+                <div class="section">
+                    <h3><i class="fas fa-user"></i> بيانات السائق</h3>
+                    
+                    <div class="form-group">
+                        <label for="driver_national_id" class="form-label">
+                            <i class="fas fa-id-card"></i> رقم الهوية الوطنية *
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="driver_national_id" 
+                               name="driver_national_id" 
+                               required
+                               placeholder="أدخل رقم الهوية الوطنية"
+                               maxlength="10">
+                        <button type="button" class="btn btn-outline-primary mt-2" onclick="verifyEmployee()">
+                            <i class="fas fa-search"></i> التحقق من الموظف
+                        </button>
+                    </div>
+                    
+                    
+                    <div id="employeeVerification" class="employee-verification" style="display: none;">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>تم التحقق من الموظف بنجاح</strong>
+                        <div id="employeeDetails"></div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="driver_name" class="form-label">اسم السائق *</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="driver_name" 
+                                       name="driver_name" 
+                                       required
+                                       readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="driver_department" class="form-label">القسم *</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="driver_department" 
+                                       name="driver_department" 
+                                       required
+                                       readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="driver_city" class="form-label">المدينة *</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="driver_city" 
+                               name="driver_city" 
+                               required
+                               readonly>
+                    </div>
+                </div>
+                
+                <!-- بيانات السيارة -->
+                <div class="section">
+                    <h3><i class="fas fa-car"></i> بيانات السيارة</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">رقم اللوحة</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       value="{{ vehicle.plate_number }}" 
+                                       readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">نوع السيارة</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       value="{{ vehicle.model }}   {{ vehicle.type_of_car }}" 
+                                       readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">المفوض الحالي</label>
+                        <input type="text" 
+                               class="form-control" 
+                               value="{{ vehicle.driver_name or 'غير محدد' }}" 
+                               readonly>
+                    </div>
+                </div>
+
+
+                <!-- view how to capture car -->
+                {% if vehicle.type_of_car == 'سيدان' %}
+                <div class="col-12 alert alert-info mt-3">
+                  <h5>تعليمات لالتقاط صور سيّدان</h5>
+                  <p>
+                    للسيّدان: تأكد من تصوير الجوانب الأربعة (أمامية، خلفية، يمين، يسار)
+                    مع لقطة داخلية للمقصورة.
+                  </p>
+                  <div class="d-flex flex-column align-items-center justify-content-center space-x-4">
+
+                      <img src="/static/images/front-car.png" alt="" width="300" height="300">
+                      <p>صورة اماميه للسيارة</p>
+                      <img src="/static/images/back-car.jpg" alt=""  width="300" height="300">
+                      <p>صورة خلفية للسيارة</p>
+
+                      <img src="/static/images/right-car.png" alt="" width="500" height="200">
+                      <p>صورة من الجانب الايمن للسيارة</p>
+
+                      <img src="/static/images/left-car.jpg" alt=""  width="500" height="200">
+                      <p>صورة من الجانب الايسر للسيارة</p>
+
+                </div>
+                </div>
+              
+              {% elif vehicle.type_of_car == 'باص' %}
+                <div class="col-12 alert alert-warning mt-3">
+                  <h5>تعليمات لالتقاط صور باص</h5>
+                  <ul>
+                    <li>لقطة أمامية شاملة للقاطرة والمقطورة.</li>
+                    <li>صورة للمحرك من الجانب الأيمن.</li>
+                    <li>التقط صورة للبوريث من الأعلى.</li>
+                  </ul>
+                  <div class="d-flex flex-column align-items-center justify-content-center space-x-4">
+
+                    <img src="/static/images/front-bus.png" alt="" width="300" height="300">
+                    <p>صورة اماميه للباص</p>
+                    <img src="/static/images/back-bus.png" alt=""  width="300" height="300">
+                    <p>صورة خلفية للباص</p>
+
+                    <img src="/static/images/right-bus.png" alt="" width="500" height="200">
+                    <p>صورة من الجانب الايمن للباص</p>
+
+                    <img src="/static/images/left-bus.png" alt=""  width="500" height="200">
+                    <p>صورة من الجانب الايسر للباص</p>
+
+              </div>
+                </div>
+
+                {% else %}
+                <div class="col-12 alert alert-secondary mt-3">
+                     <p>اختر نوع السيارة لعرض التعليمات المناسبة.</p>
+                                 </div>
+                {% endif %}
+                
+                <!-- رفع الصور -->
+                <div class="section mb-4">
+                    <h5 class="mb-3"><i class="fas fa-images"></i> رفع صور الفحص</h5>
+                    
+                    <!-- خيارات متعددة -->
+                    <ul class="nav nav-tabs mb-3" id="uploadTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="file-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#file-upload" type="button" role="tab">
+                                <i class="fas fa-upload"></i> رفع من الملفات
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="camera-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#camera-capture" type="button" role="tab">
+                                <i class="fas fa-camera"></i> التقاط بالكاميرا
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="uploadTabContent">
+                        <!-- خيار رفع الملفات -->
+                        <div class="tab-pane fade show active" id="file-upload" role="tabpanel">
+                            <div class="mb-3">
+                                <input type="file" class="form-control" name="file_images" 
+                                       multiple accept="image/*,.heic,.heif" id="fileUploadInput">
+                                <small class="text-muted">يمكنك رفع عدة صور معاً (يدعم HEIC من iPhone)</small>
+                            </div>
+                            <div id="filePreview" class="row mt-3"></div>
+                        </div>
+                        
+                        <!-- خيار الكاميرا -->
+                        <div class="tab-pane fade" id="camera-capture" role="tabpanel">
+                            <video id="cameraStream" autoplay playsinline
+                                   class="w-100 mb-2" style="display:none; max-width:400px;"></video>
+                            <canvas id="snapshotCanvas" style="display:none;"></canvas>
+                            
+                            <div class="mb-3">
+                                <video id="cam" autoplay playsinline></video>
+                                <canvas id="snap" style="width: 100%; height: auto; display: none;"></canvas>
+                                <button type="button" id="captureBtn" class="btn btn-outline-primary me-2">
+                                   التقاط صوره 
+                                </button>
+                                <div class="imagePreview">
+                                    <div id="gallery"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="instantPreview" class="d-flex flex-wrap"></div>
+                            <input type="hidden" name="camera_images" id="camera_images">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ملاحظات -->
+                <div class="section">
+                    <h3><i class="fas fa-sticky-note"></i> ملاحظات إضافية</h3>
+                    
+                    <div class="form-group">
+                        <label for="notes" class="form-label">الملاحظات</label>
+                        <textarea class="form-control" 
+                                  id="notes" 
+                                  name="notes" 
+                                  rows="4"
+                                  placeholder="أدخل أي ملاحظات إضافية حول فحص السلامة..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- الحقول المخفية -->
+                <input type="hidden" name="current_delegate" value="{{ vehicle.driver_name or '' }}">
+                
+                <div class="loading-spinner" id="loadingSpinner">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">جاري الإرسال...</span>
+                    </div>
+                    <p class="mt-2">جاري إرسال طلب فحص السلامة...</p>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i> إرسال طلب فحص السلامة
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let uploadedImages = [];
+
+        const videoEl = document.getElementById('cam');
+const canvasEl = document.getElementById('snap');
+const captureBtn = document.getElementById('captureBtn');
+const galleryEl = document.getElementById('gallery');
+const ctx = canvasEl.getContext('2d');
+
+// 1. Request camera
+navigator.mediaDevices.getUserMedia({
+  video: { facingMode: { ideal: "environment" } }  // Use back camera if available
+})
+  .then(stream => {
+    videoEl.srcObject = stream;
+    return videoEl.play();
+  })
+  .catch(err => {
+    alert("Camera error: " + err);
+  });
+
+// 2. Capture frame + save
+captureBtn.addEventListener('click', () => {
+  // Draw current video frame onto canvas
+  // Resize canvas to video’s actual dimensions (once stream metadata is ready)
+  if (videoEl.videoWidth && videoEl.videoHeight) {
+    canvasEl.width = videoEl.videoWidth;
+    canvasEl.height = videoEl.videoHeight;
+  }
+  ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+  // Convert to data URL (PNG). For JPEG: toDataURL('image/jpeg', 0.92)
+  const dataURL = canvasEl.toDataURL('image/png');
+
+  // 2a. Download locally
+  downloadImage(dataURL);
+
+  // 2b. Show thumbnail in page
+  addThumbnail(dataURL);
+
+  // 2c. (Optional) Upload to your server
+  uploadedImages.push({
+  file: null,
+  src: dataURL,
+  id: Date.now(),
+  note: ''
+});
+displayImagePreview();
+});
+
+// ----- Helpers -----
+function downloadImage(dataURL) {
+  const a = document.createElement('a');
+  a.href = dataURL;
+  a.download = `snapshot-${Date.now()}.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function addThumbnail(dataURL) {
+  const img = document.createElement('img');
+  img.src = dataURL;
+  img.alt = 'Captured snapshot';
+  img.style.maxWidth = '160px';
+  img.style.margin = '4px';
+  galleryEl.appendChild(img);
+}
+
+// Example upload: send base64 payload to server
+function uploadImage(dataURL) {
+  // Strip "data:image/png;base64," prefix
+  const base64 = dataURL.split(',')[1];
+
+  fetch('/upload-snapshot', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      filename: `snapshot-${Date.now()}.png`,
+      image_base64: base64
+    })
+  })
+  .then(r => {
+    if (!r.ok) throw new Error('Upload failed');
+    return r.json();
+  })
+  .then(result => {
+    console.log('Uploaded:', result);
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Upload error: ' + err.message);
+  });
+}
+
+        
+        
+        // التحقق من الموظف
+        async function verifyEmployee() {
+            const nationalId = document.getElementById('driver_national_id').value;
+            
+            if (!nationalId) {
+                alert('يرجى إدخال رقم الهوية الوطنية');
+                return;
+            }
+            
+            // إضافة مؤشر التحميل
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+            submitBtn.disabled = true;
+            
+            try {
+                console.log('Verifying employee with ID:', nationalId);
+                const response = await fetch(`/external-safety/api/verify-employee/${nationalId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok && data.success) {
+                    // تعبئة البيانات التلقائية
+                    document.getElementById('driver_name').value = data.employee.name;
+                    document.getElementById('driver_department').value = data.employee.department;
+                    document.getElementById('driver_city').value = data.employee.city || 'الرياض';
+                    
+                    // عرض معلومات التحقق
+                    const verification = document.getElementById('employeeVerification');
+                    const details = document.getElementById('employeeDetails');
+                    
+                    details.innerHTML = `
+                        <div class="mt-2">
+                            <strong>الاسم:</strong> ${data.employee.name}<br>
+                            <strong>القسم:</strong> ${data.employee.department}<br>
+                            <strong>المدينة:</strong> ${data.employee.city || 'الرياض'}
+                        </div>
+                    `;
+                    
+                    verification.style.display = 'block';
+                    
+                    // إظهار رسالة نجاح
+                    showAlert('تم التحقق من الموظف بنجاح', 'success');
+                    
+                } else {
+                    // إخفاء معلومات التحقق
+                    const verification = document.getElementById('employeeVerification');
+                    verification.style.display = 'none';
+                    
+                    // مسح البيانات المعبأة
+                    document.getElementById('driver_name').value = '';
+                    document.getElementById('driver_department').value = '';
+                    document.getElementById('driver_city').value = '';
+                    
+                    showAlert('لم يتم العثور على موظف بهذا الرقم', 'danger');
+                }
+            } catch (error) {
+                console.error('خطأ في التحقق من الموظف:', error);
+                showAlert('حدث خطأ في التحقق من الموظف. يرجى المحاولة مرة أخرى.', 'danger');
+                
+                // إخفاء معلومات التحقق
+                const verification = document.getElementById('employeeVerification');
+                verification.style.display = 'none';
+            } finally {
+                // إعادة الزر لحالته الطبيعية
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // دالة لعرض التنبيهات
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.form-container');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // إخفاء التنبيه تلقائياً بعد 5 ثوان
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // معالجة رفع الصور
+        function handleImageUpload(input) {
+            const files = input.files;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const imageData = {
+                            file: file,
+                            src: e.target.result,
+                            id: Date.now() + i
+                        };
+                        
+                        uploadedImages.push(imageData);
+                        displayImagePreview();
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
+        
+        // عرض معاينة الصور
+        function displayImagePreview() {
+            // const preview = document.getElementById('imagePreview');
+            // preview.innerHTML = '';
+            
+            // uploadedImages.forEach((image, index) => {
+            //     const item = document.createElement('div');
+            //     item.className = 'image-preview-item';
+                
+            //     // إنشاء حاوية الصورة
+            //     const imageContainer = document.createElement('div');
+            //     imageContainer.className = 'image-container';
+                
+            //     // إنشاء عنصر الصورة
+            //     const img = document.createElement('img');
+            //     img.src = image.src;
+            //     img.alt = `صورة ${index + 1}`;
+                
+            //     // إنشاء زر الحذف
+            //     const removeBtn = document.createElement('button');
+            //     removeBtn.type = 'button';
+            //     removeBtn.className = 'remove-btn';
+            //     removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            //     removeBtn.onclick = () => removeImage(image.id);
+                
+            //     // إضافة الصورة وزر الحذف لحاوية الصورة
+            //     imageContainer.appendChild(img);
+            //     imageContainer.appendChild(removeBtn);
+                
+            //     // إنشاء حقل الوصف
+            //     const descInput = document.createElement('input');
+            //     descInput.type = 'text';
+            //     descInput.className = 'description-input';
+            //     descInput.placeholder = `وصف الصورة ${index + 1} (اختياري)`;
+            //     descInput.name = 'image_descriptions';
+            //     descInput.value = image.description || '';
+            //     descInput.style.display = 'block';
+            //     descInput.style.width = '100%';
+            //     descInput.style.maxWidth = '100%';
+            //     descInput.style.boxSizing = 'border-box';
+            //     descInput.style.marginTop = '15px';
+            //     descInput.style.marginBottom = '15px';
+            //     descInput.style.padding = '15px';
+            //     descInput.style.border = '2px solid #667eea';
+            //     descInput.style.borderRadius = '8px';
+            //     descInput.style.fontSize = '1.1rem';
+            //     descInput.style.backgroundColor = 'white';
+            //     descInput.style.color = '#333';
+            //     descInput.style.minHeight = '55px';
+            //     descInput.style.outline = 'none';
+            //     descInput.style.fontFamily = 'Cairo, sans-serif';
+            //     descInput.style.visibility = 'visible';
+            //     descInput.style.opacity = '1';
+            //     descInput.onchange = (e) => updateImageDescription(image.id, e.target.value);
+            //     descInput.oninput = (e) => updateImageDescription(image.id, e.target.value);
+                
+            //     // إضافة العناصر للحاوية الرئيسية
+            //     item.appendChild(imageContainer);
+            //     item.appendChild(descInput);
+                
+            //     preview.appendChild(item);
+            galleryEl.innerHTML = '';
+
+  uploadedImages.forEach(image => {
+    const container = document.createElement('div');
+    container.style.margin = '6px';
+    container.style.display = 'inline-block';
+    container.style.textAlign = 'center';
+
+    const img = document.createElement('img');
+    img.src = image.src;
+    img.style.maxWidth = '160px';
+    img.style.display = 'block';
+    img.style.marginBottom = '4px';
+    img.alt = 'Captured image';
+
+    const caption = document.createElement('p');
+    caption.textContent = image.note;
+    caption.style.fontSize = '0.9em';
+    caption.style.color = '#555';
+
+    container.appendChild(img);
+    container.appendChild(caption);
+    galleryEl.appendChild(container);
+            });
+            
+        }
+        
+        // حذف صورة
+        function removeImage(imageId) {
+            uploadedImages = uploadedImages.filter(img => img.id !== imageId);
+            displayImagePreview();
+        }
+        
+        // تحديث وصف الصورة
+        function updateImageDescription(imageId, description) {
+            const image = uploadedImages.find(img => img.id === imageId);
+            if (image) {
+                image.description = description;
+            }
+        }
+        
+        // إعداد السحب والإفلات
+        const uploadArea = document.querySelector('.image-upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            const input = document.getElementById('safety_images');
+            input.files = files;
+            handleImageUpload(input);
+        });
+        
+        // إرسال النموذج
+        document.getElementById('safetyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const form = e.target;
+            
+            // إضافة البيانات النصية
+            for (let input of form.elements) {
+                if (input.type !== 'file' && input.name) {
+                    formData.append(input.name, input.value);
+                }
+            }
+            
+            // إضافة الصور مع أوصافها
+            uploadedImages.forEach((image, index) => {
+                formData.append(`safety_images`, image.file);
+                formData.append(`image_descriptions`, image.description || '');
+            });
+            
+            // تسجيل تفصيلي للتشخيص
+            console.log('عدد الصور المرفوعة:', uploadedImages.length);
+            console.log('البيانات المرسلة:', Object.fromEntries(formData.entries()));
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            
+            submitBtn.disabled = true;
+            loadingSpinner.style.display = 'block';
+            
+            try {
+                console.log('بدء إرسال النموذج...');
+                const response = await fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                console.log('تم استلام الاستجابة:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    // إظهار رسالة نجاح مباشرة وإخفاء النموذج
+                    document.querySelector('.form-container').innerHTML = `
+                        <div class="text-center">
+                            <div class="success-icon" style="font-size: 5rem; color: #28a745; margin-bottom: 30px; animation: pulse 2s infinite;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h2 style="color: #28a745; margin-bottom: 20px; font-weight: bold;">تم إرسال الطلب بنجاح!</h2>
+                            <p style="font-size: 1.2rem; color: #666; margin-bottom: 30px;">
+                                تم إرسال طلب فحص السلامة بنجاح وسيتم مراجعته من قبل المسؤول المختص.
+                            </p>
+                            <div class="alert alert-success">
+                                <i class="fas fa-info-circle"></i>
+                                سيتم مراجعة طلبك خلال 24 ساعة كحد أقصى.
+                            </div>
+                            <button class="btn btn-primary" onclick="window.close()">
+                                <i class="fas fa-times"></i> إغلاق النافذة
+                            </button>
+                        </div>
+                    `;
+                    
+                    // إضافة تأثير الـ pulse animation
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        @keyframes pulse {
+                            0% { transform: scale(1); }
+                            50% { transform: scale(1.1); }
+                            100% { transform: scale(1); }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                    
+                    // إغلاق النافذة تلقائياً بعد 10 ثوان
+                    setTimeout(() => {
+                        window.close();
+                    }, 10000);
+                } else {
+                    const errorData = await response.json();
+                    alert('حدث خطأ: ' + (errorData.error || 'خطأ غير معروف'));
+                    submitBtn.disabled = false;
+                    loadingSpinner.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('خطأ في إرسال النموذج:', error);
+                alert('حدث خطأ في الاتصال بالخادم. يرجى المحاولة مرة أخرى.');
+                submitBtn.disabled = false;
+                loadingSpinner.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+<script>
+// عرض معاينة الصور مع حقول الملاحظات
+function displayImagePreview() {
+    const instantPreview = document.getElementById('instantPreview');
+    instantPreview.innerHTML = '';
+    
+    uploadedImages.forEach((image, index) => {
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'image-preview-item';
+        imageContainer.style.cssText = `
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f8f9fa;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        `;
+        
+        // إنشاء عنصر الصورة
+        const img = document.createElement('img');
+        img.src = image.src;
+        img.style.cssText = `
+            width: 100%;
+            height: auto;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        `;
+        
+        // زر حذف الصورة
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.innerHTML = '×';
+        removeBtn.className = 'remove-btn';
+        removeBtn.style.cssText = `
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        removeBtn.onclick = () => removeImage(index);
+        
+        // حقل إدخال الملاحظة
+        const noteInput = document.createElement('textarea');
+        noteInput.placeholder = 'أضف ملاحظة للصورة...';
+        noteInput.value = image.note || '';
+        noteInput.className = 'description-input';
+        noteInput.rows = 3;
+        noteInput.style.cssText = `
+            width: 100%;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            background: white;
+            color: #333;
+            font-family: 'Cairo', sans-serif;
+            resize: vertical;
+            min-height: 60px;
+        `;
+        
+        // تحديث الملاحظة عند الكتابة
+        noteInput.addEventListener('input', function() {
+            uploadedImages[index].note = this.value;
+            updateImageDescriptions();
+        });
+        
+        // تجميع العناصر
+        imageContainer.appendChild(img);
+        imageContainer.appendChild(removeBtn);
+        imageContainer.appendChild(noteInput);
+        instantPreview.appendChild(imageContainer);
+    });
+    
+    updateImageDescriptions();
+}
+
+// حذف صورة
+function removeImage(index) {
+    uploadedImages.splice(index, 1);
+    displayImagePreview();
+}
+
+// تحديث بيانات الصور والملاحظات
+function updateImageDescriptions() {
+    const descriptions = uploadedImages.map(img => img.note || '').join('|||');
+    const imageData = uploadedImages.map(img => img.src).join('|||');
+    
+    // تحديث الحقول المخفية
+    document.getElementById('camera_images').value = imageData;
+    
+    // إضافة حقل مخفي للملاحظات إذا لم يكن موجوداً
+    let notesInput = document.getElementById('image_notes');
+    if (!notesInput) {
+        notesInput = document.createElement('input');
+        notesInput.type = 'hidden';
+        notesInput.name = 'image_notes';
+        notesInput.id = 'image_notes';
+        document.querySelector('form').appendChild(notesInput);
+    }
+    notesInput.value = descriptions;
+}
+
+// معاينة الصور المرفوعة من الملفات (للمدراء)
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('fileUploadInput');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const preview = document.getElementById('filePreview');
+            preview.innerHTML = '';
+            
+            const files = Array.from(e.target.files);
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-3 mb-3';
+                    col.innerHTML = `
+                        <div style="position: relative;">
+                            <img src="${event.target.result}" class="img-fluid rounded" 
+                                 style="width: 100%; height: 150px; object-fit: cover; border: 2px solid #667eea;">
+                            <span class="badge bg-primary" style="position: absolute; top: 5px; right: 5px;">
+                                ${index + 1}
+                            </span>
+                            <p class="text-center mt-1 small">${file.name}</p>
+                        </div>
+                    `;
+                    preview.appendChild(col);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+    }
+});
+</script>

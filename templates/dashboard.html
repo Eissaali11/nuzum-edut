@@ -1,0 +1,984 @@
+{% extends 'layout.html' %}
+
+{% block extra_css %}
+<style>
+/* ========== تنسيق وألوان صفحة لوحة التحكم ========== */
+.content-wrapper:has(.page-dashboard) {
+    background: #eaeaea;
+    padding: 1.25rem 1.5rem;
+}
+.content-wrapper:has(.page-dashboard) .action-bar {
+    background: linear-gradient(135deg, #1a4369 0%, #234a6e 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 2px 12px rgba(15, 45, 74, 0.25);
+}
+.content-wrapper:has(.page-dashboard) .action-bar .page-title,
+.content-wrapper:has(.page-dashboard) .action-bar .form-check-label,
+.content-wrapper:has(.page-dashboard) .action-bar .text-muted {
+    color: #fff !important;
+}
+.content-wrapper:has(.page-dashboard) .action-bar .form-check-input {
+    background-color: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+}
+.content-wrapper:has(.page-dashboard) .action-bar .form-check-input:checked {
+    background-color: #1e88e5;
+    border-color: #1e88e5;
+}
+.page-dashboard .welcome-header {
+    background: linear-gradient(135deg, #0f2d4a 0%, #1a4369 50%, #234a6e 100%);
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(15, 45, 74, 0.3);
+    overflow: hidden;
+}
+.page-dashboard .welcome-header .card-body {
+    padding: 1.5rem 1.75rem;
+}
+.page-dashboard .welcome-header h1 {
+    color: #fff !important;
+    font-weight: 700;
+    font-size: 1.75rem;
+}
+.page-dashboard .welcome-header p.text-muted {
+    color: rgba(255,255,255,0.85) !important;
+}
+.page-dashboard .date-display {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-weight: 500;
+}
+/* بطاقات الإحصائيات — ألوان احترافية مع شريط تمييز */
+.page-dashboard .dashboard-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    overflow: hidden;
+    position: relative;
+}
+.page-dashboard .dashboard-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 4px;
+    height: 100%;
+    border-radius: 0 14px 14px 0;
+}
+.page-dashboard .dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+}
+.page-dashboard .dashboard-card:has(.bg-primary)::before {
+    background: linear-gradient(180deg, #1e88e5 0%, #1565c0 100%);
+}
+.page-dashboard .dashboard-card:has(.bg-success)::before {
+    background: linear-gradient(180deg, #26a69a 0%, #00897b 100%);
+}
+.page-dashboard .dashboard-card:has(.bg-info)::before {
+    background: linear-gradient(180deg, #29b6f6 0%, #0288d1 100%);
+}
+.page-dashboard .dashboard-card:has(.bg-warning)::before {
+    background: linear-gradient(180deg, #ffa726 0%, #f57c00 100%);
+}
+.page-dashboard .dashboard-card:has(.bg-primary) .card-body {
+    background: linear-gradient(135deg, #fff 0%, rgba(30, 136, 229, 0.03) 100%);
+}
+.page-dashboard .dashboard-card:has(.bg-success) .card-body {
+    background: linear-gradient(135deg, #fff 0%, rgba(38, 166, 154, 0.03) 100%);
+}
+.page-dashboard .dashboard-card:has(.bg-info) .card-body {
+    background: linear-gradient(135deg, #fff 0%, rgba(41, 182, 246, 0.03) 100%);
+}
+.page-dashboard .dashboard-card:has(.bg-warning) .card-body {
+    background: linear-gradient(135deg, #fff 0%, rgba(255, 167, 38, 0.04) 100%);
+}
+.page-dashboard .dashboard-card .card-icon {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    font-size: 1.35rem;
+}
+.page-dashboard .dashboard-card:has(.bg-primary) .card-icon {
+    background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%) !important;
+    color: #fff !important;
+}
+.page-dashboard .dashboard-card:has(.bg-success) .card-icon {
+    background: linear-gradient(135deg, #26a69a 0%, #00897b 100%) !important;
+    color: #fff !important;
+}
+.page-dashboard .dashboard-card:has(.bg-info) .card-icon {
+    background: linear-gradient(135deg, #29b6f6 0%, #0288d1 100%) !important;
+    color: #fff !important;
+}
+.page-dashboard .dashboard-card:has(.bg-warning) .card-icon {
+    background: linear-gradient(135deg, #ffa726 0%, #f57c00 100%) !important;
+    color: #fff !important;
+}
+.page-dashboard .dashboard-card .card-icon-bg {
+    opacity: 0.08;
+}
+.page-dashboard .dashboard-card .card-subtitle {
+    color: #5a6c7d !important;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+.page-dashboard .dashboard-card .counter-value {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+.page-dashboard .dashboard-card:has(.bg-primary) .counter-value { color: #1e88e5 !important; }
+.page-dashboard .dashboard-card:has(.bg-success) .counter-value { color: #26a69a !important; }
+.page-dashboard .dashboard-card:has(.bg-info) .counter-value { color: #0298d1 !important; }
+.page-dashboard .dashboard-card:has(.bg-warning) .counter-value { color: #f57c00 !important; }
+.page-dashboard .dashboard-card .text-muted {
+    color: #6c757d !important;
+    font-size: 0.8rem;
+}
+.page-dashboard .dashboard-card .card-footer {
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    background: rgba(0,0,0,0.02);
+}
+.page-dashboard .dashboard-card .card-footer .btn {
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+.page-dashboard .chart-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: box-shadow 0.25s ease;
+}
+.page-dashboard .chart-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+.page-dashboard .chart-card .card-header {
+    background: linear-gradient(135deg, #0f2d4a 0%, #1a4369 40%, #234a6e 100%);
+    color: #fff;
+    border: none;
+    padding: 1rem 1.25rem;
+    border-radius: 0;
+    border-bottom: 3px solid rgba(255,255,255,0.15);
+}
+.page-dashboard .chart-card .card-title {
+    color: #fff !important;
+    margin: 0;
+    font-weight: 600;
+    font-size: 1rem;
+}
+.page-dashboard .chart-card .card-body {
+    padding: 1.25rem;
+    background: #fafbfc;
+}
+.page-dashboard .table-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: box-shadow 0.25s ease;
+}
+.page-dashboard .table-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+.page-dashboard .table-card .card-header {
+    background: linear-gradient(135deg, #0f2d4a 0%, #1a4369 40%, #234a6e 100%);
+    color: #fff;
+    border: none;
+    padding: 1rem 1.25rem;
+    border-radius: 0;
+    border-bottom: 3px solid rgba(255,255,255,0.15);
+}
+.page-dashboard .table-card .card-header .text-white-50 {
+    color: rgba(255,255,255,0.9) !important;
+}
+.page-dashboard .table-card .card-title {
+    color: #fff !important;
+    margin: 0;
+    font-weight: 600;
+}
+.page-dashboard .table-card .card-body {
+    padding: 0;
+}
+.page-dashboard .table-card .table thead th {
+    background: #f0f4f8 !important;
+    color: #1a4369 !important;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8ee;
+    padding: 0.85rem 1rem;
+}
+.page-dashboard .table-card .table td {
+    color: #333 !important;
+    padding: 0.85rem 1rem;
+    border-color: #eee;
+}
+.page-dashboard .table-card .table-hover tbody tr:hover {
+    background: #f8fafc !important;
+}
+.page-dashboard .btn-outline-primary { border-color: #1e88e5; color: #1e88e5; }
+.page-dashboard .btn-outline-primary:hover { background: #1e88e5; color: #fff; }
+.page-dashboard .btn-outline-success { border-color: #198754; color: #198754; }
+.page-dashboard .btn-outline-success:hover { background: #198754; color: #fff; }
+.page-dashboard .btn-outline-info { border-color: #0dcaf0; color: #0dcaf0; }
+.page-dashboard .btn-outline-info:hover { background: #0dcaf0; color: #fff; }
+.page-dashboard .btn-outline-warning { border-color: #ffc107; color: #856404; }
+.page-dashboard .btn-outline-warning:hover { background: #ffc107; color: #212529; }
+.page-dashboard .btn-primary { background: #1e88e5; border-color: #1e88e5; }
+.page-dashboard .btn-primary:hover { background: #1976d2; border-color: #1976d2; }
+/* شارات البطاقات */
+.page-dashboard .dashboard-card .badge {
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+}
+.page-dashboard .dashboard-card .badge.bg-success { background: linear-gradient(135deg, #26a69a, #00897b) !important; }
+.page-dashboard .dashboard-card .badge.bg-warning { background: linear-gradient(135deg, #ffa726, #f57c00) !important; color: #fff !important; }
+.page-dashboard .dashboard-card .badge.bg-danger { background: linear-gradient(135deg, #ef5350, #c62828) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid page-dashboard">
+    <!-- Welcome Header with Date -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card welcome-header fade-in">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="display-6 mb-0 text-white">لوحة التحكم</h1>
+                            <p class="text-muted mb-0">مرحبًا بك في نظام إدارة الموظفين المتطور</p>
+                        </div>
+                        <div class="text-left">
+                            <div class="date-display pulse-effect" id="hijri-date">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                <span id="current-date"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+            
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card slide-up" style="animation-delay: 0.1s;">
+                <div class="card-body position-relative">
+                    <div class="card-icon-bg bg-primary position-absolute rounded-circle"></div>
+                    <div class="d-flex justify-content-between align-items-center position-relative">
+                        <div class="flex-grow-1">
+                            <h6 class="card-subtitle mb-2 text-body-secondary fw-bold">الموظفون النشطون</h6>
+                            <h2 class="counter-value text-primary" data-target="{{ total_employees }}">0</h2>
+                            <small class="text-muted">من إجمالي {{ total_all_employees }}</small>
+                        </div>
+                        <div class="card-icon-wrapper">
+                            <div class="card-icon rounded-circle bg-primary text-white">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('employees.index') }}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-eye me-2"></i>عرض التفاصيل
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card slide-up" style="animation-delay: 0.2s;">
+                <div class="card-body position-relative">
+                    <div class="card-icon-bg bg-success position-absolute rounded-circle"></div>
+                    <div class="d-flex justify-content-between align-items-center position-relative">
+                        <div class="flex-grow-1">
+                            <h6 class="card-subtitle mb-2 text-body-secondary fw-bold">الأقسام</h6>
+                            <h2 class="counter-value text-success" data-target="{{ total_departments }}">0</h2>
+                            <small class="text-muted">قسم نشط</small>
+                        </div>
+                        <div class="card-icon-wrapper">
+                            <div class="card-icon rounded-circle bg-success text-white">
+                                <i class="fas fa-sitemap"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('departments.index') }}" class="btn btn-outline-success w-100">
+                        <i class="fas fa-eye me-2"></i>عرض التفاصيل
+                    </a>
+                </div>
+            </div>
+        </div>
+                
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card slide-up" style="animation-delay: 0.3s;">
+                <div class="card-body position-relative">
+                    <div class="card-icon-bg bg-info position-absolute rounded-circle"></div>
+                    <div class="d-flex justify-content-between align-items-center position-relative">
+                        <div class="flex-grow-1">
+                            <h6 class="card-subtitle mb-2 text-body-secondary fw-bold">حضور اليوم</h6>
+                            <h2 class="counter-value text-info" data-target="{{ today_attendance }}">0</h2>
+                            <small class="text-muted">موظف حاضر</small>
+                        </div>
+                        <div class="card-icon-wrapper">
+                            <div class="card-icon rounded-circle bg-info text-white">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-info w-100 dropdown-toggle" type="button" id="attendanceDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-cog me-2"></i>خيارات الحضور
+                        </button>
+                        <ul class="dropdown-menu w-100" aria-labelledby="attendanceDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('attendance.index') }}"><i class="fas fa-list-ul me-2"></i>عرض سجلات الحضور</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('attendance.record') }}"><i class="fas fa-user-check me-2"></i>تسجيل حضور لموظف</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('attendance.department_attendance') }}"><i class="fas fa-users me-2"></i>تسجيل حضور لقسم</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('attendance.multi_day_department_attendance') }}"><i class="fas fa-calendar-week me-2"></i>تسجيل لعدة أيام</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+                
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card slide-up" style="animation-delay: 0.4s;">
+                <div class="card-body position-relative">
+                    <div class="card-icon-bg bg-warning position-absolute rounded-circle"></div>
+                    <div class="d-flex justify-content-between align-items-center position-relative">
+                        <div class="flex-grow-1">
+                            <h6 class="card-subtitle mb-2 text-body-secondary fw-bold">إحصائيات الوثائق</h6>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="badge bg-success">سارية: <span class="counter-value-small" data-target="{{ document_stats.valid }}">{{ document_stats.valid }}</span></span>
+                                <span class="badge bg-warning">قريبة الانتهاء: <span class="counter-value-small" data-target="{{ document_stats.expiring }}">{{ document_stats.expiring }}</span></span>
+                                <span class="badge bg-danger">منتهية: <span class="counter-value-small" data-target="{{ document_stats.expired }}">{{ document_stats.expired }}</span></span>
+                            </div>
+                            <h3 class="counter-value text-warning" data-target="{{ document_stats.total }}">0</h3>
+                            <small class="text-muted">إجمالي الوثائق</small>
+                        </div>
+                        <div class="card-icon-wrapper">
+                            <div class="card-icon rounded-circle bg-warning text-white">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 d-flex gap-2">
+                    <a href="{{ url_for('documents.index') }}" class="btn btn-outline-warning flex-grow-1">
+                        <i class="fas fa-folder me-1"></i>كل الوثائق
+                    </a>
+                    <a href="{{ url_for('documents.expiring') }}" class="btn btn-outline-warning flex-grow-1">
+                        <i class="fas fa-exclamation-triangle me-1"></i>منتهية
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+            
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-4">
+            <div class="card chart-card slide-up" style="animation-delay: 0.5s;">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        توزيع الموظفين حسب الأقسام
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="departmentChart" 
+                            data-labels='{{ dept_labels|tojson if dept_labels else "[]" }}' 
+                            data-values='{{ dept_data|tojson if dept_data else "[]" }}' 
+                            height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card chart-card slide-up" style="animation-delay: 0.6s;">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-money-bill-wave me-2"></i>
+                        إجمالي الرواتب الشهرية
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salaryChart" 
+                            data-labels='{{ salary_labels|tojson if salary_labels else "[]" }}' 
+                            data-values='{{ salary_data|tojson if salary_data else "[]" }}' 
+                            height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card chart-card slide-up" style="animation-delay: 0.7s;">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-file-alt me-2"></i>
+                        توزيع حالة الوثائق
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="documentChart" 
+                            data-valid="{{ document_stats.valid }}" 
+                            data-expiring="{{ document_stats.expiring }}" 
+                            data-expired="{{ document_stats.expired }}" 
+                            height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+            
+    <!-- Recent Employees Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card table-card slide-up" style="animation-delay: 0.8s;">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-user-plus me-2"></i>
+                            الموظفون الجدد
+                        </h5>
+                        <div class="text-white-50 small">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <span>آخر الموظفين المضافين</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-white">
+                            <thead>
+                                <tr>
+                                    <th class="text-info"><i class="fas fa-user me-2"></i>الاسم</th>
+                                    <th class="text-info"><i class="fas fa-id-card me-2"></i>الرقم الوظيفي</th>
+                                    <th class="text-info"><i class="fas fa-briefcase me-2"></i>المسمى الوظيفي</th>
+                                    <th class="text-info"><i class="fas fa-building me-2"></i>القسم</th>
+                                    <th class="text-info"><i class="fas fa-calendar me-2"></i>تاريخ التعيين</th>
+                                    <th class="text-info"><i class="fas fa-cog me-2"></i>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for employee in recent_employees %}
+                                <tr>
+                                    <td class="fw-bold">{{ employee.name }}</td>
+                                    <td><span class="badge bg-primary">{{ employee.employee_id }}</span></td>
+                                    <td>{{ employee.job_title }}</td>
+                                    <td>{{ employee.department.name if employee.department else '-' }}</td>
+                                    <td>
+                                        {% if employee.join_date %}
+                                        <span class="gregorian-date">{{ employee.join_date.strftime('%d/%m/%Y') }}</span>
+                                        <span class="hijri-date" style="display: none;">
+                                            <!-- Will be filled by JavaScript -->
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('employees.view', id=employee.id) }}" 
+                                           class="btn btn-sm btn-info" 
+                                           data-bs-toggle="tooltip" 
+                                           data-bs-placement="top" 
+                                           title="عرض تفاصيل الموظف">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-users fa-3x mb-3 opacity-50"></i>
+                                        <br>
+                                        لا يوجد موظفين حديثين
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('employees.index') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-users me-2"></i>
+                            عرض كافة الموظفين
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// متغيرات عامة لتخزين مرجعيات المخططات
+let departmentChartInstance = null;
+let salaryChartInstance = null;
+let documentChartInstance = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('بدء تحميل لوحة المعلومات...');
+    
+    // Initialize tooltips
+    initializeTooltips();
+    console.log('تم تهيئة التلميحات');
+    
+    // Initialize charts
+    console.log('Chart متوفر:', typeof Chart !== 'undefined');
+    if (typeof Chart !== 'undefined') {
+        console.log('بدء تهيئة المخططات...');
+        try {
+            initializeDepartmentChart();
+            console.log('تم تهيئة مخطط الأقسام');
+        } catch(e) {
+            console.error('خطأ في مخطط الأقسام:', e.message || e.toString());
+        }
+        
+        try {
+            initializeSalaryChart();
+            console.log('تم تهيئة مخطط الرواتب');
+        } catch(e) {
+            console.error('خطأ في مخطط الرواتب:', e.message || e.toString());
+        }
+        
+        try {
+            initializeDocumentChart();
+            console.log('تم تهيئة مخطط الوثائق');
+        } catch(e) {
+            console.error('خطأ في مخطط الوثائق:', e);
+        }
+    } else {
+        console.error('Chart.js غير محمّل!');
+    }
+    
+    // Display current date
+    displayCurrentDate();
+    console.log('تم عرض التاريخ');
+    
+    // Animate counters with delay
+    setTimeout(function() {
+        animateCounters();
+        console.log('تم تحريك العدادات');
+    }, 800);
+    
+    // Add loading complete log
+    console.log('تم تحميل كافة مكونات لوحة المعلومات بنجاح');
+});
+
+function initializeTooltips() {
+    if (typeof bootstrap !== 'undefined') {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+}
+
+function displayCurrentDate() {
+    const currentDateElement = document.getElementById('current-date');
+    if (currentDateElement) {
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        currentDateElement.textContent = now.toLocaleDateString('ar-SA', options);
+    }
+}
+
+function animateCounters() {
+    const counters = document.querySelectorAll('.counter-value');
+    
+    counters.forEach((counter, index) => {
+        const target = parseInt(counter.getAttribute('data-target')) || 0;
+        
+        // Add animation class
+        counter.classList.add('counter-animate');
+        
+        if (target <= 0) {
+            counter.textContent = '0';
+            return;
+        }
+        
+        let count = 0;
+        const increment = Math.ceil(target / 50);
+        const speed = Math.max(20, Math.floor(2000 / target));
+        
+        const updateCount = setInterval(() => {
+            count += increment;
+            
+            if (count >= target) {
+                counter.textContent = target.toLocaleString('ar-SA');
+                clearInterval(updateCount);
+                
+                // Add pulse effect when animation completes
+                counter.style.animation = 'counterPulse 0.6s ease-in-out';
+            } else {
+                counter.textContent = count.toLocaleString('ar-SA');
+            }
+        }, speed);
+    });
+}
+
+function initializeDepartmentChart() {
+    const departmentChartElement = document.getElementById('departmentChart');
+    if (!departmentChartElement) {
+        console.log('عنصر مخطط الأقسام غير موجود');
+        return;
+    }
+    
+    // تدمير أي chart موجود على canvas
+    const existingChart = Chart.getChart(departmentChartElement);
+    if (existingChart) {
+        existingChart.destroy();
+    }
+    
+    // تدمير المخطط القديم إذا كان موجوداً
+    if (departmentChartInstance) {
+        departmentChartInstance.destroy();
+        departmentChartInstance = null;
+    }
+    
+    console.log('data-labels:', departmentChartElement.getAttribute('data-labels'));
+    console.log('data-values:', departmentChartElement.getAttribute('data-values'));
+    
+    const labels = JSON.parse(departmentChartElement.getAttribute('data-labels') || '[]');
+    const values = JSON.parse(departmentChartElement.getAttribute('data-values') || '[]');
+    
+    console.log('تسميات الأقسام:', labels);
+    console.log('قيم الأقسام:', values);
+    
+    const colors = [
+        '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe',
+        '#43e97b', '#38f9d7', '#ffecd2', '#fcb69f', '#a8edea', '#fed6e3'
+    ];
+    
+    if (labels.length === 0 || values.length === 0) {
+        departmentChartInstance = new Chart(departmentChartElement, {
+            type: 'doughnut',
+            data: {
+                labels: ['لا توجد بيانات'],
+                datasets: [{
+                    data: [1],
+                    backgroundColor: ['#e9ecef'],
+                    borderColor: ['#dee2e6'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    }
+                }
+            }
+        });
+        return;
+    }
+    
+    departmentChartInstance = new Chart(departmentChartElement, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: colors,
+                borderColor: colors,
+                borderWidth: 2,
+                hoverBorderWidth: 3,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#667eea',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            let value = context.raw || 0;
+                            let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            let percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} موظف (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true,
+                duration: 1000
+            }
+        }
+    });
+}
+
+function initializeSalaryChart() {
+    const salaryChartElement = document.getElementById('salaryChart');
+    if (!salaryChartElement) return;
+    
+    // تدمير أي chart موجود على canvas
+    const existingChart = Chart.getChart(salaryChartElement);
+    if (existingChart) {
+        existingChart.destroy();
+    }
+    
+    // تدمير المخطط القديم إذا كان موجوداً
+    if (salaryChartInstance) {
+        salaryChartInstance.destroy();
+        salaryChartInstance = null;
+    }
+    
+    const labels = JSON.parse(salaryChartElement.getAttribute('data-labels') || '[]');
+    const values = JSON.parse(salaryChartElement.getAttribute('data-values') || '[]');
+    
+    if (labels.length === 0 || values.length === 0) {
+        salaryChartInstance = new Chart(salaryChartElement, {
+            type: 'bar',
+            data: {
+                labels: ['لا توجد بيانات'],
+                datasets: [{
+                    label: 'إجمالي الرواتب',
+                    data: [0],
+                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+        return;
+    }
+    
+    salaryChartInstance = new Chart(salaryChartElement, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'إجمالي الرواتب',
+                data: values,
+                backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false,
+                hoverBackgroundColor: 'rgba(102, 126, 234, 0.4)',
+                hoverBorderColor: 'rgba(102, 126, 234, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString('ar-SA') + ' ر.س';
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#667eea',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            let value = context.raw;
+                            return `إجمالي الرواتب: ${value.toLocaleString('ar-SA')} ر.س`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+}
+
+function initializeDocumentChart() {
+    const documentChartElement = document.getElementById('documentChart');
+    if (!documentChartElement) {
+        console.log('عنصر مخطط الوثائق غير موجود');
+        return;
+    }
+    
+    // تدمير أي chart موجود على canvas
+    const existingChart = Chart.getChart(documentChartElement);
+    if (existingChart) {
+        existingChart.destroy();
+    }
+    
+    // تدمير المخطط القديم إذا كان موجوداً
+    if (documentChartInstance) {
+        documentChartInstance.destroy();
+        documentChartInstance = null;
+    }
+    
+    const validCount = parseInt(documentChartElement.getAttribute('data-valid')) || 0;
+    const expiringCount = parseInt(documentChartElement.getAttribute('data-expiring')) || 0;
+    const expiredCount = parseInt(documentChartElement.getAttribute('data-expired')) || 0;
+    
+    console.log('إحصائيات الوثائق:', { validCount, expiringCount, expiredCount });
+    
+    if (validCount === 0 && expiringCount === 0 && expiredCount === 0) {
+        console.log('لا توجد بيانات وثائق - عرض رسم افتراضي');
+        documentChartInstance = new Chart(documentChartElement, {
+            type: 'doughnut',
+            data: {
+                labels: ['لا توجد بيانات'],
+                datasets: [{
+                    data: [1],
+                    backgroundColor: ['#e9ecef'],
+                    borderColor: ['#dee2e6'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    }
+                }
+            }
+        });
+        return;
+    }
+    
+    documentChartInstance = new Chart(documentChartElement, {
+        type: 'doughnut',
+        data: {
+            labels: ['وثائق سارية', 'وثائق تنتهي قريباً', 'وثائق منتهية'],
+            datasets: [{
+                data: [validCount, expiringCount, expiredCount],
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                borderColor: ['#28a745', '#ffc107', '#dc3545'],
+                borderWidth: 2,
+                hoverBorderWidth: 3,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#667eea',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            let value = context.raw || 0;
+                            let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            let percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true,
+                duration: 1000
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

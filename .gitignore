@@ -1,0 +1,38 @@
+# Virtual Environment
+venv/
+*.venv
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE files
+.vscode/
+.idea/
+
+# Environment variables file
+.env
+
+# Secrets (do not commit)
+utils/google_drive_credentials.json
+
+
+
+# Other
+.DS_Store
+node_modules/
+
+# Local DB and uploads
+instance/*.db
+static/uploads**
+
+# Large archives (avoid timeout on push)
+*.rar
+*_deployment_*.tar.gz
+*_cloudpanel_*.zip
+attached_assets.zip
+attached_assets/
+car_care-main.zip
+functions/node_modules/
+repl-backup*.sql

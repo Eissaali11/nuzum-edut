@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <!-- Background -->
+  <rect width="600" height="400" fill="linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%)"/>
+  
+  <!-- Clock interface -->
+  <g transform="translate(300, 200)">
+    <!-- Main clock body -->
+    <circle cx="0" cy="0" r="120" fill="white" stroke="#e5e7eb" stroke-width="3"/>
+    <circle cx="0" cy="0" r="115" fill="#f9fafb"/>
+    
+    <!-- Clock numbers -->
+    <g fill="#374151" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">
+      <text x="0" y="-85" dominant-baseline="middle">12</text>
+      <text x="75" y="-42" dominant-baseline="middle">3</text>
+      <text x="0" y="95" dominant-baseline="middle">6</text>
+      <text x="-75" y="-42" dominant-baseline="middle">9</text>
+    </g>
+    
+    <!-- Hour markers -->
+    <g stroke="#d1d5db" stroke-width="2">
+      <line x1="0" y1="-110" x2="0" y2="-95"/>
+      <line x1="95" y1="-55" x2="110" y2="-55"/>
+      <line x1="95" y1="55" x2="110" y2="55"/>
+      <line x1="0" y1="95" x2="0" y2="110"/>
+      <line x1="-95" y1="55" x2="-110" y2="55"/>
+      <line x1="-95" y1="-55" x2="-110" y2="-55"/>
+    </g>
+    
+    <!-- Clock hands showing 9:15 -->
+    <!-- Hour hand -->
+    <line x1="0" y1="0" x2="-45" y2="-25" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
+    <!-- Minute hand -->
+    <line x1="0" y1="0" x2="20" y2="-80" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+    <!-- Second hand -->
+    <line x1="0" y1="0" x2="0" y2="-90" stroke="#dc2626" stroke-width="1"/>
+    <!-- Center dot -->
+    <circle cx="0" cy="0" r="8" fill="#374151"/>
+    
+    <!-- Digital time display -->
+    <rect x="-50" y="40" width="100" height="30" fill="#1f2937" rx="8"/>
+    <text x="0" y="60" font-family="Arial" font-size="16" fill="#10b981" text-anchor="middle" font-weight="bold">09:15 AM</text>
+    
+    <!-- Arabic time -->
+    <text x="0" y="140" font-family="Arial" font-size="12" fill="#6b7280" text-anchor="middle">التوقيت: 9:15 صباحاً</text>
+  </g>
+  
+  <!-- Attendance status indicators -->
+  <g transform="translate(80, 80)">
+    <!-- Check-in status -->
+    <rect x="0" y="0" width="120" height="60" fill="white" rx="10" stroke="#22c55e" stroke-width="2"/>
+    <circle cx="25" cy="30" r="12" fill="#22c55e"/>
+    <path d="M20,30 L24,34 L30,26" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="50" y="25" font-family="Arial" font-size="12" fill="#16a34a" font-weight="bold">حضور</text>
+    <text x="50" y="40" font-family="Arial" font-size="10" fill="#22c55e">145 موظف</text>
+    <text x="50" y="52" font-family="Arial" font-size="8" fill="#86efac">متواجد اليوم</text>
+  </g>
+  
+  <g transform="translate(80, 160)">
+    <!-- Break status -->
+    <rect x="0" y="0" width="120" height="60" fill="white" rx="10" stroke="#f59e0b" stroke-width="2"/>
+    <circle cx="25" cy="30" r="12" fill="#f59e0b"/>
+    <rect x="20" y="25" width="10" height="10" fill="white" rx="1"/>
+    <text x="50" y="25" font-family="Arial" font-size="12" fill="#d97706" font-weight="bold">استراحة</text>
+    <text x="50" y="40" font-family="Arial" font-size="10" fill="#f59e0b">12 موظف</text>
+    <text x="50" y="52" font-family="Arial" font-size="8" fill="#fbbf24">في الاستراحة</text>
+  </g>
+  
+  <g transform="translate(80, 240)">
+    <!-- Absent status -->
+    <rect x="0" y="0" width="120" height="60" fill="white" rx="10" stroke="#ef4444" stroke-width="2"/>
+    <circle cx="25" cy="30" r="12" fill="#ef4444"/>
+    <line x1="20" y1="25" x2="30" y2="35" stroke="white" stroke-width="2"/>
+    <line x1="30" y1="25" x2="20" y2="35" stroke="white" stroke-width="2"/>
+    <text x="50" y="25" font-family="Arial" font-size="12" fill="#dc2626" font-weight="bold">غياب</text>
+    <text x="50" y="40" font-family="Arial" font-size="10" fill="#ef4444">8 موظف</text>
+    <text x="50" y="52" font-family="Arial" font-size="8" fill="#fca5a5">غائب اليوم</text>
+  </g>
+  
+  <!-- Employee icons -->
+  <g transform="translate(450, 100)">
+    <!-- Employee 1 -->
+    <g>
+      <circle cx="0" cy="0" r="20" fill="#dbeafe"/>
+      <circle cx="0" cy="-8" r="8" fill="#3b82f6"/>
+      <rect x="-6" y="2" width="12" height="15" fill="#1e40af" rx="3"/>
+      <text x="0" y="35" font-family="Arial" font-size="8" text-anchor="middle" fill="#374151">أحمد علي</text>
+      <!-- Status badge -->
+      <circle cx="15" cy="-15" r="6" fill="#22c55e"/>
+      <path d="M12,-15 L14,-13 L18,-17" stroke="white" stroke-width="1" fill="none"/>
+    </g>
+    
+    <!-- Employee 2 -->
+    <g transform="translate(0, 80)">
+      <circle cx="0" cy="0" r="20" fill="#fef3c7"/>
+      <circle cx="0" cy="-8" r="8" fill="#f59e0b"/>
+      <rect x="-6" y="2" width="12" height="15" fill="#d97706" rx="3"/>
+      <text x="0" y="35" font-family="Arial" font-size="8" text-anchor="middle" fill="#374151">فاطمة سالم</text>
+      <!-- Status badge -->
+      <circle cx="15" cy="-15" r="6" fill="#f59e0b"/>
+      <rect x="12" y="-17" width="6" height="4" fill="white" rx="1"/>
+    </g>
+    
+    <!-- Employee 3 -->
+    <g transform="translate(0, 160)">
+      <circle cx="0" cy="0" r="20" fill="#fee2e2"/>
+      <circle cx="0" cy="-8" r="8" fill="#ef4444"/>
+      <rect x="-6" y="2" width="12" height="15" fill="#dc2626" rx="3"/>
+      <text x="0" y="35" font-family="Arial" font-size="8" text-anchor="middle" fill="#374151">سعد محمد</text>
+      <!-- Status badge -->
+      <circle cx="15" cy="-15" r="6" fill="#ef4444"/>
+      <line x1="12" y1="-17" x2="18" y2="-13" stroke="white" stroke-width="1"/>
+      <line x1="18" y1="-17" x2="12" y2="-13" stroke="white" stroke-width="1"/>
+    </g>
+  </g>
+  
+  <!-- Islamic/Hijri calendar elements -->
+  <g transform="translate(30, 30)">
+    <rect x="0" y="0" width="150" height="20" fill="rgba(16,185,129,0.1)" rx="4"/>
+    <text x="75" y="14" font-family="Arial" font-size="10" text-anchor="middle" fill="#065f46" font-weight="bold">🕌 ربيع الأول 1446 هـ</text>
+  </g>
+  
+  <!-- Prayer time indicator -->
+  <g transform="translate(450, 30)">
+    <rect x="0" y="0" width="120" height="20" fill="rgba(59,130,246,0.1)" rx="4"/>
+    <text x="60" y="14" font-family="Arial" font-size="10" text-anchor="middle" fill="#1e40af" font-weight="bold">🕐 الظهر: 12:15</text>
+  </g>
+  
+  <!-- Floating statistics -->
+  <g transform="translate(250, 50)" opacity="0.8">
+    <circle cx="0" cy="0" r="25" fill="rgba(34,197,94,0.2)"/>
+    <text x="0" y="-5" font-family="Arial" font-size="12" text-anchor="middle" fill="#16a34a" font-weight="bold">95%</text>
+    <text x="0" y="8" font-family="Arial" font-size="8" text-anchor="middle" fill="#22c55e">نسبة الحضور</text>
+  </g>
+  
+  <g transform="translate(350, 350)" opacity="0.8">
+    <circle cx="0" cy="0" r="25" fill="rgba(251,191,36,0.2)"/>
+    <text x="0" y="-5" font-family="Arial" font-size="12" text-anchor="middle" fill="#d97706" font-weight="bold">42h</text>
+    <text x="0" y="8" font-family="Arial" font-size="8" text-anchor="middle" fill="#f59e0b">ساعات إضافية</text>
+  </g>
+  
+  <!-- Animated elements -->
+  <g opacity="0.4">
+    <circle cx="100" cy="350" r="3" fill="#22c55e">
+      <animate attributeName="cy" values="350;330;350" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="500" cy="300" r="2" fill="#f59e0b">
+      <animate attributeName="cy" values="300;280;300" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>

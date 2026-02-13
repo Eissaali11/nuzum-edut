@@ -1,0 +1,362 @@
+{% extends 'mobile/layout.html' %}
+
+{% block title %}تفاصيل التفويض الخارجي{% endblock %}
+
+{% block header_title %}تفاصيل التفويض الخارجي{% endblock %}
+
+{% block content %}
+<style>
+/* إصلاح تموضع المحتوى بعيداً عن الهيدر والفوتر */
+body {
+    padding-top: 70px !important; /* مساحة للهيدر */
+    padding-bottom: 120px !important; /* مساحة للقائمة السفلية */
+}
+
+.mobile-content-wrapper {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+</style>
+
+<!-- معلومات السيارة -->
+<div class="card mb-3 mx-3">
+    <div class="card-header bg-primary text-white">
+        <h6 class="mb-0">
+            <i class="fas fa-car ms-1"></i>
+            معلومات السيارة
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-6">
+                <strong>رقم اللوحة:</strong><br>
+                <span class="text-primary">{{ vehicle.plate_number }}</span>
+            </div>
+            <div class="col-6">
+                <strong>الماركة:</strong><br>
+                <span>{{ vehicle.make }} {{ vehicle.model }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- تفاصيل التفويض -->
+<div class="card mb-3 mx-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">
+            <i class="fas fa-file-signature ms-1"></i>
+            تفاصيل التفويض
+        </h6>
+        <div>
+            {% if authorization.status == 'pending' %}
+                <span class="badge bg-warning">قيد المراجعة</span>
+            {% elif authorization.status == 'approved' %}
+                <span class="badge bg-success">مُوافق عليه</span>
+            {% elif authorization.status == 'rejected' %}
+                <span class="badge bg-danger">مرفوض</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- معلومات الموظف -->
+        <div class="mb-3">
+            <h6 class="text-primary border-bottom pb-1">
+                <i class="fas fa-user ms-1"></i>
+                معلومات الموظف
+            </h6>
+            <div class="row">
+                <div class="col-12 mb-2">
+                    <strong>الاسم:</strong> {{ authorization.employee.name }}
+                </div>
+                <div class="col-6">
+                    <strong>المنصب:</strong><br>
+                    <small>{{ authorization.employee.job_title or 'غير محدد' }}</small>
+                </div>
+                <div class="col-6">
+                    <strong>الهاتف:</strong><br>
+                    <small>{{ authorization.employee.mobile or 'غير محدد' }}</small>
+                </div>
+                <div class="col-12 mt-2">
+                    <strong>القسم:</strong>
+                    {% for dept in authorization.employee.departments %}
+                        <span class="badge bg-info me-1">{{ dept.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- معلومات التفويض -->
+        <div class="mb-3">
+            <h6 class="text-primary border-bottom pb-1">
+                <i class="fas fa-info-circle ms-1"></i>
+                معلومات التفويض
+            </h6>
+            <div class="row">
+                <div class="col-12 mb-2">
+                    <strong>نوع التفويض:</strong>
+                    <span class="badge bg-secondary">{{ authorization.authorization_type }}</span>
+                </div>
+                <div class="col-6">
+                    <strong>المشروع:</strong><br>
+                    <small>{{ authorization.project_name or 'غير محدد' }}</small>
+                </div>
+                <div class="col-6">
+                    <strong>المدينة:</strong><br>
+                    <small>{{ authorization.city or 'غير محدد' }}</small>
+                </div>
+                <div class="col-6 mt-2">
+                    <strong>تاريخ الإنشاء:</strong><br>
+                    <small>{{ authorization.created_at.strftime('%Y-%m-%d') if authorization.created_at else 'غير محدد' }}</small>
+                </div>
+                {% if authorization.updated_at and authorization.updated_at != authorization.created_at %}
+                <div class="col-6 mt-2">
+                    <strong>آخر تحديث:</strong><br>
+                    <small>{{ authorization.updated_at.strftime('%Y-%m-%d') }}</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- الروابط والملفات -->
+        {% if authorization.external_link or authorization.file_path %}
+        <div class="mb-3">
+            <h6 class="text-primary border-bottom pb-1">
+                <i class="fas fa-paperclip ms-1"></i>
+                المرفقات والروابط
+            </h6>
+            {% if authorization.external_link %}
+            <div class="mb-2">
+                <strong>الرابط الخارجي:</strong><br>
+                <a href="{{ authorization.external_link }}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+                    <i class="fas fa-external-link-alt ms-1"></i>
+                    فتح الرابط
+                </a>
+            </div>
+            {% endif %}
+            
+            {% if authorization.file_path %}
+            <div class="mb-2">
+                <strong>الملف المرفق:</strong><br>
+                <a href="{{ url_for('static', filename='uploads/authorizations/' + authorization.file_path.split('/')[-1]) }}" 
+                   target="_blank" class="btn btn-sm btn-outline-success mt-1">
+                    <i class="fas fa-file-pdf ms-1"></i>
+                    عرض الملف
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- الملاحظات -->
+        {% if authorization.notes %}
+        <div class="mb-3">
+            <h6 class="text-primary border-bottom pb-1">
+                <i class="fas fa-sticky-note ms-1"></i>
+                ملاحظات
+            </h6>
+            <div class="alert alert-info">
+                {{ authorization.notes }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- أزرار الإجراءات -->
+<div class="action-buttons-container mb-5 mx-3">
+    <!-- زر المشاركة الشامل -->
+    <button onclick="shareFullAuthorization()" class="btn btn-success w-100 mb-2">
+        <i class="fas fa-share-alt ms-1"></i>
+        مشاركة تفاصيل التفويض الكاملة
+    </button>
+    
+    <a href="{{ url_for('mobile.edit_external_authorization', vehicle_id=vehicle.id, auth_id=authorization.id) }}" 
+       class="btn btn-warning w-100 mb-2">
+        <i class="fas fa-edit ms-1"></i>
+        تعديل التفويض
+    </a>
+    
+    {% if authorization.status == 'pending' %}
+    <div class="row gx-2 mb-2">
+        <div class="col-6">
+            <a href="{{ url_for('mobile.approve_external_authorization', vehicle_id=vehicle.id, auth_id=authorization.id) }}" 
+               class="btn btn-success w-100" 
+               onclick="return confirm('هل أنت متأكد من الموافقة على هذا التفويض؟')">
+                <i class="fas fa-check ms-1"></i>
+                موافقة
+            </a>
+        </div>
+        <div class="col-6">
+            <a href="{{ url_for('mobile.reject_external_authorization', vehicle_id=vehicle.id, auth_id=authorization.id) }}" 
+               class="btn btn-danger w-100" 
+               onclick="return confirm('هل أنت متأكد من رفض هذا التفويض؟')">
+                <i class="fas fa-times ms-1"></i>
+                رفض
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row gx-2">
+        <div class="col-6">
+            <a href="{{ url_for('vehicles.delete_external_authorization', vehicle_id=vehicle.id, auth_id=authorization.id) }}" 
+               class="btn btn-outline-danger w-100" 
+               onclick="return confirm('هل أنت متأكد من حذف هذا التفويض نهائياً؟')">
+                <i class="fas fa-trash ms-1"></i>
+                حذف
+            </a>
+        </div>
+        <div class="col-6">
+            <a href="{{ url_for('mobile.vehicle_details', vehicle_id=vehicle.id) }}" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-arrow-right ms-1"></i>
+                العودة
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// دالة مشاركة تفاصيل التفويض الكاملة
+async function shareFullAuthorization() {
+    const vehicleInfo = "{{ vehicle.plate_number }} - {{ vehicle.make }} {{ vehicle.model }}";
+    
+    // إنشاء تاريخ ووقت الإنشاء
+    const currentDate = new Date();
+    const formattedDateTime = currentDate.toLocaleString('ar-SA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+    
+    // إنشاء رسالة مشاركة نظيفة
+    let shareText = `مرحباً 👋
+
+إليك تفاصيل التفويض الخارجي الكاملة:
+
+🚙 رقم السيارة: ${vehicleInfo}
+📅 تاريخ وقت الإرسال: ${formattedDateTime}
+
+═══════════════════════════
+👤 معلومات الموظف:
+═══════════════════════════
+
+الاسم: {{ authorization.employee.name }}
+المنصب: {{ authorization.employee.job_title or 'غير محدد' }}
+الهاتف: {{ authorization.employee.mobile or 'غير محدد' }}
+القسم: {% for dept in authorization.employee.departments %}{{ dept.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+═══════════════════════════
+📋 تفاصيل التفويض:
+═══════════════════════════
+
+نوع التفويض: {{ authorization.authorization_type }}
+المشروع: {{ authorization.project_name or 'غير محدد' }}
+المدينة: {{ authorization.city or 'غير محدد' }}
+تاريخ الإنشاء: {{ authorization.created_at.strftime('%Y-%m-%d') if authorization.created_at else 'غير محدد' }}
+{% if authorization.updated_at and authorization.updated_at != authorization.created_at %}
+آخر تحديث: {{ authorization.updated_at.strftime('%Y-%m-%d') }}
+{% endif %}
+الحالة: {% if authorization.status == 'pending' %}قيد المراجعة{% elif authorization.status == 'approved' %}مُوافق عليه{% elif authorization.status == 'rejected' %}مرفوض{% endif %}
+
+`;
+
+    // إضافة المرفقات إذا وجدت
+    let hasAttachments = false;
+    {% if authorization.external_link %}
+    shareText += `🔗 رابط النموذج الخارجي:
+{{ authorization.external_link }}
+
+`;
+    hasAttachments = true;
+    {% endif %}
+    {% if authorization.file_path %}
+    shareText += `📄 الملف المرفق:
+{{ request.url_root }}static/uploads/authorizations/{{ authorization.file_path.split('/')[-1] }}
+
+`;
+    hasAttachments = true;
+    {% endif %}
+    
+    {% if authorization.notes %}
+    shareText += `📝 ملاحظات:
+{{ authorization.notes }}
+
+`;
+    {% endif %}
+    
+    shareText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📱 نظام نُظم لإدارة المركبات
+🕐 تم إنشاء التقرير: ${formattedDateTime}`;
+
+    // تحديد الرابط الأساسي للمشاركة (الرابط الخارجي فقط)
+    const externalLink = '{{ authorization.external_link if authorization.external_link else "" }}';
+    // استخدام الرابط الخارجي فقط بدون رابط التفاصيل
+    const primaryUrl = externalLink;
+
+    if (navigator.share) {
+        try {
+            const shareData = {
+                title: `تفويض خارجي - ${vehicleInfo}`,
+                text: shareText
+            };
+            
+            // إضافة الرابط الخارجي فقط إذا كان متوفراً
+            if (primaryUrl && primaryUrl.trim() !== '') {
+                shareData.url = primaryUrl;
+            }
+            
+            await navigator.share(shareData);
+        } catch (error) {
+            console.log('مشاركة ملغاة أو خطأ:', error);
+            showFallbackShare(shareText);
+        }
+    } else {
+        showFallbackShare(shareText);
+    }
+}
+
+// عرض نموذج احتياطي للمشاركة
+function showFallbackShare(text) {
+    // نسخ النص إلى الحافظة
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('تم نسخ تفاصيل التفويض الكاملة إلى الحافظة');
+        }).catch(() => {
+            showTextModal(text);
+        });
+    } else {
+        showTextModal(text);
+    }
+}
+
+function showTextModal(text) {
+    // إنشاء نافذة منبثقة لعرض النص
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 9999;
+        display: flex; align-items: center; justify-content: center;
+    `;
+    
+    const content = document.createElement('div');
+    content.style.cssText = `
+        background: white; padding: 20px; border-radius: 8px;
+        max-width: 90%; max-height: 80%; overflow-y: auto;
+        direction: rtl; text-align: right;
+    `;
+    
+    content.innerHTML = `
+        <h5>تفاصيل التفويض الكاملة</h5>
+        <textarea readonly style="width: 100%; height: 300px; margin: 10px 0;">${text}</textarea>
+        <button onclick="this.closest('.modal').remove()" class="btn btn-primary">إغلاق</button>
+    `;
+    
+    modal.appendChild(content);
+    modal.className = 'modal';
+    document.body.appendChild(modal);
+}
+</script>
+{% endblock %}

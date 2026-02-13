@@ -1,0 +1,459 @@
+{% extends "layout.html" %}
+
+{% block title %}إدارة المستخدمين{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Users Management Styles */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --info-gradient: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);
+        --secondary-gradient: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Page Header */
+    .page-header-enhanced {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.6s ease-out;
+    }
+
+    .page-header-enhanced::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+    }
+
+    .page-header-enhanced h2 {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+
+    /* Stats Cards */
+    .stats-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .stats-card .card-body {
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .stats-card .h3 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Main Table Card */
+    .table-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .table-card .card-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        border-bottom: none;
+    }
+
+    .table-card .card-title {
+        margin-bottom: 0;
+        font-weight: 600;
+    }
+
+    /* Table Styling */
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        border-bottom: none;
+        font-weight: 600;
+        color: #4b5563;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(59, 130, 246, 0.05);
+    }
+
+    /* Avatar */
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary-gradient);
+        color: white;
+        font-weight: 600;
+    }
+
+    /* Status Badges */
+    .badge-status {
+        padding: 0.35rem 0.65rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+
+    /* Action Buttons */
+    .btn-action {
+        border-radius: 8px;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Department Dropdown */
+    .department-dropdown {
+        min-width: 300px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        box-shadow: var(--card-shadow-hover);
+        padding: 1rem;
+    }
+
+    .department-list-container {
+        max-height: 250px;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+
+    /* Info Alert */
+    .alert-enhanced {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header-enhanced {
+            padding: 1.25rem;
+        }
+        
+        .table-responsive {
+            border-radius: 0 0 12px 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Enhanced Header -->
+            <div class="page-header-enhanced bg-white d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h2 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        إدارة المستخدمين
+                    </h2>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="{{ url_for('users.add') }}" class="btn btn-primary btn-enhanced">
+                        <i class="fas fa-plus me-2"></i>
+                        إضافة مستخدم جديد
+                    </a>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ url_for('attendance.dashboard') }}">الرئيسية</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">إدارة المستخدمين</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card card">
+                        <div class="card-body">
+                            <div class="h3 text-primary mb-1">{{ users|length }}</div>
+                            <div class="text-muted small">إجمالي المستخدمين</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card card">
+                        <div class="card-body">
+                            <div class="h3 text-success mb-1">{{ users|selectattr('is_active')|list|length }}</div>
+                            <div class="text-muted small">مستخدمين نشطين</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card card">
+                        <div class="card-body">
+                            <div class="h3 text-warning mb-1">{{ users|selectattr('assigned_department')|list|length }}</div>
+                            <div class="text-muted small">لديهم أقسام مخصصة</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card card">
+                        <div class="card-body">
+                            <div class="h3 text-info mb-1">{{ departments|length }}</div>
+                            <div class="text-muted small">إجمالي الأقسام</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="table-card card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        قائمة المستخدمين
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>الاسم</th>
+                                    <th>البريد الإلكتروني</th>
+                                    <th>الدور</th>
+                                    <th>الأقسام</th>
+                                    <th>الحالة</th>
+                                    <th>تاريخ التسجيل</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm rounded-circle me-2">
+                                                {{ user.name[0] if user.name else user.email[0] }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ user.name or 'غير محدد' }}</div>
+                                                <small class="text-muted">ID: {{ user.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('users.edit_role', user_id=user.id) }}" class="d-inline">
+                                            <select name="role" class="form-select form-select-sm" onchange="this.form.submit()" 
+                                                    style="width: auto; min-width: 120px;">
+                                                <option value="admin" {% if user.role.value == 'admin' %}selected{% endif %}>مدير</option>
+                                                <option value="manager" {% if user.role.value == 'manager' %}selected{% endif %}>مشرف</option>
+                                                <option value="hr" {% if user.role.value == 'hr' %}selected{% endif %}>موارد بشرية</option>
+                                                <option value="finance" {% if user.role.value == 'finance' %}selected{% endif %}>مالية</option>
+                                                <option value="fleet" {% if user.role.value == 'fleet' %}selected{% endif %}>أسطول</option>
+                                                <option value="user" {% if user.role.value == 'user' %}selected{% endif %}>مستخدم</option>
+                                            </select>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button type="button" class="btn btn-outline-info btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                                <i class="fas fa-sitemap me-1"></i>
+                                                ({{ user.departments|length }}) أقسام
+                                            </button>
+                                            <div class="dropdown-menu p-3 department-dropdown">
+                                                <form method="POST" action="{{ url_for('users.assign_departments', user_id=user.id) }}" class="permissions-form">
+                                                    {{ csrf_token() }}
+                                                    <div class="mb-1">
+                                                        <h6 class="mb-0 dropdown-header px-0">تحديد الأقسام لـ {{ user.name }}</h6>
+                                                    </div>
+                                                    <hr class="dropdown-divider">
+                                                    <div class="department-list-container mb-3 px-2 py-1 rounded">
+                                                        {% set assigned_dept_ids = user.departments|map(attribute='id')|list %}
+                                                        {% for dept in departments %}
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="department_ids" value="{{ dept.id }}" id="dept-{{ user.id }}-{{ dept.id }}"
+                                                                   {% if dept.id in assigned_dept_ids %}checked{% endif %}>
+                                                            <label class="form-check-label" for="dept-{{ user.id }}-{{ dept.id }}">
+                                                                {{ dept.name }}
+                                                            </label>
+                                                        </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                    <div class="d-flex justify-content-end">
+                                                        <button type="submit" class="btn btn-primary btn-sm">حفظ</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if user.is_active %}
+                                            <span class="badge bg-success badge-status">نشط</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary badge-status">غير نشط</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ user.created_at.strftime('%Y/%m/%d') if user.created_at else 'غير محدد' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('users.edit', user_id=user.id) }}" 
+                                               class="btn btn-outline-primary btn-action" title="تعديل المستخدم">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="POST" action="{{ url_for('users.toggle_active', user_id=user.id) }}" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-secondary btn-action" 
+                                                        title="{{ 'إلغاء تفعيل' if user.is_active else 'تفعيل' }}">
+                                                    <i class="fas {{ 'fa-user-slash' if user.is_active else 'fa-user-check' }}"></i>
+                                                </button>
+                                            </form>
+                                            <a href="{{ url_for('users.user_permissions', user_id=user.id) }}" 
+                                               class="btn btn-outline-info btn-action" title="إدارة الصلاحيات">
+                                                <i class="fas fa-key"></i>
+                                            </a>
+                                            {% if user.id != current_user.id %}
+                                            <a href="{{ url_for('users.confirm_delete', user_id=user.id) }}" 
+                                               class="btn btn-outline-danger btn-action" title="حذف المستخدم">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        <i class="fas fa-users fa-2x mb-2"></i>
+                                        <div>لا توجد مستخدمين مسجلين</div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Alert -->
+            <div class="alert alert-info alert-enhanced mt-4" role="alert">
+                <h6 class="alert-heading">
+                    <i class="fas fa-info-circle me-2"></i>
+                    ملاحظات مهمة حول نظام الصلاحيات
+                </h6>
+                <hr>
+                <ul class="mb-0">
+                    <li><strong>المديرون:</strong> لديهم وصول كامل لجميع الأقسام والوظائف</li>
+                    <li><strong>المستخدمون العاديون:</strong> يمكنهم فقط الوصول للقسم المخصص لهم</li>
+                    <li><strong>تحديد القسم:</strong> يحدد أي موظفين يمكن للمستخدم تسجيل حضورهم</li>
+                    <li><strong>عدم تحديد القسم:</strong> المستخدم لن يتمكن من تسجيل أي حضور</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle department assignment forms
+    const permissionForms = document.querySelectorAll('form[action*="/assign_departments/"]');
+
+    permissionForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    جاري الحفظ...
+                `;
+            }
+        });
+    });
+
+    // Fix dropdown z-index issues
+    document.querySelectorAll('.dropdown').forEach(dropdown => {
+        dropdown.addEventListener('shown.bs.dropdown', function() {
+            const dropdownMenu = this.querySelector('.dropdown-menu');
+            if (dropdownMenu) {
+                dropdownMenu.style.zIndex = '1080';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

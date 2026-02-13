@@ -1,0 +1,720 @@
+{% extends "layout.html" %}
+{% block title %}التقرير الشامل المتكامل{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        direction: rtl;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+    
+    .container-fluid {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+    
+    .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 25px;
+        padding: 50px 40px;
+        margin-bottom: 40px;
+        text-align: center;
+        box-shadow: 0 15px 50px rgba(102, 126, 234, 0.4);
+        animation: slideDown 0.5s ease;
+    }
+    
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .report-header h1 {
+        font-size: 2.8rem;
+        font-weight: 900;
+        margin-bottom: 15px;
+        letter-spacing: -0.5px;
+    }
+    
+    .report-header p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+    
+    .summary-card {
+        background: white;
+        border-radius: 25px;
+        padding: 35px 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 35px rgba(0,0,0,0.12);
+        border-left: 7px solid;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        height: 100%;
+    }
+    
+    .summary-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+    }
+    
+    .summary-card h3 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+        letter-spacing: -0.5px;
+    }
+    
+    .summary-card p {
+        font-size: 1.05rem;
+        margin: 0;
+        font-weight: 500;
+        color: #666;
+    }
+    
+    .summary-card i {
+        margin-right: 8px;
+    }
+    
+    .summary-card.employees { border-left-color: #28a745; }
+    .summary-card.employees h3 { color: #28a745; }
+    .summary-card.vehicles { border-left-color: #ffc107; }
+    .summary-card.vehicles h3 { color: #ffc107; }
+    .summary-card.financial { border-left-color: #007bff; }
+    .summary-card.financial h3 { color: #007bff; }
+    
+    .data-table {
+        background: white;
+        border-radius: 25px;
+        padding: 35px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 35px rgba(0,0,0,0.12);
+        overflow: visible;
+    }
+    
+    .data-table h4 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #2d3748;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 4px solid #667eea;
+        display: flex;
+        align-items: center;
+    }
+    
+    .data-table h4 i {
+        margin-right: 12px;
+        font-size: 1.8rem;
+    }
+    
+    .table {
+        margin-bottom: 0;
+        font-size: 0.95rem;
+        border-collapse: collapse;
+    }
+    
+    .table thead tr {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .table th {
+        border: none;
+        padding: 20px 15px !important;
+        font-weight: 700;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 0.98rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .table tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #e8ecf1;
+    }
+    
+    .table tbody tr:nth-child(even) {
+        background-color: #f9fafb;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f0f4ff !important;
+        box-shadow: inset 0 0 10px rgba(102, 126, 234, 0.1);
+    }
+    
+    .table td {
+        vertical-align: middle;
+        padding: 18px 15px !important;
+        text-align: center;
+        color: #4a5568;
+    }
+    
+    .table td strong {
+        color: #2d3748;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 10px 18px;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    }
+    
+    .status-present { background: #d4edda; color: #155724; border: 2px solid #28a745; }
+    .status-absent { background: #f8d7da; color: #721c24; border: 2px solid #dc3545; }
+    .status-available { background: #d4edda; color: #155724; border: 2px solid #28a745; }
+    .status-rented { background: #fff3cd; color: #856404; border: 2px solid #ffc107; }
+    .status-workshop { background: #f8d7da; color: #721c24; border: 2px solid #dc3545; }
+    
+    .export-section {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border-radius: 25px;
+        padding: 50px 40px;
+        margin-bottom: 40px;
+        text-align: center;
+        box-shadow: 0 15px 50px rgba(79, 172, 254, 0.4);
+    }
+    
+    .export-section h4 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+    }
+    
+    .export-section p {
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+        opacity: 0.95;
+    }
+    
+    .export-section .btn {
+        margin: 10px;
+        border-radius: 20px;
+        padding: 14px 35px;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .export-section .btn:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    }
+    
+    .month-selector {
+        background: white;
+        border-radius: 25px;
+        padding: 30px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 35px rgba(0,0,0,0.12);
+    }
+    
+    .month-selector .form-label {
+        font-weight: 700;
+        color: #4a5568;
+        margin-bottom: 12px;
+        font-size: 1rem;
+    }
+    
+    .month-selector .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 15px;
+        padding: 12px 15px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .month-selector .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        outline: none;
+    }
+    
+    .month-selector .btn {
+        border-radius: 15px;
+        padding: 12px 35px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+    
+    .month-selector .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .table-responsive {
+        border-radius: 20px;
+        overflow: hidden;
+    }
+    
+    @media print {
+        body { background: white; }
+        .export-section, .month-selector { display: none !important; }
+        .summary-card { break-inside: avoid; }
+        .data-table { break-inside: avoid; }
+        .table { font-size: 11px; }
+        .report-header { page-break-after: avoid; }
+    }
+    
+    @media (max-width: 992px) {
+        .report-header {
+            padding: 35px 25px;
+            margin-bottom: 30px;
+        }
+        
+        .report-header h1 {
+            font-size: 2.2rem;
+        }
+        
+        .data-table {
+            padding: 25px;
+        }
+        
+        .summary-card {
+            padding: 25px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .report-header {
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .report-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .report-header p {
+            font-size: 0.95rem;
+        }
+        
+        .summary-card {
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .summary-card h3 {
+            font-size: 1.6rem;
+        }
+        
+        .data-table {
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .data-table h4 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        .table th, .table td {
+            padding: 12px 8px !important;
+            font-size: 0.8rem;
+        }
+        
+        .status-badge {
+            padding: 8px 12px;
+            font-size: 0.75rem;
+        }
+        
+        .export-section {
+            padding: 30px 20px;
+            margin-bottom: 30px;
+        }
+        
+        .export-section .btn {
+            display: block;
+            width: 100%;
+            margin: 8px 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- عنوان التقرير -->
+    <div class="report-header">
+        <h1>
+            <i class="fas fa-chart-line"></i>
+            التقرير الشامل المتكامل
+        </h1>
+        <p class="mb-0">تقرير شامل يجمع الموظفين والسيارات والمحاسبة لشهر {{ month }}/{{ year }}</p>
+    </div>
+
+    <!-- اختيار الشهر والسنة -->
+    <div class="month-selector">
+        <form method="GET" class="row align-items-end">
+            <div class="col-md-4">
+                <label for="month" class="form-label">الشهر</label>
+                <select class="form-select" id="month" name="month">
+                    {% for i in range(1, 13) %}
+                    <option value="{{ i }}" {% if i == month %}selected{% endif %}>
+                        {% if i == 1 %}يناير{% elif i == 2 %}فبراير{% elif i == 3 %}مارس{% elif i == 4 %}أبريل{% elif i == 5 %}مايو{% elif i == 6 %}يونيو{% elif i == 7 %}يوليو{% elif i == 8 %}أغسطس{% elif i == 9 %}سبتمبر{% elif i == 10 %}أكتوبر{% elif i == 11 %}نوفمبر{% elif i == 12 %}ديسمبر{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="year" class="form-label">السنة</label>
+                <select class="form-select" id="year" name="year">
+                    {% for y in range(2020, 2030) %}
+                    <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                    عرض التقرير
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- الملخص المالي -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="summary-card employees">
+                <h3 class="text-success">{{ "{:,.0f}".format(total_salaries) }} ريال</h3>
+                <p class="mb-0">
+                    <i class="fas fa-users"></i>
+                    إجمالي الرواتب
+                </p>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="summary-card vehicles">
+                <h3 class="text-warning">{{ "{:,.0f}".format(total_rental_cost) }} ريال</h3>
+                <p class="mb-0">
+                    <i class="fas fa-car"></i>
+                    إجمالي الإيجارات
+                </p>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="summary-card financial">
+                <h3 class="text-info">{{ "{:,.0f}".format(total_rental_adjustments) }} ريال</h3>
+                <p class="mb-0">
+                    <i class="fas fa-minus-circle"></i>
+                    خصومات الورش
+                </p>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="summary-card financial">
+                <h3 class="text-primary">{{ "{:,.0f}".format(total_expenses) }} ريال</h3>
+                <p class="mb-0">
+                    <i class="fas fa-calculator"></i>
+                    إجمالي المصروفات
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- تفاصيل الموظفين والحضور -->
+    <div class="data-table">
+        <h4 class="mb-3">
+            <i class="fas fa-users text-success"></i>
+            تفاصيل الموظفين والحضور والرواتب
+        </h4>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>الرقم الوظيفي</th>
+                        <th>اسم الموظف</th>
+                        <th>القسم</th>
+                        <th>أيام الحضور</th>
+                        <th>أيام الغياب</th>
+                        <th>الراتب الأساسي</th>
+                        <th>البدلات</th>
+                        <th>الخصومات</th>
+                        <th>صافي الراتب</th>
+                        <th>حالة الدفع</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp_data in employees_data %}
+                    <tr>
+                        <td>{{ emp_data.employee.employee_number }}</td>
+                        <td>{{ emp_data.employee.name }}</td>
+                        <td>
+                            {% if emp_data.employee.departments %}
+                                {{ emp_data.employee.departments[0].name }}
+                            {% else %}
+                                غير محدد
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status-badge status-present">
+                                {{ emp_data.present_days }} يوم
+                            </span>
+                        </td>
+                        <td>
+                            {% if emp_data.absent_days > 0 %}
+                            <span class="status-badge status-absent">
+                                {{ emp_data.absent_days }} يوم
+                            </span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if emp_data.salary %}
+                                {{ "{:,.0f}".format(emp_data.salary.basic_salary) }} ريال
+                            {% else %}
+                                <span class="text-muted">غير محدد</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if emp_data.salary %}
+                                {{ "{:,.0f}".format(emp_data.salary.allowances) }} ريال
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if emp_data.salary %}
+                                {{ "{:,.0f}".format(emp_data.salary.deductions) }} ريال
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if emp_data.salary %}
+                                <strong>{{ "{:,.0f}".format(emp_data.salary.net_salary) }} ريال</strong>
+                            {% else %}
+                                <span class="text-muted">غير محدد</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if emp_data.salary %}
+                                {% if emp_data.salary.is_paid %}
+                                    <span class="status-badge status-present">مدفوع</span>
+                                {% else %}
+                                    <span class="status-badge status-absent">معلق</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- تفاصيل السيارات والإيجارات -->
+    <div class="data-table">
+        <h4 class="mb-3">
+            <i class="fas fa-car text-warning"></i>
+            تفاصيل السيارات والإيجارات
+        </h4>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>رقم اللوحة</th>
+                        <th>الماركة والموديل</th>
+                        <th>الحالة</th>
+                        <th>الإيجار الشهري</th>
+                        <th>أيام الورشة</th>
+                        <th>خصم الإيجار</th>
+                        <th>صافي الإيجار</th>
+                        <th>المؤجر</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for veh_data in vehicles_data %}
+                    <tr>
+                        <td>
+                            <strong>{{ veh_data.vehicle.plate_number }}</strong>
+                        </td>
+                        <td>{{ veh_data.vehicle.make }} {{ veh_data.vehicle.model }}</td>
+                        <td>
+                            {% if veh_data.vehicle.status == 'available' %}
+                                <span class="status-badge status-available">متاحة</span>
+                            {% elif veh_data.vehicle.status == 'rented' %}
+                                <span class="status-badge status-rented">مؤجرة</span>
+                            {% elif veh_data.vehicle.status == 'in_workshop' %}
+                                <span class="status-badge status-workshop">في الورشة</span>
+                            {% else %}
+                                <span class="status-badge">{{ veh_data.vehicle.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if veh_data.rental %}
+                                {{ "{:,.0f}".format(veh_data.rental.monthly_cost) }} ريال
+                            {% else %}
+                                <span class="text-muted">غير مؤجرة</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if veh_data.workshop_days > 0 %}
+                                <span class="text-warning">
+                                    <i class="fas fa-tools"></i>
+                                    {{ veh_data.workshop_days }} يوم
+                                </span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if veh_data.rental_adjustment > 0 %}
+                                <span class="text-danger">
+                                    {{ "{:,.0f}".format(veh_data.rental_adjustment) }} ريال
+                                </span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if veh_data.rental %}
+                                <strong>
+                                    {{ "{:,.0f}".format(veh_data.rental.monthly_cost - veh_data.rental_adjustment) }} ريال
+                                </strong>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if veh_data.rental %}
+                                {{ veh_data.rental.lessor_name }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- الملخص المالي التفصيلي -->
+    <div class="data-table">
+        <h4 class="mb-3">
+            <i class="fas fa-chart-bar text-primary"></i>
+            الملخص المالي التفصيلي
+        </h4>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table">
+                    <tr>
+                        <td><strong>إجمالي رواتب الموظفين:</strong></td>
+                        <td class="text-end">{{ "{:,.0f}".format(total_salaries) }} ريال</td>
+                    </tr>
+                    <tr>
+                        <td><strong>إجمالي إيجارات السيارات:</strong></td>
+                        <td class="text-end">{{ "{:,.0f}".format(total_rental_cost) }} ريال</td>
+                    </tr>
+                    <tr>
+                        <td><strong>خصومات أيام الورشة:</strong></td>
+                        <td class="text-end text-success">-{{ "{:,.0f}".format(total_rental_adjustments) }} ريال</td>
+                    </tr>
+                    <tr>
+                        <td><strong>صافي إيجارات السيارات:</strong></td>
+                        <td class="text-end">{{ "{:,.0f}".format(net_rental_cost) }} ريال</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="col-md-6">
+                <table class="table">
+                    <tr>
+                        <td><strong>مصروفات الورش والصيانة:</strong></td>
+                        <td class="text-end">{{ "{:,.0f}".format(workshop_expenses) }} ريال</td>
+                    </tr>
+                    <tr class="table-primary">
+                        <td><strong>إجمالي المصروفات:</strong></td>
+                        <td class="text-end"><strong>{{ "{:,.0f}".format(total_expenses) }} ريال</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>عدد الموظفين النشطين:</strong></td>
+                        <td class="text-end">{{ employees_data|length }} موظف</td>
+                    </tr>
+                    <tr>
+                        <td><strong>عدد السيارات المؤجرة:</strong></td>
+                        <td class="text-end">{{ vehicles_data|selectattr('rental')|list|length }} سيارة</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم التصدير -->
+    <div class="export-section">
+        <h4 class="mb-3">
+            <i class="fas fa-download"></i>
+            تصدير التقرير
+        </h4>
+        <p class="mb-3">احصل على نسخة كاملة من التقرير بصيغ مختلفة</p>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <a href="{{ url_for('integrated.export_comprehensive_excel', month=month, year=year) }}" 
+                   class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-file-excel text-success"></i>
+                    تصدير Excel
+                </a>
+                
+                <button class="btn btn-light btn-lg me-3" onclick="window.print()">
+                    <i class="fas fa-print text-dark"></i>
+                    طباعة التقرير
+                </button>
+                
+                <a href="{{ url_for('integrated.auto_accounting') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-link text-primary"></i>
+                    الربط المحاسبي
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// تحسين طباعة التقرير
+window.addEventListener('beforeprint', function() {
+    document.body.classList.add('printing');
+});
+
+window.addEventListener('afterprint', function() {
+    document.body.classList.remove('printing');
+});
+
+// إضافة تنسيق خاص للطباعة
+const printStyles = `
+<style media="print">
+    .export-section, .month-selector { display: none !important; }
+    .summary-card { break-inside: avoid; }
+    .data-table { break-inside: avoid; }
+    body { font-size: 12px; }
+    .table { font-size: 11px; }
+</style>
+`;
+document.head.insertAdjacentHTML('beforeend', printStyles);
+</script>
+{% endblock %}

@@ -1,0 +1,309 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>تعديل سجل راتب</h1>
+        <a href="{{ url_for('salaries.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة للقائمة
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">بيانات الراتب</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('salaries.edit', id=salary.id) }}" method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="employee_id" class="form-label required-field">الموظف</label>
+                                <select class="form-select" id="employee_id" name="employee_id" disabled>
+                                    <option value="{{ salary.employee.id }}" selected>
+                                        {{ salary.employee.name }} ({{ salary.employee.employee_id }})
+                                    </option>
+                                </select>
+                                <div class="form-text">لا يمكن تغيير الموظف، يمكنك إنشاء سجل جديد بدلاً من ذلك.</div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label for="month" class="form-label required-field">الشهر</label>
+                                <select class="form-select" id="month" name="month">
+                                    {% for m in range(1, 13) %}
+                                        <option value="{{ m }}" {% if m == salary.month %}selected{% endif %}>{{ m }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label for="year" class="form-label required-field">السنة</label>
+                                <select class="form-select" id="year" name="year">
+                                    {% for y in range(current_year-3, current_year+2) %}
+                                        <option value="{{ y }}" {% if y == salary.year %}selected{% endif %}>{{ y }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- قسم حساب الراتب من الحضور -->
+                        <div class="mb-4">
+                            <div class="alert alert-primary border-primary">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-calendar-check me-2"></i>
+                                        <strong>حساب الراتب من سجلات الحضور</strong>
+                                        <p class="mb-0 mt-2 small">سيتم حساب الخصومات تلقائياً بناءً على أيام الغياب</p>
+                                    </div>
+                                    <button type="button" class="btn btn-success" id="calculate_from_attendance_btn" onclick="calculateFromAttendance()">
+                                        <i class="fas fa-calculator me-1"></i> احسب من الحضور
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- منطقة عرض ملخص الحضور -->
+                            <div id="attendance_summary" class="alert alert-info d-none mt-3">
+                                <h6><i class="fas fa-chart-bar me-2"></i>ملخص الحضور</h6>
+                                <div id="attendance_details"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="basic_salary" class="form-label required-field">الراتب الأساسي</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="basic_salary" name="basic_salary" 
+                                           min="0" step="0.01" required onchange="calculateNetSalary()" value="{{ salary.basic_salary }}">
+                                    <span class="input-group-text">ر.س</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="allowances" class="form-label">البدلات</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="allowances" name="allowances" 
+                                           min="0" step="0.01" value="{{ salary.allowances }}" onchange="calculateNetSalary()">
+                                    <span class="input-group-text">ر.س</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="deductions" class="form-label">الخصومات</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="deductions" name="deductions" 
+                                           min="0" step="0.01" value="{{ salary.deductions }}" onchange="calculateNetSalary()">
+                                    <span class="input-group-text">ر.س</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="bonus" class="form-label">المكافآت</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="bonus" name="bonus" 
+                                           min="0" step="0.01" value="{{ salary.bonus }}" onchange="calculateNetSalary()">
+                                    <span class="input-group-text">ر.س</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">ملاحظات</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3">{{ salary.notes }}</textarea>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calculator me-3 fs-4"></i>
+                                <div>
+                                    <p class="mb-1">صافي الراتب:</p>
+                                    <h3 id="net_salary_display">{{ salary.net_salary }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 d-flex justify-content-between">
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i> حفظ التعديلات
+                                </button>
+                                <a href="{{ url_for('salaries.index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times me-1"></i> إلغاء
+                                </a>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('salaries.confirm_delete', id=salary.id) }}" class="btn btn-danger">
+                                    <i class="fas fa-trash me-1"></i> حذف الراتب
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateNetSalary() {
+        const basicSalary = parseFloat(document.getElementById('basic_salary').value) || 0;
+        const allowances = parseFloat(document.getElementById('allowances').value) || 0;
+        const deductions = parseFloat(document.getElementById('deductions').value) || 0;
+        const bonus = parseFloat(document.getElementById('bonus').value) || 0;
+        
+        const netSalary = basicSalary + allowances + bonus - deductions;
+        document.getElementById('net_salary_display').textContent = netSalary.toFixed(2);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // حساب صافي الراتب عند تحميل الصفحة
+        calculateNetSalary();
+        
+        // التأكد من إدخال الراتب الأساسي
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const basicSalary = parseFloat(document.getElementById('basic_salary').value) || 0;
+                if (basicSalary <= 0) {
+                    e.preventDefault();
+                    alert('يجب إدخال الراتب الأساسي');
+                }
+            });
+        }
+    });
+    
+    // دالة حساب الراتب من الحضور
+    async function calculateFromAttendance() {
+        const employeeId = {{ salary.employee_id }};  // استخدم ID الموظف الموجود
+        const month = document.getElementById('month').value;
+        const year = document.getElementById('year').value;
+        
+        if (!month || !year) {
+            alert('يرجى اختيار الشهر والسنة');
+            return;
+        }
+        
+        const btn = document.getElementById('calculate_from_attendance_btn');
+        const originalBtnText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري الحساب...';
+        
+        try {
+            const response = await fetch('/salaries/calculate_from_attendance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    employee_id: employeeId,
+                    month: parseInt(month),
+                    year: parseInt(year)
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // ملء الحقول بالبيانات المحسوبة
+                document.getElementById('basic_salary').value = result.data.basic_salary.toFixed(2);
+                document.getElementById('allowances').value = result.data.allowances.toFixed(2);
+                document.getElementById('bonus').value = result.data.bonus.toFixed(2);
+                document.getElementById('deductions').value = result.data.attendance_deduction.toFixed(2);
+                
+                // عرض ملخص الحضور
+                const summaryDiv = document.getElementById('attendance_summary');
+                const detailsDiv = document.getElementById('attendance_details');
+                
+                if (result.attendance_stats) {
+                    const stats = result.attendance_stats;
+                    detailsDiv.innerHTML = `
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar-day text-primary me-2"></i>
+                                    <div>
+                                        <small class="text-muted">إجمالي أيام الشهر</small>
+                                        <div class="fw-bold">${stats.total_days} يوم</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <div>
+                                        <small class="text-muted">أيام الحضور</small>
+                                        <div class="fw-bold text-success">${stats.present_days} يوم</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-times-circle text-danger me-2"></i>
+                                    <div>
+                                        <small class="text-muted">أيام الغياب</small>
+                                        <div class="fw-bold text-danger">${stats.absent_days} يوم</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-umbrella-beach text-info me-2"></i>
+                                    <div>
+                                        <small class="text-muted">أيام الإجازة</small>
+                                        <div class="fw-bold text-info">${stats.leave_days} يوم</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-notes-medical text-warning me-2"></i>
+                                    <div>
+                                        <small class="text-muted">إجازة مرضية</small>
+                                        <div class="fw-bold text-warning">${stats.sick_days} يوم</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-exclamation-circle text-secondary me-2"></i>
+                                    <div>
+                                        <small class="text-muted">أيام غير مسجلة</small>
+                                        <div class="fw-bold text-secondary">${stats.unrecorded_days} يوم</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="alert alert-warning mb-0">
+                            <strong><i class="fas fa-info-circle me-1"></i> الخصم المحسوب:</strong>
+                            ${result.data.attendance_deduction.toFixed(2)} ر.س (${result.deductible_days} يوم)
+                        </div>
+                    `;
+                    summaryDiv.classList.remove('d-none');
+                } else {
+                    detailsDiv.innerHTML = '<p class="mb-0">لا توجد سجلات حضور لهذا الشهر</p>';
+                    summaryDiv.classList.remove('d-none');
+                }
+                
+                // إعادة حساب صافي الراتب
+                calculateNetSalary();
+                
+                // عرض رسالة نجاح
+                alert('تم حساب الراتب من سجلات الحضور بنجاح!');
+            } else {
+                alert('خطأ: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء حساب الراتب: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalBtnText;
+        }
+    }
+</script>
+{% endblock %}

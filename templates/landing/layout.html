@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}نُظم - نظام إدارة شامل{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- خط المشروع: beIN-Normal (presentation/web/static/fonts) -->
+    <link href="{{ url_for('static', filename='css/fonts.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+
+        body {
+            font-family: 'beIN-Normal', 'Cairo', Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            background: #ffffff;
+            overflow-x: hidden;
+            max-width: 100%;
+            width: 100%;
+        }
+
+        /* منع أي عنصر من التسبب في horizontal scroll */
+        .container,
+        .container-fluid,
+        .row {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        /* ========== FUTURISTIC NAVBAR ========== */
+        .navbar {
+            background: linear-gradient(135deg, rgba(10, 15, 30, 0.95) 0%, rgba(20, 30, 60, 0.9) 100%) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(100, 150, 255, 0.15);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3), 0 0 40px rgba(100, 150, 255, 0.05);
+            padding: 15px 0;
+            transition: all 0.4s ease;
+        }
+
+        .navbar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(100, 180, 255, 0.5), rgba(180, 100, 255, 0.5), transparent);
+        }
+
+        .navbar-brand {
+            text-decoration: none;
+            transition: all 0.4s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-logo {
+            height: 70px;
+            width: auto;
+            filter: brightness(1.1) drop-shadow(0 0 15px rgba(100, 150, 255, 0.4));
+            transition: all 0.4s ease;
+        }
+        
+        .navbar-brand:hover .navbar-logo {
+            transform: scale(1.08);
+            filter: brightness(1.3) drop-shadow(0 0 20px rgba(100, 150, 255, 0.5));
+        }
+        
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            font-size: 0.85rem;
+            margin: 0 5px;
+            padding: 12px 18px !important;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            overflow: hidden;
+            gap: 6px;
+            min-width: 80px;
+        }
+
+        .navbar-nav .nav-link i {
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover i {
+            transform: scale(1.15);
+            color: #60a5fa;
+        }
+
+        .navbar-nav .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(167, 139, 250, 0.15));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 12px;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+            transform: translateY(-3px);
+        }
+
+        .navbar-nav .nav-link:hover::before {
+            opacity: 1;
+        }
+        
+        .navbar-nav .nav-link.active {
+            color: white !important;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(167, 139, 250, 0.3));
+            border: 1px solid rgba(150, 180, 255, 0.3);
+            box-shadow: 0 0 20px rgba(100, 150, 255, 0.2), inset 0 0 20px rgba(100, 150, 255, 0.05);
+        }
+
+        .navbar-nav .nav-link.active i {
+            color: #60a5fa;
+        }
+
+        .navbar-toggler {
+            border: 1px solid rgba(150, 180, 255, 0.3) !important;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: rgba(100, 150, 255, 0.1);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28150, 180, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 28px;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+        }
+        
+        .btn-outline-primary {
+            border: 1px solid rgba(150, 180, 255, 0.4);
+            color: #a5b4fc;
+            border-radius: 12px;
+            padding: 12px 28px;
+            font-weight: 600;
+            background: rgba(100, 150, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-primary:hover {
+            background: rgba(100, 150, 255, 0.15);
+            border-color: rgba(150, 180, 255, 0.6);
+            color: white;
+        }
+        
+        footer {
+            background: #1e3a5c;
+            color: white;
+            padding: 40px 0 20px;
+        }
+        
+        footer .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.3s ease;
+        }
+        
+        footer .footer-links a:hover {
+            color: white;
+        }
+        
+        .social-links a {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.5rem;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            color: #28a745;
+        }
+        
+        /* تحسينات الاستجابة العامة للصفحات */
+        @media (max-width: 1200px) {
+            .container {
+                padding-left: 20px !important;
+                padding-right: 20px !important;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                padding-left: 18px !important;
+                padding-right: 18px !important;
+            }
+        }
+
+        /* تحسينات القائمة والتنقل */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 15px !important;
+                padding-right: 15px !important;
+            }
+
+            .navbar-logo {
+                height: 55px;
+            }
+            
+            .navbar-nav {
+                text-align: center;
+                margin-top: 20px;
+                gap: 8px;
+                padding: 0 15px;
+            }
+            
+            .navbar-nav .nav-link {
+                margin: 5px 0;
+                font-size: 0.95rem;
+                padding: 14px 25px !important;
+                border-radius: 12px;
+                width: 100%;
+                flex-direction: row;
+                gap: 10px;
+                background: rgba(100, 150, 255, 0.08);
+                border: 1px solid rgba(100, 150, 255, 0.1);
+            }
+
+            .navbar-nav .nav-link i {
+                font-size: 1.1rem;
+            }
+            
+            .navbar-nav .nav-link:hover,
+            .navbar-nav .nav-link.active {
+                transform: scale(1.02);
+                background: rgba(100, 150, 255, 0.15);
+            }
+            
+            .navbar-toggler {
+                border: 1px solid rgba(150, 180, 255, 0.3) !important;
+                padding: 10px 14px;
+                border-radius: 10px;
+                background: rgba(100, 150, 255, 0.1);
+            }
+            
+            .navbar-toggler:focus {
+                box-shadow: 0 0 0 3px rgba(100, 150, 255, 0.2);
+            }
+            
+            .navbar-collapse {
+                background: linear-gradient(135deg, rgba(10, 15, 30, 0.98), rgba(20, 30, 60, 0.98));
+                backdrop-filter: blur(20px);
+                margin-top: 15px;
+                border-radius: 16px;
+                padding: 20px;
+                box-shadow: 0 15px 50px rgba(0,0,0,0.4);
+                border: 1px solid rgba(100, 150, 255, 0.15);
+            }
+
+            footer {
+                padding: 30px 0 15px;
+            }
+
+            footer .row {
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            footer .col-lg-4,
+            footer .col-lg-2,
+            footer .col-md-6 {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .container {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+            }
+
+            .navbar-brand {
+                font-size: 1.4rem;
+            }
+            
+            .navbar-nav .nav-link {
+                font-size: 1rem;
+                padding: 12px 25px !important;
+            }
+
+            footer {
+                padding: 25px 0 10px;
+            }
+
+            footer .col-lg-4,
+            footer .col-lg-2 {
+                margin-bottom: 20px !important;
+            }
+
+            footer h5,
+            footer h6 {
+                font-size: 1.1rem;
+            }
+
+            footer p,
+            footer a {
+                font-size: 0.9rem;
+            }
+
+            footer .social-links a {
+                font-size: 1.2rem;
+                margin: 0 8px;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .container {
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }
+
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- شريط التنقل المستقبلي -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/nuzum">
+                <img src="/static/images/nuzum-logo-circle.png" alt="نُظم" class="navbar-logo">
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/nuzum">
+                            <i class="fas fa-home"></i>
+                            <span>الرئيسية</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/nuzum/features">
+                            <i class="fas fa-star"></i>
+                            <span>الميزات</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/nuzum/demo">
+                            <i class="fas fa-play-circle"></i>
+                            <span>عرض توضيحي</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/nuzum/pricing">
+                            <i class="fas fa-tags"></i>
+                            <span>الأسعار</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/nuzum/contact">
+                            <i class="fas fa-envelope"></i>
+                            <span>تواصل معنا</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- المحتوى الرئيسي -->
+    <main style="margin-top: 80px;">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- تذييل الصفحة -->
+    <footer class="mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5 class="fw-bold mb-3">نُظم</h5>
+                    <p class="text-light opacity-75">
+                        الحل المتكامل لإدارة الموارد البشرية وأسطول المركبات مع واجهة عربية احترافية.
+                    </p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 mb-4">
+                    <h6 class="fw-bold mb-3">المنتج</h6>
+                    <div class="footer-links">
+                        <a href="/nuzum/features" class="d-block mb-2">الميزات</a>
+                        <a href="/nuzum/demo" class="d-block mb-2">عرض توضيحي</a>
+                        <a href="/nuzum/pricing" class="d-block mb-2">الأسعار</a>
+                        <a href="/nuzum/contact" class="d-block mb-2">تواصل معنا</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 mb-4">
+                    <h6 class="fw-bold mb-3">الدعم</h6>
+                    <div class="footer-links">
+                        <a href="/nuzum/support" class="d-block mb-2">الدعم</a>
+                        <a href="/nuzum/help" class="d-block mb-2">المساعدة</a>
+                        <a href="/nuzum/guide" class="d-block mb-2">الدليل</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 mb-4">
+                    <h6 class="fw-bold mb-3">الشركة</h6>
+                    <div class="footer-links">
+                        <a href="/nuzum/about" class="d-block mb-2">من نحن</a>
+                        <a href="/nuzum/news" class="d-block mb-2">الأخبار</a>
+                        <a href="/nuzum/jobs" class="d-block mb-2">الوظائف</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 mb-4">
+                    <h6 class="fw-bold mb-3">قانونية</h6>
+                    <div class="footer-links">
+                        <a href="/nuzum/privacy" class="d-block mb-2">سياسة الخصوصية</a>
+                        <a href="/nuzum/terms" class="d-block mb-2">شروط الاستخدام</a>
+                        <a href="/nuzum/cookies" class="d-block mb-2">ملفات تعريف الارتباط</a>
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="my-4 opacity-25">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="text-light opacity-75 mb-0">
+                        © 2024 نُظم. جميع الحقوق محفوظة.
+                    </p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <span class="text-light opacity-75">
+                        صُنع بـ ❤️ في المملكة العربية السعودية
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // إضافة الكلاس النشط للصفحة الحالية
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (currentPath === href || 
+                    (currentPath === '/nuzum/' && href === '/nuzum') ||
+                    (currentPath.startsWith('/nuzum') && href.includes(currentPath.split('/')[2]))) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // إضافة تأثير انزلاق للقائمة في الهاتف
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            
+            if (navbarToggler && navbarCollapse) {
+                navbarToggler.addEventListener('click', function() {
+                    setTimeout(() => {
+                        navbarCollapse.classList.add('show');
+                    }, 100);
+                });
+            }
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدوائر الجغرافية - نُظم</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e7ff;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .page-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 25px 35px;
+            margin-bottom: 25px;
+            box-shadow: 
+                0 8px 32px rgba(31, 38, 135, 0.37),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.6s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header h1 {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 0;
+            text-shadow: 0 2px 10px rgba(99, 102, 241, 0.5);
+        }
+        
+        .header h1 i {
+            color: #818cf8;
+            font-size: 36px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 25px;
+            animation: fadeIn 0.8s ease-out 0.2s both;
+            position: relative;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .map-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 
+                0 8px 32px rgba(31, 38, 135, 0.37),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .map-header {
+            padding: 25px 30px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .map-header h2 {
+            font-size: 22px;
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .map-header h2 i {
+            color: #818cf8;
+        }
+        
+        #map {
+            height: calc(100vh - 280px);
+            min-height: 500px;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .filter-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .filter-card h3 {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-card h3 i {
+            color: #818cf8;
+        }
+        
+        .filter-card select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-card select:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #818cf8;
+        }
+        
+        .filter-card select option {
+            background: #1e1b4b;
+            color: #ffffff;
+        }
+        
+        .geofences-list {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            overflow: hidden;
+        }
+        
+        .list-header {
+            padding: 20px 25px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .list-header h3 {
+            font-size: 18px;
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .list-header h3 i {
+            color: #818cf8;
+        }
+        
+        .badge {
+            background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(129, 140, 248, 0.4);
+        }
+        
+        .geofence-items {
+            max-height: calc(100vh - 450px);
+            overflow-y: auto;
+        }
+        
+        .geofence-items::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .geofence-items::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .geofence-items::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+            border-radius: 10px;
+        }
+        
+        .geofence-item {
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .geofence-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .geofence-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-5px);
+        }
+        
+        .geofence-item:hover::before {
+            transform: scaleY(1);
+        }
+        
+        .geofence-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .geofence-name {
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 17px;
+        }
+        
+        .geofence-type {
+            background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+            color: white;
+            padding: 5px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 2px 10px rgba(129, 140, 248, 0.3);
+        }
+        
+        .geofence-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #c7d2fe;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .info-item i {
+            width: 18px;
+            color: #818cf8;
+        }
+        
+        .geofence-actions {
+            display: flex;
+            gap: 8px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .btn-small {
+            padding: 10px 18px;
+            font-size: 13px;
+            border-radius: 12px;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-info:hover {
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+        
+        .employees-count {
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.2) 0%, rgba(167, 139, 250, 0.2) 100%);
+            border: 1px solid rgba(129, 140, 248, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .employees-count-number {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .employees-count-label {
+            font-size: 12px;
+            color: #c7d2fe;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        
+        /* لوحة إضافة دائرة جانبية */
+        .create-panel {
+            position: fixed;
+            top: 0;
+            right: -550px;
+            width: 500px;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.98) 0%, rgba(24, 24, 62, 0.98) 100%);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: -10px 0 50px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow-y: auto;
+            padding: 30px;
+        }
+        
+        .create-panel.active {
+            right: 0;
+        }
+        
+        .create-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .create-panel::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .create-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+            border-radius: 10px;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-header h3 {
+            font-size: 24px;
+            color: #ffffff;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .panel-header h3 i {
+            color: #818cf8;
+        }
+        
+        .btn-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            font-size: 24px;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-close:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: rotate(90deg);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #818cf8;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.2);
+        }
+        
+        .form-group select option {
+            background: #1e1b4b;
+            color: #ffffff;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        
+        .alert-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .alert-info {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .color-picker-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .color-picker-wrapper input[type="color"] {
+            width: 60px;
+            height: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #c7d2fe;
+        }
+        
+        .empty-state i {
+            font-size: 80px;
+            color: #818cf8;
+            margin-bottom: 25px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 20px;
+            color: #ffffff;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        
+        /* تخصيص عنصر البحث في الخريطة */
+        .leaflet-control-geocoder {
+            background: rgba(30, 27, 75, 0.95) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        .leaflet-control-geocoder-form input {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+            padding: 10px !important;
+            border-radius: 8px !important;
+        }
+        
+        .leaflet-control-geocoder-alternatives {
+            background: rgba(30, 27, 75, 0.95) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        .leaflet-control-geocoder-alternatives a {
+            color: #ffffff !important;
+            padding: 10px !important;
+        }
+        
+        .leaflet-control-geocoder-alternatives a:hover {
+            background: rgba(129, 140, 248, 0.3) !important;
+        }
+        
+        /* حقل البحث بروابط Google Maps */
+        .google-maps-search {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex: 1;
+            max-width: 500px;
+        }
+        
+        .google-maps-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 10px 15px;
+            color: #ffffff;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .google-maps-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .google-maps-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(129, 140, 248, 0.5);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+        }
+        
+        .search-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
+            
+            .create-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-circle-notch"></i>
+                الدوائر الجغرافية
+            </h1>
+            <div class="header-actions">
+                <a href="/employees/tracking" class="btn btn-secondary">
+                    <i class="fas fa-map-marker-alt"></i>
+                    تتبع المواقع
+                </a>
+                <button class="btn" onclick="showCreatePanel()">
+                    <i class="fas fa-plus"></i>
+                    إضافة دائرة جديدة
+                </button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="map-container">
+                <div class="map-header">
+                    <h2><i class="fas fa-map"></i> خريطة الدوائر الجغرافية</h2>
+                    <div class="google-maps-search">
+                        <input 
+                            type="text" 
+                            id="googleMapsUrl" 
+                            class="google-maps-input" 
+                            placeholder="🔗 الصق رابط Google Maps هنا للانتقال إلى الموقع..."
+                            onkeypress="if(event.key === 'Enter') searchGoogleMapsUrl()"
+                        >
+                        <button class="search-btn" onclick="searchGoogleMapsUrl()">
+                            <i class="fas fa-search"></i>
+                            بحث
+                        </button>
+                    </div>
+                    <div>
+                        <button class="btn btn-small btn-secondary" onclick="toggleMapView()">
+                            <i class="fas fa-satellite"></i>
+                            <span id="mapViewText">صورة القمر الصناعي</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="map"></div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="filter-card">
+                    <h3><i class="fas fa-filter"></i> تصفية حسب القسم</h3>
+                    <select id="departmentFilter" onchange="filterByDepartment()">
+                        <option value="">جميع الأقسام</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}">{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="geofences-list">
+                    <div class="list-header">
+                        <h3><i class="fas fa-list"></i> الدوائر النشطة</h3>
+                        <span class="badge" id="geofencesCount">{{ geofences_data|length }}</span>
+                    </div>
+                    <div class="geofence-items" id="geofencesList">
+                        {% if geofences_data %}
+                            {% for item in geofences_data %}
+                            <div class="geofence-item" data-geofence-id="{{ item.geofence.id }}" data-department-id="{{ item.geofence.department_id }}">
+                                <div class="geofence-item-header">
+                                    <span class="geofence-name">{{ item.geofence.name }}</span>
+                                    <span class="geofence-type">{{ item.geofence.type }}</span>
+                                </div>
+                                
+                                <div class="geofence-info">
+                                    <div class="info-item">
+                                        <i class="fas fa-building"></i>
+                                        <span>{{ item.geofence.department.name }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <i class="fas fa-ruler-horizontal"></i>
+                                        <span>{{ item.geofence.radius_meters }} متر</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="employees-count">
+                                    <div class="employees-count-number">{{ item.employees_count }}</div>
+                                    <div class="employees-count-label">موظف داخل الدائرة</div>
+                                </div>
+                                
+                                <div class="geofence-actions">
+                                    <button class="btn btn-small btn-success" onclick="bulkCheckIn({{ item.geofence.id }})">
+                                        <i class="fas fa-check-circle"></i>
+                                        تسجيل حضور
+                                    </button>
+                                    <button class="btn btn-small btn-info" onclick="viewGeofence({{ item.geofence.id }})">
+                                        <i class="fas fa-eye"></i>
+                                        التفاصيل
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-circle-notch"></i>
+                                <h3>لا توجد دوائر جغرافية</h3>
+                                <p>ابدأ بإضافة دائرة جديدة</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- لوحة إضافة دائرة جانبية -->
+    <div id="createPanel" class="create-panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-plus-circle"></i> دائرة جديدة</h3>
+            <button class="btn-close" onclick="closeCreatePanel()">×</button>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <form id="createForm" onsubmit="createGeofence(event)">
+            <div class="form-group">
+                <label>اسم الدائرة <span style="color: #ef4444;">*</span></label>
+                <input type="text" name="name" required placeholder="مثال: مشروع برج المملكة">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>النوع <span style="color: #ef4444;">*</span></label>
+                    <select name="type" required>
+                        <option value="project">مشروع</option>
+                        <option value="office">مكتب</option>
+                        <option value="warehouse">مستودع</option>
+                        <option value="other">أخرى</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>القسم <span style="color: #ef4444;">*</span></label>
+                    <select name="department_id" required>
+                        <option value="">-- اختر --</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}">{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>نصف القطر (متر) <span style="color: #ef4444;">*</span></label>
+                <input type="number" name="radius" required min="50" max="10000" value="500">
+            </div>
+            
+            <div class="form-group">
+                <label>اللون</label>
+                <div class="color-picker-wrapper">
+                    <input type="color" name="color" value="#818cf8">
+                    <span>اختر اللون</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>الوصف</label>
+                <textarea name="description" rows="3" placeholder="وصف اختياري"></textarea>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <span>ابحث في الخريطة أو انقر لتحديد الموقع</span>
+            </div>
+            
+            <input type="hidden" name="latitude" id="latitude">
+            <input type="hidden" name="longitude" id="longitude">
+            
+            <button type="submit" class="btn" style="width: 100%;">
+                <i class="fas fa-save"></i>
+                حفظ الدائرة
+            </button>
+        </form>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    
+    <script>
+        const map = L.map('map').setView([24.7136, 46.6753], 11);
+        
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap',
+            maxZoom: 19
+        });
+        
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© Esri',
+            maxZoom: 19
+        });
+        
+        streetLayer.addTo(map);
+        let currentLayer = 'street';
+        
+        // إضافة أداة البحث الجغرافي
+        const geocoder = L.Control.geocoder({
+            defaultMarkGeocode: false,
+            placeholder: 'ابحث عن موقع...',
+            errorMessage: 'لم يتم العثور على نتائج'
+        }).addTo(map);
+        
+        geocoder.on('markgeocode', function(e) {
+            const latlng = e.geocode.center;
+            map.setView(latlng, 15);
+            
+            // تحديث الحقول وإضافة علامة
+            document.getElementById('latitude').value = latlng.lat;
+            document.getElementById('longitude').value = latlng.lng;
+            
+            if (tempMarker) map.removeLayer(tempMarker);
+            if (tempCircle) map.removeLayer(tempCircle);
+            
+            tempMarker = L.marker(latlng).addTo(map);
+            
+            const radius = parseInt(document.querySelector('[name="radius"]').value) || 500;
+            const color = document.querySelector('[name="color"]').value || '#818cf8';
+            
+            tempCircle = L.circle(latlng, {
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.25,
+                radius: radius,
+                weight: 3
+            }).addTo(map);
+            
+            showAlert('تم تحديد الموقع: ' + e.geocode.name, 'success');
+        });
+        
+        function toggleMapView() {
+            if (currentLayer === 'street') {
+                map.removeLayer(streetLayer);
+                satelliteLayer.addTo(map);
+                currentLayer = 'satellite';
+                document.getElementById('mapViewText').textContent = 'الخريطة العادية';
+            } else {
+                map.removeLayer(satelliteLayer);
+                streetLayer.addTo(map);
+                currentLayer = 'street';
+                document.getElementById('mapViewText').textContent = 'صورة القمر الصناعي';
+            }
+        }
+        
+        // دالة لاستخراج الإحداثيات من روابط Google Maps
+        function extractGoogleMapsCoordinates(url) {
+            // نمط 1: !3d/!4d (الأكثر دقة - موقع العلامة)
+            let match = url.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/);
+            if (match) {
+                return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            }
+            
+            // نمط 2: @ (مركز الخريطة)
+            match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if (match) {
+                return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            }
+            
+            // نمط 3: ?q= أو ll= (روابط قصيرة)
+            match = url.match(/[?&](q|ll)=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+            if (match) {
+                return { lat: parseFloat(match[2]), lng: parseFloat(match[3]) };
+            }
+            
+            return null;
+        }
+        
+        // دالة البحث عن الموقع من رابط Google Maps
+        async function searchGoogleMapsUrl() {
+            const input = document.getElementById('googleMapsUrl');
+            const url = input.value.trim();
+            
+            if (!url) {
+                alert('⚠️ الرجاء إدخال رابط Google Maps');
+                return;
+            }
+            
+            // محاولة استخراج الإحداثيات محلياً أولاً (للروابط الكاملة)
+            let coords = extractGoogleMapsCoordinates(url);
+            
+            // إذا لم ينجح، استخدم الـ API (للروابط المختصرة)
+            if (!coords) {
+                try {
+                    const response = await fetch('/employees/geofences/extract-google-maps-coords', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ url: url })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        coords = data.coords;
+                    } else {
+                        alert('❌ ' + data.message + '\n\nتأكد من نسخ الرابط كاملاً من Google Maps');
+                        return;
+                    }
+                } catch (error) {
+                    alert('❌ حدث خطأ في معالجة الرابط\n\n' + error.message);
+                    return;
+                }
+            }
+            
+            // الانتقال إلى الموقع في الخريطة
+            map.setView([coords.lat, coords.lng], 16);
+            
+            // إضافة علامة مؤقتة على الموقع
+            if (window.tempSearchMarker) {
+                map.removeLayer(window.tempSearchMarker);
+            }
+            
+            window.tempSearchMarker = L.marker([coords.lat, coords.lng], {
+                icon: L.divIcon({
+                    className: 'custom-search-marker',
+                    html: `
+                        <div style="position: relative;">
+                            <div style="
+                                width: 40px; 
+                                height: 40px; 
+                                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                                border-radius: 50% 50% 50% 0;
+                                transform: rotate(-45deg);
+                                border: 3px solid white;
+                                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            ">
+                                <i class="fas fa-map-marker-alt" style="
+                                    color: white;
+                                    font-size: 18px;
+                                    transform: rotate(45deg);
+                                "></i>
+                            </div>
+                        </div>
+                    `,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 40]
+                })
+            }).addTo(map);
+            
+            window.tempSearchMarker.bindPopup(`
+                <div style="text-align: center; font-family: 'Cairo', sans-serif; min-width: 180px;">
+                    <h4 style="margin: 0 0 10px 0; color: #1e1b4b; font-weight: 700;">📍 الموقع من Google Maps</h4>
+                    <p style="margin: 5px 0; color: #4b5563; font-size: 13px;"><strong>خط العرض:</strong> ${coords.lat.toFixed(6)}</p>
+                    <p style="margin: 5px 0; color: #4b5563; font-size: 13px;"><strong>خط الطول:</strong> ${coords.lng.toFixed(6)}</p>
+                </div>
+            `).openPopup();
+            
+            // تحديث حقول النموذج إذا كانت اللوحة الجانبية مفتوحة
+            if (document.getElementById('createPanel').classList.contains('active')) {
+                document.getElementById('latitude').value = coords.lat;
+                document.getElementById('longitude').value = coords.lng;
+                
+                if (tempMarker) map.removeLayer(tempMarker);
+                if (tempCircle) map.removeLayer(tempCircle);
+                
+                tempMarker = L.marker([coords.lat, coords.lng]).addTo(map);
+                
+                const radius = parseInt(document.querySelector('[name="radius"]').value) || 500;
+                const color = document.querySelector('[name="color"]').value || '#818cf8';
+                
+                tempCircle = L.circle([coords.lat, coords.lng], {
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.25,
+                    radius: radius,
+                    weight: 3
+                }).addTo(map);
+            }
+            
+            // مسح حقل الإدخال
+            input.value = '';
+            
+            // عرض رسالة نجاح
+            alert('✅ تم الانتقال إلى الموقع بنجاح!');
+        }
+        
+        const geofences = {{ geofences_data|tojson }};
+        const circles = {};
+        
+        geofences.forEach(item => {
+            const geofence = item.geofence;
+            const circle = L.circle([geofence.center_latitude, geofence.center_longitude], {
+                color: geofence.color,
+                fillColor: geofence.color,
+                fillOpacity: 0.25,
+                radius: geofence.radius_meters,
+                weight: 3
+            }).addTo(map);
+            
+            circle.bindPopup(`
+                <div style="text-align: center; font-family: 'Cairo', sans-serif; min-width: 200px;">
+                    <h4 style="margin: 0 0 12px 0; color: #1e1b4b; font-weight: 700;">${geofence.name}</h4>
+                    <p style="margin: 6px 0; color: #4b5563;"><strong>القسم:</strong> ${geofence.department.name}</p>
+                    <p style="margin: 6px 0; color: #4b5563;"><strong>الموظفين:</strong> ${item.employees_count}</p>
+                    <button onclick="bulkCheckIn(${geofence.id})" style="margin-top: 12px; padding: 10px 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 700;">
+                        <i class="fas fa-check-circle"></i> تسجيل حضور
+                    </button>
+                </div>
+            `);
+            
+            circles[geofence.id] = circle;
+        });
+        
+        let tempMarker = null;
+        let tempCircle = null;
+        let mapClickEnabled = false;
+        
+        function showCreatePanel() {
+            document.getElementById('createPanel').classList.add('active');
+            mapClickEnabled = true;
+            map.on('click', onMapClick);
+        }
+        
+        function closeCreatePanel() {
+            document.getElementById('createPanel').classList.remove('active');
+            mapClickEnabled = false;
+            map.off('click', onMapClick);
+            if (tempMarker) map.removeLayer(tempMarker);
+            if (tempCircle) map.removeLayer(tempCircle);
+            tempMarker = null;
+            tempCircle = null;
+            document.getElementById('createForm').reset();
+            document.getElementById('latitude').value = '';
+            document.getElementById('longitude').value = '';
+            document.getElementById('alertContainer').innerHTML = '';
+        }
+        
+        function onMapClick(e) {
+            if (!mapClickEnabled) return;
+            
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lng;
+            
+            if (tempMarker) map.removeLayer(tempMarker);
+            if (tempCircle) map.removeLayer(tempCircle);
+            
+            tempMarker = L.marker([lat, lng]).addTo(map);
+            
+            const radius = parseInt(document.querySelector('[name="radius"]').value) || 500;
+            const color = document.querySelector('[name="color"]').value || '#818cf8';
+            
+            tempCircle = L.circle([lat, lng], {
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.25,
+                radius: radius,
+                weight: 3
+            }).addTo(map);
+            
+            showAlert('تم تحديد الموقع بنجاح!', 'success');
+        }
+        
+        document.querySelector('[name="radius"]').addEventListener('change', updateTempCircle);
+        document.querySelector('[name="color"]').addEventListener('change', updateTempCircle);
+        
+        function updateTempCircle() {
+            if (tempCircle) {
+                const lat = document.getElementById('latitude').value;
+                const lng = document.getElementById('longitude').value;
+                map.removeLayer(tempCircle);
+                
+                const radius = parseInt(document.querySelector('[name="radius"]').value);
+                const color = document.querySelector('[name="color"]').value;
+                
+                tempCircle = L.circle([lat, lng], {
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.25,
+                    radius: radius,
+                    weight: 3
+                }).addTo(map);
+            }
+        }
+        
+        async function createGeofence(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            if (!formData.get('latitude') || !formData.get('longitude')) {
+                showAlert('يرجى تحديد موقع الدائرة على الخريطة', 'error');
+                return;
+            }
+            
+            const data = {
+                name: formData.get('name'),
+                type: formData.get('type'),
+                department_id: parseInt(formData.get('department_id')),
+                radius: parseInt(formData.get('radius')),
+                color: formData.get('color'),
+                description: formData.get('description'),
+                latitude: parseFloat(formData.get('latitude')),
+                longitude: parseFloat(formData.get('longitude'))
+            };
+            
+            try {
+                const response = await fetch('/employees/geofences/create', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('تم إنشاء الدائرة بنجاح!', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showAlert(result.message || 'حدث خطأ', 'error');
+                }
+            } catch (error) {
+                showAlert('حدث خطأ في الاتصال', 'error');
+            }
+        }
+        
+        async function bulkCheckIn(geofenceId) {
+            if (!confirm('هل تريد تسجيل حضور جميع موظفي القسم الموجودين داخل الدائرة؟')) return;
+            
+            try {
+                const response = await fetch(`/employees/geofences/${geofenceId}/bulk-check-in`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`${result.message}\n\nتم التسجيل: ${result.checked_in_count}\nمسجل مسبقاً: ${result.already_checked_count}`);
+                } else {
+                    alert(result.message || 'حدث خطأ');
+                }
+            } catch (error) {
+                alert('حدث خطأ في الاتصال');
+            }
+        }
+        
+        function viewGeofence(id) {
+            window.location.href = `/employees/geofences/${id}`;
+        }
+        
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'alert-success' : (type === 'error' ? 'alert-error' : 'alert-info');
+            const icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'exclamation-circle' : 'info-circle');
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    <i class="fas fa-${icon}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            setTimeout(() => alertContainer.innerHTML = '', 5000);
+        }
+        
+        function filterByDepartment() {
+            const departmentId = document.getElementById('departmentFilter').value;
+            const items = document.querySelectorAll('.geofence-item');
+            let visibleCount = 0;
+            
+            items.forEach(item => {
+                const itemDeptId = item.getAttribute('data-department-id');
+                if (!departmentId || itemDeptId === departmentId) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('geofencesCount').textContent = visibleCount;
+        }
+        
+        document.querySelectorAll('.geofence-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+                    const geofenceId = this.getAttribute('data-geofence-id');
+                    const circle = circles[geofenceId];
+                    
+                    if (circle) {
+                        map.setView(circle.getLatLng(), 15);
+                        circle.openPopup();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

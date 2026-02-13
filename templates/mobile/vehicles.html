@@ -1,0 +1,746 @@
+{% extends 'mobile/layout.html' %}
+
+{% block title %}أسطول السيارات - نُظم{% endblock %}
+
+{% block header_title %}أسطول السيارات{% endblock %}
+
+{% block content %}
+<style>
+/* تصميم مستقبلي عصري */
+:root {
+    --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-2: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --gradient-3: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+    --gradient-4: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-5: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --gradient-6: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+body {
+    background: #f8f9fb !important;
+    padding-top: 60px !important;
+}
+
+/* شريط الأزرار */
+.action-buttons-bar {
+    background: white;
+    padding: 12px 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    display: flex !important;
+    gap: 8px;
+    justify-content: flex-start;
+    margin: 0 0 16px 0;
+    position: relative;
+    width: 100%;
+}
+
+.action-btn-modern {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex !important;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    flex-shrink: 0;
+    color: white;
+}
+
+.btn-add {
+    background: var(--gradient-2) !important;
+}
+
+.btn-operations {
+    background: var(--gradient-1) !important;
+}
+
+.btn-reports {
+    background: var(--gradient-4) !important;
+}
+
+.action-btn-modern:active {
+    transform: scale(0.95);
+}
+
+/* الإحصائيات */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 0 20px 20px;
+}
+
+.stat-card-modern {
+    background: white;
+    border-radius: 14px;
+    padding: 14px 10px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.stat-card-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card-modern:active {
+    transform: translateY(-1px);
+}
+
+.stat-card-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.stat-card-modern.total::before {
+    background: var(--gradient-1);
+}
+
+.stat-card-modern.available::before {
+    background: var(--gradient-2);
+}
+
+.stat-card-modern.active-driver::before {
+    background: var(--gradient-5);
+}
+
+.stat-card-modern.maintenance::before {
+    background: var(--gradient-3);
+}
+
+.stat-card-modern.accident::before {
+    background: var(--gradient-4);
+}
+
+.stat-card-modern.out-service::before {
+    background: linear-gradient(135deg, #868f96 0%, #596164 100%);
+}
+
+.stat-card-modern.project::before {
+    background: var(--gradient-6);
+}
+
+.stat-card-modern.out-region::before {
+    background: linear-gradient(135deg, #fa8bff 0%, #2bd2ff 90%, #2bff88 100%);
+}
+
+.stat-icon-large {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.stat-card-modern.total .stat-icon-large {
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-modern.available .stat-icon-large {
+    background: var(--gradient-2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-modern.active-driver .stat-icon-large {
+    background: var(--gradient-5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-modern.maintenance .stat-icon-large {
+    background: var(--gradient-3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-modern.accident .stat-icon-large {
+    background: var(--gradient-4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-modern.out-service .stat-icon-large {
+    background: linear-gradient(135deg, #868f96 0%, #596164 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-modern.project .stat-icon-large {
+    background: var(--gradient-6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card-modern.out-region .stat-icon-large {
+    background: linear-gradient(135deg, #fa8bff 0%, #2bd2ff 90%, #2bff88 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-number {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 3px;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #8e8e93;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+/* قسم البحث */
+.search-container-modern {
+    background: var(--gradient-1);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 0 20px 20px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.search-title {
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-input-modern {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #1a1a1a;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+.search-input-modern:focus {
+    outline: none;
+    background: white;
+}
+
+.search-input-modern::placeholder {
+    color: #8e8e93;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.filter-select-modern {
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.buttons-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn-search-modern {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-reset-modern {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-search-modern:active,
+.btn-reset-modern:active {
+    transform: scale(0.95);
+}
+
+/* قائمة المركبات */
+.vehicles-list-container {
+    padding: 0 20px 80px;
+}
+
+.list-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.list-title-modern {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.list-title-modern i {
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.list-count {
+    background: var(--gradient-1);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.vehicle-card-modern {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f0f0f5;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: block;
+}
+
+.vehicle-card-modern:active {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.vehicle-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.vehicle-icon-wrapper {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: var(--gradient-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 12px;
+    flex-shrink: 0;
+}
+
+.vehicle-icon {
+    color: white;
+    font-size: 22px;
+}
+
+.vehicle-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.vehicle-plate {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.vehicle-type {
+    font-size: 13px;
+    color: #8e8e93;
+    font-weight: 500;
+}
+
+.vehicle-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.detail-item {
+    background: #f8f9fb;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.detail-label {
+    font-size: 11px;
+    color: #8e8e93;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.detail-value {
+    font-size: 13px;
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+.vehicle-status-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-badge.active {
+    background: rgba(17, 153, 142, 0.1);
+    color: #11998e;
+}
+
+.status-badge.maintenance {
+    background: rgba(255, 149, 0, 0.1);
+    color: #FF9500;
+}
+
+.status-badge.inactive {
+    background: rgba(235, 51, 73, 0.1);
+    color: #eb3349;
+}
+
+/* حالة فارغة */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-icon {
+    font-size: 80px;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+}
+
+.empty-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.empty-text {
+    font-size: 14px;
+    color: #8e8e93;
+    margin-bottom: 20px;
+}
+
+.add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gradient-2);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+    transition: all 0.2s ease;
+}
+
+.add-btn:active {
+    transform: scale(0.95);
+}
+
+/* Responsive */
+@media (max-width: 380px) {
+    .action-btn-modern span {
+        display: none;
+    }
+    
+    .action-btn-modern i {
+        font-size: 18px;
+    }
+    
+    .stats-container {
+        gap: 8px;
+    }
+}
+</style>
+
+<!-- أزرار الإجراءات -->
+<div class="action-buttons-bar">
+    <a href="{{ url_for('mobile.add_vehicle') }}" class="action-btn-modern btn-add">
+        <i class="fas fa-plus"></i>
+        <span>إضافة سيارة</span>
+    </a>
+    <a href="{{ url_for('mobile.operations_dashboard') }}" class="action-btn-modern btn-operations">
+        <i class="fas fa-tasks"></i>
+        <span>العمليات</span>
+    </a>
+    <a href="{{ url_for('mobile.report_vehicles') }}" class="action-btn-modern btn-reports">
+        <i class="fas fa-chart-bar"></i>
+        <span>التقارير</span>
+    </a>
+</div>
+
+<!-- الإحصائيات -->
+<div class="stats-container">
+    <a href="{{ url_for('mobile.vehicles') }}" class="stat-card-modern total">
+        <div class="stat-icon-large">
+            <i class="fas fa-car"></i>
+        </div>
+        <div class="stat-number">{{ stats.total }}</div>
+        <div class="stat-label">إجمالي</div>
+    </a>
+    
+    <a href="{{ url_for('mobile.vehicles', status='available') }}" class="stat-card-modern available">
+        <div class="stat-icon-large">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-number">{{ stats.available }}</div>
+        <div class="stat-label">متاحة</div>
+    </a>
+    
+    <a href="{{ url_for('mobile.vehicles', status='in_project') }}" class="stat-card-modern active-driver">
+        <div class="stat-icon-large">
+            <i class="fas fa-user-check"></i>
+        </div>
+        <div class="stat-number">{{ stats.in_project }}</div>
+        <div class="stat-label">نشطة مع سائق</div>
+    </a>
+    
+    <a href="{{ url_for('mobile.vehicles', status='in_workshop') }}" class="stat-card-modern maintenance">
+        <div class="stat-icon-large">
+            <i class="fas fa-tools"></i>
+        </div>
+        <div class="stat-number">{{ stats.in_workshop }}</div>
+        <div class="stat-label">في الورشة صيانة</div>
+    </a>
+    
+    <a href="{{ url_for('mobile.vehicles', status='accident') }}" class="stat-card-modern accident">
+        <div class="stat-icon-large">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-number">{{ stats.accident }}</div>
+        <div class="stat-label">في الورشة حادث</div>
+    </a>
+    
+    <a href="{{ url_for('mobile.vehicles', status='out_of_service') }}" class="stat-card-modern out-service">
+        <div class="stat-icon-large">
+            <i class="fas fa-ban"></i>
+        </div>
+        <div class="stat-number">{{ stats.out_of_service }}</div>
+        <div class="stat-label">خارج الخدمة</div>
+    </a>
+    
+    <a href="{{ url_for('mobile.vehicles', status='out_of_region_management') }}" class="stat-card-modern out-region">
+        <div class="stat-icon-large">
+            <i class="fas fa-map-marker-alt"></i>
+        </div>
+        <div class="stat-number">{{ stats.out_of_region_management }}</div>
+        <div class="stat-label">خارج إدارة المنطقة</div>
+    </a>
+    
+    <a href="{{ url_for('mobile.vehicles', status='in_project') }}" class="stat-card-modern project">
+        <div class="stat-icon-large">
+            <i class="fas fa-project-diagram"></i>
+        </div>
+        <div class="stat-number">{{ stats.in_project }}</div>
+        <div class="stat-label">نشطة مع سائق</div>
+    </a>
+</div>
+
+<!-- البحث والفلترة -->
+<div class="search-container-modern">
+    <div class="search-title">
+        <i class="fas fa-search"></i>
+        <span>بحث وفلترة</span>
+    </div>
+    
+    <form action="{{ url_for('mobile.vehicles') }}" method="GET">
+        <input type="text" 
+               name="search" 
+               class="search-input-modern" 
+               placeholder="ابحث برقم اللوحة، النوع، أو الموديل..." 
+               value="{{ request.args.get('search', '') }}">
+        
+        <div class="filters-grid">
+            <select name="status" class="filter-select-modern">
+                <option value="">جميع الحالات</option>
+                <option value="available" {% if request.args.get('status') == 'available' %}selected{% endif %}>متاحة</option>
+                <option value="in_project" {% if request.args.get('status') == 'in_project' %}selected{% endif %}>نشطة مع سائق</option>
+                <option value="in_workshop" {% if request.args.get('status') == 'in_workshop' %}selected{% endif %}>في الورشة صيانة</option>
+                <option value="accident" {% if request.args.get('status') == 'accident' %}selected{% endif %}>في الورشة حادث</option>
+                <option value="out_of_service" {% if request.args.get('status') == 'out_of_service' %}selected{% endif %}>خارج الخدمة</option>
+                <option value="out_of_region_management" {% if request.args.get('status') == 'out_of_region_management' %}selected{% endif %}>خارج إدارة المنطقة</option>
+                <option value="in_project" {% if request.args.get('status') == 'in_project' %}selected{% endif %}>نشطة مع سائق</option>
+                <option value="in_workshop" {% if request.args.get('status') == 'in_workshop' %}selected{% endif %}>في الورشة</option>
+            </select>
+            
+            <select name="type" class="filter-select-modern">
+                <option value="">جميع الأنواع</option>
+                <option value="سيدان" {% if request.args.get('type') == 'سيدان' %}selected{% endif %}>سيدان</option>
+                <option value="سيارة ركوب" {% if request.args.get('type') == 'سيارة ركوب' %}selected{% endif %}>سيارة ركوب</option>
+                <option value="نقل خفيف" {% if request.args.get('type') == 'نقل خفيف' %}selected{% endif %}>نقل خفيف</option>
+                <option value="باص" {% if request.args.get('type') == 'باص' %}selected{% endif %}>باص</option>
+            </select>
+        </div>
+        
+        <select name="department" class="filter-select-modern" style="margin-bottom: 10px;">
+            <option value="">جميع الأقسام</option>
+            {% for department in departments %}
+                <option value="{{ department.id }}" {% if request.args.get('department') == department.id|string %}selected{% endif %}>{{ department.name }}</option>
+            {% endfor %}
+        </select>
+        
+        <div class="buttons-row">
+            <button type="submit" class="btn-search-modern">
+                <i class="fas fa-search"></i> بحث
+            </button>
+            <a href="{{ url_for('mobile.vehicles') }}" class="btn-reset-modern" style="display: flex; align-items: center; justify-content: center; text-decoration: none;">
+                <i class="fas fa-redo"></i> إعادة تعيين
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- قائمة المركبات -->
+<div class="vehicles-list-container">
+    <div class="list-header-modern">
+        <div class="list-title-modern">
+            <i class="fas fa-cars"></i>
+            <span>السيارات</span>
+        </div>
+        <span class="list-count">{{ vehicles|length }}</span>
+    </div>
+    
+    {% if vehicles %}
+        {% for vehicle in vehicles %}
+        <a href="{{ url_for('mobile.vehicle_details', vehicle_id=vehicle.id) }}" class="vehicle-card-modern">
+            <div class="vehicle-header">
+                <div class="vehicle-icon-wrapper">
+                    <i class="fas fa-car vehicle-icon"></i>
+                </div>
+                <div class="vehicle-info">
+                    <div class="vehicle-plate">{{ vehicle.plate_number }}</div>
+                    <div class="vehicle-type">{{ vehicle.type_of_car }} - {{ vehicle.model }}</div>
+                </div>
+            </div>
+            
+            <div class="vehicle-details-grid">
+                <div class="detail-item">
+                    <div class="detail-label">السنة</div>
+                    <div class="detail-value">{{ vehicle.year }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">اللون</div>
+                    <div class="detail-value">{{ vehicle.color }}</div>
+                </div>
+            </div>
+            
+            <div class="vehicle-status-row">
+                <span class="status-badge 
+                    {% if vehicle.status == 'available' %}active
+                    {% elif vehicle.status == 'in_project' %}active
+                    {% elif vehicle.status == 'in_workshop' or vehicle.status == 'accident' %}maintenance
+                    {% else %}inactive{% endif %}">
+                    {% if vehicle.status == 'available' %}
+                        <i class="fas fa-check-circle"></i> متاحة
+                    {% elif vehicle.status == 'in_project' %}
+                        <i class="fas fa-car"></i> نشطة مع سائق
+                    {% elif vehicle.status == 'in_workshop' %}
+                        <i class="fas fa-tools"></i> في الورشة صيانة
+                    {% elif vehicle.status == 'accident' %}
+                        <i class="fas fa-exclamation-triangle"></i> في الورشة حادث
+                    {% elif vehicle.status == 'out_of_service' %}
+                        <i class="fas fa-ban"></i> خارج الخدمة
+                    {% elif vehicle.status == 'out_of_region_management' %}
+                        <i class="fas fa-map-marker-alt"></i> خارج إدارة المنطقة
+                    {% elif vehicle.status == 'stopped_inspection_expired' %}
+                        <i class="fas fa-pause-circle"></i> متوقفة انتهاء الفحص
+                    {% elif vehicle.status == 'stopped_contract_expired' %}
+                        <i class="fas fa-pause-circle"></i> متوقفة انتهاء العقد
+                    {% elif vehicle.status == 'stopped_registration_expired' %}
+                        <i class="fas fa-pause-circle"></i> متوقفة انتهاء الاستمارة
+                    {% elif vehicle.status == 'in_use' %}
+                        <i class="fas fa-car"></i> قيد الاستخدام
+                    {% elif vehicle.status == 'in_workshop' %}
+                        <i class="fas fa-tools"></i> في الورشة
+                    {% elif vehicle.status == 'in_project' %}
+                        <i class="fas fa-project-diagram"></i> في مشروع
+                    {% elif vehicle.status == 'accident' %}
+                        <i class="fas fa-exclamation-triangle"></i> حادث
+                    {% elif vehicle.status == 'rented' %}
+                        <i class="fas fa-handshake"></i> مؤجر
+                    {% else %}
+                        <i class="fas fa-info-circle"></i> {{ vehicle.status }}
+                    {% endif %}
+                </span>
+                
+                {% if vehicle.driver_name %}
+                <span class="status-badge active">
+                    <i class="fas fa-user"></i> {{ vehicle.driver_name }}
+                </span>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-car"></i>
+            </div>
+            <div class="empty-title">لا توجد مركبات</div>
+            <div class="empty-text">ابدأ بإضافة مركبات لأسطولك</div>
+            <a href="{{ url_for('mobile.add_vehicle') }}" class="add-btn">
+                <i class="fas fa-plus"></i>
+                <span>إضافة مركبة جديدة</span>
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

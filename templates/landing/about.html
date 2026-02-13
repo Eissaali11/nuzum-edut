@@ -1,0 +1,50 @@
+{% extends "landing/layout.html" %}
+{% block title %}من نحن - نُظم{% endblock %}
+{% block extra_css %}
+<style>
+    .page-hero { background: linear-gradient(135deg, #1e3a5c 0%, #2c5282 100%); color: white; padding: 100px 0; }
+    .page-hero h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 20px; }
+    .content-section { padding: 80px 0; }
+    .content-section h2 { font-size: 2.5rem; color: #1e3a5c; margin-bottom: 30px; font-weight: 700; }
+    .values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 50px; }
+    .value-card { background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 40px; border-radius: 15px; text-align: center; transition: all 0.3s; }
+    .value-card:hover { transform: translateY(-10px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .value-icon { font-size: 3rem; color: #1e3a5c; margin-bottom: 20px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-hero">
+    <div class="container">
+        <h1>من نحن</h1>
+        <p style="font-size: 1.3rem; color: rgba(255,255,255,0.9);">نحن نقود ثورة في إدارة الموارد البشرية والمركبات</p>
+    </div>
+</div>
+<div class="content-section">
+    <div class="container">
+        <h2 style="text-align: center;">قصتنا</h2>
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <p style="font-size: 1.1rem; line-height: 1.8; color: #555; margin-bottom: 20px;">
+                    بدأت نُظم رحلتها برؤية واضحة: تقديم حل متكامل وسهل الاستخدام لإدارة الموارد البشرية والمركبات في المؤسسات السعودية. 
+                    مع التركيز على الدعم الكامل للغة العربية والخصوصية التامة للبيانات.
+                </p>
+                <p style="font-size: 1.1rem; line-height: 1.8; color: #555;">
+                    اليوم، نخدم عشرات الشركات والمؤسسات في المملكة العربية السعودية، ونساعدهم على تحقيق أهدافهم من خلال 
+                    تكنولوجيا متقدمة وفريق دعم مخصص.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-section" style="background: #f8f9fa;">
+    <div class="container">
+        <h2 style="text-align: center;">قيمنا</h2>
+        <div class="values-grid">
+            <div class="value-card"><div class="value-icon"><i class="fas fa-star"></i></div><h3 style="color: #1e3a5c;">الجودة</h3><p>نلتزم بأعلى معايير الجودة في كل جانب</p></div>
+            <div class="value-card"><div class="value-icon"><i class="fas fa-shield-alt"></i></div><h3 style="color: #1e3a5c;">الأمان</h3><p>حماية بيانات عملائنا هي أولويتنا</p></div>
+            <div class="value-card"><div class="value-icon"><i class="fas fa-handshake"></i></div><h3 style="color: #1e3a5c;">الشفافية</h3><p>نتعامل بصراحة كاملة مع عملائنا</p></div>
+            <div class="value-card"><div class="value-icon"><i class="fas fa-rocket"></i></div><h3 style="color: #1e3a5c;">الابتكار</h3><p>نستمر في التطور والابتكار</p></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

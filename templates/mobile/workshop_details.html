@@ -1,0 +1,1020 @@
+{% extends "mobile/layout.html" %}
+
+{% block title %}تفاصيل سجل الورشة - {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2" style="padding-top: 70px !important; padding-bottom: 120px !important;">
+    <!-- رأس الصفحة المحسن -->
+    <div class="workshop-header">
+        <div class="header-gradient">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="header-content">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-tools me-2 text-warning"></i>
+                        <h5 class="mb-0 text-white">تفاصيل سجل الورشة</h5>
+                    </div>
+                    <div class="vehicle-info">
+                        <span class="badge bg-light text-dark me-2">
+                            <i class="fas fa-car me-1"></i>
+                            {{ vehicle.plate_number }}
+                        </span>
+                        <span class="text-white-50">{{ vehicle.make }} {{ vehicle.model }}</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('mobile.vehicle_details', vehicle_id=vehicle.id) }}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- معلومات أساسية محسنة -->
+    <div class="workshop-info-grid">
+        <!-- تواريخ العملية -->
+        <div class="info-card">
+            <div class="info-header">
+                <i class="fas fa-calendar-alt"></i>
+                <span>تواريخ العملية</span>
+            </div>
+            <div class="info-content">
+                <div class="date-item">
+                    <div class="date-label">دخول الورشة</div>
+                    <div class="date-value">{{ workshop_record.entry_date.strftime('%Y-%m-%d') if workshop_record.entry_date else 'غير محدد' }}</div>
+                </div>
+                <div class="date-item">
+                    <div class="date-label">خروج الورشة</div>
+                    <div class="date-value">
+                        {% if workshop_record.exit_date %}
+                        {{ workshop_record.exit_date.strftime('%Y-%m-%d') }}
+                        {% else %}
+                        <span class="status-badge in-progress">لا يزال في الورشة</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- حالة العملية -->
+        <div class="info-card">
+            <div class="info-header">
+                <i class="fas fa-cog"></i>
+                <span>حالة العملية</span>
+            </div>
+            <div class="info-content">
+                <div class="status-item">
+                    <div class="status-label">السبب</div>
+                    <div class="status-value">
+                        {% if workshop_record.reason == 'maintenance' %}
+                        <span class="status-badge maintenance">صيانة دورية</span>
+                        {% elif workshop_record.reason == 'breakdown' %}
+                        <span class="status-badge breakdown">عطل</span>
+                        {% elif workshop_record.reason == 'accident' %}
+                        <span class="status-badge accident">حادث</span>
+                        {% else %}
+                        <span class="status-badge other">{{ workshop_record.reason }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">حالة الإصلاح</div>
+                    <div class="status-value">
+                        {% if workshop_record.repair_status == 'in_progress' %}
+                        <span class="status-badge in-progress">قيد التنفيذ</span>
+                        {% elif workshop_record.repair_status == 'completed' %}
+                        <span class="status-badge completed">تم الإصلاح</span>
+                        {% elif workshop_record.repair_status == 'pending_approval' %}
+                        <span class="status-badge pending">بانتظار الموافقة</span>
+                        {% else %}
+                        <span class="status-badge other">{{ workshop_record.repair_status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- وصف المشكلة -->
+    {% if workshop_record.description %}
+    <div class="info-card">
+        <div class="info-header">
+            <i class="fas fa-file-alt"></i>
+            <span>وصف المشكلة</span>
+        </div>
+        <div class="info-content">
+            <div class="description-text">{{ workshop_record.description }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- معلومات الورشة والتكلفة -->
+    {% if workshop_record.workshop_name or workshop_record.technician_name or (workshop_record.cost and workshop_record.cost > 0) %}
+    <div class="info-card">
+        <div class="info-header">
+            <i class="fas fa-wrench"></i>
+            <span>معلومات الورشة</span>
+        </div>
+        <div class="info-content">
+            {% if workshop_record.workshop_name %}
+            <div class="workshop-item">
+                <div class="workshop-label">اسم الورشة</div>
+                <div class="workshop-value">{{ workshop_record.workshop_name }}</div>
+            </div>
+            {% endif %}
+            {% if workshop_record.technician_name %}
+            <div class="workshop-item">
+                <div class="workshop-label">اسم الفني</div>
+                <div class="workshop-value">{{ workshop_record.technician_name }}</div>
+            </div>
+            {% endif %}
+            {% if workshop_record.cost and workshop_record.cost > 0 %}
+            <div class="workshop-item">
+                <div class="workshop-label">التكلفة</div>
+                <div class="workshop-value cost">{{ '{:,.2f}'.format(workshop_record.cost) }} ريال</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ملاحظات إضافية -->
+    {% if workshop_record.notes %}
+    <div class="info-card">
+        <div class="info-header">
+            <i class="fas fa-sticky-note"></i>
+            <span>ملاحظات إضافية</span>
+        </div>
+        <div class="info-content">
+            <div class="notes-text">{{ workshop_record.notes }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- الصور المرفقة - تصميم محسن -->
+    {% if workshop_record.valid_images %}
+    <div class="images-section">
+        <div class="section-header">
+            <i class="fas fa-camera"></i>
+            <span>الصور الموثقة ({{ workshop_record.valid_images|length }})</span>
+        </div>
+        
+        <!-- فصل الصور حسب النوع -->
+        {% set before_images = workshop_record.valid_images|selectattr("image_type", "equalto", "before")|list %}
+        {% set after_images = workshop_record.valid_images|selectattr("image_type", "equalto", "after")|list %}
+        {% set delivery_images = workshop_record.valid_images|selectattr("image_type", "equalto", "delivery")|list %}
+        {% set pickup_images = workshop_record.valid_images|selectattr("image_type", "equalto", "pickup")|list %}
+        {% set notes_images = workshop_record.valid_images|selectattr("image_type", "equalto", "notes")|list %}
+        
+        {% if before_images %}
+        <div class="image-category">
+            <div class="category-title before">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>صور قبل الإصلاح ({{ before_images|length }})</span>
+            </div>
+            <div class="images-grid">
+                {% for image in before_images %}
+                <div class="image-item">
+                    <div class="image-container">
+                        {% set img_path = '/' + image.image_path if not image.image_path.startswith('/') else image.image_path %}
+                        <img src="{{ img_path }}" 
+                             alt="صورة قبل الإصلاح" 
+                             onerror="this.onerror=null; this.src='/static/images/image-not-found.svg';"
+                             onclick="showImageModal('{{ img_path }}', '{{ image.notes or 'صورة قبل الإصلاح' }}')">
+                        <div class="image-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                    {% if image.notes %}
+                    <div class="image-notes">{{ image.notes }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if after_images %}
+        <div class="image-category">
+            <div class="category-title after">
+                <i class="fas fa-check-circle"></i>
+                <span>صور بعد الإصلاح ({{ after_images|length }})</span>
+            </div>
+            <div class="images-grid">
+                {% for image in after_images %}
+                <div class="image-item">
+                    <div class="image-container">
+                        {% set img_path = '/' + image.image_path if not image.image_path.startswith('/') else image.image_path %}
+                        <img src="{{ img_path }}" 
+                             alt="صورة بعد الإصلاح" 
+                             onerror="this.onerror=null; this.src='/static/images/image-not-found.svg';"
+                             onclick="showImageModal('{{ img_path }}', '{{ image.notes or 'صورة بعد الإصلاح' }}')">
+                        <div class="image-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                    {% if image.notes %}
+                    <div class="image-notes">{{ image.notes }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if delivery_images %}
+        <div class="image-category">
+            <div class="category-title" style="background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%); color: #1565c0;">
+                <i class="fas fa-truck-loading"></i>
+                <span>صور إيصال التسليم ({{ delivery_images|length }})</span>
+            </div>
+            <div class="images-grid">
+                {% for image in delivery_images %}
+                <div class="image-item">
+                    <div class="image-container">
+                        {% set img_path = '/' + image.image_path if not image.image_path.startswith('/') else image.image_path %}
+                        <img src="{{ img_path }}" 
+                             alt="صورة إيصال التسليم" 
+                             onerror="this.onerror=null; this.src='/static/images/image-not-found.svg';"
+                             onclick="showImageModal('{{ img_path }}', '{{ image.notes or 'صورة إيصال التسليم' }}')">
+                        <div class="image-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                    {% if image.notes %}
+                    <div class="image-notes">{{ image.notes }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if pickup_images %}
+        <div class="image-category">
+            <div class="category-title after">
+                <i class="fas fa-check-double"></i>
+                <span>صور إيصال الاستلام ({{ pickup_images|length }})</span>
+            </div>
+            <div class="images-grid">
+                {% for image in pickup_images %}
+                <div class="image-item">
+                    <div class="image-container">
+                        {% set img_path = '/' + image.image_path if not image.image_path.startswith('/') else image.image_path %}
+                        <img src="{{ img_path }}" 
+                             alt="صورة إيصال الاستلام" 
+                             onerror="this.onerror=null; this.src='/static/images/image-not-found.svg';"
+                             onclick="showImageModal('{{ img_path }}', '{{ image.notes or 'صورة إيصال الاستلام' }}')">
+                        <div class="image-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                    {% if image.notes %}
+                    <div class="image-notes">{{ image.notes }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if notes_images %}
+        <div class="image-category">
+            <div class="category-title" style="background: linear-gradient(135deg, #f3e5f5 0%, #ce93d8 100%); color: #6a1b9a;">
+                <i class="fas fa-sticky-note"></i>
+                <span>صور الملاحظات ({{ notes_images|length }})</span>
+            </div>
+            <div class="images-grid">
+                {% for image in notes_images %}
+                <div class="image-item">
+                    <div class="image-container">
+                        {% set img_path = '/' + image.image_path if not image.image_path.startswith('/') else image.image_path %}
+                        <img src="{{ img_path }}" 
+                             alt="صورة ملاحظات" 
+                             onerror="this.onerror=null; this.src='/static/images/image-not-found.svg';"
+                             onclick="showImageModal('{{ img_path }}', '{{ image.notes or 'صورة ملاحظات' }}')">
+                        <div class="image-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                    {% if image.notes %}
+                    <div class="image-notes">{{ image.notes }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="no-images">
+        <i class="fas fa-image"></i>
+        <p>لا توجد صور مرفقة لهذا السجل</p>
+    </div>
+    {% endif %}
+
+    <!-- أزرار العمليات -->
+    <div class="action-buttons-container">
+        <div class="row g-2">
+            <div class="col-6">
+                <a href="{{ url_for('mobile.edit_workshop_mobile', workshop_id=workshop_record.id) }}" 
+                   class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-edit"></i>
+                    تعديل
+                </a>
+            </div>
+            <div class="col-6">
+                <button onclick="shareWorkshopDetails()" class="btn btn-success btn-lg w-100">
+                    <i class="fas fa-share-alt"></i>
+                    مشاركة
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Modal محسن لعرض الصور -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-sm-down modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="imageModalTitle">عرض الصورة</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body text-center p-0">
+                <img id="modalImage" src="" class="img-fluid w-100" alt="صورة الورشة" style="max-height: 80vh; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// عرض الصور في Modal
+function showImageModal(imageSrc, imageTitle) {
+    document.getElementById('modalImage').src = imageSrc;
+    document.getElementById('imageModalTitle').textContent = imageTitle;
+    
+    var modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    modal.show();
+}
+
+// مشاركة تفاصيل الورشة مع الصور المنظمة
+async function shareWorkshopDetails() {
+    try {
+        // جمع معلومات الصور من valid_images
+        const allImagePaths = [];
+        const beforeImages = [];
+        const afterImages = [];
+        
+        {% if workshop_record.valid_images %}
+        {% for image in workshop_record.valid_images %}
+        {% set img_path = '/' + image.image_path if not image.image_path.startswith('/') else image.image_path %}
+        allImagePaths.push({
+            url: '{{ img_path }}',
+            type: '{{ image.image_type }}',
+            notes: '{{ image.notes or "" }}'
+        });
+        
+        {% if image.image_type == 'before' %}
+        beforeImages.push({
+            path: '{{ img_path }}',
+            notes: '{{ image.notes or "" }}'
+        });
+        {% elif image.image_type == 'after' %}
+        afterImages.push({
+            path: '{{ img_path }}',
+            notes: '{{ image.notes or "" }}'
+        });
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        const workshopData = {
+            plateNumber: "{{ vehicle.plate_number }}",
+            vehicleInfo: "{{ vehicle.make }} {{ vehicle.model }}",
+            entryDate: "{{ workshop_record.entry_date.strftime('%Y-%m-%d') if workshop_record.entry_date else 'غير محدد' }}",
+            exitDate: "{{ workshop_record.exit_date.strftime('%Y-%m-%d') if workshop_record.exit_date else 'لا يزال في الورشة' }}",
+            reason: "{{ workshop_record.reason or 'غير محدد' }}",
+            status: "{{ workshop_record.repair_status or 'غير محدد' }}",
+            description: "{{ workshop_record.description or 'لا يوجد وصف' }}",
+            workshop: "{{ workshop_record.workshop_name or 'غير محدد' }}",
+            technician: "{{ workshop_record.technician_name or 'غير محدد' }}",
+            cost: "{{ '{:,.0f}'.format(workshop_record.cost) if workshop_record.cost and workshop_record.cost > 0 else '0' }}",
+            notes: "{{ workshop_record.notes or 'لا توجد ملاحظات' }}",
+            deliveryLink: "{{ workshop_record.delivery_link or '' }}",
+            receptionLink: "{{ workshop_record.reception_link or '' }}"
+        };
+
+        // تكوين حالة الإصلاح
+        let statusText = '';
+        if (workshopData.status === 'completed') {
+            statusText = '✅ تم الإصلاح بنجاح';
+        } else if (workshopData.status === 'in_progress') {
+            statusText = '🔄 قيد التنفيذ';
+        } else if (workshopData.status === 'pending_approval') {
+            statusText = '⏳ بانتظار الموافقة';
+        } else {
+            statusText = workshopData.status;
+        }
+
+        // تكوين سبب دخول الورشة
+        let reasonText = '';
+        if (workshopData.reason === 'maintenance') {
+            reasonText = '🔧 صيانة دورية';
+        } else if (workshopData.reason === 'breakdown') {
+            reasonText = '⚠️ عطل مفاجئ';
+        } else if (workshopData.reason === 'accident') {
+            reasonText = '🚨 حادث مروري';
+        } else {
+            reasonText = workshopData.reason;
+        }
+
+        let shareText = `🚗 تقرير سجل الورشة - ${workshopData.plateNumber}
+═══════════════════════════════
+
+📋 معلومات السيارة:
+• رقم اللوحة: ${workshopData.plateNumber}
+• النوع: ${workshopData.vehicleInfo}
+
+📅 تواريخ العملية:
+• دخول الورشة: ${workshopData.entryDate}
+• خروج الورشة: ${workshopData.exitDate}
+
+🏪 معلومات الورشة:
+• اسم الورشة: ${workshopData.workshop}
+• الفني المسؤول: ${workshopData.technician}
+• سبب الدخول: ${reasonText}
+• حالة الإصلاح: ${statusText}`;
+
+        if (workshopData.cost !== '0') {
+            shareText += `
+• التكلفة: ${workshopData.cost} ريال سعودي`;
+        }
+
+        if (workshopData.description !== 'لا يوجد وصف') {
+            shareText += `
+
+🔧 وصف المشكلة:
+${workshopData.description}`;
+        }
+
+        // إضافة معلومات الصور المنظمة
+        const totalImages = beforeImages.length + afterImages.length;
+        if (totalImages > 0) {
+            shareText += `
+
+📸 الصور المرفقة (${totalImages} صورة):`;
+            
+            if (beforeImages.length > 0) {
+                shareText += `
+• صور قبل الإصلاح: ${beforeImages.length} صورة`;
+                beforeImages.forEach((img, index) => {
+                    if (img.notes && img.notes.trim() !== '') {
+                        shareText += `
+  - ${img.notes}`;
+                    }
+                });
+            }
+            
+            if (afterImages.length > 0) {
+                shareText += `
+• صور بعد الإصلاح: ${afterImages.length} صورة`;
+                afterImages.forEach((img, index) => {
+                    if (img.notes && img.notes.trim() !== '') {
+                        shareText += `
+  - ${img.notes}`;
+                    }
+                });
+            }
+        }
+
+        // إضافة الروابط الخارجية
+        if (workshopData.deliveryLink || workshopData.receptionLink) {
+            shareText += `
+
+🔗 روابط خارجية:`;
+            if (workshopData.deliveryLink) {
+                shareText += `
+• رابط تسليم الورشة: ${workshopData.deliveryLink}`;
+            }
+            if (workshopData.receptionLink) {
+                shareText += `
+• رابط استلام من الورشة: ${workshopData.receptionLink}`;
+            }
+        }
+
+        if (workshopData.notes !== 'لا توجد ملاحظات') {
+            shareText += `
+
+📝 ملاحظات إضافية:
+${workshopData.notes}`;
+        }
+
+        shareText += `
+
+═══════════════════════════════
+📅 تاريخ التقرير: ${new Date().toLocaleDateString('ar-SA')}
+🕒 وقت التقرير: ${new Date().toLocaleTimeString('ar-SA')}
+🏢 نُظم - نظام إدارة المركبات`;
+
+        // تحميل الصور كملفات للمشاركة
+        const imageFiles = [];
+        
+        if (allImagePaths.length > 0) {
+            showSuccessToast('جاري تحميل الصور...');
+            
+            for (let i = 0; i < allImagePaths.length; i++) {
+                try {
+                    const imgData = allImagePaths[i];
+                    const response = await fetch(imgData.url);
+                    
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        
+                        // استخراج اسم الملف من المسار
+                        const urlParts = imgData.url.split('/');
+                        const originalFilename = urlParts[urlParts.length - 1];
+                        
+                        // إنشاء اسم ملف وصفي
+                        let typeLabel = '';
+                        if (imgData.type === 'before') typeLabel = 'قبل';
+                        else if (imgData.type === 'after') typeLabel = 'بعد';
+                        else if (imgData.type === 'pickup') typeLabel = 'استلام';
+                        else if (imgData.type === 'delivery') typeLabel = 'تسليم';
+                        else if (imgData.type === 'notes') typeLabel = 'ملاحظات';
+                        
+                        const filename = typeLabel ? `${workshopData.plateNumber}_${typeLabel}_${i + 1}.jpg` : originalFilename;
+                        
+                        const file = new File([blob], filename, { 
+                            type: blob.type || 'image/jpeg'
+                        });
+                        
+                        imageFiles.push(file);
+                    }
+                } catch (err) {
+                    console.log('تعذر تحميل الصورة:', imgData.url, err);
+                }
+            }
+        }
+
+        // محاولة المشاركة مع الصور
+        if (navigator.share) {
+            const shareData = {
+                title: `تقرير سجل الورشة - ${workshopData.plateNumber}`,
+                text: shareText
+            };
+            
+            // إضافة الصور إذا كان المتصفح يدعم مشاركة الملفات
+            if (imageFiles.length > 0 && navigator.canShare && navigator.canShare({ files: imageFiles })) {
+                shareData.files = imageFiles;
+                showSuccessToast(`سيتم مشاركة ${imageFiles.length} صورة مع التقرير`);
+            }
+            
+            await navigator.share(shareData);
+            
+            // عرض رسالة نجاح
+            showSuccessToast('تم مشاركة التقرير بنجاح ✓');
+            
+        } else {
+            fallbackShare(shareText);
+        }
+        
+    } catch (error) {
+        console.log('خطأ في المشاركة:', error);
+        fallbackShare(`🚗 تقرير سجل الورشة - {{ vehicle.plate_number }}
+
+🏪 الورشة: {{ workshop_record.workshop_name or 'غير محدد' }}
+📅 دخول الورشة: {{ workshop_record.entry_date.strftime('%Y-%m-%d') if workshop_record.entry_date else 'غير محدد' }}
+🔧 حالة الإصلاح: {{ workshop_record.repair_status or 'غير محدد' }}
+
+📸 صور مرفقة: {{ workshop_record.images|length if workshop_record.images else 0 }} صورة`);
+    }
+}
+
+// عرض رسالة نجاح
+function showSuccessToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast show position-fixed bottom-0 end-0 m-3 bg-success text-white';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        <div class="toast-body">
+            <i class="fas fa-check-circle me-2"></i>
+            ${message}
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        if (document.body.contains(toast)) {
+            document.body.removeChild(toast);
+        }
+    }, 3000);
+}
+
+function fallbackShare(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('تم نسخ التفاصيل إلى الحافظة');
+        }).catch(() => {
+            showShareModal(text);
+        });
+    } else {
+        showShareModal(text);
+    }
+}
+
+function showShareModal(text) {
+    const modal = document.createElement('div');
+    modal.innerHTML = `
+        <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">مشاركة تفاصيل الورشة</h5>
+                        <button type="button" class="btn-close" onclick="this.closest('.modal').remove()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <textarea class="form-control" rows="10" readonly>${text}</textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="copyText(); this.closest('.modal').remove();">نسخ النص</button>
+                        <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove();">إغلاق</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    window.copyText = function() {
+        navigator.clipboard.writeText(text);
+        alert('تم نسخ النص بنجاح');
+    };
+}
+</script>
+
+<style>
+/* تصميم محسن للصفحة */
+.workshop-header {
+    margin: -16px -8px 20px -8px;
+    border-radius: 0 0 20px 20px;
+    overflow: hidden;
+}
+
+.header-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.vehicle-info {
+    font-size: 0.9rem;
+}
+
+/* شبكة المعلومات */
+.workshop-info-grid {
+    display: grid;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.info-card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.info-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.info-header i {
+    color: #667eea;
+}
+
+.info-content {
+    padding: 20px;
+}
+
+.date-item, .status-item, .workshop-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.date-item:last-child, .status-item:last-child, .workshop-item:last-child {
+    border-bottom: none;
+}
+
+.date-label, .status-label, .workshop-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.date-value, .status-value, .workshop-value {
+    font-weight: 600;
+}
+
+.workshop-value.cost {
+    color: #28a745;
+    font-size: 1.1rem;
+}
+
+.description-text, .notes-text {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    border-right: 4px solid #667eea;
+    line-height: 1.6;
+}
+
+/* شارات الحالة */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge.maintenance {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-badge.breakdown {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.status-badge.accident {
+    background: #ffebee;
+    color: #d32f2f;
+}
+
+.status-badge.in-progress {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.status-badge.completed {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.status-badge.pending {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-badge.other {
+    background: #f5f5f5;
+    color: #666;
+}
+
+/* قسم الصور المحسن والجذاب */
+.images-section {
+    margin-bottom: 25px;
+}
+
+.section-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 18px 20px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
+.section-header i {
+    font-size: 1.3rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.image-category {
+    background: #fff;
+    margin-bottom: 0;
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.12);
+    overflow: hidden;
+}
+
+.image-category:last-child {
+    margin-bottom: 0;
+}
+
+.category-title {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    border-bottom: 2px solid rgba(0,0,0,0.05);
+}
+
+.category-title i {
+    font-size: 1.2rem;
+}
+
+.category-title.before {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffe082 100%);
+    color: #f57c00;
+    border-bottom-color: #ffb74d;
+}
+
+.category-title.after {
+    background: linear-gradient(135deg, #e8f5e9 0%, #81c784 100%);
+    color: #2e7d32;
+    border-bottom-color: #66bb6a;
+}
+
+.images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 18px;
+    padding: 25px 20px;
+    background: linear-gradient(to bottom, #fafafa, #fff);
+}
+
+.image-item {
+    position: relative;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.image-container {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.image-container:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+}
+
+.image-container img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    transition: all 0.4s ease;
+    display: block;
+}
+
+.image-container:hover img {
+    transform: scale(1.15);
+    filter: brightness(0.9);
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.85) 0%, rgba(118, 75, 162, 0.85) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.4s ease;
+}
+
+.image-container:hover .image-overlay {
+    opacity: 1;
+}
+
+.image-overlay i {
+    color: white;
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+    animation: zoomIn 0.5s ease;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+.image-overlay::after {
+    content: 'اضغط للتكبير';
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0.95;
+    margin-top: 5px;
+}
+
+.image-notes {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #495057;
+    text-align: center;
+    padding: 8px 10px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.no-images {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+    background: #f8f9fa;
+    border-radius: 15px;
+    margin: 20px 0;
+}
+
+.no-images i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+/* أزرار العمليات */
+.action-buttons-container {
+    position: sticky;
+    bottom: 20px;
+    z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    margin: 0 -8px;
+}
+
+.btn {
+    border-radius: 12px;
+    font-weight: 500;
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* استجابة للشاشات الصغيرة */
+@media (max-width: 768px) {
+    .images-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 20px 15px;
+    }
+    
+    .image-container img {
+        height: 150px;
+    }
+    
+    .image-overlay i {
+        font-size: 2rem;
+    }
+    
+    .workshop-info-grid {
+        gap: 12px;
+    }
+    
+    .info-content {
+        padding: 15px;
+    }
+}
+</style>
+{% endblock %}

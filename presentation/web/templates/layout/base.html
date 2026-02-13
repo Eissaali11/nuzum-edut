@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}نُظم{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- هوية نُظم البصرية — يُحمّل آخراً لأولوية كبرى على Bootstrap -->
+  <link href="{{ url_for('static', filename='css/theme.css') }}" rel="stylesheet" />
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="theme-body">
+  <nav class="navbar navbar-expand-lg theme-navbar">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('web.index') }}">نُظم</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="القائمة">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav ms-auto">
+          {% if current_user and current_user.is_authenticated %}
+          <li class="nav-item"><span class="nav-link">{{ current_user.name or current_user.email }}</span></li>
+          <li class="nav-item"><a class="nav-link" href="/auth/logout">خروج</a></li>
+          {% else %}
+          <li class="nav-item"><a class="nav-link" href="/auth/login">تسجيل الدخول</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="d-flex flex-grow-1">
+    <aside class="theme-sidebar">
+      <div class="theme-sidebar-brand">نُظم</div>
+      <nav class="theme-sidebar-nav">
+        <a class="theme-sidebar-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('web.index') }}">الرئيسية</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/dashboard') %}active{% endif %}" href="/dashboard">لوحة التحكم</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/employees') %}active{% endif %}" href="/employees">الموظفون</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/departments') %}active{% endif %}" href="/departments">الأقسام</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/attendance') %}active{% endif %}" href="/attendance">الحضور</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/salaries') %}active{% endif %}" href="/salaries">الرواتب</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/vehicles') %}active{% endif %}" href="/vehicles">المركبات</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/accounting') %}active{% endif %}" href="/accounting">المحاسبة</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/reports') %}active{% endif %}" href="/reports">التقارير</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/documents') %}active{% endif %}" href="/documents">المستندات</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/users') %}active{% endif %}" href="/users">المستخدمون</a>
+      </nav>
+    </aside>
+    <main class="flex-grow-1 theme-content-wrap">
+      <div class="container-fluid py-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="إغلاق"></button></div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+  <footer class="theme-footer">
+    <div class="container-fluid text-center text-muted small">نُظم &copy; {{ now.year if now is defined else '' }}</div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>

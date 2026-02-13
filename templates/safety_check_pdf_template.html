@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @page {
+            size: A4;
+            margin: 0;
+            padding: 0;
+        }
+        
+        @page :first {
+            margin: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Droid Arabic Naskh', Arial, sans-serif;
+            background: white;
+            color: #333;
+        }
+        
+        .cover-page {
+            width: 210mm;
+            height: 297mm;
+            padding: 2.5cm;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            page-break-after: always;
+            background: white;
+        }
+        
+        .header-top {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .logo-container {
+            width: 180px;
+            height: 90px;
+            margin: 0 auto 15px;
+        }
+        
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+            border-bottom: 3px solid #18b2b0;
+            padding-bottom: 15px;
+        }
+        
+        .header h1 {
+            color: #18b2b0;
+            font-size: 26px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 5px;
+            font-weight: 400;
+        }
+        
+        .status-box {
+            display: inline-block;
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-top: 12px;
+            font-size: 12px;
+            letter-spacing: 0.3px;
+        }
+        
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+        
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .cover-content {
+            flex: 1;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            background: linear-gradient(135deg, #18b2b0 0%, #15a39e 100%);
+            color: white;
+            padding: 11px 15px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            border-radius: 4px;
+            letter-spacing: 0.3px;
+        }
+        
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .info-table tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .info-table td {
+            padding: 10px 12px;
+            font-size: 12px;
+        }
+        
+        .info-table td:first-child {
+            width: 38%;
+            font-weight: 600;
+            color: #18b2b0;
+            background: #f5fbfb;
+        }
+        
+        .info-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .notes-section {
+            background: linear-gradient(135deg, #f0f9f9 0%, #e8f5f6 100%);
+            padding: 14px 15px;
+            border-left: 4px solid #18b2b0;
+            border-radius: 4px;
+            font-size: 12px;
+            line-height: 1.7;
+            color: #333;
+        }
+        
+        .notes-section h4 {
+            color: #18b2b0;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .image-page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 1.5cm;
+            page-break-after: always;
+            page-break-inside: avoid;
+            background: white;
+        }
+        
+        .image-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #18b2b0;
+        }
+        
+        .image-header h3 {
+            color: #18b2b0;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+        
+        .image-counter {
+            color: #666;
+            font-size: 11px;
+            font-weight: 600;
+            background: #f5fbfb;
+            padding: 4px 12px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        .image-content-wrapper {
+            background: linear-gradient(135deg, #ffffff 0%, #f8feff 100%);
+            border-radius: 12px;
+            border: 2px solid #d0e8e7;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .image-container {
+            text-align: center;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #e0eeee;
+            height: 160mm;
+            overflow: hidden;
+        }
+        
+        .image-container img {
+            width: auto;
+            height: auto;
+            max-width: 160mm;
+            max-height: 150mm;
+            border: 3px solid #18b2b0;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .image-notes {
+            background: linear-gradient(135deg, #18b2b0 0%, #159e9c 100%);
+            padding: 16px 18px;
+            border-radius: 8px;
+            border-top: 3px solid rgba(255,255,255, 0.4);
+            box-shadow: 0 4px 12px rgba(24, 178, 176, 0.25);
+        }
+        
+        .image-notes-title {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        
+        .image-notes-content {
+            color: #ffffff;
+            font-size: 12px;
+            line-height: 1.8;
+            word-wrap: break-word;
+            background: rgba(255, 255, 255, 0.18);
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-weight: 500;
+            border-right: 3px solid rgba(255,255,255, 0.5);
+            min-height: 30px;
+        }
+        
+        .image-page-footer {
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 2px solid #e0e0e0;
+            font-weight: 600;
+            background: #f5f5f5;
+            padding: 10px 14px;
+            border-radius: 6px;
+        }
+        
+        .cover-page-footer {
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .timestamp {
+            color: #999;
+            font-size: 9px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- صفحة الغلاف -->
+    <div class="cover-page">
+        <div class="header-top">
+            <div class="logo-container">
+                <img src="{{ logo_path }}" alt="شعار الشركة" />
+            </div>
+        </div>
+        
+        <div class="header">
+            <h1>🚗 تقرير فحص السلامة الخارجي</h1>
+            <p>نظام نُظم المتكامل لإدارة المركبات والموظفين</p>
+            <div>
+                {% if safety_check.approval_status == 'approved' %}
+                <span class="status-box status-approved">✓ موافق عليه</span>
+                {% elif safety_check.approval_status == 'pending' %}
+                <span class="status-box status-pending">⏳ قيد الانتظار</span>
+                {% else %}
+                <span class="status-box status-rejected">✗ مرفوض</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="cover-content">
+            <!-- معلومات المركبة -->
+            <div class="section">
+                <div class="section-title">📋 معلومات المركبة</div>
+                <table class="info-table">
+                    <tr>
+                        <td>رقم اللوحة</td>
+                        <td><strong>{{ safety_check.vehicle_plate_number }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>موديل المركبة</td>
+                        <td>{{ safety_check.vehicle_make_model or 'غير محدد' }}</td>
+                    </tr>
+                    <tr>
+                        <td>الموكل الحالي</td>
+                        <td>{{ safety_check.current_delegate or 'غير محدد' }}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- معلومات السائق -->
+            <div class="section">
+                <div class="section-title">👤 معلومات السائق</div>
+                <table class="info-table">
+                    <tr>
+                        <td>اسم السائق</td>
+                        <td><strong>{{ safety_check.driver_name or 'غير محدد' }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>رقم الهوية</td>
+                        <td>{{ safety_check.driver_national_id or 'غير محدد' }}</td>
+                    </tr>
+                    <tr>
+                        <td>القسم</td>
+                        <td>{{ safety_check.driver_department or 'غير محدد' }}</td>
+                    </tr>
+                    <tr>
+                        <td>المدينة</td>
+                        <td>{{ safety_check.driver_city or 'غير محدد' }}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- معلومات الفحص -->
+            <div class="section">
+                <div class="section-title">🔍 معلومات الفحص</div>
+                <table class="info-table">
+                    <tr>
+                        <td>تاريخ الفحص</td>
+                        <td>{{ safety_check.inspection_date.strftime('%d/%m/%Y') if safety_check.inspection_date else 'غير محدد' }}</td>
+                    </tr>
+                    <tr>
+                        <td>الحالة</td>
+                        <td>
+                            {% if safety_check.approval_status == 'approved' %}
+                            <span style="color: #28a745; font-weight: 600;">✓ موافق عليه</span>
+                            {% elif safety_check.approval_status == 'pending' %}
+                            <span style="color: #ffc107; font-weight: 600;">⏳ قيد الانتظار</span>
+                            {% else %}
+                            <span style="color: #dc3545; font-weight: 600;">✗ مرفوض</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- الملاحظات العامة -->
+            {% if safety_check.notes %}
+            <div class="section">
+                <div class="section-title">📝 الملاحظات العامة</div>
+                <div class="notes-section">
+                    {{ safety_check.notes }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- سبب الرفض -->
+            {% if safety_check.rejection_reason %}
+            <div class="section">
+                <div class="section-title">❌ سبب الرفض</div>
+                <div class="notes-section" style="border-left-color: #dc3545; background: linear-gradient(135deg, #fef5f5 0%, #fdeaea 100%);">
+                    {{ safety_check.rejection_reason }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="cover-page-footer">
+            <p>تم إنشاء هذا التقرير بواسطة نظام نُظم المتكامل</p>
+            <p class="timestamp">التاريخ: {{ now.strftime('%d/%m/%Y') }} | الوقت: {{ now.strftime('%H:%M') }}</p>
+        </div>
+    </div>
+    
+    <!-- صفحات الصور -->
+    {% if safety_check.safety_images %}
+        {% for image in safety_check.safety_images %}
+        <div class="image-page">
+            <div class="image-header">
+                <h3>📸 صورة الفحص #{{ loop.index }}</h3>
+                <div class="image-counter">صورة {{ loop.index }} من {{ safety_check.safety_images|length }}</div>
+            </div>
+            
+            <div class="image-content-wrapper">
+                <div class="image-container">
+                    <img src="data:image/png;base64,{{ image.image_base64 }}" alt="صورة الفحص {{ loop.index }}">
+                </div>
+                
+                <div class="image-notes">
+                    <div class="image-notes-title">📝 ملاحظات الصورة</div>
+                    <div class="image-notes-content">
+                        {% if image.image_description %}
+                            {{ image.image_description }}
+                        {% else %}
+                            <span style="opacity: 0.8; font-style: italic;">لا توجد ملاحظات محددة لهذه الصورة</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="image-page-footer">
+                {{ safety_check.vehicle_plate_number }} • تاريخ الفحص: {{ safety_check.inspection_date.strftime('%d/%m/%Y') if safety_check.inspection_date else 'غير محدد' }}
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>

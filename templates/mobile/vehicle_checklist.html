@@ -1,0 +1,827 @@
+{% extends 'mobile/layout.html' %} {# تأكد من أن هذا هو اسم ملف التخطيط الأساسي للموبايل #}
+
+{% block title %}
+    {# العنوان الذكي الذي يعتمد على سياق الصفحة (إنشاء/تعديل) #}
+    {% if is_editing %}
+        تعديل نموذج {{ 'تسليم' if existing_handover.handover_type == 'delivery' else 'استلام' }} #{{ existing_handover.id }}
+    {% elif force_mode == 'return' %}
+        نموذج استلام جديد
+    {% else %}
+        نموذج تسليم جديد
+    {% endif %}
+{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <!-- المحور الأول: ملفات الستايل المدمجة لتطبيق التخطيط الذي اتفقنا عليه -->
+    <style>
+        /* 1. الألوان الأساسية والتصميم العام */
+        body {
+            background-color: #f8f9fa; /* خلفية رمادية فاتحة */
+            color: #212529; /* لون نص أساسي */
+        }
+
+        /* 2. تصميم البطاقات (Cards) */
+        .card {
+            border-radius: 12px;
+            border: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+        }
+
+        /* 3. الطباعة (Typography) */
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        h4 {
+            font-weight: 600;
+        }
+
+        /* 4. تصميم الأكورديون (Accordion) */
+        .accordion-button {
+            font-size: 1rem;
+            padding: 0.85rem 1.1rem;
+        }
+        .accordion-button:not(.collapsed) {
+            background-color: #e7f1ff;
+            color: #0d6efd;
+            box-shadow: none;
+        }
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .accordion-button::after {
+            margin-right: auto; /* لوضع السهم على اليسار في RTL */
+            margin-left: 0;
+        }
+
+        /* 5. تصميم لوحات الرسم (Canvas) */
+        .signature-pad-container {
+            border: 2px dashed #dee2e6;
+            cursor: crosshair;
+            background-color: #fff;
+            border-radius: 8px;
+            touch-action: none; /* مهم لمنع التمرير أثناء الرسم على شاشات اللمس */
+        }
+        #damage-canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: auto;
+        }
+
+        /* 6. تحسينات إضافية للواجهة */
+        .form-check, .form-switch {
+            padding-top: .5rem;
+            padding-bottom: .5rem;
+        }
+        .list-group-item .form-check {
+             padding-top: 0;
+             padding-bottom: 0;
+        }
+
+        .select2-container--bootstrap-5 .select2-selection--single { height: calc(1.5em + 0.75rem + 2px) !important; padding: 0.375rem 0.75rem !important; }
+
+        .form-control[readonly], .form-select:disabled {
+            background-color: #e9ecef;
+            opacity: 1;
+        }
+
+        /* تصميم معاينة الملفات */
+        .preview-item img { height: 100px; width: 100%; object-fit: cover; }
+        .preview-item .card { overflow: hidden; position: relative; }
+        .preview-item .remove-file {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+        }
+
+        @media (max-width: 767px) {
+            .action-buttons-container {
+
+                    margin-bottom: 4.5rem !important; /* يمكنك تغيير القيمة حسب رغبتك، مثلاً 0 */
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-2 p-md-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+        <h4 class="mb-0">
+            {% if is_editing %}
+                <i class="fas fa-edit text-primary"></i> تعديل فحص لـ: <strong class="text-dark">{{ vehicle.plate_number }}</strong>
+            {% elif force_mode == 'return' %}
+                <i class="fas fa-reply text-info"></i> استلام مركبة: <strong class="text-dark">{{ vehicle.plate_number }}</strong>
+            {% else %}
+                <i class="fas fa-share text-success"></i> تسليم مركبة: <strong class="text-dark">{{ vehicle.plate_number }}</strong>
+            {% endif %}
+        </h4>
+        <a href="{{ url_for('mobile.vehicle_details', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-car"></i> العودة
+        </a>
+    </div>
+
+    <!-- المحور الثاني: الهيكل الكامل لـ HTML والمنطق -->
+    <form id="main-handover-form" method="post" action="{{ form_action }}" enctype="multipart/form-data" class="needs-validation" novalidate>
+
+        {% if info_message %}
+            <div class="alert alert-info border-0 shadow-sm">{{ info_message }}</div>
+        {% endif %}
+
+        <!-- بطاقة معلومات السيارة (ثابتة) -->
+        <div class="card">
+            <div class="card-body p-3">
+                 <h5 class="card-title mb-2">معلومات المركبة</h5>
+                 <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between px-0"><strong>النوع:</strong> <span>{{ vehicle.make }} {{ vehicle.model }}</span></li>
+                    <li class="list-group-item d-flex justify-content-between px-0"><strong>الحالة الحالية:</strong> <span>{{ vehicle.status_ar if vehicle.status_ar else vehicle.status }}</span></li>
+                 </ul>
+            </div>
+        </div>
+
+        <!-- بطاقة المعلومات الأساسية -->
+        <div class="card">
+            <div class="card-body p-3">
+                 <h5 class="card-title mb-3">المعلومات الأساسية</h5>
+                 <div class="row g-3">
+                     <div class="col-12">
+                        <label class="form-label">نوع العملية</label>
+                        <input type="text" class="form-control" 
+                               value="{% if is_editing %}{{ 'تسليم' if existing_handover.handover_type == 'delivery' else 'استلام' }}{% elif force_mode == 'return' %}استلام مركبة من سائق{% else %}تسليم مركبة لسائق{% endif %}" 
+                               readonly>
+                        <input type="hidden" name="handover_type" value="{{ existing_handover.handover_type if is_editing else force_mode }}">
+                    </div>
+                    <div class="col-6">
+                        <label for="handover_date" class="form-label">التاريخ</label>
+                        <input type="date" class="form-control" id="handover_date" name="handover_date" value="{% if is_editing and existing_handover.handover_date %}{{ existing_handover.handover_date }}{% else %}{{ now_date }}{% endif %}" required>
+                    </div>
+                    <div class="col-6">
+                        <label for="handover_time" class="form-label">الوقت</label>
+                        <input type="time" class="form-control" id="handover_time" name="handover_time" value="{% if is_editing and existing_handover.handover_time %}{{ existing_handover.handover_time }}{% else %}{{ now_time }}{% endif %}">
+                    </div>
+                    <div class="col-6">
+                        <label for="mileage" class="form-label">عداد الكيلومترات</label>
+                        <input type="number" class="form-control" id="mileage" name="mileage" value="{% if is_editing %}{{ existing_handover.mileage }}{% endif %}" placeholder="كم" required>
+                    </div>
+                    <div class="col-6">
+                        <label for="fuel_level" class="form-label">الوقود</label>
+                        <select class="form-select" id="fuel_level" name="fuel_level" required>
+                             <option value="ممتلئ" {% if is_editing and existing_handover.fuel_level == 'ممتلئ' %}selected{% endif %}>ممتلئ</option>
+                             <option value="3/4" {% if is_editing and existing_handover.fuel_level == '3/4' %}selected{% endif %}>3/4</option>
+                             <option value="1/2" {% if is_editing and existing_handover.fuel_level == '1/2' %}selected{% endif %}>نصف</option>
+                             <option value="1/4" {% if is_editing and existing_handover.fuel_level == '1/4' %}selected{% endif %}>ربع</option>
+                             <option value="منخفض" {% if is_editing and existing_handover.fuel_level == 'منخفض' %}selected{% endif %}>منخفض</option>
+                        </select>
+                    </div>
+                 </div>
+            </div>
+        </div>
+
+        <!-- بطاقة بيانات الأشخاص -->
+        <!-- في ملف: templates/mobile/vehicle_checklist.html -->
+
+        <!-- ... -->
+        <!-- في ملف: templates/mobile/vehicle_checklist.html -->
+
+        <!-- في ملف: templates/mobile/vehicle_checklist.html -->
+
+        <!-- ... -->
+        <!-- بطاقة بيانات الأشخاص (بنية مبسطة وفعالة لـ Select2) -->
+        <div class="card">
+            <div class="card-body p-3">
+                <h5 class="card-title mb-3">بيانات الأشخاص</h5>
+
+                <div class="mb-3">
+                    <label for="department_filter" class="form-label">تصفية حسب القسم</label>
+                    <select id="department_filter" class="form-select form-select-sm">
+                       <option value="all">جميع الأقسام</option>
+                       {% for dept in departments %} <option value="{{ dept.id }}">{{ dept.name }}</option> {% endfor %}
+                    </select>
+                </div>
+                <hr>
+
+                <!-- قسم السائق -->
+                <h6 class="text-muted">السائق / المستلم</h6>
+                {% if not is_editing and force_mode == 'return' %}
+                    <div class="mb-3">
+                        <label class="form-label">اسم السائق الحالي</label>
+                        <input type="text" class="form-control" value="{{ current_driver_info.person_name }}" readonly>
+                        <input type="hidden" name="employee_id" value="{{ current_driver_info.employee_id or '' }}">
+                        <input type="hidden" name="person_name" value="{{ current_driver_info.person_name }}">
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <label for="employee_id" class="form-label">السائق (من القائمة)</label>
+                        <select class="form-select select2-bs5" id="employee_id" name="employee_id">
+                            <option value="">-- سائق غير مسجل --</option>
+                            {% for employee in employees %}
+                                <option value="{{ employee.id }}" {% if is_editing and existing_handover.employee_id == employee.id %}selected{% endif %}
+                                    data-departments="{{ employee.departments|map(attribute='id')|join(',') }}">{{ employee.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="person_name" class="form-label">أو أدخل اسم السائق يدوياً</label>
+                        <input type="text" class="form-control" id="person_name" name="person_name" value="{% if is_editing %}{{ existing_handover.person_name or '' }}{% endif %}" placeholder="اسم السائق" required>
+                    </div>
+                {% endif %}
+                <hr>
+
+                <!-- قسم المشرف -->
+                <h6 class="text-muted">المشرف / المسلّم</h6>
+                <div class="mb-3">
+                    <label for="supervisor_employee_id" class="form-label">المشرف (من القائمة)</label>
+                    <select class="form-select select2-bs5" id="supervisor_employee_id" name="supervisor_employee_id">
+                        <option value="">-- مشرف غير مسجل --</option>
+                        {% for employee in employees %}
+                             <option value="{{ employee.id }}" {% if is_editing and existing_handover.supervisor_employee_id == employee.id %}selected{% endif %}
+                                data-departments="{{ employee.departments|map(attribute='id')|join(',') }}">{{ employee.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                 <div class="mb-3">
+                    <label for="supervisor_name" class="form-label">أو أدخل اسم المشرف يدوياً</label>
+                    <input type="text" class="form-control" id="supervisor_name" name="supervisor_name" value="{% if is_editing %}{{ existing_handover.supervisor_name or '' }}{% endif %}" placeholder="اسم المشرف">
+                </div>
+            </div>
+        </div>
+        <!-- ... -->
+
+        <!-- بطاقة قائمة الفحص الكاملة (داخل Accordion) -->
+        <div class="card">
+             <div class="accordion" id="checklistAccordion">
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseChecklist">قائمة الفحص والتجهيزات</button></h2>
+                    <div id="collapseChecklist" class="accordion-collapse collapse" data-bs-parent="#checklistAccordion">
+                        <div class="accordion-body">
+                            <h6>التجهيزات المتوفرة</h6>
+                            <ul class="list-group list-group-flush mb-3">
+                                <li class="list-group-item ps-0"><div class="form-check"><input class="form-check-input" type="checkbox" name="has_spare_tire" id="has_spare_tire" {% if not is_editing or (is_editing and existing_handover.has_spare_tire) %}checked{% endif %}><label for="has_spare_tire" class="form-check-label">إطار احتياطي</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check"><input class="form-check-input" type="checkbox" name="has_fire_extinguisher" id="has_fire_extinguisher" {% if not is_editing or (is_editing and existing_handover.has_fire_extinguisher) %}checked{% endif %}><label for="has_fire_extinguisher" class="form-check-label">طفاية حريق</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check"><input class="form-check-input" type="checkbox" name="has_first_aid_kit" id="has_first_aid_kit" {% if not is_editing or (is_editing and existing_handover.has_first_aid_kit) %}checked{% endif %}><label for="has_first_aid_kit" class="form-check-label">إسعافات أولية</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check"><input class="form-check-input" type="checkbox" name="has_warning_triangle" id="has_warning_triangle" {% if not is_editing or (is_editing and existing_handover.has_warning_triangle) %}checked{% endif %}><label for="has_warning_triangle" class="form-check-label">مثلث تحذيري</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check"><input class="form-check-input" type="checkbox" name="has_tools" id="has_tools" {% if not is_editing or (is_editing and existing_handover.has_tools) %}checked{% endif %}><label for="has_tools" class="form-check-label">أدوات</label></div></li>
+                            </ul>
+                            <h6 class="text-muted mt-4">المشاكل الموجودة <small>(حدد إن وجدت)</small></h6>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item ps-0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" name="has_oil_leaks" id="has_oil_leaks" {% if is_editing and existing_handover.has_oil_leaks %}checked{% endif %}><label for="has_oil_leaks" class="form-check-label">تهريب زيوت</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" name="has_gear_issue" id="has_gear_issue" {% if is_editing and existing_handover.has_gear_issue %}checked{% endif %}><label for="has_gear_issue" class="form-check-label">مشكلة في الجير</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" name="has_clutch_issue" id="has_clutch_issue" {% if is_editing and existing_handover.has_clutch_issue %}checked{% endif %}><label for="has_clutch_issue" class="form-check-label">مشكلة كلتش</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" name="has_engine_issue" id="has_engine_issue" {% if is_editing and existing_handover.has_engine_issue %}checked{% endif %}><label for="has_engine_issue" class="form-check-label">مشكلة ماكينة</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" name="has_ac_issue" id="has_ac_issue" {% if is_editing and existing_handover.has_ac_issue %}checked{% endif %}><label for="has_ac_issue" class="form-check-label">مشكلة مكيف</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" name="has_windows_issue" id="has_windows_issue" {% if is_editing and existing_handover.has_windows_issue %}checked{% endif %}><label for="has_windows_issue" class="form-check-label">مشكلة زجاج</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" name="has_tires_issue" id="has_tires_issue" {% if is_editing and existing_handover.has_tires_issue %}checked{% endif %}><label for="has_tires_issue" class="form-check-label">مشكلة إطارات</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" name="has_body_issue" id="has_body_issue" {% if is_editing and existing_handover.has_body_issue %}checked{% endif %}><label for="has_body_issue" class="form-check-label">مشكلة هيكل</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" name="has_electricity_issue" id="has_electricity_issue" {% if is_editing and existing_handover.has_electricity_issue %}checked{% endif %}><label for="has_electricity_issue" class="form-check-label">مشكلة كهرباء</label></div></li>
+                                <li class="list-group-item ps-0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" name="has_lights_issue" id="has_lights_issue" {% if is_editing and existing_handover.has_lights_issue %}checked{% endif %}><label for="has_lights_issue" class="form-check-label">مشكلة أنوار</label></div></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة التوثيق والملاحظات (داخل Accordion) -->
+        <div class="card">
+            <div class="accordion" id="docsAccordion">
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDocs">التوثيق والملاحظات</button></h2>
+                    <div id="collapseDocs" class="accordion-collapse collapse show" data-bs-parent="#docsAccordion">
+                        <div class="accordion-body">
+                            <h6>تحديد الضرر على الهيكل</h6>
+                            <div class="text-center mb-3"><div class="d-inline-block border rounded p-1 bg-light"><canvas id="damage-canvas" width="300" height="150"></canvas></div></div>
+                            <div class="btn-group btn-group-sm d-flex mb-3" role="group"><button type="button" class="btn btn-outline-danger" id="clear-canvas-btn"><i class="fas fa-trash"></i> مسح</button><button type="button" class="btn btn-outline-secondary" id="select-mode-btn"><i class="fas fa-mouse-pointer"></i> تحديد</button><button type="button" class="btn btn-primary active" id="draw-mode-btn"><i class="fas fa-pencil-alt"></i> رسم</button></div>
+                            <hr>
+                            <div class="mb-3">
+                                <label for="vehicle_status_summary" class="form-label">وصف حالة المركبة</label>
+                                <textarea class="form-control" id="vehicle_status_summary" name="vehicle_status_summary" rows="3" placeholder="مثال: السيارة نظيفة مع خدش بسيط..." required>{% if is_editing %}{{ existing_handover.vehicle_status_summary or '' }}{% endif %}</textarea>
+                            </div>
+                            <h6>رفع مرفقات (صور, PDF)</h6>
+                            <div class="d-grid mb-2">
+                                <button class="btn btn-outline-secondary" type="button" id="trigger-file-select"><i class="fas fa-paperclip me-1"></i> اختر ملفات</button>
+                                <input type="file" id="files" name="files" multiple class="d-none" accept="image/*,.heic,.heif,application/pdf">
+                            </div>
+                            <div id="file-previews" class="row g-2"></div>
+                            <hr>
+                            
+                            <!-- حقل رابط نموذج خارجي 1 -->
+                            <div class="mb-3">
+                                <label for="form_link" class="form-label">
+                                    <i class="fas fa-link me-2"></i>
+                                    رابط نموذج خارجي 1 (اختياري)
+                                </label>
+                                <input type="url" class="form-control" id="form_link" name="form_link" 
+                                       placeholder="https://example.com/form" 
+                                       value="{% if is_editing %}{{ existing_handover.form_link or '' }}{% endif %}">
+                                <small class="text-muted d-block mt-1">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    يمكن إضافة رابط لنموذج خارجي مثل Google Forms
+                                </small>
+                            </div>
+
+                            <!-- حقل رابط نموذج خارجي 2 -->
+                            <div class="mb-3">
+                                <label for="form_link_2" class="form-label">
+                                    <i class="fas fa-link me-2"></i>
+                                    رابط نموذج خارجي 2 (اختياري)
+                                </label>
+                                <input type="url" class="form-control" id="form_link_2" name="form_link_2" 
+                                       placeholder="https://example.com/form2" 
+                                       value="{% if is_editing %}{{ existing_handover.form_link_2 or '' }}{% endif %}">
+                                <small class="text-muted d-block mt-1">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    رابط إضافي ثاني للنماذج الخارجية
+                                </small>
+                            </div>
+                            
+                             <div class="mb-3">
+                                <label for="notes" class="form-label">ملاحظات إضافية</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="2">{% if is_editing %}{{ existing_handover.notes or '' }}{% endif %}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة التواقيع (داخل Accordion) -->
+        <div class="card">
+             <div class="accordion" id="signaturesAccordion">
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSignatures">التواقيع</button></h2>
+                    <div id="collapseSignatures" class="accordion-collapse collapse" data-bs-parent="#signaturesAccordion">
+                        <div class="accordion-body">
+                            <div class="mb-3">
+                                <label class="form-label">توقيع المشرف (<span id="supervisor-name-display">...</span>)</label>
+                                <div class="signature-pad-container"><canvas id="supervisor-signature-canvas"></canvas></div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 clear-signature" data-canvas-id="supervisor-signature-canvas">مسح</button>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">توقيع السائق (<span id="driver-name-display">...</span>)</label>
+                                <div class="signature-pad-container"><canvas id="driver-signature-canvas"></canvas></div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 clear-signature" data-canvas-id="driver-signature-canvas">مسح</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- حقول مخفية -->
+        <input type="hidden" name="supervisor_signature_data" id="supervisor-signature-data">
+        <input type="hidden" name="driver_signature_data" id="driver-signature-data">
+        <input type="hidden" name="damage_diagram_data" id="damage-diagram-data">
+
+        <!-- أزرار الحفظ الديناميكية النهائية -->
+        <div class="d-grid mt-3 gap-2 action-buttons-container">
+
+        <div class="d-grid mt-3 gap-2">
+             {% if is_editing %}
+                 <button type="submit" name="action" value="update" class="btn btn-primary btn-lg">
+                     <i class="fas fa-save me-2"></i> حفظ التعديلات
+                 </button>
+                 <button type="submit" name="action" value="save_as_next" class="btn btn-success btn-lg" 
+                         formaction="{{ url_for('mobile.save_as_next_handover_mobile', handover_id=existing_handover.id) }}">
+                     <i class="fas fa-copy me-2"></i> حفظ كعملية تالية ({% if existing_handover.handover_type == 'return' %}'تسليم'{% else %}'استلام'{% endif %})
+                 </button>
+             {% else %}
+                 <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-paper-plane me-2"></i> إرسال الطلب للموافقة
+                </button>
+             {% endif %}
+        </div>
+            </div>
+
+    </form>
+
+    <!-- قوالب المعاينة المخفية (ضرورية للـ JavaScript) -->
+    <template id="image-preview-template">
+        <div class="col-6 preview-item">
+            <div class="card">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23f0f0f0' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='14'%3Eجاري التحميل...%3C/text%3E%3C/svg%3E" alt="صورة" class="preview-image">
+                <button type="button" class="btn-close remove-file"></button>
+            </div>
+        </div>
+    </template>
+    <template id="pdf-preview-template">
+         <div class="col-12 preview-item">
+             <div class="card p-2">
+                 <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-pdf fa-2x text-danger me-2"></i>
+                        <small class="pdf-filename text-truncate"></small>
+                    </div>
+                    <button type="button" class="btn-close remove-file"></button>
+                 </div>
+             </div>
+         </div>
+    </template>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <!-- مكتبات JS المطلوبة (تأكد من وجود jQuery قبل Select2) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
+    <script>
+    // استخدام $(document).ready() من jQuery لضمان أن كل عناصر DOM قد تم تحميلها وجاهزة للتفاعل.
+    $(document).ready(function () {
+
+        // استخدام setTimeout للتأكد من أن كل شيء قد تم عرضه (rendered) بشكل كامل
+        setTimeout(function() {
+
+            // ===================================================================
+            // الوحدة 1: تهيئة المكونات والمكتبات الخارجية
+            // ===================================================================
+            function initComponents() {
+                if ($('.select2-bs5').length > 0) {
+                    $('.select2-bs5').select2({
+                        theme: 'bootstrap-5',
+                        placeholder: 'اختر أو ابحث...',
+                        width: '100%',
+                        tags: true
+                      
+                    });
+                }
+            }
+
+            // ===================================================================
+            // الوحدة 2: إدارة لوحات الرسم (Canvas)
+            // ===================================================================
+            let damageCanvas = null;
+            const sigPads = {};
+            function initCanvases() {
+                const damageCanvasElement = document.getElementById('damage-canvas');
+                if (damageCanvasElement) {
+                    damageCanvas = new fabric.Canvas('damage-canvas', { isDrawingMode: true });
+                    const imageUrl = "{{ url_for('static', filename='images/vehicle_diagram.png') }}";
+                    fabric.Image.fromURL(imageUrl, (img) => {
+                        damageCanvas.setBackgroundImage(img, damageCanvas.renderAll.bind(damageCanvas), { scaleX: damageCanvas.width / img.width, scaleY: damageCanvas.height / img.height });
+                        {% if is_editing and existing_handover.damage_diagram_path %}
+                            const savedDiagramUrl = "{{ url_for('static', filename=existing_handover.damage_diagram_path) }}";
+                            fabric.Image.fromURL(savedDiagramUrl, (savedImg) => {
+                                damageCanvas.add(savedImg.set({ evented: false, selectable: false }));
+                                damageCanvas.renderAll();
+                            }, { crossOrigin: 'anonymous' });
+                        {% endif %}
+                    }, { crossOrigin: 'anonymous' });
+                    damageCanvas.freeDrawingBrush.color = "#E53935"; damageCanvas.freeDrawingBrush.width = 3;
+                }
+                ['supervisor-signature-canvas', 'driver-signature-canvas'].forEach(id => {
+                    const canvasEl = document.getElementById(id); if (!canvasEl) return;
+                    const container = canvasEl.parentElement; canvasEl.width = container.offsetWidth > 0 ? container.offsetWidth - 2 : 280; canvasEl.height = 120;
+                    sigPads[id] = new fabric.Canvas(id, { isDrawingMode: true, backgroundColor: '#fff' });
+                    sigPads[id].freeDrawingBrush.color = "#000000"; sigPads[id].freeDrawingBrush.width = 2;
+                });
+            }
+
+
+            // ===================================================================
+            // الوحدة 3: إدارة تفاعل المستخدمين والأحداث
+            // ===================================================================
+            function bindUIEvents() {
+                // ... (كود أزرار الكانفاس كما هو)
+                $('#draw-mode-btn').on('click', () => { if(damageCanvas) damageCanvas.isDrawingMode = true; });
+                $('#select-mode-btn').on('click', () => { if(damageCanvas) damageCanvas.isDrawingMode = false; });
+                $('#clear-canvas-btn').on('click', () => {
+                    if(damageCanvas) {
+                        damageCanvas.getObjects().forEach(obj => { if (obj !== damageCanvas.backgroundImage) damageCanvas.remove(obj); });
+                        damageCanvas.renderAll();
+                    }
+                });
+                $('.clear-signature').on('click', function() {
+                    const canvasId = $(this).data('canvasId');
+                    if (sigPads[canvasId]) sigPads[canvasId].clear();
+                });
+
+                // === بداية التعديل المهم ===
+                const $employeeSelect = $('#employee_id');
+                const $supervisorSelect = $('#supervisor_employee_id');
+                const personNameInput = document.getElementById('person_name');
+                const supervisorNameInput = document.getElementById('supervisor_name');
+                const departmentFilter = document.getElementById('department_filter');
+
+                // حفظ الخيارات الأصلية مرة واحدة عند التحميل
+                const originalEmployeeOptions = [];
+                const originalSupervisorOptions = [];
+                
+                // حفظ خيارات السائق
+                $employeeSelect.find('option').each(function() {
+                    originalEmployeeOptions.push({
+                        value: $(this).val(),
+                        text: $(this).text(),
+                        departments: $(this).data('departments')
+                    });
+                });
+                
+                // حفظ خيارات المشرف
+                $supervisorSelect.find('option').each(function() {
+                    originalSupervisorOptions.push({
+                        value: $(this).val(),
+                        text: $(this).text(),
+                        departments: $(this).data('departments')
+                    });
+                });
+
+                // دالة محدثة لفلترة الموظفين باستخدام Select2
+                const filterSelectOptions = () => {
+                    const selectedDeptId = departmentFilter.value;
+                    console.log('Selected department ID:', selectedDeptId);
+
+                    // دالة الفلترة المحسنة
+                    const applyFilter = ($selectElement, originalOptions, defaultText) => {
+                        if (!$selectElement.length) return;
+
+                        // احفظ القيمة المحددة حالياً
+                        let currentSelection = $selectElement.val();
+                        
+                        // فلترة الخيارات حسب القسم المحدد
+                        const filteredOptions = [];
+                        
+                        originalOptions.forEach(option => {
+                            // احتفظ بالخيار الافتراضي دائماً
+                            if (!option.value) {
+                                filteredOptions.push(option);
+                                return;
+                            }
+
+                            // تطبيق الفلتر
+                            if (selectedDeptId === 'all') {
+                                // أظهر كل الموظفين
+                                filteredOptions.push(option);
+                            } else {
+                                // أظهر فقط الموظفين من القسم المحدد
+                                const departments = String(option.departments || '').split(',');
+                                if (departments.includes(selectedDeptId)) {
+                                    filteredOptions.push(option);
+                                }
+                            }
+                        });
+
+                        // تدمير Select2 الحالي
+                        $selectElement.select2('destroy');
+                        
+                        // مسح جميع الخيارات
+                        $selectElement.empty();
+                        
+                        // إعادة بناء الخيارات
+                        filteredOptions.forEach(option => {
+                            const $newOption = $('<option></option>')
+                                .attr('value', option.value)
+                                .text(option.text);
+                            
+                            if (option.departments) {
+                                $newOption.attr('data-departments', option.departments);
+                            }
+                            
+                            $selectElement.append($newOption);
+                        });
+
+                        // إعادة تهيئة Select2
+                        $selectElement.select2({
+                            theme: 'bootstrap-5',
+                            placeholder: 'اختر أو ابحث...',
+                            width: '100%',
+                            tags: true
+                        });
+
+                        // إعادة تحديد القيمة إذا كانت لا تزال متاحة
+                        const availableValues = filteredOptions.map(opt => opt.value);
+                        if (currentSelection && availableValues.includes(currentSelection)) {
+                            $selectElement.val(currentSelection).trigger('change');
+                        } else {
+                            $selectElement.val('').trigger('change');
+                        }
+                        
+                        console.log('Select element ID:', $selectElement.attr('id'));
+                        console.log('Filtered options count:', filteredOptions.length - 1); // -1 for empty option
+                        console.log('Available options:', filteredOptions.map(opt => opt.text));
+                    };
+
+                    console.log('Applying filter to employee select...');
+                    applyFilter($employeeSelect, originalEmployeeOptions, '-- سائق غير مسجل --');
+                    console.log('Applying filter to supervisor select...');
+                    applyFilter($supervisorSelect, originalSupervisorOptions, '-- مشرف غير مسجل --');
+                };
+
+                $(departmentFilter).on('change', filterSelectOptions);
+                // قم بتشغيل الفلتر مرة واحدة عند تحميل الصفحة في حال كان هناك قسم محدد مسبقاً
+                filterSelectOptions();
+
+                // --- (بقية دوال ربط الأحداث تبقى كما هي) ---
+
+                const updateInputFromSelect = ($selectElement, inputElement) => {
+                    if (!inputElement) return;
+                    const selectedData = $selectElement.select2('data')[0];
+                    if (selectedData && selectedData.id) inputElement.value = selectedData.text.trim();
+                };
+
+                const updateSignatureLabels = () => {
+                    const driverNameReadOnly = $('input[name="person_name"][readonly]');
+                    let driverName = driverNameReadOnly.length ? driverNameReadOnly.val().trim() : (personNameInput ? personNameInput.value.trim() : "لم يحدد");
+                    let supervisorName = supervisorNameInput ? supervisorNameInput.value.trim() : "لم يحدد";
+                    $('#driver-name-display').text(driverName || "لم يحدد");
+                    $('#supervisor-name-display').text(supervisorName || "لم يحدد");
+                };
+
+                if ($employeeSelect.length) $employeeSelect.on('change', () => { updateInputFromSelect($employeeSelect, personNameInput); updateSignatureLabels(); });
+                if ($supervisorSelect.length) $supervisorSelect.on('change', () => { updateInputFromSelect($supervisorSelect, supervisorNameInput); updateSignatureLabels(); });
+                if (personNameInput && !personNameInput.readOnly) personNameInput.addEventListener('keyup', updateSignatureLabels);
+                if (supervisorNameInput) supervisorNameInput.addEventListener('keyup', updateSignatureLabels);
+
+                // استدعاء أولي لتحديث الأسماء عند تحميل الصفحة
+                updateSignatureLabels();
+                 // === نهاية التعديل المهم ===
+            }
+
+            // ===================================================================
+            // الوحدة 4: إدارة رفع الملفات
+            // ===================================================================
+            const filesInput = document.getElementById('files');
+            const filePreviewsContainer = document.getElementById('file-previews');
+            let stagedFiles = new DataTransfer();
+            $('#trigger-file-select').on('click', () => { filesInput.value = null; filesInput.click(); });
+            $(filesInput).on('change', event => {
+                const files = Array.from(event.target.files);
+                const totalFiles = stagedFiles.files.length + files.length;
+                
+                // تحذير عند رفع عدد كبير من الصور
+                if (totalFiles > 100) {
+                    alert('تحذير: عدد الصور كبير جداً (' + totalFiles + ' صورة). قد يستغرق الرفع وقتاً طويلاً.');
+                } else if (totalFiles > 50) {
+                    console.log('تنبيه: جاري رفع ' + totalFiles + ' صورة. سيتم ضغط الصور تلقائياً لتسريع العملية.');
+                }
+                
+                files.forEach(addFilePreview);
+            });
+
+            // دالة ضغط الصور
+            async function compressImage(file, maxWidth = 1920, quality = 0.8) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            
+                            // تقليل الحجم إذا كان أكبر من maxWidth
+                            if (width > maxWidth) {
+                                height = (height * maxWidth) / width;
+                                width = maxWidth;
+                            }
+                            
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            canvas.toBlob((blob) => {
+                                if (blob) {
+                                    const compressedFile = new File([blob], file.name, {
+                                        type: 'image/jpeg',
+                                        lastModified: Date.now()
+                                    });
+                                    resolve(compressedFile);
+                                } else {
+                                    resolve(file);
+                                }
+                            }, 'image/jpeg', quality);
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.onerror = () => resolve(file);
+                    reader.readAsDataURL(file);
+                });
+            }
+            
+            async function addFilePreview(file) {
+                for(let i=0; i<stagedFiles.files.length; i++) if(stagedFiles.files[i].name === file.name && stagedFiles.files[i].size === file.size) return;
+                
+                // ضغط الصور تلقائياً
+                const fileName = file.name.toLowerCase();
+                const isImage = file.type.startsWith('image/') || 
+                                fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || 
+                                fileName.endsWith('.png') || fileName.endsWith('.gif') || 
+                                fileName.endsWith('.heic') || fileName.endsWith('.heif') || 
+                                fileName.endsWith('.webp');
+                
+                if (isImage && file.size > 500 * 1024) { // ضغط الصور أكبر من 500 KB
+                    try {
+                        file = await compressImage(file);
+                        console.log('تم ضغط الصورة:', file.name, 'الحجم الجديد:', Math.round(file.size / 1024), 'KB');
+                    } catch (error) {
+                        console.log('لم يتم ضغط الصورة:', error);
+                    }
+                }
+                
+                stagedFiles.items.add(file);
+                
+                // التحقق من نوع الملف بناءً على الامتداد والـ MIME type
+                const isPdf = file.type === 'application/pdf' || fileName.endsWith('.pdf');
+                
+                const template = document.getElementById(isPdf ? 'pdf-preview-template' : 'image-preview-template');
+                const clone = template.content.cloneNode(true);
+                
+                if (isPdf) {
+                    $(clone).find('.pdf-filename').text(file.name);
+                    appendPreviewToDOM(clone, file);
+                } else if (isImage) {
+                    // تعيين الصورة باستخدام FileReader
+                    const imgElement = $(clone).find('.preview-image');
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        imgElement.attr('src', e.target.result);
+                        console.log('تم تحميل الصورة:', file.name);
+                    };
+                    
+                    reader.onerror = function(error) {
+                        console.error('خطأ في قراءة الملف:', file.name, error);
+                        // محاولة استخدام URL.createObjectURL كخطة بديلة
+                        try {
+                            const url = URL.createObjectURL(file);
+                            imgElement.attr('src', url);
+                        } catch(err) {
+                            console.error('فشل تحميل الصورة:', err);
+                        }
+                    };
+                    
+                    // قراءة الملف كـ Data URL
+                    reader.readAsDataURL(file);
+                    // إضافة العنصر فوراً مع صورة placeholder
+                    appendPreviewToDOM(clone, file);
+                } else {
+                    // نوع ملف غير مدعوم
+                    appendPreviewToDOM(clone, file);
+                }
+            }
+            
+            function appendPreviewToDOM(clone, file) {
+                $(clone).find('.remove-file').on('click', function() {
+                    const newDt = new DataTransfer();
+                    Array.from(stagedFiles.files).forEach(f => { if (f !== file) newDt.items.add(f); });
+                    stagedFiles = newDt;
+                    try {
+                        filesInput.files = stagedFiles.files;
+                    } catch (e) {
+                        console.log('تم حذف الملف من المعاينة');
+                    }
+                    $(this).closest('.preview-item').remove();
+                });
+                $(filePreviewsContainer).append(clone);
+            }
+
+            // ===================================================================
+            // الوحدة 5: إرسال النموذج (Form Submission)
+            // ===================================================================
+            $('#main-handover-form').on('submit', function (event) {
+                // تحديث ملفات الإدخال من الملفات المُدرجة
+                try {
+                    filesInput.files = stagedFiles.files;
+                } catch (e) {
+                    // في حالة فشل التحديث المباشر، نستخدم طريقة بديلة
+                    console.log('تم استخدام الطريقة البديلة لتحديث الملفات');
+                }
+                if (!this.checkValidity()) {
+                    event.preventDefault(); event.stopPropagation();
+                    $(this).addClass('was-validated');
+                    alert('الرجاء تعبئة جميع الحقول المطلوبة.'); return;
+                }
+                if (damageCanvas && damageCanvas.getObjects().length > 1) $('#damage-diagram-data').val(damageCanvas.toDataURL({format: 'png'}));
+                Object.keys(sigPads).forEach(id => {
+                    const pad = sigPads[id];
+                    if (pad && pad.getObjects().length > 0) $('#' + id.replace('-canvas', '-data')).val(pad.toDataURL({format: 'png'}));
+                });
+                const activeSubmitButton = $(document.activeElement);
+                if(activeSubmitButton.is('button[type="submit"]')){
+                    activeSubmitButton.prop('disabled', true).html(`<span class="spinner-border spinner-border-sm"></span> جارٍ الحفظ...`);
+                }
+            });
+
+            // ===================================================================
+            // نقطة البداية: تشغيل كل شيء
+            // ===================================================================
+            initComponents();
+            initCanvases();
+            bindUIEvents();
+
+        }, 50); // <-- التأخير البسيط لضمان تحميل كل شيء
+
+    });
+    </script>
+{% endblock %}

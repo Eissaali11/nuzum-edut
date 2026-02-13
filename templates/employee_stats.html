@@ -1,0 +1,664 @@
+{% extends "layout.html" %}
+
+{% block title %}إحصائيات الموظفين{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #05122D 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Enhanced Page Header */
+    .stats-header {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.6s ease-out;
+    }
+
+    .stats-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+    }
+
+    .stats-header h1 {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 2.5rem;
+    }
+
+    .breadcrumb-enhanced {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(5px);
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .breadcrumb-item.active {
+        font-weight: 600;
+        color: #05122D;
+    }
+
+    /* Enhanced Stats Cards */
+    .stats-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        height: 100%;
+        position: relative;
+        animation: slideUp 0.6s ease-out both;
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+
+    .stats-card:hover::before {
+        transform: translateX(100%);
+    }
+
+    .stats-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .stats-card .card-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+        position: relative;
+    }
+
+    .stats-card .card-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+
+    .stats-card .card-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    .stats-card .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Status Cards */
+    .total-employees-enhanced {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .active-card-enhanced {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .inactive-card-enhanced {
+        background: var(--danger-gradient);
+        color: white;
+    }
+
+    .on-leave-card-enhanced {
+        background: var(--warning-gradient);
+        color: white;
+    }
+
+    .stats-count {
+        font-size: 2.8rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-percentage {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    /* Enhanced Table */
+    .department-table-enhanced {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .department-table-enhanced th {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1rem;
+        font-weight: 600;
+        border: none;
+    }
+
+    .department-table-enhanced td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .department-table-enhanced tr:last-child td {
+        border-bottom: none;
+    }
+
+    .department-table-enhanced tfoot th {
+        background: #05122D;
+        color: white;
+    }
+
+    .department-link {
+        font-weight: 600;
+        color: #05122D;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .department-link:hover {
+        color: #667eea;
+        text-decoration: underline;
+    }
+
+    /* Chart Enhancements */
+    .chart-container-enhanced {
+        position: relative;
+        height: 350px;
+        padding: 1rem;
+    }
+
+    .chart-wrapper-enhanced {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--card-shadow);
+    }
+
+    .chart-info-enhanced {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(5px);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+    }
+
+    .chart-info-enhanced .total-count,
+    .chart-info-enhanced .departments-count {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .chart-info-enhanced span {
+        display: block;
+    }
+
+    .chart-info-enhanced #totalEmployees,
+    .chart-info-enhanced #departmentsCount {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #05122D;
+        margin-bottom: 0.5rem;
+    }
+
+    .chart-info-enhanced .info-label {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Staggered Animation for Cards */
+    .stats-card:nth-child(1) { animation-delay: 0.1s; }
+    .stats-card:nth-child(2) { animation-delay: 0.2s; }
+    .stats-card:nth-child(3) { animation-delay: 0.3s; }
+    .stats-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .stats-header {
+            padding: 1.25rem;
+        }
+        
+        .stats-header h1 {
+            font-size: 2rem;
+        }
+        
+        .stats-count {
+            font-size: 2.2rem;
+        }
+        
+        .chart-container-enhanced {
+            height: 300px;
+        }
+        
+        .department-table-enhanced th,
+        .department-table-enhanced td {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Enhanced Header -->
+    <div class="stats-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>إحصائيات الموظفين</h1>
+                <p class="text-muted mb-0">نظرة عامة على إحصائيات الموظفين حسب الأقسام والوضع الوظيفي</p>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-enhanced mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">الرئيسية</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">إحصائيات الموظفين</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Statistics Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="stats-card total-employees-enhanced h-100">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-users fa-3x mb-3" style="opacity: 0.8;"></i>
+                    <h5 class="card-title mb-3">إجمالي الموظفين</h5>
+                    <p class="stats-count mb-1">{{ detailed_stats|map(attribute='total')|sum }}</p>
+                    <p class="stats-percentage mb-0">
+                        <i class="fas fa-chart-line me-1"></i>
+                        نظرة شاملة على القوى العاملة
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% for stat in status_stats %}
+        <div class="col-md-4 mb-3">
+            <div class="stats-card {% if stat.status == 'نشط' %}active-card-enhanced{% elif stat.status == 'في إجازة' %}on-leave-card-enhanced{% else %}inactive-card-enhanced{% endif %} h-100">
+                <div class="card-body text-center py-4">
+                    <i class="fas {% if stat.status == 'نشط' %}fa-user-check{% elif stat.status == 'في إجازة' %}fa-umbrella-beach{% else %}fa-user-slash{% endif %} fa-3x mb-3" style="opacity: 0.8;"></i>
+                    <h5 class="card-title mb-3">{{ stat.status }}</h5>
+                    <p class="stats-count mb-1">{{ stat.count }}</p>
+                    <p class="stats-percentage mb-0">
+                        <i class="fas fa-percentage me-1"></i>
+                        {{ "%.1f"|format(stat.count / detailed_stats|sum(attribute='total') * 100) }}% من الموظفين
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row">
+        <!-- Department Distribution Chart -->
+        <div class="col-md-5 mb-4">
+            <div class="stats-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        توزيع الموظفين حسب القسم
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="chart-wrapper-enhanced">
+                        <div class="chart-container-enhanced">
+                            <canvas id="departmentChart"></canvas>
+                        </div>
+                        <div class="chart-info-enhanced text-center" id="chartInfo">
+                            <div class="total-count">
+                                <span id="totalEmployees">0</span>
+                                <span class="info-label">إجمالي الموظفين</span>
+                            </div>
+                            <div class="departments-count">
+                                <span id="departmentsCount">0</span>
+                                <span class="info-label">عدد الأقسام</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Details Table -->
+        <div class="col-md-7 mb-4">
+            <div class="stats-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-table me-2"></i>
+                        تفاصيل الأقسام
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table department-table-enhanced">
+                            <thead>
+                                <tr>
+                                    <th>القسم</th>
+                                    <th>نشط</th>
+                                    <th>غير نشط</th>
+                                    <th>في إجازة</th>
+                                    <th>متوقف عن العمل</th>
+                                    <th>المجموع</th>
+                                    <th>النسبة النشطة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dept in detailed_stats %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('departments.view', id=dept.department_id) }}" class="department-link">
+                                            <i class="fas fa-building me-1"></i>
+                                            {{ dept.department_name }}
+                                        </a>
+                                    </td>
+                                    <td class="text-success fw-bold">{{ dept.active }}</td>
+                                    <td class="text-danger fw-bold">{{ dept.inactive }}</td>
+                                    <td class="text-warning fw-bold">{{ dept.on_leave }}</td>
+                                    <td class="text-secondary fw-bold">{{ dept.terminated }}</td>
+                                    <td class="fw-bold">{{ dept.total }}</td>
+                                    <td class="fw-bold">{{ "%.1f"|format(dept.active / detailed_stats|sum(attribute='active') * 100) }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>المجموع</th>
+                                    <th>{{ detailed_stats|sum(attribute='active') }}</th>
+                                    <th>{{ detailed_stats|sum(attribute='inactive') }}</th>
+                                    <th>{{ detailed_stats|sum(attribute='on_leave') }}</th>
+                                    <th>{{ detailed_stats|sum(attribute='terminated') }}</th>
+                                    <th>{{ detailed_stats|sum(attribute='total') }}</th>
+                                    <th>100%</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced notification function
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `notification-toast position-fixed top-0 end-0 m-3 alert alert-${type}`;
+        notification.style.zIndex = '9999';
+        notification.style.minWidth = '300px';
+        notification.style.borderRadius = '12px';
+        notification.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    // Update chart info with animation
+    function updateChartInfo(data) {
+        const totalEl = document.getElementById('totalEmployees');
+        const deptEl = document.getElementById('departmentsCount');
+        
+        // Animate numbers
+        if (totalEl) animateValue(totalEl, 0, data.total || 0, 1000);
+        if (deptEl) animateValue(deptEl, 0, data.labels.length || 0, 1000);
+    }
+
+    // Number animation function
+    function animateValue(element, start, end, duration) {
+        if (!element) {
+            console.warn('animateValue: element is null');
+            return;
+        }
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            element.innerHTML = Math.floor(progress * (end - start) + start);
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    // Get chart data from backend (passed via template)
+    const chartData = {
+        labels: {{ chart_labels|tojson if chart_labels else '[]' }},
+        data: {{ chart_data|tojson if chart_data else '[]' }},
+        departmentIds: {{ chart_dept_ids|tojson if chart_dept_ids else '[]' }},
+        percentages: {{ chart_percentages|tojson if chart_percentages else '[]' }},
+        total: {{ total_active_employees if total_active_employees else 0 }},
+        backgroundColor: {{ chart_colors|tojson if chart_colors else '[]' }}
+    };
+    
+    console.log('Chart Data:', chartData);
+    
+    // Department Chart - render immediately with backend data
+    (function renderDepartmentChart() {
+        try {
+            const data = chartData;
+            console.log('Rendering chart with data:', data);
+            
+            // Update chart info with animation
+            updateChartInfo(data);
+            
+            const canvas = document.getElementById('departmentChart');
+            
+            // Destroy any existing chart on this canvas
+            const existingChart = Chart.getChart(canvas);
+            if (existingChart) {
+                console.log('Destroying existing chart');
+                existingChart.destroy();
+            }
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Enhanced chart configuration
+            const chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.data,
+                        backgroundColor: data.backgroundColor || [
+                            '#667eea', '#764ba2', '#6B8DD6', '#8FD3F4', '#84fab0', 
+                            '#a6c1ee', '#fbc2eb', '#ff9a9e', '#f6d365', '#fda085'
+                        ],
+                        borderWidth: 0,
+                        borderRadius: 6,
+                        hoverOffset: 15,
+                        hoverBorderWidth: 2,
+                        hoverBorderColor: 'rgba(255,255,255,0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            rtl: true,
+                            labels: {
+                                boxWidth: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 15,
+                                font: {
+                                    family: 'Tajawal, sans-serif',
+                                    size: 13,
+                                    weight: '600'
+                                },
+                                generateLabels: function(chart) {
+                                    const datasets = chart.data.datasets;
+                                    const labels = chart.data.labels;
+                                    const total = datasets[0].data.reduce((a, b) => a + b, 0);
+                                    
+                                    return labels.map(function(label, i) {
+                                        const value = datasets[0].data[i];
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return {
+                                            text: `${label} (${percentage}%)`,
+                                            fillStyle: datasets[0].backgroundColor[i],
+                                            strokeStyle: datasets[0].backgroundColor[i],
+                                            lineWidth: 0,
+                                            fontColor: '#555',
+                                            hidden: !chart.getDataVisibility(i),
+                                            index: i
+                                        };
+                                    });
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                            titleFont: {
+                                family: 'Tajawal, sans-serif',
+                                size: 15,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                family: 'Tajawal, sans-serif',
+                                size: 14
+                            },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const percentage = data.percentages[context.dataIndex];
+                                    return [`عدد الموظفين: ${value}`, `النسبة: ${percentage}%`];
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true,
+                        duration: 1200,
+                        easing: 'easeOutQuart'
+                    },
+                    onClick: function(e, elements) {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const departmentId = data.departmentIds[index];
+                            if (departmentId > 0) {
+                                showNotification(`جاري تحميل قسم ${data.labels[index]}...`, 'info');
+                                setTimeout(() => {
+                                    window.location.href = '/departments/view/' + departmentId;
+                                }, 500);
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Show success notification
+            console.log('تم إنشاء مخطط الأقسام بنجاح');
+        } catch(error) {
+            console.error('خطأ في إنشاء المخطط:', error.message || error.toString() || error);
+            console.error('Stack:', error.stack);
+            if (typeof showNotification === 'function') {
+                showNotification('حدث خطأ في عرض المخطط', 'danger');
+            }
+        }
+    })();
+});
+</script>
+{% endblock %}

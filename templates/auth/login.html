@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - نُظم</title>
+    
+    <!-- Bootstrap RTL CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- خط المشروع: beIN-Normal (presentation/web/static/fonts) -->
+    <link href="{{ url_for('static', filename='css/fonts.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --dark-bg: #1e2a38;
+            --darker-bg: #15202b;
+            --light-text: #ecf0f1;
+            --muted-text: #7f8c8d;
+            --gradient-bg: linear-gradient(135deg, #4f8cff 0%, #6dd5ed 100%);
+            --gradient-blue: linear-gradient(135deg, #1e3c72, #2a5298);
+            --gradient-green-blue: linear-gradient(to right, #3498db, #2ecc71);
+            --glass-bg: rgba(30, 42, 56, 0.65);
+            --glass-blur: 18px;
+            --error-bg: rgba(231, 76, 60, 0.2);
+            --error-border: rgba(231, 76, 60, 0.5);
+            --success-bg: rgba(46, 204, 113, 0.2);
+            --success-border: rgba(46, 204, 113, 0.5);
+        }
+        html, body {
+            height: 100%;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        body {
+            font-family: 'beIN-Normal', 'Cairo', sans-serif;
+            background: var(--gradient-bg);
+            color: var(--light-text);
+            width: 100vw;
+            height: 100vh;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        /* Decorative SVG wave at the top */
+        .wave-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 120px;
+            z-index: 1;
+        }
+        .wave-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100vw;
+            height: 120px;
+            z-index: 1;
+        }
+        .main-container {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+            overflow: hidden;
+            z-index: 2;
+        }
+        .login-page {
+            display: flex;
+            width: 100%;
+            height: calc(100vh - 50px);
+            min-height: 0;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-form, .login-info {
+            border-radius: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18), 0 1.5px 8px 0 rgba(80, 80, 80, 0.08);
+            backdrop-filter: blur(var(--glass-blur));
+            background: var(--glass-bg);
+            border: 1.5px solid rgba(255,255,255,0.18);
+            margin: 1.5rem;
+        }
+        .login-form {
+            width: 420px;
+            padding: 2.5rem 2rem 2rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18), 0 1.5px 8px 0 rgba(80, 80, 80, 0.08);
+            z-index: 3;
+        }
+        .login-info {
+            flex: 1.2;
+            padding: 2.5rem 2rem;
+            background: linear-gradient(135deg, #1e3c72cc, #2c3e50cc);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            min-width: 300px;
+            position: relative;
+            z-index: 3;
+        }
+        .login-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('{{ url_for('static', filename='img/pattern.png') }}');
+            background-size: cover;
+            opacity: 0.04;
+            z-index: 0;
+        }
+        .system-title {
+            font-size: 2.7rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+            position: relative;
+            z-index: 2;
+        }
+        .system-description {
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 2;
+            opacity: 0.92;
+        }
+        .feature-list {
+            position: relative;
+            z-index: 2;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+            transition: transform 0.3s cubic-bezier(.4,2,.3,1);
+        }
+        .feature-item:hover {
+            transform: translateX(-7px) scale(1.03);
+        }
+        .feature-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, #4f8cff 0%, #6dd5ed 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 18px;
+            font-size: 1.35rem;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(80, 80, 80, 0.12);
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        .feature-item:hover .feature-icon {
+            background: linear-gradient(135deg, #6dd5ed 0%, #4f8cff 100%);
+            transform: scale(1.08);
+        }
+        .feature-text h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1.13rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        .feature-text p {
+            margin: 0;
+            font-size: 0.97rem;
+            color: var(--light-text);
+            opacity: 0.85;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+        .logo-img {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 0.5rem auto;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f8cff 0%, #6dd5ed 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18);
+            position: relative;
+            transition: all 0.3s;
+        }
+        .logo-img:hover {
+            transform: scale(1.07);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+        }
+        .logo-text {
+            color: white;
+            font-size: 2.3rem;
+            font-weight: 700;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+        }
+        .system-name {
+            text-align: center;
+            color: var(--primary-color);
+            margin: 1rem 0;
+            font-size: 1.18rem;
+            font-weight: 500;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            position: relative;
+            font-weight: 600;
+        }
+        h1:after {
+            content: '';
+            position: absolute;
+            bottom: -0.75rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: var(--gradient-green-blue);
+            border-radius: 3px;
+        }
+        .login-tabs {
+            display: flex;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .login-tab {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            color: var(--muted-text);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            font-weight: 500;
+            border-radius: 8px 8px 0 0;
+        }
+        .login-tab.active {
+            color: var(--primary-color);
+            font-weight: 600;
+            background: rgba(255,255,255,0.08);
+        }
+        .login-tab.active:after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-green-blue);
+            border-radius: 2px 2px 0 0;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+            width: 100%;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--light-text);
+            font-weight: 500;
+            font-size: 0.97rem;
+        }
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 0.85rem 1.1rem;
+            background: rgba(255,255,255,0.08);
+            border: 1.5px solid rgba(255,255,255,0.18);
+            border-radius: 8px;
+            font-size: 1.05rem;
+            color: var(--light-text);
+            font-family: 'beIN-Normal', 'Cairo', sans-serif;
+            transition: box-shadow 0.2s, border-color 0.2s;
+            box-shadow: 0 1.5px 8px 0 rgba(80, 80, 80, 0.08);
+        }
+        input[type="email"]:focus, input[type="password"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.18);
+            background: rgba(255,255,255,0.13);
+        }
+        input::placeholder {
+            color: var(--muted-text);
+            opacity: 0.7;
+        }
+        .remember-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+        .remember-me {
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+            color: var(--muted-text);
+            font-size: 0.93rem;
+            cursor: pointer;
+        }
+        .remember-me input {
+            margin-left: 0.5rem;
+            cursor: pointer;
+        }
+        .btn-login {
+            width: 100%;
+            padding: 0.95rem;
+            background: var(--gradient-green-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.08rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(80, 80, 80, 0.10);
+            transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+        }
+        .btn-login:hover {
+            background: linear-gradient(to right, #2980b9, #27ae60);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+            transform: translateY(-2px) scale(1.03);
+        }
+        .btn-login:active {
+            transform: translateY(0) scale(0.98);
+        }
+        .btn-login i {
+            margin-left: 0.5rem;
+        }
+        .employee-portal-link {
+            margin: 1.25rem 0 0.5rem 0;
+            text-align: center;
+            width: 100%;
+        }
+        .employee-portal-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1.2rem;
+            border: 1.5px solid var(--primary-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.07);
+            box-shadow: 0 1.5px 8px 0 rgba(80, 80, 80, 0.08);
+        }
+        .employee-portal-link a:hover {
+            background-color: rgba(52, 152, 219, 0.13);
+            border-color: var(--secondary-color);
+            color: var(--secondary-color);
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.13);
+        }
+        .employee-portal-link i {
+            margin-left: 0.5rem;
+        }
+        .login-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--muted-text);
+            font-size: 0.9rem;
+            width: 100%;
+        }
+        .login-test-info {
+            margin-top: 1.25rem;
+            background: rgba(52, 152, 219, 0.08);
+            border: 1.5px solid rgba(52, 152, 219, 0.18);
+            border-radius: 8px;
+            padding: 1.1rem;
+            font-size: 0.97rem;
+            color: var(--primary-color);
+            width: 100%;
+            box-shadow: 0 1.5px 8px 0 rgba(80, 80, 80, 0.08);
+        }
+        .login-test-info strong {
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        .login-test-info ul {
+            padding-right: 1.25rem;
+            margin: 0.5rem 0 0;
+        }
+        .login-test-info li {
+            margin-bottom: 0.25rem;
+        }
+        .error-message, .alert-danger {
+            background-color: var(--error-bg);
+            border: 1.5px solid var(--error-border);
+            color: #e74c3c;
+            padding: 0.85rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            font-size: 1rem;
+        }
+        .success-message, .alert-success {
+            background-color: var(--success-bg);
+            border: 1.5px solid var(--success-border);
+            color: var(--secondary-color);
+            padding: 0.85rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            font-size: 1rem;
+        }
+        @media (max-width: 991px) {
+            .login-page {
+                flex-direction: column;
+                height: auto;
+                min-height: calc(100vh - 50px);
+            }
+            .login-info {
+                padding: 2rem 1.25rem;
+                order: 2;
+                flex: none;
+                height: auto;
+                border-radius: 2rem 2rem 0 0;
+            }
+            .login-form {
+                width: 100%;
+                padding: 2rem 1.25rem;
+                order: 1;
+                flex: none;
+                height: auto;
+                border-radius: 0 0 2rem 2rem;
+            }
+        }
+        @media (max-width: 576px) {
+            .login-info {
+                padding: 1.5rem 1rem;
+            }
+            .login-form {
+                padding: 1.5rem 1rem;
+            }
+            .system-title {
+                font-size: 2rem;
+            }
+            .feature-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wave-top">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="#ffffff" fill-opacity="0.18" d="M0,64L48,74.7C96,85,192,107,288,117.3C384,128,480,128,576,112C672,96,768,64,864,53.3C960,43,1056,53,1152,69.3C1248,85,1344,107,1392,117.3L1440,128L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path></svg>
+    </div>
+    <!-- شريط التقويم العلوي -->
+     <!-- 
+     <div class="topbar">
+        <div class="calendar-switch">
+            <i class="fas fa-calendar-alt"></i> التقويم الهجري
+        </div>
+    </div>
+     -->
+   
+    
+    <!-- محتوى الصفحة الرئيسي -->
+    <div class="main-container">
+        <div class="login-page">
+            <!-- قسم نموذج تسجيل الدخول (الجانب الأيسر) -->
+            <div class="login-form">
+                
+                <div class="container">
+
+                    <div class="logo-container">
+                    <div class="logo-img">
+                        <span class="logo-text">نُظم</span>
+                    </div>
+                    <h2 class="system-name">نظام إدارة متكامل</h2>
+                </div>
+                    <h1>تسجيل الدخول</h1>
+
+                    <div class="login-tabs">
+                      <div class="login-tab active" id="email-tab" onclick="switchTab('email')">البريد الإلكتروني</div>
+                      <div class="login-tab" id="google-tab" onclick="switchTab('google')">Google</div>
+                    </div>
+
+                      <div id="email-login" class="tab-content active">
+                    <form id="login-form" method="POST" action="{{ url_for('auth.login') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-group">
+                            <label for="email">البريد الإلكتروني</label>
+                            <input type="email" id="email" name="email" placeholder="أدخل البريد الإلكتروني" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">كلمة المرور</label>
+                            <input type="password" id="password" name="password" placeholder="أدخل كلمة المرور" required>
+                        </div>
+                        
+                        <div class="remember-row">
+                            <div class="remember-me">
+                                <input type="checkbox" id="remember" name="remember">
+                                <label for="remember">تذكرني</label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-login">
+                            <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                        </button>
+
+                              <div class="employee-portal-link">
+                    <a href="{{ url_for('employee_portal.employee_login') }}">
+                        <i class="fas fa-user-tie"></i>
+                        بوابة الموظفين
+                    </a>
+                </div>
+                
+                <div class="login-test-info">
+                    <strong>بيانات الدخول (بعد تشغيل quick_reset.py):</strong>
+                    <ul>
+                        <li>البريد الإلكتروني: admin@nuzum.com</li>
+                        <li>كلمة المرور: admin123</li>
+                    </ul>
+                </div>
+                
+                <div class="login-footer">
+                    نُظم &copy; 2024 | نظام إدارة متكامل
+                </div>
+                    </form>
+                </div>
+                </div>   
+                             
+               
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- تسجيل الدخول بالبريد الإلكتروني -->
+              
+                
+                <!-- تسجيل الدخول باستخدام Google -->
+                <div id="google-login" class="tab-content" style="display: none;">
+                    <div class="text-center py-3">
+                        <div class="mb-4">
+                            <i class="fab fa-google text-danger fa-3x mb-3"></i>
+                            <p>يمكنك تسجيل الدخول باستخدام حساب Google الخاص بك للوصول السريع والآمن</p>
+                        </div>
+                        <button id="googleSignIn" class="btn-login" onclick="handleGoogleLogin()">
+                            <i class="fab fa-google"></i> تسجيل الدخول باستخدام Google
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- قسم المعلومات (الجانب الأيمن) -->
+            <div class="login-info">
+                <h2 class="system-title">نُظم</h2>
+                <p class="system-description">
+                    نُظم هو نظام إدارة متكامل مصمم خصيصًا للشركات، يجمع بين سهولة الاستخدام والميزات المتقدمة لتلبية جميع احتياجات إدارة الشركة من موظفين ومركبات وموارد.
+                </p>
+                
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>إدارة شاملة للموظفين</h3>
+                            <p>سجلات كاملة للموظفين مع معلومات شخصية، مهنية، ومستندات رسمية مع نظام حضور وانصراف متكامل</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>تقارير تحليلية متقدمة</h3>
+                            <p>رؤى دقيقة عن أداء الموظفين وتكاليف الموارد البشرية بتنسيقات متعددة مع إمكانية التصدير</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>تطبيق جوال متكامل</h3>
+                            <p>إمكانية الوصول إلى النظام من أي مكان وتنبيهات فورية للمدراء والموظفين مع دعم العمل بدون إنترنت</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>إدارة متكاملة للمركبات</h3>
+                            <p>متابعة حالة مركبات الشركة، الصيانة، والمصاريف بشكل لحظي مع نظام فحص وتسليم المركبات</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>إدارة الرواتب والمستحقات</h3>
+                            <p>نظام متكامل لحساب الرواتب والبدلات وإرسال إشعارات الراتب تلقائيًا بصيغة PDF أو عبر واتساب</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="wave-bottom">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="#ffffff" fill-opacity="0.18" d="M0,64L48,74.7C96,85,192,107,288,117.3C384,128,480,128,576,112C672,96,768,64,864,53.3C960,43,1056,53,1152,69.3C1248,85,1344,107,1392,117.3L1440,128L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path></svg>
+    </div>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Firebase -->
+    <script type="module">
+      // استيراد المكتبات المطلوبة من Firebase
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
+      import { 
+        getAuth, 
+        signInWithPopup, 
+        signInWithEmailAndPassword,
+        GoogleAuthProvider
+      } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js';
+
+      // تكوين Firebase
+      const firebaseConfig = {
+        apiKey: "{{ firebase_api_key }}",
+        authDomain: "{{ firebase_project_id }}.firebaseapp.com",
+        projectId: "{{ firebase_project_id }}",
+        storageBucket: "{{ firebase_project_id }}.appspot.com",
+        appId: "{{ firebase_app_id }}"
+      };
+
+      // تهيئة Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
+      
+      // تعريف دالة تسجيل الدخول بـ Google
+      window.handleGoogleLogin = async function() {
+        try {
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
+          
+          // إرسال بيانات المستخدم إلى الخادم
+          await sendUserDataToServer(user);
+        } catch (error) {
+          console.error("خطأ في تسجيل الدخول باستخدام Google:", error);
+          alert("حدث خطأ أثناء تسجيل الدخول: " + error.message);
+        }
+      };
+      
+      // إرسال بيانات المستخدم إلى الخادم
+      async function sendUserDataToServer(user) {
+        try {
+          const idToken = await user.getIdToken();
+          
+          const response = await fetch("{{ url_for('auth.process_auth') }}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              uid: user.uid,
+              email: user.email,
+              name: user.displayName || user.email.split('@')[0],
+              picture: user.photoURL || ''
+            }),
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+              window.location.href = data.redirect || "/";
+            } else {
+              alert(data.message || "حدث خطأ أثناء تسجيل الدخول");
+            }
+          } else {
+            alert("حدث خطأ في الاتصال بالخادم");
+          }
+        } catch (error) {
+          console.error("خطأ في إرسال البيانات إلى الخادم:", error);
+          alert("حدث خطأ أثناء معالجة تسجيل الدخول");
+        }
+      }
+    </script>
+    
+    <script>
+        // دالة تبديل التبويبات
+        function switchTab(tab) {
+            // إخفاء جميع المحتويات
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // إزالة الكلاس active من جميع التبويبات
+            document.querySelectorAll('.login-tab').forEach(tabEl => {
+                tabEl.classList.remove('active');
+            });
+            
+            // تفعيل التبويب المحدد
+            document.getElementById(tab + '-tab').classList.add('active');
+            document.getElementById(tab + '-login').style.display = 'block';
+        }
+        
+        // تعيين التقويم الهجري كافتراضي
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Calendar type set to Gregorian");
+        });
+    </script>
+</body>
+</html>

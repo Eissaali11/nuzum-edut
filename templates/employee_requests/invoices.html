@@ -1,0 +1,279 @@
+{% extends "layout.html" %}
+
+{% block title %}طلبات الفواتير{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">
+                    <i class="fas fa-file-invoice me-2"></i>
+                    طلبات الفواتير
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- فلتر الحالة -->
+    <div class="card shadow-lg mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('employee_requests.invoices') }}" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">الحالة</label>
+                    <select name="status" class="form-select">
+                        <option value="">الكل</option>
+                        <option value="PENDING" {% if request.args.get('status') == 'PENDING' %}selected{% endif %}>قيد الانتظار</option>
+                        <option value="APPROVED" {% if request.args.get('status') == 'APPROVED' %}selected{% endif %}>موافق عليها</option>
+                        <option value="REJECTED" {% if request.args.get('status') == 'REJECTED' %}selected{% endif %}>مرفوضة</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>بحث
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- جدول الفواتير -->
+    <div class="card shadow-lg">
+        <div class="card-body">
+            <!-- أزرار الإجراءات الجماعية -->
+            <div class="mb-3 d-flex gap-2">
+                <button id="deleteSelectedBtn" class="btn btn-danger" onclick="deleteSelected()" style="display: none;">
+                    <i class="fas fa-trash me-2"></i>حذف المحدد (<span id="selectedCount">0</span>)
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="form-check-input">
+                            </th>
+                            <th>#</th>
+                            <th>اسم الموظف</th>
+                            <th>المبلغ</th>
+                            <th>المحل</th>
+                            <th>صورة الفاتورة</th>
+                            <th>التاريخ</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if requests %}
+                            {% for req in requests %}
+                            {% set invoice = req.invoice %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="form-check-input row-checkbox" value="{{ req.id }}" onchange="updateSelectedCount()">
+                                </td>
+                                <td>{{ req.id }}</td>
+                                <td>{{ req.employee.name if req.employee else 'غير محدد' }}</td>
+                                <td>{{ req.amount if req.amount else (invoice.amount if invoice else 0) }} ريال</td>
+                                <td>{{ invoice.vendor_name if invoice and invoice.vendor_name else 'غير محدد' }}</td>
+                                <td>
+                                    {% if invoice %}
+                                        {% if invoice.drive_view_url or invoice.drive_download_url %}
+                                            {% set img_url = invoice.drive_view_url or invoice.drive_download_url %}
+                                            <a href="{{ img_url }}" target="_blank" title="معاينة الفاتورة">
+                                                <img src="{{ img_url }}" 
+                                                     alt="صورة الفاتورة" 
+                                                     class="img-thumbnail" 
+                                                     style="max-width: 60px; max-height: 60px; cursor: pointer;"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                                                <i class="fas fa-file-invoice fa-2x text-muted" style="display: none;"></i>
+                                            </a>
+                                        {% elif invoice.local_image_path %}
+                                            {% set img_url = url_for('static', filename=invoice.local_image_path) %}
+                                            <a href="{{ img_url }}" target="_blank" title="معاينة الفاتورة">
+                                                <img src="{{ img_url }}" 
+                                                     alt="صورة الفاتورة" 
+                                                     class="img-thumbnail" 
+                                                     style="max-width: 60px; max-height: 60px; cursor: pointer;">
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted small">
+                                                <i class="fas fa-exclamation-triangle"></i> لا توجد صورة
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted small">لا توجد بيانات</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ req.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% if req.status == RequestStatus.PENDING %}
+                                        <span class="badge bg-warning">قيد الانتظار</span>
+                                    {% elif req.status == RequestStatus.APPROVED %}
+                                        <span class="badge bg-success">موافق عليها</span>
+                                    {% elif req.status == RequestStatus.REJECTED %}
+                                        <span class="badge bg-danger">مرفوضة</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('employee_requests.view_request', request_id=req.id) }}" 
+                                           class="btn btn-sm btn-info" title="عرض التفاصيل">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('employee_requests.edit_request', request_id=req.id) }}" 
+                                           class="btn btn-sm btn-warning" title="تعديل">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button onclick="deleteRequest({{ req.id }})" 
+                                                class="btn btn-sm btn-danger" title="حذف">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                    لا توجد فواتير حالياً
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if pagination.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('employee_requests.invoices', page=pagination.prev_num) }}">السابق</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('employee_requests.invoices', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('employee_requests.invoices', page=pagination.next_num) }}">التالي</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteRequest(requestId) {
+    if (confirm('هل أنت متأكد من حذف هذا الطلب؟\nهذا الإجراء لا يمكن التراجع عنه.')) {
+        fetch(`/employee-requests/delete/${requestId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ تم حذف الطلب بنجاح');
+                location.reload();
+            } else {
+                alert('❌ خطأ: ' + (data.message || 'فشل الحذف'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ حدث خطأ أثناء الحذف');
+        });
+    }
+}
+
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+    
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+    const count = checkboxes.length;
+    
+    document.getElementById('selectedCount').textContent = count;
+    
+    const deleteBtn = document.getElementById('deleteSelectedBtn');
+    if (count > 0) {
+        deleteBtn.style.display = 'block';
+    } else {
+        deleteBtn.style.display = 'none';
+    }
+    
+    // تحديث حالة "تحديد الكل"
+    const allCheckboxes = document.querySelectorAll('.row-checkbox');
+    const selectAll = document.getElementById('selectAll');
+    selectAll.checked = allCheckboxes.length > 0 && allCheckboxes.length === count;
+}
+
+function deleteSelected() {
+    const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+    const ids = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (ids.length === 0) {
+        alert('⚠️ الرجاء تحديد طلب واحد على الأقل');
+        return;
+    }
+    
+    if (!confirm(`هل أنت متأكد من حذف ${ids.length} طلب؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+        return;
+    }
+    
+    let deletePromises = ids.map(id => {
+        return fetch(`/employee-requests/delete/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+        }).then(response => response.json());
+    });
+    
+    Promise.all(deletePromises)
+        .then(results => {
+            const successCount = results.filter(r => r.success).length;
+            const failCount = results.length - successCount;
+            
+            if (failCount === 0) {
+                alert(`✅ تم حذف ${successCount} طلب بنجاح`);
+            } else {
+                alert(`⚠️ تم حذف ${successCount} طلب. فشل حذف ${failCount} طلب.`);
+            }
+            
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ حدث خطأ أثناء الحذف الجماعي');
+        });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,151 @@
+/*
+ * theme.css — هوية نُظم البصرية في الهيكل الموديولي
+ * الخط: beIN-Normal | ألوان القائمة الجانبية من النسخة الاحترافية السابقة
+ * يُحمّل بعد Bootstrap لضمان الأولوية.
+ */
+
+/* ========== 1. الخط الافتراضي: beIN-Normal ========== */
+@font-face {
+  font-family: "beIN-Normal";
+  src: url("../fonts/beIN-Normal.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* ========== 2. متغيرات الهوية البصرية ========== */
+:root {
+  /* ألوان عامة */
+  --primary: #1e88e5;
+  --secondary: #26a69a;
+  --bg-light: #f8f9fa;
+  --body-bg: #eaeaea;
+
+  /* خط النظام */
+  --font-default: "beIN-Normal", "Cairo", system-ui, sans-serif;
+
+  /* القائمة الجانبية — استعادة المظهر الاحترافي السابق */
+  --sidebar-bg: linear-gradient(180deg, #0f2d4a 0%, #1a4369 35%, #234a6e 100%);
+  --sidebar-bg-start: #0f2d4a;
+  --sidebar-bg-mid: #1a4369;
+  --sidebar-bg-end: #234a6e;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-link: #b8dff7;
+  --sidebar-link-icon: #7ec8f0;
+  --sidebar-link-hover: #ffffff;
+  --sidebar-link-hover-bg: rgba(255, 255, 255, 0.09);
+  --sidebar-active-bg: rgba(255, 255, 255, 0.14);
+  --sidebar-active-border: rgba(255, 255, 255, 0.12);
+  --sidebar-navbar-bg: #1a4369;
+  --sidebar-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+}
+
+/* ========== 3. الجسم والعناوين — خط beIN-Normal ========== */
+body {
+  font-family: var(--font-default);
+  background-color: var(--body-bg);
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: #333;
+}
+
+h1, h2, h3, h4, h5, h6,
+.theme-sidebar-brand,
+.theme-navbar .navbar-brand,
+.theme-sidebar-link {
+  font-family: var(--font-default);
+}
+
+/* ========== 4. شريط التنقل العلوي ========== */
+.theme-navbar {
+  background: var(--sidebar-bg-mid);
+  color: #fff;
+  border-bottom: 1px solid var(--sidebar-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.theme-navbar .navbar-brand,
+.theme-navbar .nav-link {
+  color: #fff;
+  font-family: var(--font-default);
+}
+
+.theme-navbar .nav-link:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ========== 5. القائمة الجانبية — ألوان الهوية ========== */
+.theme-sidebar {
+  width: 240px;
+  min-height: calc(100vh - 56px);
+  background: var(--sidebar-bg);
+  border-left: 1px solid var(--sidebar-border);
+  box-shadow: var(--sidebar-shadow);
+  flex-shrink: 0;
+}
+
+.theme-sidebar-brand {
+  padding: 1.25rem 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  border-bottom: 1px solid var(--sidebar-border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.theme-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 0.5rem;
+}
+
+.theme-sidebar-link {
+  padding: 0.65rem 1rem;
+  color: var(--sidebar-link);
+  text-decoration: none;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  margin: 0.2rem 0;
+  transition: background 0.2s ease, color 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.theme-sidebar-link:hover {
+  background: var(--sidebar-link-hover-bg);
+  color: var(--sidebar-link-hover);
+}
+
+.theme-sidebar-link.active {
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-link-hover);
+  border-color: var(--sidebar-active-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* منطقة المحتوى الرئيسي — خلفية موحدة */
+.theme-content-wrap {
+  background-color: var(--body-bg);
+  flex-grow: 1;
+}
+
+/* ========== 6. التذييل ========== */
+.theme-footer {
+  padding: 0.75rem;
+  background: var(--sidebar-bg-end);
+  color: rgba(255, 255, 255, 0.85);
+  border-top: 1px solid var(--sidebar-border);
+  font-family: var(--font-default);
+}
+
+/* ========== 7. توافق مع Bootstrap 5 (بدون تضارب) ========== */
+/* نستخدم كلاسات theme-* فقط؛ لا نعيد تعريف .btn أو .card إلا عند الحاجة */
+.container-fluid.py-4 {
+  background-color: var(--body-bg);
+}
+
+/* البطاقات داخل المحتوى تحافظ على مظهر واضح */
+.theme-content-wrap .card {
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}

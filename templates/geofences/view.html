@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ geofence.name }} - نُظم</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e7ff;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .page-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 25px 35px;
+            margin-bottom: 25px;
+            box-shadow: 
+                0 8px 32px rgba(31, 38, 135, 0.37),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.6s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header-content {
+            flex: 1;
+        }
+        
+        .header h1 {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 0 0 10px 0;
+            text-shadow: 0 2px 10px rgba(99, 102, 241, 0.5);
+        }
+        
+        .header h1 i {
+            color: #818cf8;
+            font-size: 36px;
+        }
+        
+        .header-meta {
+            display: flex;
+            gap: 20px;
+            color: #c7d2fe;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .meta-item i {
+            color: #818cf8;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideUp 0.4s ease-out;
+        }
+        
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            padding: 25px 30px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .modal-header h2 i {
+            color: #818cf8;
+        }
+        
+        .close-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 30px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .modal-body::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        .modal-body::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .modal-body::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+            border-radius: 10px;
+        }
+        
+        .employees-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .employee-card {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .employee-card input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .employee-card .card-content {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+        
+        .employee-card:hover .card-content {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(129, 140, 248, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(129, 140, 248, 0.3);
+        }
+        
+        .employee-card input:checked + .card-content {
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.2) 0%, rgba(167, 139, 250, 0.2) 100%);
+            border-color: #818cf8;
+            box-shadow: 0 0 20px rgba(129, 140, 248, 0.4);
+        }
+        
+        .employee-card .emp-photo {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        .employee-card .emp-details {
+            flex: 1;
+        }
+        
+        .employee-card .emp-name {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .employee-card .emp-id {
+            color: #c7d2fe;
+            font-size: 13px;
+        }
+        
+        .employee-card .check-icon {
+            color: #10b981;
+            font-size: 24px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .employee-card input:checked + .card-content .check-icon {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+        
+        .modal-footer {
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #c7d2fe;
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .form-group label i {
+            color: #818cf8;
+            margin-left: 8px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 16px;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #818cf8;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 20px rgba(129, 140, 248, 0.3);
+        }
+        
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .color-input {
+            width: 80px;
+            height: 50px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .color-input:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(129, 140, 248, 0.4);
+        }
+        
+        .color-preview {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #ffffff;
+            font-family: monospace;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        
+        .attendance-dashboard {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 50px rgba(31, 38, 135, 0.4);
+            animation: slideUp 0.8s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        
+        .dashboard-header h2 {
+            font-size: 36px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(129, 140, 248, 0.3);
+        }
+        
+        .dashboard-header p {
+            color: #c7d2fe;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+        
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(129, 140, 248, 0.4);
+            border-color: rgba(129, 140, 248, 0.5);
+        }
+        
+        .kpi-glow {
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(129, 140, 248, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            transition: all 0.6s ease;
+        }
+        
+        .kpi-card:hover .kpi-glow {
+            transform: scale(1.5);
+            opacity: 1.5;
+        }
+        
+        .kpi-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .kpi-present .kpi-icon { color: #10b981; text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
+        .kpi-absent .kpi-icon { color: #ef4444; text-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+        .kpi-total .kpi-icon { color: #818cf8; text-shadow: 0 0 20px rgba(129, 140, 248, 0.5); }
+        .kpi-rate .kpi-icon { color: #f59e0b; text-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
+        
+        .kpi-value {
+            font-size: 52px;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+            animation: countUp 1s ease-out;
+        }
+        
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .kpi-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: #c7d2fe;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+        
+        .chart-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.4);
+            border-color: rgba(129, 140, 248, 0.3);
+        }
+        
+        .chart-header {
+            margin-bottom: 25px;
+        }
+        
+        .chart-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .chart-header h3 i {
+            color: #818cf8;
+            font-size: 24px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .map-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 25px 30px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-header h2 {
+            font-size: 22px;
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .card-header h2 i {
+            color: #818cf8;
+        }
+        
+        #map {
+            height: 500px;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .stats-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .stats-card h3 {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats-card h3 i {
+            color: #818cf8;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .stat-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .stat-label {
+            color: #c7d2fe;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .employees-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            overflow: hidden;
+        }
+        
+        .employees-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .employees-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .employees-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .employees-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+            border-radius: 10px;
+        }
+        
+        .employee-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .employee-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-5px);
+        }
+        
+        .employee-photo {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(129, 140, 248, 0.5);
+        }
+        
+        .employee-info {
+            flex: 1;
+        }
+        
+        .employee-name {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        
+        .employee-id {
+            color: #c7d2fe;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge {
+            background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(129, 140, 248, 0.4);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #c7d2fe;
+        }
+        
+        .empty-state i {
+            font-size: 60px;
+            color: #818cf8;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 18px;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <div class="header-content">
+                <h1>
+                    <i class="fas fa-circle-notch"></i>
+                    {{ geofence.name }}
+                </h1>
+                <div class="header-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-building"></i>
+                        <span>{{ geofence.department.name }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-ruler-horizontal"></i>
+                        <span>{{ geofence.radius_meters }} متر</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-tag"></i>
+                        <span>{{ geofence.type }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="/employees/geofences/{{ geofence.id }}/export-events" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i>
+                    تصدير البيانات
+                </a>
+                <button class="btn btn-warning" onclick="editGeofence()">
+                    <i class="fas fa-edit"></i>
+                    تعديل
+                </button>
+                <button class="btn btn-danger" onclick="deleteGeofence()">
+                    <i class="fas fa-trash"></i>
+                    حذف
+                </button>
+                <a href="/employees/geofences" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة
+                </a>
+            </div>
+        </div>
+        
+        <!-- Dashboard الحضور -->
+        <div class="attendance-dashboard">
+            <div class="dashboard-header">
+                <h2><i class="fas fa-chart-line"></i> لوحة الحضور الذكية</h2>
+                <p>تحليلات فورية ومتقدمة لحضور الموظفين</p>
+            </div>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-present">
+                    <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
+                    <div class="kpi-content">
+                        <div class="kpi-value" id="presentCount">{{ stats.present_count }}</div>
+                        <div class="kpi-label">موجود حالياً</div>
+                    </div>
+                    <div class="kpi-glow"></div>
+                </div>
+                
+                <div class="kpi-card kpi-absent">
+                    <div class="kpi-icon"><i class="fas fa-user-times"></i></div>
+                    <div class="kpi-content">
+                        <div class="kpi-value" id="absentCount">{{ stats.absent_count }}</div>
+                        <div class="kpi-label">غائب</div>
+                    </div>
+                    <div class="kpi-glow"></div>
+                </div>
+                
+                <div class="kpi-card kpi-total">
+                    <div class="kpi-icon"><i class="fas fa-users"></i></div>
+                    <div class="kpi-content">
+                        <div class="kpi-value" id="totalCount">{{ stats.total_assigned }}</div>
+                        <div class="kpi-label">إجمالي المرتبطين</div>
+                    </div>
+                    <div class="kpi-glow"></div>
+                </div>
+                
+                <div class="kpi-card kpi-rate">
+                    <div class="kpi-icon"><i class="fas fa-percentage"></i></div>
+                    <div class="kpi-content">
+                        <div class="kpi-value" id="rateCount">{{ stats.attendance_rate }}%</div>
+                        <div class="kpi-label">نسبة الحضور</div>
+                    </div>
+                    <div class="kpi-glow"></div>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-clock"></i> الحضور خلال 24 ساعة</h3>
+                    </div>
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-calendar-week"></i> الحضور الأسبوعي</h3>
+                    </div>
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="map-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-map"></i> الموقع على الخريطة</h2>
+                </div>
+                <div id="map"></div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="stats-card">
+                    <h3><i class="fas fa-chart-bar"></i> الإحصائيات</h3>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">موظفي القسم بالداخل</span>
+                        <span class="stat-value">{{ employees_inside|length }}</span>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">الموظفين المرتبطين</span>
+                        <span class="stat-value">{{ assigned_employees|length }}</span>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">إجمالي الموظفين بالداخل</span>
+                        <span class="stat-value">{{ all_employees|length }}</span>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">نصف القطر</span>
+                        <span class="stat-value">{{ geofence.radius_meters }}</span>
+                    </div>
+                </div>
+                
+                <div class="employees-card">
+                    <div class="card-header">
+                        <h2>
+                            <i class="fas fa-user-check"></i> 
+                            الموظفين المرتبطين
+                            <span class="badge" style="margin-right: auto;">{{ assigned_employees|length }}</span>
+                        </h2>
+                        {% if available_employees %}
+                        <button class="btn btn-primary btn-sm" onclick="showAssignModal()" style="margin-right: 10px;">
+                            <i class="fas fa-plus"></i> ربط موظف
+                        </button>
+                        {% endif %}
+                    </div>
+                    <div class="employees-list">
+                        {% if assigned_employees %}
+                            {% for emp in assigned_employees %}
+                            <div class="employee-item">
+                                <a href="/employees/{{ emp.id }}/view" style="display: flex; align-items: center; gap: 12px; flex: 1; text-decoration: none; color: inherit;">
+                                    {% if emp.profile_image %}
+                                    <img src="{{ emp.profile_image }}" alt="{{ emp.name }}" class="employee-photo">
+                                    {% else %}
+                                    <div class="employee-photo" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px;">
+                                        {{ emp.name[0] if emp.name else 'M' }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="employee-info">
+                                        <div class="employee-name">{{ emp.name }}</div>
+                                        <div class="employee-id">{{ emp.employee_id }}</div>
+                                    </div>
+                                </a>
+                                
+                                <button class="btn btn-danger btn-sm" onclick="unassignEmployee({{ emp.id }}, '{{ emp.name }}')" style="margin-right: auto;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-user-slash"></i>
+                                <h3>لا يوجد موظفين مرتبطين</h3>
+                                <p>لم يتم ربط أي موظف بهذه الدائرة بعد</p>
+                                {% if available_employees %}
+                                <button class="btn btn-primary" onclick="showAssignModal()" style="margin-top: 15px;">
+                                    <i class="fas fa-plus"></i> ربط موظف الآن
+                                </button>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="employees-card">
+                    <div class="card-header">
+                        <h2>
+                            <i class="fas fa-map-marker-alt"></i> 
+                            حالة جميع الموظفين المرتبطين
+                            <span class="badge" style="margin-right: auto;">{{ assigned_employees|length }}</span>
+                        </h2>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; padding: 15px;">
+                        {% if assigned_employees %}
+                            {% for emp in assigned_employees %}
+                            {% set is_inside = employees_inside|selectattr('employee.id', 'equalto', emp.id)|list|length > 0 %}
+                            <a href="/employees/{{ emp.id }}/view" style="text-decoration: none; color: inherit;">
+                                <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 15px; text-align: center; transition: all 0.3s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative; overflow: hidden;">
+                                    <!-- الصورة الكبيرة -->
+                                    {% if emp.profile_image %}
+                                    <img src="{{ url_for('static', filename=emp.profile_image.replace('static/', '')) }}" alt="{{ emp.name }}" style="width: 100px; height: 100px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(129, 140, 248, 0.3); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);">
+                                    {% else %}
+                                    <div style="width: 100px; height: 100px; border-radius: 12px; background: linear-gradient(135deg, {% if is_inside %}#10b981{% else %}#6b7280{% endif %} 0%, {% if is_inside %}#059669{% else %}#4b5563{% endif %} 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 36px; border: 2px solid rgba(129, 140, 248, 0.3); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);">
+                                        {{ emp.name[0] if emp.name else 'M' }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- الاسم والرقم -->
+                                    <div style="text-align: center;">
+                                        <div style="color: #ffffff; font-weight: 700; font-size: 14px; margin-bottom: 4px; word-break: break-word;">{{ emp.name }}</div>
+                                        <div style="color: #c7d2fe; font-size: 12px;">{{ emp.employee_id }}</div>
+                                    </div>
+                                    
+                                    <!-- الحالة -->
+                                    {% if is_inside %}
+                                    <span style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; width: 100%;">
+                                        🟢 موجود
+                                    </span>
+                                    {% else %}
+                                    <span style="background: rgba(107, 114, 128, 0.2); color: #d1d5db; border: 1px solid rgba(107, 114, 128, 0.3); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; width: 100%;">
+                                        ⚪ غائب
+                                    </span>
+                                    {% endif %}
+                                    
+                                    <!-- التأثير عند الهوفر -->
+                                    <style>
+                                        a:hover div {
+                                            background: rgba(255, 255, 255, 0.08) !important;
+                                            border-color: rgba(129, 140, 248, 0.6) !important;
+                                            transform: translateY(-5px);
+                                            box-shadow: 0 8px 24px rgba(129, 140, 248, 0.3) !important;
+                                        }
+                                    </style>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state" style="grid-column: 1 / -1;">
+                                <i class="fas fa-user-slash"></i>
+                                <h3>لا يوجد موظفين مرتبطين</h3>
+                                <p>لم يتم ربط أي موظف بهذه الدائرة بعد</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="employees-card">
+                    <div class="card-header">
+                        <h2>
+                            <i class="fas fa-users"></i> 
+                            الموظفين داخل الدائرة حالياً
+                            <span class="badge" style="margin-right: auto;">{{ employees_inside|length }}</span>
+                        </h2>
+                    </div>
+                    <div class="employees-list">
+                        {% if employees_inside %}
+                            {% for emp_data in employees_inside %}
+                            {% set emp = emp_data.employee %}
+                            <a href="/employees/{{ emp.id }}/view" class="employee-item" style="text-decoration: none; color: inherit;">
+                                {% if emp.profile_image %}
+                                <img src="{{ emp.profile_image }}" alt="{{ emp.name }}" class="employee-photo">
+                                {% else %}
+                                <div class="employee-photo" style="background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px;">
+                                    {{ emp.name[0] if emp.name else 'M' }}
+                                </div>
+                                {% endif %}
+                                
+                                <div class="employee-info">
+                                    <div class="employee-name">{{ emp.name }}</div>
+                                    <div class="employee-id">{{ emp.employee_id }}</div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-user-slash"></i>
+                                <h3>لا يوجد موظفين</h3>
+                                <p>لا يوجد موظفين داخل هذه الدائرة حالياً</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- قسم جديد: جلسات الموظفين -->
+                <div class="employees-card">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-history"></i> 
+                            جلسات الموظفين (وقت الوصول والمغادرة)
+                            <span class="badge">{{ all_sessions|length }}</span>
+                        </h2>
+                        <a href="/employees/geofences/{{ geofence.id }}/export-sessions" class="btn btn-success btn-sm" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); transition: all 0.3s ease;">
+                            <i class="fas fa-file-excel"></i>
+                            تصدير Excel
+                        </a>
+                    </div>
+                    <div class="employees-list" style="max-height: 600px; overflow-y: auto;">
+                        {% if all_sessions %}
+                            {% for session in all_sessions %}
+                            <div class="employee-item" style="flex-direction: column; align-items: stretch; padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                                    {% if session.employee.profile_image %}
+                                    <img src="/{{ session.employee.profile_image }}" alt="{{ session.employee.name }}" class="employee-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="employee-photo" style="display: none; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px;">
+                                        {{ session.employee.name[0] if session.employee.name else 'M' }}
+                                    </div>
+                                    {% else %}
+                                    <div class="employee-photo" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px;">
+                                        {{ session.employee.name[0] if session.employee.name else 'M' }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="employee-info" style="flex: 1;">
+                                        <div class="employee-name">{{ session.employee.name }}</div>
+                                        <div class="employee-id">{{ session.employee.employee_id }}</div>
+                                    </div>
+                                    
+                                    {% if session.is_active %}
+                                    <span style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;">
+                                        🟢 داخل الدائرة
+                                    </span>
+                                    {% else %}
+                                    <span style="background: rgba(107, 114, 128, 0.2); color: #d1d5db; border: 1px solid rgba(107, 114, 128, 0.3); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;">
+                                        ⚪ غادر
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                                        <i class="fas fa-sign-in-alt" style="color: #10b981;"></i>
+                                        <span style="color: #c7d2fe;">وقت الدخول:</span>
+                                        <strong style="color: #fff;">{{ session.entry_time_sa.strftime('%I:%M %p') if session.entry_time_sa else '-' }}</strong>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                                        <i class="fas fa-sign-out-alt" style="color: #ef4444;"></i>
+                                        <span style="color: #c7d2fe;">وقت الخروج:</span>
+                                        <strong style="color: #fff;">{{ session.exit_time_sa.strftime('%I:%M %p') if session.exit_time_sa else 'لا يزال بالداخل' }}</strong>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                                        <i class="fas fa-clock" style="color: #818cf8;"></i>
+                                        <span style="color: #c7d2fe;">المدة:</span>
+                                        <strong style="color: #fff;">
+                                            {% if session.duration_minutes %}
+                                                {% if session.duration_minutes < 60 %}
+                                                    {{ session.duration_minutes }} دقيقة
+                                                {% else %}
+                                                    {{ (session.duration_minutes / 60)|round(1) }} ساعة
+                                                {% endif %}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </strong>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                                        <i class="fas fa-calendar" style="color: #a78bfa;"></i>
+                                        <span style="color: #c7d2fe;">التاريخ:</span>
+                                        <strong style="color: #fff;">{{ session.entry_time_sa.strftime('%Y-%m-%d') if session.entry_time_sa else '-' }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-history"></i>
+                                <h3>لا توجد جلسات</h3>
+                                <p>لم يتم تسجيل أي جلسات دخول/خروج بعد</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- قسم إحصائيات الموظفين -->
+                {% if employee_stats %}
+                <div class="employees-card">
+                    <div class="card-header">
+                        <h2>
+                            <i class="fas fa-chart-line"></i> 
+                            إحصائيات الموظفين
+                        </h2>
+                    </div>
+                    <div class="employees-list" style="max-height: 500px; overflow-y: auto;">
+                        {% for emp_id, stats in employee_stats.items() %}
+                        <div class="employee-item" style="flex-direction: column; align-items: stretch; padding: 15px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                                {% if stats.employee.profile_image %}
+                                <img src="/{{ stats.employee.profile_image }}" alt="{{ stats.employee.name }}" class="employee-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="employee-photo" style="display: none; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px;">
+                                    {{ stats.employee.name[0] if stats.employee.name else 'M' }}
+                                </div>
+                                {% else %}
+                                <div class="employee-photo" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px;">
+                                    {{ stats.employee.name[0] if stats.employee.name else 'M' }}
+                                </div>
+                                {% endif %}
+                                
+                                <div class="employee-info" style="flex: 1;">
+                                    <div class="employee-name">{{ stats.employee.name }}</div>
+                                    <div class="employee-id">{{ stats.employee.employee_id }}</div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                                <div style="background: rgba(99, 102, 241, 0.1); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="color: #818cf8; font-size: 12px; margin-bottom: 5px;">إجمالي الوقت</div>
+                                    <div style="color: #fff; font-size: 18px; font-weight: 700;">{{ stats.total_time_hours }}h</div>
+                                </div>
+                                
+                                <div style="background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="color: #10b981; font-size: 12px; margin-bottom: 5px;">عدد الزيارات</div>
+                                    <div style="color: #fff; font-size: 18px; font-weight: 700;">{{ stats.visit_count }}</div>
+                                </div>
+                                
+                                <div style="background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="color: #f59e0b; font-size: 12px; margin-bottom: 5px;">متوسط المدة</div>
+                                    <div style="color: #fff; font-size: 18px; font-weight: 700;">{{ stats.avg_duration }}m</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal لتعديل الدائرة -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> تعديل الدائرة الجغرافية</h2>
+                <button class="close-btn" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-tag"></i> اسم الدائرة</label>
+                        <input type="text" id="editName" value="{{ geofence.name }}" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-circle-notch"></i> نصف القطر (متر)</label>
+                        <input type="number" id="editRadius" value="{{ geofence.radius_meters }}" class="form-control" min="10" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-palette"></i> اللون</label>
+                        <div class="color-picker">
+                            <input type="color" id="editColor" value="{{ geofence.color }}" class="color-input">
+                            <span id="colorPreview" class="color-preview">{{ geofence.color }}</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i> إلغاء
+                </button>
+                <button id="updateBtn" class="btn btn-primary" onclick="updateGeofence()">
+                    <i class="fas fa-save"></i> حفظ التعديلات
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal لربط الموظفين -->
+    <div id="assignModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-plus"></i> ربط موظفين بالدائرة</h2>
+                <button class="close-btn" onclick="closeAssignModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                {% if available_employees %}
+                <div class="employees-grid">
+                    {% for emp in available_employees %}
+                    <label class="employee-card">
+                        <input type="checkbox" class="employee-checkbox" value="{{ emp.id }}" onchange="toggleEmployee(this, {{ emp.id }})">
+                        <div class="card-content">
+                            {% if emp.profile_image %}
+                            <img src="{{ emp.profile_image }}" alt="{{ emp.name }}" class="emp-photo">
+                            {% else %}
+                            <div class="emp-photo" style="background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px;">
+                                {{ emp.name[0] if emp.name else 'M' }}
+                            </div>
+                            {% endif %}
+                            <div class="emp-details">
+                                <div class="emp-name">{{ emp.name }}</div>
+                                <div class="emp-id">{{ emp.employee_id }}</div>
+                            </div>
+                            <i class="fas fa-check-circle check-icon"></i>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-users-slash"></i>
+                    <h3>لا يوجد موظفين متاحين</h3>
+                    <p>جميع موظفي هذا القسم مرتبطين بالدائرة بالفعل</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if available_employees %}
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAssignModal()">
+                    <i class="fas fa-times"></i> إلغاء
+                </button>
+                <button id="assignBtn" class="btn btn-primary" onclick="assignSelectedEmployees()" disabled>
+                    <i class="fas fa-check"></i> ربط الموظفين
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        const geofence = {
+            id: {{ geofence.id }},
+            name: "{{ geofence.name }}",
+            latitude: {{ geofence.center_latitude }},
+            longitude: {{ geofence.center_longitude }},
+            radius: {{ geofence.radius_meters }},
+            color: "{{ geofence.color }}"
+        };
+        
+        const map = L.map('map').setView([geofence.latitude, geofence.longitude], 15);
+        
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© Esri',
+            maxZoom: 19
+        }).addTo(map);
+        
+        const circle = L.circle([geofence.latitude, geofence.longitude], {
+            color: geofence.color,
+            fillColor: geofence.color,
+            fillOpacity: 0.25,
+            radius: geofence.radius,
+            weight: 3
+        }).addTo(map);
+        
+        circle.bindPopup(`
+            <div style="text-align: center; font-family: 'Cairo', sans-serif; min-width: 200px;">
+                <h4 style="margin: 0 0 10px 0; color: #1e1b4b; font-weight: 700;">${geofence.name}</h4>
+                <p style="margin: 5px 0; color: #4b5563;"><strong>نصف القطر:</strong> ${geofence.radius} متر</p>
+            </div>
+        `);
+        
+        {% for emp_data in employees_inside %}
+        {% set emp = emp_data.employee %}
+        {% set location = emp_data.location %}
+        L.marker([{{ location.latitude }}, {{ location.longitude }}], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                html: `
+                    <div style="position: relative;">
+                        {% if emp.profile_image %}
+                        <img src="{{ emp.profile_image }}" style="width: 35px; height: 35px; border-radius: 50%; border: 3px solid {{ geofence.color }}; box-shadow: 0 4px 12px rgba(0,0,0,0.3); object-fit: cover;">
+                        {% else %}
+                        <div style="width: 35px; height: 35px; border-radius: 50%; border: 3px solid {{ geofence.color }}; background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">{{ emp.name[0] if emp.name else 'M' }}</div>
+                        {% endif %}
+                    </div>
+                `,
+                iconSize: [35, 35],
+                iconAnchor: [17, 35]
+            })
+        }).addTo(map).bindPopup(`
+            <div style="text-align: center; font-family: 'Cairo', sans-serif;">
+                <h4 style="margin: 0 0 5px 0; color: #1e1b4b; font-weight: 700;">{{ emp.name }}</h4>
+                <p style="margin: 3px 0; color: #4b5563; font-size: 12px;">{{ emp.employee_id }}</p>
+            </div>
+        `);
+        {% endfor %}
+        
+        // Chart.js configurations
+        const hourlyData = JSON.parse('{{ stats.hourly_data|safe }}');
+        const weeklyData = JSON.parse('{{ stats.weekly_data|safe }}');
+        
+        // Hourly Chart
+        const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+        const hourlyGradient = hourlyCtx.createLinearGradient(0, 0, 0, 300);
+        hourlyGradient.addColorStop(0, 'rgba(129, 140, 248, 0.8)');
+        hourlyGradient.addColorStop(1, 'rgba(129, 140, 248, 0.1)');
+        
+        new Chart(hourlyCtx, {
+            type: 'line',
+            data: {
+                labels: hourlyData.map(d => d.hour + ':00'),
+                datasets: [{
+                    label: 'عدد الأحداث',
+                    data: hourlyData.map(d => d.count),
+                    backgroundColor: hourlyGradient,
+                    borderColor: '#818cf8',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#818cf8',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#818cf8',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 2,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 27, 75, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#c7d2fe',
+                        borderColor: '#818cf8',
+                        borderWidth: 1,
+                        padding: 15,
+                        titleFont: { size: 16, weight: 'bold', family: 'Cairo' },
+                        bodyFont: { size: 14, family: 'Cairo' },
+                        displayColors: false,
+                        callbacks: {
+                            title: (items) => 'الساعة: ' + items[0].label,
+                            label: (item) => 'الأحداث: ' + item.parsed.y
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#c7d2fe',
+                            font: { size: 12, family: 'Cairo' }
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.08)',
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#c7d2fe',
+                            font: { size: 11, family: 'Cairo' },
+                            maxRotation: 45,
+                            minRotation: 0
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+        
+        // Weekly Chart
+        const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+        const weeklyGradient = weeklyCtx.createLinearGradient(0, 0, 0, 300);
+        weeklyGradient.addColorStop(0, 'rgba(167, 139, 250, 0.8)');
+        weeklyGradient.addColorStop(1, 'rgba(167, 139, 250, 0.1)');
+        
+        new Chart(weeklyCtx, {
+            type: 'bar',
+            data: {
+                labels: weeklyData.map(d => d.day),
+                datasets: [{
+                    label: 'عدد الأحداث',
+                    data: weeklyData.map(d => d.count),
+                    backgroundColor: weeklyGradient,
+                    borderColor: '#a78bfa',
+                    borderWidth: 2,
+                    borderRadius: 12,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 2,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 27, 75, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#c7d2fe',
+                        borderColor: '#a78bfa',
+                        borderWidth: 1,
+                        padding: 15,
+                        titleFont: { size: 16, weight: 'bold', family: 'Cairo' },
+                        bodyFont: { size: 14, family: 'Cairo' },
+                        displayColors: false,
+                        callbacks: {
+                            title: (items) => items[0].label,
+                            label: (item) => 'الأحداث: ' + item.parsed.y
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#c7d2fe',
+                            font: { size: 12, family: 'Cairo' }
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.08)',
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#c7d2fe',
+                            font: { size: 12, family: 'Cairo', weight: 'bold' }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart',
+                    delay: (context) => context.dataIndex * 100
+                }
+            }
+        });
+        
+        function showAssignModal() {
+            const modal = document.getElementById('assignModal');
+            modal.style.display = 'flex';
+        }
+        
+        function closeAssignModal() {
+            const modal = document.getElementById('assignModal');
+            modal.style.display = 'none';
+        }
+        
+        function toggleEmployee(checkbox, employeeId) {
+            const selectedIds = Array.from(document.querySelectorAll('.employee-checkbox:checked')).map(cb => parseInt(cb.value));
+            document.getElementById('assignBtn').disabled = selectedIds.length === 0;
+        }
+        
+        async function assignSelectedEmployees() {
+            const selectedIds = Array.from(document.querySelectorAll('.employee-checkbox:checked')).map(cb => parseInt(cb.value));
+            
+            if (selectedIds.length === 0) {
+                alert('الرجاء اختيار موظف واحد على الأقل');
+                return;
+            }
+            
+            const assignBtn = document.getElementById('assignBtn');
+            assignBtn.disabled = true;
+            assignBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الربط...';
+            
+            try {
+                const response = await fetch(`/employees/geofences/${geofence.id}/assign-employees`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ employee_ids: selectedIds })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('خطأ: ' + data.message);
+                    assignBtn.disabled = false;
+                    assignBtn.innerHTML = '<i class="fas fa-check"></i> ربط الموظفين';
+                }
+            } catch (error) {
+                alert('حدث خطأ في الاتصال');
+                assignBtn.disabled = false;
+                assignBtn.innerHTML = '<i class="fas fa-check"></i> ربط الموظفين';
+            }
+        }
+        
+        async function unassignEmployee(employeeId, employeeName) {
+            if (!confirm(`هل أنت متأكد من إلغاء ربط الموظف "${employeeName}" من هذه الدائرة؟`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/employees/geofences/${geofence.id}/unassign-employee/${employeeId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('خطأ: ' + data.message);
+                }
+            } catch (error) {
+                alert('حدث خطأ في الاتصال');
+            }
+        }
+        
+        function editGeofence() {
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+        
+        async function updateGeofence() {
+            const name = document.getElementById('editName').value.trim();
+            const radius = parseInt(document.getElementById('editRadius').value);
+            const color = document.getElementById('editColor').value;
+            
+            if (!name) {
+                alert('الرجاء إدخال اسم الدائرة');
+                return;
+            }
+            
+            if (radius < 10) {
+                alert('نصف القطر يجب أن يكون 10 متر على الأقل');
+                return;
+            }
+            
+            const updateBtn = document.getElementById('updateBtn');
+            updateBtn.disabled = true;
+            updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+            
+            try {
+                const response = await fetch(`/employees/geofences/${geofence.id}/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        radius_meters: radius,
+                        color: color
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('تم تحديث الدائرة بنجاح!');
+                    location.reload();
+                } else {
+                    alert('خطأ: ' + data.message);
+                    updateBtn.disabled = false;
+                    updateBtn.innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+                }
+            } catch (error) {
+                alert('حدث خطأ في الاتصال');
+                updateBtn.disabled = false;
+                updateBtn.innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+            }
+        }
+        
+        document.getElementById('editColor')?.addEventListener('input', function(e) {
+            document.getElementById('colorPreview').textContent = e.target.value;
+        });
+        
+        function deleteGeofence() {
+            if (!confirm('هل أنت متأكد من حذف هذه الدائرة؟\n\nسيتم حذف جميع الأحداث المسجلة لهذه الدائرة.')) {
+                return;
+            }
+            
+            fetch(`/employees/geofences/${geofence.id}/delete`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('تم حذف الدائرة بنجاح!');
+                    window.location.href = '/employees/geofences';
+                } else {
+                    alert('حدث خطأ: ' + (data.message || 'فشل الحذف'));
+                }
+            })
+            .catch(error => {
+                alert('حدث خطأ في الاتصال');
+            });
+        }
+    </script>
+    
+    <!-- قسم الحضور الصباحي والمسائي -->
+    <script>
+        if (document.querySelector('.employees-card')) {
+            const section = document.createElement('div');
+            section.className = 'employees-card';
+            section.style.cssText = 'margin-top: 20px;';
+            section.innerHTML = `
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-clock"></i>
+                        الحضور الصباحي والمسائي اليوم
+                        <span class="badge" style="margin-right: auto;">{{ geofence_attendance_records|length }}</span>
+                    </h2>
+                    <a href="/employees/geofences/{{ geofence.id }}/export-attendance" class="btn btn-sm btn-success" style="margin-right: auto; margin-left: 10px;">
+                        <i class="fas fa-file-excel"></i> تصدير Excel
+                    </a>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                        <thead>
+                            <tr style="background: rgba(129, 140, 248, 0.1); border-bottom: 2px solid rgba(129, 140, 248, 0.3);">
+                                <th style="padding: 12px; color: #c7d2fe;">رقم الموظف</th>
+                                <th style="padding: 12px; color: #c7d2fe;">اسم الموظف</th>
+                                <th style="padding: 12px; color: #10b981;">الحضور الصباحي</th>
+                                <th style="padding: 12px; color: #f59e0b;">الحضور المسائي</th>
+                                <th style="padding: 12px; color: #c7d2fe;">الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in geofence_attendance_records %}
+                            {% set emp = record.employee %}
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <td style="padding: 12px; color: #e5e7eb;">{{ emp.employee_id }}</td>
+                                <td style="padding: 12px; color: #e5e7eb;">{{ emp.name }}</td>
+                                <td style="padding: 12px;">
+                                    {% if record.morning_entry_sa %}
+                                    <span style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">
+                                        ✓ {{ record.morning_entry_sa.strftime('%H:%M') }}
+                                    </span>
+                                    {% else %}
+                                    <span style="color: #999;">-</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 12px;">
+                                    {% if record.evening_entry_sa %}
+                                    <span style="background: rgba(245, 158, 11, 0.2); color: #fcd34d; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">
+                                        ✓ {{ record.evening_entry_sa.strftime('%H:%M') }}
+                                    </span>
+                                    {% else %}
+                                    <span style="color: #999;">-</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 12px;">
+                                    {% if record.morning_entry_sa and record.evening_entry_sa %}
+                                    <span style="background: rgba(34, 197, 94, 0.2); color: #86efac; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">
+                                        كامل اليوم ✓
+                                    </span>
+                                    {% elif record.morning_entry_sa %}
+                                    <span style="background: rgba(129, 140, 248, 0.2); color: #c7d2fe; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">
+                                        صباحي فقط
+                                    </span>
+                                    {% elif record.evening_entry_sa %}
+                                    <span style="background: rgba(129, 140, 248, 0.2); color: #c7d2fe; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">
+                                        مسائي فقط
+                                    </span>
+                                    {% else %}
+                                    <span style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">
+                                        لم يحضر
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            const container = document.querySelector('.employees-card').parentElement;
+            if (container) container.appendChild(section);
+        }
+        
+    </script>
+</body>
+</html>
