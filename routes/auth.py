@@ -6,6 +6,8 @@ from models import User, UserRole
 from werkzeug.security import generate_password_hash, check_password_hash
 from email_validator import validate_email, EmailNotValidError
 
+from application.auth.services import verify_credentials, record_login
+
 # إنشاء blueprint للمصادقة
 auth_bp = Blueprint('auth', __name__)
 
@@ -37,19 +39,15 @@ def login():
         except EmailNotValidError:
             flash('البريد الإلكتروني غير صالح', 'danger')
             return redirect(url_for('auth.login'))
-        
-        # البحث عن المستخدم
-        user = User.query.filter_by(email=email).first()
-        # التحقق من وجود المستخدم وصحة كلمة المرور
-        if not user or not user.check_password(password):
-            flash('البريد الإلكتروني أو كلمة المرور غير صحيحة', 'danger')
+
+        user, error = verify_credentials(email, password)
+        if not user:
+            flash(error or 'البريد الإلكتروني أو كلمة المرور غير صحيحة', 'danger')
             return redirect(url_for('auth.login'))
-        
-        # تسجيل الدخول
+
         login_user(user, remember=remember)
-        user.last_login = datetime.utcnow()
-        db.session.commit()
-        
+        record_login(user)
+
         flash('تم تسجيل الدخول بنجاح', 'success')
         return redirect(url_for('root'))
     

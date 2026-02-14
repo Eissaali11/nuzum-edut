@@ -35,11 +35,11 @@
       <nav class="theme-sidebar-nav">
         <a class="theme-sidebar-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('web.index') }}">الرئيسية</a>
         <a class="theme-sidebar-link {% if request.path.startswith('/dashboard') %}active{% endif %}" href="/dashboard">لوحة التحكم</a>
-        <a class="theme-sidebar-link {% if request.path.startswith('/employees') %}active{% endif %}" href="/employees">الموظفون</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/app/employees') %}active{% endif %}" href="{{ url_for('employees_web.list_page') }}">الموظفون</a>
         <a class="theme-sidebar-link {% if request.path.startswith('/departments') %}active{% endif %}" href="/departments">الأقسام</a>
         <a class="theme-sidebar-link {% if request.path.startswith('/attendance') %}active{% endif %}" href="/attendance">الحضور</a>
         <a class="theme-sidebar-link {% if request.path.startswith('/salaries') %}active{% endif %}" href="/salaries">الرواتب</a>
-        <a class="theme-sidebar-link {% if request.path.startswith('/vehicles') %}active{% endif %}" href="/vehicles">المركبات</a>
+        <a class="theme-sidebar-link {% if request.path.startswith('/app/vehicles') %}active{% endif %}" href="{{ url_for('vehicles_web.list_page') }}">المركبات</a>
         <a class="theme-sidebar-link {% if request.path.startswith('/accounting') %}active{% endif %}" href="/accounting">المحاسبة</a>
         <a class="theme-sidebar-link {% if request.path.startswith('/reports') %}active{% endif %}" href="/reports">التقارير</a>
         <a class="theme-sidebar-link {% if request.path.startswith('/documents') %}active{% endif %}" href="/documents">المستندات</a>

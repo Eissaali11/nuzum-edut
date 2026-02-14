@@ -1,0 +1,33 @@
+{% extends "layout/base.html" %}
+{% block title %}الموظفون — نُظم{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+  <h1 class="theme-page-title">قائمة الموظفين</h1>
+  <p class="text-muted">عرض وفلترة الموظفين حسب القسم والحالة.</p>
+</div>
+
+<div class="card theme-card">
+  <div class="card-header">
+    <h2 class="h5 mb-0">الموظفون</h2>
+  </div>
+  <div class="card-body p-0">
+    {% from 'macros/table.html' import employee_table %}
+    {{ employee_table(
+      employees=employees,
+      duplicate_names_set=duplicate_names_set|default([]),
+      can_edit=can_edit|default(false),
+      can_delete=can_delete|default(false)
+    ) }}
+  </div>
+</div>
+
+{% if departments %}
+<div class="mt-4">
+  <p class="text-muted small">
+    إحصائيات: قسم واحد: {{ single_dept_count }} | متعدد الأقسام: {{ multi_dept_count }} | بدون قسم: {{ no_dept_count }}
+    {% if duplicate_names_count %}| أسماء مكررة: {{ duplicate_names_count }}{% endif %}
+  </p>
+</div>
+{% endif %}
+{% endblock %}

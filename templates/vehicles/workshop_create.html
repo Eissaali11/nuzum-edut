@@ -2,11 +2,16 @@
 
 {% block title %}إضافة سجل ورشة للسيارة: {{ vehicle.plate_number }}{% endblock %}
 
+{% block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='css/theme.css') }}" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
-<div class=" mt-4">
-    <div class="card shadow-sm">
-        <div class="card-header  d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">
+<div class="mt-4 theme-workshop-page" style="font-family: var(--font-default);">
+    <div class="card shadow-sm theme-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0 theme-page-title" style="font-family: var(--font-default);">
                 <i class="fas fa-tools ms-2"></i>
                 إضافة سجل ورشة للسيارة: {{ vehicle.plate_number }}
             </h3>
@@ -24,9 +29,9 @@
         <div class="card-body">
             <div class="row-cols-1 row-cols-sm-2 row-cols-md-3 mb-4">
                 <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header bg-blue">
-                            <h5 class="mb-0">معلومات السيارة</h5>
+                    <div class="card theme-card">
+                        <div class="card-header">
+                            <h5 class="mb-0" style="font-family: var(--font-default);">معلومات السيارة</h5>
                         </div>
                         <div class="card-body">
                             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-3">

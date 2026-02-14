@@ -2,19 +2,24 @@
 
 {% block title %}تعديل حادث مروري{% endblock %}
 
+{% block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='css/theme.css') }}" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4 theme-accident-page" style="font-family: var(--font-default);">
     <div class="row">
         <div class="col-md-8 mx-auto">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
+            <div class="card shadow-sm theme-card">
+                <div class="card-header">
+                    <h5 class="mb-0" style="font-family: var(--font-default);">
                         <i class="fas fa-car-crash ms-2"></i>
                         تعديل حادث مروري
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" enctype="multipart/form-data">
                         {{ form.hidden_tag() }}
                         {{ form.vehicle_id }}
 

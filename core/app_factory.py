@@ -7,10 +7,13 @@
 import os
 from pathlib import Path
 
-from flask import Flask
+from flask import Flask, Blueprint
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# مجلد الملفات الثابتة في الجذر (قوالب الجوال والويب القديم)
+ROOT_STATIC_DIR = str(BASE_DIR / "static")
 
 
 def create_app(config_name=None):
@@ -44,7 +47,12 @@ def create_app(config_name=None):
 
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
+    # خدمة ملفات الجوال من مجلد الجذر static/ (mobile/*) لظهور التصميم بشكل سليم
+    _register_legacy_static(app)
+
     _init_extensions(app)
+    _init_redis(app)
+    _init_celery(app)
     _register_blueprints(app)
     _register_error_handlers(app)
     _register_template_filters(app)
@@ -53,20 +61,61 @@ def create_app(config_name=None):
     return app
 
 
+def _register_legacy_static(app):
+    """خدمة ملفات الجوال من مجلد الجذر static/ لظهور التصميم بشكل سليم."""
+    if not os.path.isdir(ROOT_STATIC_DIR):
+        return
+    legacy_static_bp = Blueprint(
+        "legacy_static",
+        __name__,
+        static_folder=ROOT_STATIC_DIR,
+        static_url_path="",
+    )
+    app.register_blueprint(legacy_static_bp, url_prefix="/legacy-static")
+
+
 def _init_extensions(app):
     """تهيئة الملحقات (DB, Login, CSRF, Migrate)."""
     from core.extensions import init_extensions
     init_extensions(app)
+    # تسجيل نماذج النطاقات مع SQLAlchemy (يجب استيرادها بعد تهيئة db)
+    import domain.employees.models  # noqa: F401
+    import domain.vehicles.models  # noqa: F401
+
+
+def _init_redis(app):
+    """ربط REDIS_URL من البيئة بطبقة التخزين المؤقت (app.redis)."""
+    app.redis = None
+    redis_url = app.config.get("REDIS_URL")
+    if redis_url:
+        try:
+            import redis as redis_lib
+            app.redis = redis_lib.from_url(redis_url)
+        except ImportError:
+            pass
+
+
+def _init_celery(app):
+    """ربط Celery بتطبيق Flask (سياق التطبيق متاح داخل المهام)."""
+    try:
+        from core.celery_app import init_celery
+        init_celery(app)
+    except ImportError:
+        app.celery = None
 
 
 def _register_blueprints(app):
-    """تسجيل Blueprints: ويب، API، مصادقة (النواة الجديدة)، ثم Legacy."""
+    """تسجيل Blueprints: ويب، API، مصادقة، الموظفين (Vertical Slice)، ثم Legacy."""
     from presentation.web.routes import web_bp
     from presentation.web.api_routes import api_bp
     from presentation.web.auth_routes import auth_bp
+    from presentation.web.employees import employees_bp as employees_web_bp
+    from presentation.web.vehicles import vehicles_web_bp
     app.register_blueprint(web_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(employees_web_bp)
+    app.register_blueprint(vehicles_web_bp)
     _register_legacy_blueprints(app)
     if "root" not in app.view_functions:
         app.add_url_rule("/", "root", app.view_functions.get("web.index"))
@@ -137,6 +186,11 @@ def _register_legacy_blueprints(app):
     try:
         from routes.users import users_bp
         _reg(users_bp, "/users")
+    except ImportError:
+        pass
+    try:
+        from routes.mobile import mobile_bp
+        _reg(mobile_bp, "/mobile")
     except ImportError:
         pass
     try:
@@ -254,6 +308,38 @@ def _register_template_filters(app):
         from markupsafe import Markup
         return Markup(s.replace("\n", "<br>"))
 
+    @app.template_filter("display_date")
+    def display_date_filter(date, format="%Y-%m-%d", default="غير محدد"):
+        """عرض التاريخ بشكل منسق أو نص بديل إذا كان التاريخ فارغاً."""
+        if date:
+            try:
+                return date.strftime(format)
+            except Exception:
+                return str(date)
+        return default
+
+    @app.template_filter("days_remaining")
+    def days_remaining_filter(date, from_date=None):
+        """حساب عدد الأيام المتبقية من التاريخ المحدد حتى اليوم."""
+        from datetime import date as date_type
+        if date is None:
+            return None
+        ref = from_date or date_type.today()
+        if hasattr(date, "date"):
+            date = date.date()
+        if hasattr(ref, "date"):
+            ref = ref.date()
+        try:
+            return (date - ref).days
+        except Exception:
+            return None
+
+    try:
+        from utils.id_encoder import register_template_filters as register_id_encoder_filters
+        register_id_encoder_filters(app)
+    except Exception:
+        pass
+
 
 def _register_context_processors(app):
     """متغيرات القوالب العامة."""
@@ -275,6 +361,7 @@ def _register_context_processors(app):
             "now": datetime.utcnow(),
             "current_user": current_user,
             "url_for": safe_url_for,
+            "legacy_static_prefix": "/legacy-static",  # لتحميل تصميم الجوال عند استخدام create_app
         }
         try:
             from models import Module, UserRole

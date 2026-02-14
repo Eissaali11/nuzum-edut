@@ -3,9 +3,12 @@ venv/
 *.venv
 env/
 
-# Python cache
+# Python cache (do not track; run cleanup to remove)
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
 
 # IDE files
 .vscode/

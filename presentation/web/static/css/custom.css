@@ -1,20 +1,12 @@
-/* Custom CSS for Arabic Employee Management System */
-
-/* الخط الافتراضي للمشروع: beIN-Normal (الملف: static/fonts/beIN-Normal.ttf) */
-@font-face {
-    font-family: "beIN-Normal";
-    src: url("../fonts/beIN-Normal.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal;
-}
+/* Custom CSS for Arabic Employee Management System — يستخدم متغيرات theme.css */
 
 /* Base Styles & RTL Support */
 body {
-    font-family: "beIN-Normal", "Cairo", "Segoe UI", Tahoma, sans-serif;
+    font-family: var(--font-default);
     direction: rtl;
     text-align: right;
-    background-color: #eaeaea;
-    color: #ffffff;
+    background-color: var(--body-bg);
+    color: var(--sidebar-text);
     overflow-x: hidden;
 }
 
@@ -33,7 +25,7 @@ h6,
 .btn,
 .form-control,
 .dropdown-item {
-    font-family: "beIN-Normal", "Cairo", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--font-default);
 }
 
 /* Enhanced Typography */
@@ -50,7 +42,7 @@ h6 {
 
 h1 {
     font-size: 2.25rem;
-    color: var(--bs-primary);
+    color: var(--primary-color);
 }
 
 h2 {
@@ -68,15 +60,14 @@ p {
 /* Fix Bootstrap RTL issues */
 .dropdown-menu {
     position: absolute;
-    top: 100%;           /* drop just below the trigger */
+    top: 100%;
     right: 0;
     left: auto;
     text-align: right;
-    z-index: 1000;       /* raised above most things */
-    background-color: #0056b3;
-    /* optional extras */
+    z-index: 1000;
+    background-color: var(--dropdown-bg);
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  }
+}
 .form-check {
     padding-right: 1.25rem;
     padding-left: 0;
@@ -95,7 +86,7 @@ p {
     transition: all 0.3s ease;
     overflow: hidden;
     margin-bottom: 1.5rem;
-    background-color: #1e3a5c;
+    background-color: var(--card-bg);
 }
 
 .card:hover {
@@ -103,8 +94,8 @@ p {
 }
 
 .card-header {
-    background-color: #2a4f7a;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: var(--card-header-bg);
+    border-bottom: 1px solid var(--card-border);
     padding: 1.25rem 1.5rem;
 }
 
@@ -115,12 +106,12 @@ p {
 
 .card-body {
     padding: 1.5rem;
-    background-color: #1e3a5c;
+    background-color: var(--card-bg);
 }
 
 .card-footer {
-    background-color: #2a4f7a;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: var(--card-header-bg);
+    border-top: 1px solid var(--card-border);
     padding: 1rem 1.5rem;
 }
 
@@ -358,7 +349,7 @@ table {
     right: 0;
     width: 16.66667%;
     top: 0;
-    background: #29406A;
+    background: var(--sidebar-main);
     border-left: 1px solid rgba(255, 255, 255, 0.06);
     box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
     z-index: 1000;
@@ -370,7 +361,7 @@ table {
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
-    scrollbar-color: #A0A0A0 #606060;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
     padding: 0.75rem 0.5rem;
 }
 
@@ -379,12 +370,12 @@ table {
 }
 
 .sidebar-content::-webkit-scrollbar-track {
-    background: #606060;
+    background: var(--scrollbar-track);
     border-radius: 10px;
 }
 
 .sidebar-content::-webkit-scrollbar-thumb {
-    background-color: #A0A0A0;
+    background-color: var(--scrollbar-thumb);
     border-radius: 10px;
 }
 
@@ -392,14 +383,14 @@ table {
     background-color: #B0B0B0;
 }
 
-/* شعار القائمة — لون الدائرة #3F608F */
+/* شعار القائمة */
 .sidebar .circular-logo {
     width: 48px;
     height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #3F608F;
+    background: var(--sidebar-brand);
     border-radius: 12px;
     border: none;
     transition: background 0.25s ease, transform 0.2s ease;
@@ -440,11 +431,11 @@ table {
     transform: translateX(-2px);
 }
 
-/* العنصر النشط — خلفية #4C72B0 مع حد سفلي #5990D5 */
+/* العنصر النشط */
 .sidebar .nav-link.active {
-    background-color: #4C72B0;
+    background-color: var(--sidebar-active);
     box-shadow: none;
-    border-bottom: 2px solid #5990D5;
+    border-bottom: 2px solid var(--sidebar-active-border);
     border-radius: 10px 10px 0 0;
 }
 
@@ -491,41 +482,40 @@ table {
     transition: transform 0.25s ease;
 }
 
-/* نص وعناصر القائمة — أبيض/أوف وايت #F0F0F0 */
+/* نص وعناصر القائمة */
 .nav-link-custom {
-    color: #F0F0F0 !important;
+    color: var(--sidebar-text) !important;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
     font-weight: 500;
     transition: all 0.25s ease;
 }
 
 .nav-link-custom:hover {
-    color: #ffffff !important;
+    color: #fff !important;
 }
 
 .nav-link-custom.active {
-    color: #ffffff !important;
+    color: #fff !important;
 }
 
 .nav-link-custom > i:not(.fa-chevron-down) {
-    color: #F0F0F0 !important;
+    color: var(--sidebar-text) !important;
 }
 
 .nav-link-custom:hover > i:not(.fa-chevron-down),
 .nav-link-custom.active > i:not(.fa-chevron-down) {
-    color: #ffffff !important;
-}
-
-/* شارة صفراء (مثل لوحة التحليلات) #FFC107 */
-.sidebar .nav-link .badge.bg-warning,
-.sidebar .nav-link .badge.bg-warning.text-dark {
-    background-color: #FFC107 !important;
     color: #fff !important;
 }
 
-/* شارة حمراء (مثل إدارة السيارات) #DC3545 */
+/* شارات القائمة */
+.sidebar .nav-link .badge.bg-warning,
+.sidebar .nav-link .badge.bg-warning.text-dark {
+    background-color: var(--badge-warning) !important;
+    color: #fff !important;
+}
+
 .sidebar .nav-link .badge.bg-danger {
-    background-color: #DC3545 !important;
+    background-color: var(--badge-danger) !important;
     color: #fff !important;
 }
 
