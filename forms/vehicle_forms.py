@@ -8,6 +8,51 @@ from wtforms.validators import DataRequired, Optional, NumberRange, URL, Length
 from datetime import date
 
 
+# قائمة الحالات لاستخدامها في نموذج التعديل (يُملأ من application.vehicles.vehicle_service)
+VEHICLE_EDIT_STATUS_CHOICES = [
+    ("available", "متاحة"),
+    ("rented", "مؤجرة"),
+    ("in_project", "نشطة مع سائق"),
+    ("in_workshop", "في الورشة صيانة"),
+    ("accident", "في الورشة حادث"),
+    ("out_of_service", "خارج الخدمة"),
+]
+
+
+class VehicleEditForm(FlaskForm):
+    """نموذج تعديل بيانات المركبة (يُستخدم مع form.validate_on_submit() في مسار التعديل)."""
+    plate_number = StringField("رقم اللوحة", validators=[DataRequired(), Length(max=20)])
+    make = StringField("الشركة المصنعة", validators=[DataRequired(), Length(max=50)])
+    model = StringField("الموديل", validators=[DataRequired(), Length(max=50)])
+    year = IntegerField("سنة الصنع", validators=[DataRequired(), NumberRange(min=1990, max=2030)])
+    color = StringField("اللون", validators=[DataRequired(), Length(max=30)])
+    status = SelectField("الحالة", choices=VEHICLE_EDIT_STATUS_CHOICES, validators=[DataRequired()])
+    type_of_car = StringField("نوع السيارة", validators=[Optional(), Length(max=100)])
+    driver_name = StringField("اسم السائق", validators=[Optional(), Length(max=100)])
+    project = StringField("المشروع", validators=[Optional(), Length(max=100)])
+    owned_by = StringField("الشركة المالكة", validators=[Optional(), Length(max=100)])
+    region = StringField("المنطقة", validators=[Optional(), Length(max=100)])
+    notes = TextAreaField("ملاحظات", validators=[Optional()])
+    license_image = FileField("صورة الرخصة", validators=[Optional()])
+
+
+class VehicleCreateForm(FlaskForm):
+    """نموذج إضافة سيارة جديدة (يُستخدم مع form.validate_on_submit() في مسار create)."""
+    plate_number = StringField("رقم اللوحة", validators=[DataRequired(), Length(max=20)])
+    make = StringField("الشركة المصنعة", validators=[DataRequired(), Length(max=50)])
+    model = StringField("الموديل", validators=[DataRequired(), Length(max=50)])
+    year = IntegerField("سنة الصنع", validators=[DataRequired(), NumberRange(min=1990, max=2030)])
+    color = StringField("اللون", validators=[DataRequired(), Length(max=30)])
+    status = SelectField("الحالة", choices=VEHICLE_EDIT_STATUS_CHOICES, validators=[DataRequired()])
+    type_of_car = StringField("نوع السيارة", validators=[Optional(), Length(max=100)])
+    driver_name = StringField("اسم السائق", validators=[Optional(), Length(max=100)])
+    project = StringField("المشروع", validators=[Optional(), Length(max=100)])
+    owned_by = StringField("الشركة المالكة", validators=[Optional(), Length(max=100)])
+    region = StringField("المنطقة", validators=[Optional(), Length(max=100)])
+    notes = TextAreaField("ملاحظات", validators=[Optional()])
+    license_image = FileField("صورة الرخصة", validators=[Optional()])
+
+
 class VehicleDocumentsForm(FlaskForm):
     """نموذج تحديث تواريخ انتهاء وثائق السيارة الهامة"""
     vehicle_id = HiddenField('معرف السيارة')

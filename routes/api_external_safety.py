@@ -156,7 +156,7 @@ def create_safety_check(current_employee):
         
         vehicle_id = data.get('vehicle_id')
         if not vehicle_id:
-            logger.warning("⚠️ [ExternalSafety API] Vehicle ID is missing")
+            logger.warning("WARN [ExternalSafety API] Vehicle ID is missing")
             return jsonify({
                 'success': False,
                 'message': 'رقم السيارة مطلوب'
@@ -164,7 +164,7 @@ def create_safety_check(current_employee):
         
         vehicle = Vehicle.query.get(vehicle_id)
         if not vehicle:
-            logger.error(f"❌ [ExternalSafety API] Vehicle not found: ID={vehicle_id}")
+            logger.error(f"ERROR [ExternalSafety API] Vehicle not found: ID={vehicle_id}")
             return jsonify({
                 'success': False,
                 'message': 'السيارة غير موجودة'
@@ -176,7 +176,7 @@ def create_safety_check(current_employee):
         driver_city = data.get('driver_city', 'الرياض')
         
         if not all([driver_name, driver_national_id, driver_department, driver_city]):
-            logger.warning(f"⚠️ [ExternalSafety API] Missing required fields. Name: {driver_name}, ID: {driver_national_id}, Dept: {driver_department}, City: {driver_city}")
+            logger.warning(f"WARN [ExternalSafety API] Missing required fields. Name: {driver_name}, ID: {driver_national_id}, Dept: {driver_department}, City: {driver_city}")
             return jsonify({
                 'success': False,
                 'message': 'يرجى تعبئة جميع البيانات المطلوبة'
@@ -198,7 +198,7 @@ def create_safety_check(current_employee):
         db.session.add(safety_check)
         db.session.commit()
         
-        logger.info(f"✅ [ExternalSafety API] Safety check created successfully!")
+        logger.info(f"OK [ExternalSafety API] Safety check created successfully!")
         logger.info(f"   Check ID: {safety_check.id}")
         logger.info(f"   Vehicle: {vehicle.plate_number}")
         logger.info(f"   Driver: {driver_name}")
@@ -217,7 +217,7 @@ def create_safety_check(current_employee):
     
     except Exception as e:
         db.session.rollback()
-        logger.error(f"❌ [ExternalSafety API] Error creating safety check:")
+        logger.error(f"ERROR [ExternalSafety API] Error creating safety check:")
         logger.error(f"   Error: {str(e)}")
         logger.error(f"   Type: {type(e).__name__}")
         import traceback

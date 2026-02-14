@@ -1,7 +1,7 @@
 # نُظم - Arabic Employee Management System
 
 
-## clone it -> make env file -> activate it ->  config the .env like the following -> run create_test_data.py -> run project 
+## clone it -> make env file -> activate it ->  config the .env like the following -> run infrastructure/scripts/create_test_data.py -> run project 
 
 
 ## env file 
@@ -47,8 +47,8 @@ PREFERRED_URL_SCHEME=https
 ## 🚀 Quick Start
 
 ### API Testing
-1. Import `NUZUM_API_Collection.postman_collection.json` into Postman
-2. Import `NUZUM_Environment.postman_environment.json` as environment
+1. Import `backups/NUZUM_API_Collection.postman_collection.json` into Postman
+2. Import `backups/NUZUM_Environment.postman_environment.json` as environment
 3. Start testing with the health check: `GET /api/v1/health`
 
 ### Login Credentials
@@ -106,8 +106,8 @@ GET /api/v1/info
 - `API_DOCUMENTATION.md` - Complete API reference
 - `POSTMAN_TESTING_GUIDE.md` - Step-by-step testing guide
 - `API_SUMMARY.md` - Project overview and features
-- `NUZUM_API_Collection.postman_collection.json` - Postman collection
-- `NUZUM_Environment.postman_environment.json` - Environment variables
+- `backups/NUZUM_API_Collection.postman_collection.json` - Postman collection
+- `backups/NUZUM_Environment.postman_environment.json` - Environment variables
 
 ## 🏗️ Project Structure
 

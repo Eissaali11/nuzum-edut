@@ -64,11 +64,11 @@ class UnifiedStorageService:
             return self.vehicles_folder_id
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"❌ خطأ في الحصول على مجلد السيارات: {error_msg}")
+            logger.error(f"ERROR خطأ في الحصول على مجلد السيارات: {error_msg}")
             
             # إذا كان الخطأ عن Shared Drive غير موجود، فالمشكلة هي الصلاحيات
             if 'Shared drive not found' in error_msg or '404' in error_msg:
-                logger.error(f"❌ Service Account لم تُضَف إلى Shared Drive. البريد المطلوب: nuzum-721@nuzum-477618.iam.gserviceaccount.com")
+                logger.error(f"ERROR Service Account لم تُضَف إلى Shared Drive. البريد المطلوب: nuzum-721@nuzum-477618.iam.gserviceaccount.com")
             
             return None
     
@@ -101,7 +101,7 @@ class UnifiedStorageService:
             file_size = os.path.getsize(local_path)
             filename = os.path.basename(local_path)
             
-            logger.info(f"✅ ملف محفوظ محلياً: {filename} ({file_size} bytes)")
+            logger.info(f"OK ملف محفوظ محلياً: {filename} ({file_size} bytes)")
             
             return {
                 'local_path': local_path,
@@ -141,7 +141,7 @@ class UnifiedStorageService:
             file_size = os.path.getsize(local_path)
             filename = os.path.basename(local_path)
             
-            logger.info(f"✅ وثيقة محفوظة محلياً: {plate_number} - {operation_type}")
+            logger.info(f"OK وثيقة محفوظة محلياً: {plate_number} - {operation_type}")
             
             return {
                 'local_path': local_path,
@@ -167,7 +167,7 @@ class UnifiedStorageService:
             file_size = os.path.getsize(local_path)
             filename = os.path.basename(local_path)
             
-            logger.info(f"✅ تقرير محفوظ محلياً: {report_type} - {filename}")
+            logger.info(f"OK تقرير محفوظ محلياً: {report_type} - {filename}")
             
             return {
                 'local_path': local_path,
@@ -212,7 +212,7 @@ class UnifiedStorageService:
             if not operation_folder:
                 return {'success': False, 'message': '❌ فشل في إنشاء مجلد العملية'}
             
-            logger.info(f"✅ تم رفع عملية السيارة {vehicle_plate} على Google Drive")
+            logger.info(f"OK تم رفع عملية السيارة {vehicle_plate} على Google Drive")
             
             # الحصول على رابط Shared Drive
             drive_link = f"https://drive.google.com/drive/folders/{vehicles_folder}"
@@ -225,7 +225,7 @@ class UnifiedStorageService:
             }
         except Exception as e:
             error_str = str(e)
-            logger.error(f"❌ خطأ في رفع عملية السيارة: {error_str}")
+            logger.error(f"ERROR خطأ في رفع عملية السيارة: {error_str}")
             
             # معالجة الأخطاء الشائعة
             if 'Shared drive not found' in error_str:

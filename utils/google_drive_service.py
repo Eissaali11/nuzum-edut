@@ -114,7 +114,7 @@ class GoogleDriveService:
             
             files = results.get('files', [])
             if files:
-                logger.info(f"✅ وجد المجلد الموجود: {folder_name}")
+                logger.info(f"OK وجد المجلد الموجود: {folder_name}")
                 return files[0]['id']
             
             # إنشاء المجلد إذا لم يكن موجوداً
@@ -130,11 +130,11 @@ class GoogleDriveService:
                 supportsAllDrives=True  # ✅ مهم للكتابة على Shared Drive
             ).execute()
             
-            logger.info(f"✅ تم إنشاء المجلد: {folder_name} (ID: {folder.get('id')})")
+            logger.info(f"OK تم إنشاء المجلد: {folder_name} (ID: {folder.get('id')})")
             return folder.get('id')
                 
         except Exception as e:
-            logger.error(f"❌ خطأ في إنشاء/الحصول على المجلد {folder_name}: {e}")
+            logger.error(f"ERROR خطأ في إنشاء/الحصول على المجلد {folder_name}: {e}")
             return None
     
     def get_root_folder(self) -> Optional[str]:
@@ -162,13 +162,13 @@ class GoogleDriveService:
             logger.info(f"⏳ جاري رفع ملف بحجم {file_size} بايت: {file_path}")
             
             if file_size == 0:
-                logger.warning(f"⚠️ تحذير: الملف فارغ: {file_path}")
+                logger.warning(f"WARN تحذير: الملف فارغ: {file_path}")
             
             # قراءة الملف بالكامل في الذاكرة
             with open(file_path, 'rb') as f:
                 file_content = f.read()
             
-            logger.info(f"✅ تم قراءة الملف: {len(file_content)} بايت")
+            logger.info(f"OK تم قراءة الملف: {len(file_content)} بايت")
             
             # إنشاء الـ credentials مع الصلاحيات الكاملة
             SCOPES = ['https://www.googleapis.com/auth/drive']  # صلاحيات كاملة
@@ -214,11 +214,11 @@ class GoogleDriveService:
                 except Exception as e:
                     retry_count += 1
                     if retry_count >= max_retries:
-                        logger.error(f"❌ فشل الرفع بعد {max_retries} محاولات: {str(e)[:100]}")
+                        logger.error(f"ERROR فشل الرفع بعد {max_retries} محاولات: {str(e)[:100]}")
                         return None
-                    logger.warning(f"⚠️ خطأ في الرفع، إعادة محاولة {retry_count}: {str(e)[:100]}")
+                    logger.warning(f"WARN خطأ في الرفع، إعادة محاولة {retry_count}: {str(e)[:100]}")
             
-            logger.info(f"✅ تم رفع الملف بنجاح: {file_name} (ID: {response.get('id')})")
+            logger.info(f"OK تم رفع الملف بنجاح: {file_name} (ID: {response.get('id')})")
             return {
                 'file_id': response.get('id'),
                 'file_name': response.get('name'),
@@ -227,7 +227,7 @@ class GoogleDriveService:
             }
                 
         except Exception as e:
-            logger.error(f"❌ خطأ في رفع الملف {file_path}: {str(e)[:200]}", exc_info=False)
+            logger.error(f"ERROR خطأ في رفع الملف {file_path}: {str(e)[:200]}", exc_info=False)
             return None
     
     def upload_vehicle_operation(

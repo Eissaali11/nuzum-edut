@@ -142,7 +142,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "الخطوات التالية:" -ForegroundColor Yellow
 Write-Host "1. قم بتعديل ملف .env وإضافة بيانات قاعدة البيانات" -ForegroundColor White
-Write-Host "2. قم بتشغيل: python create_test_data.py" -ForegroundColor White
+Write-Host "2. قم بتشغيل: python infrastructure/scripts/create_test_data.py" -ForegroundColor White
 Write-Host "3. قم بتشغيل: python main.py" -ForegroundColor White
 Write-Host ""
 Write-Host "بيانات الدخول الافتراضية:" -ForegroundColor Yellow

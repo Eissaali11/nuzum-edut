@@ -91,7 +91,7 @@ echo ========================================
 echo.
 echo الخطوات التالية:
 echo 1. قم بتعديل ملف .env وإضافة بيانات قاعدة البيانات
-echo 2. قم بتشغيل: python create_test_data.py
+echo 2. قم بتشغيل: python infrastructure/scripts/create_test_data.py
 echo 3. قم بتشغيل: python main.py
 echo.
 echo بيانات الدخول الافتراضية:

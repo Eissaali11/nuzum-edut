@@ -281,7 +281,7 @@ def verify_geofence(employee, latitude, longitude, strict=True):
             
             # التحقق من الدخول
             if distance <= float(geofence.radius):
-                logger.info(f"✓ Employee {employee.employee_id} inside geofence '{geofence.name}' (distance: {distance:.1f}m)")
+                logger.info(f"OK Employee {employee.employee_id} inside geofence '{geofence.name}' (distance: {distance:.1f}m)")
                 return True, geofence, f"✓ داخل منطقة {geofence.name}"
         
         # الموظف خارج جميع المناطق
@@ -540,7 +540,7 @@ def attendance_check_in(current_employee):
             'geofence_verified': geofence_ok
         }
         
-        logger.info(f"✅ تسجيل حضور ناجح: {current_employee.name} - {verification_id}")
+        logger.info(f"OK تسجيل حضور ناجح: {current_employee.name} - {verification_id}")
         
         return jsonify({
             'success': True,
@@ -549,7 +549,7 @@ def attendance_check_in(current_employee):
         }), 201
         
     except Exception as e:
-        logger.error(f"❌ خطأ في تسجيل الحضور: {str(e)}")
+        logger.error(f"ERROR خطأ في تسجيل الحضور: {str(e)}")
         import traceback
         traceback.print_exc()
         db.session.rollback()
@@ -648,7 +648,7 @@ def attendance_check_out(current_employee):
         check_out_datetime = datetime.combine(today, check_out_time)
         work_duration = (check_out_datetime - check_in_datetime).total_seconds() / 3600  # بالساعات
         
-        logger.info(f"✅ تسجيل انصراف ناجح: {current_employee.name}")
+        logger.info(f"OK تسجيل انصراف ناجح: {current_employee.name}")
         
         return jsonify({
             'success': True,
@@ -664,7 +664,7 @@ def attendance_check_out(current_employee):
         }), 200
         
     except Exception as e:
-        logger.error(f"❌ خطأ في تسجيل الانصراف: {str(e)}")
+        logger.error(f"ERROR خطأ في تسجيل الانصراف: {str(e)}")
         db.session.rollback()
         return jsonify({
             'success': False,
@@ -743,7 +743,7 @@ def get_attendance_records(current_employee):
         }), 200
         
     except Exception as e:
-        logger.error(f"❌ خطأ في جلب سجلات الحضور: {str(e)}")
+        logger.error(f"ERROR خطأ في جلب سجلات الحضور: {str(e)}")
         return jsonify({
             'success': False,
             'error': 'حدث خطأ في جلب السجلات',
@@ -784,7 +784,7 @@ def get_today_attendance(current_employee):
         }), 200
         
     except Exception as e:
-        logger.error(f"❌ خطأ في جلب حضور اليوم: {str(e)}")
+        logger.error(f"ERROR خطأ في جلب حضور اليوم: {str(e)}")
         return jsonify({
             'success': False,
             'error': 'حدث خطأ',

@@ -84,7 +84,8 @@ from models import (
     db,
 )
 from routes.operations import create_operation_request
-from routes.vehicles import update_vehicle_driver, update_vehicle_state
+from modules.vehicles.application.vehicle_service import update_vehicle_driver
+from utils.vehicle_route_helpers import update_vehicle_state
 from utils.audit_logger import log_activity
 from utils.decorators import module_access_required, permission_required
 from utils.hijri_converter import convert_gregorian_to_hijri, format_hijri_date

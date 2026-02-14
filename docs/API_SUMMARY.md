@@ -50,7 +50,7 @@
 ## 📦 ملفات Postman
 
 ### 1. Collection كامل
-**ملف:** `NUZUM_API_Collection.postman_collection.json`
+**ملف:** `backups/NUZUM_API_Collection.postman_collection.json`
 
 **المحتويات:**
 - ✅ 25+ طلب API منظم في مجلدات
@@ -60,7 +60,7 @@
 - ✅ أمثلة شاملة لجميع الوظائف
 
 ### 2. Environment متغيرات
-**ملف:** `NUZUM_Environment.postman_environment.json`
+**ملف:** `backups/NUZUM_Environment.postman_environment.json`
 
 **المتغيرات:**
 - `base_url`: رابط النظام
@@ -143,8 +143,8 @@
 1. **استيراد Collection**
    ```
    - افتح Postman
-   - استورد NUZUM_API_Collection.postman_collection.json
-   - استورد NUZUM_Environment.postman_environment.json
+   - استورد backups/NUZUM_API_Collection.postman_collection.json
+   - استورد backups/NUZUM_Environment.postman_environment.json
    ```
 
 2. **تعديل الإعدادات**

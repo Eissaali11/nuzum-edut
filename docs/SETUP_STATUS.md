@@ -98,7 +98,7 @@ pip install -r requirements.txt
 3. **إنشاء ملف `.env`** وإضافة المتغيرات المطلوبة
 4. **إنشاء قاعدة البيانات**:
    ```bash
-   python create_test_data.py
+   python infrastructure/scripts/create_test_data.py
    ```
 5. **تشغيل المشروع**:
    ```bash
@@ -138,7 +138,7 @@ pip install -r requirements.txt
    ```
 4. **إنشاء قاعدة البيانات**:
    ```bash
-   python create_test_data.py
+   python infrastructure/scripts/create_test_data.py
    ```
 5. **تشغيل المشروع**:
    ```bash

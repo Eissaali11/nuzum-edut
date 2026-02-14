@@ -37,7 +37,7 @@ cp .env.local .env
 
 ### 4. تشغيل النظام
 ```bash
-python run_local.py
+python infrastructure/scripts/run_local.py
 ```
 
 ## الوصول للنظام
@@ -64,10 +64,10 @@ pip install -r local_requirements.txt
 ### خطأ: Port 5000 is already in use
 ```bash
 # تغيير المنفذ
-python -c "import os; os.environ['PORT']='5001'; exec(open('run_local.py').read())"
+python -c "import os; os.environ['PORT']='5001'; exec(open('infrastructure/scripts/run_local.py').read())"
 ```
 
 ### قاعدة البيانات فارغة
 ```bash
-python create_test_data.py
+python infrastructure/scripts/create_test_data.py
 ```

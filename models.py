@@ -18,7 +18,7 @@ from domain.employees.models import (
 )
 
 # جدول الربط بين المركبات والمستخدمين (من نطاق المركبات)
-from domain.vehicles.models import (
+from modules.vehicles.domain.models import (
     vehicle_user_access,
     Vehicle,
     VehicleRental,

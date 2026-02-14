@@ -52,7 +52,7 @@ from models import (
     employee_departments,
 )
 from routes.operations import create_operation_request
-from routes.vehicles import update_vehicle_driver
+from modules.vehicles.application.vehicle_service import update_vehicle_driver
 from utils.audit_logger import log_activity
 from utils.decorators import module_access_required, permission_required
 from utils.vehicle_route_helpers import check_vehicle_operation_restrictions, update_vehicle_state
@@ -1746,7 +1746,7 @@ def register_vehicle_routes(bp):
     
     
     # #         # فحص قيود العمليات للمركبات خارج الخدمة
-    # #         from routes.vehicles import check_vehicle_operation_restrictions
+    # #         from utils.vehicle_route_helpers import check_vehicle_operation_restrictions
     # #         restrictions = check_vehicle_operation_restrictions(vehicle)
     # #         if restrictions['blocked']:
     # #             flash(restrictions['message'], 'danger')
@@ -2371,7 +2371,7 @@ def register_vehicle_routes(bp):
     #     vehicle = Vehicle.query.get(checklist.vehicle_id)
         
     #     # فحص حالة السيارة لإضافة تحذير في واجهة المراجعة
-    #     from routes.vehicles import check_vehicle_operation_restrictions
+    #     from utils.vehicle_route_helpers import check_vehicle_operation_restrictions
     #     restrictions = check_vehicle_operation_restrictions(vehicle)
     #     vehicle_warning = restrictions['message'] if restrictions['blocked'] else None
         
@@ -2433,7 +2433,7 @@ def register_vehicle_routes(bp):
             vehicle = Vehicle.query.get_or_404(checklist.vehicle_id)
             
             # فحص حالة السيارة - إضافة تحذير للسيارات خارج الخدمة
-            from routes.vehicles import check_vehicle_operation_restrictions
+            from utils.vehicle_route_helpers import check_vehicle_operation_restrictions
             restrictions = check_vehicle_operation_restrictions(vehicle)
             if restrictions['blocked']:
                 print(f"تحذير: {restrictions['message']}")
@@ -3216,7 +3216,7 @@ def register_vehicle_routes(bp):
         vehicle = Vehicle.query.get_or_404(vehicle_id)
     
         # فحص قيود العمليات للسيارات خارج الخدمة
-        from routes.vehicles import check_vehicle_operation_restrictions
+        from utils.vehicle_route_helpers import check_vehicle_operation_restrictions
         restrictions = check_vehicle_operation_restrictions(vehicle)
         if restrictions['blocked']:
             flash(restrictions['message'], 'error')
@@ -3411,7 +3411,7 @@ def register_vehicle_routes(bp):
         vehicle = Vehicle.query.get_or_404(vehicle_id)
     
         # فحص قيود العمليات للسيارات خارج الخدمة
-        from routes.vehicles import check_vehicle_operation_restrictions
+        from utils.vehicle_route_helpers import check_vehicle_operation_restrictions
         restrictions = check_vehicle_operation_restrictions(vehicle)
         if restrictions['blocked']:
             flash(restrictions['message'], 'error')
@@ -4078,7 +4078,7 @@ def register_vehicle_routes(bp):
             vehicle = Vehicle.query.get_or_404(vehicle_id)
     
             # فحص قيود العمليات للسيارات خارج الخدمة
-            from routes.vehicles import check_vehicle_operation_restrictions
+            from utils.vehicle_route_helpers import check_vehicle_operation_restrictions
             restrictions = check_vehicle_operation_restrictions(vehicle)
             if restrictions['blocked']:
                 flash(restrictions['message'], 'error')

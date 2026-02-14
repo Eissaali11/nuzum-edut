@@ -9,8 +9,8 @@
 
 ### 2. واجهة برمجة التطبيقات:
 - `routes/restful_api.py` - RESTful API كامل
-- `NUZUM_API_Collection.postman_collection.json` - مجموعة Postman
-- `NUZUM_Environment.postman_environment.json` - بيئة Postman
+- `backups/NUZUM_API_Collection.postman_collection.json` - مجموعة Postman
+- `backups/NUZUM_Environment.postman_environment.json` - بيئة Postman
 - `API_DOCUMENTATION.md` - توثيق كامل للAPI
 
 ### 3. القوالب:

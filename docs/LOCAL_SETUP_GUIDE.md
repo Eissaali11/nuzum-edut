@@ -83,7 +83,7 @@ python main.py --port 5001
 ## البيانات التجريبية
 ```bash
 # إنشاء مستخدم تجريبي
-python create_test_data.py
+python infrastructure/scripts/create_test_data.py
 ```
 
 ## أوامر مفيدة

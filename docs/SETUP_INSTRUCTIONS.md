@@ -66,7 +66,7 @@ FLASK_DEBUG=False
 
 ### الخطوة 6: إنشاء قاعدة البيانات والبيانات التجريبية
 ```bash
-python create_test_data.py
+python infrastructure/scripts/create_test_data.py
 ```
 
 ### الخطوة 7: تشغيل المشروع
@@ -107,5 +107,5 @@ python app.py
 curl http://localhost:5000/api/v1/health
 ```
 
-أو استخدم Postman مع ملف `NUZUM_API_Collection.postman_collection.json`
+أو استخدم Postman مع ملف `backups/NUZUM_API_Collection.postman_collection.json`
 

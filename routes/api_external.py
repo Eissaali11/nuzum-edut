@@ -267,7 +267,7 @@ def receive_employee_location():
         # تحديث الموقع المخزن مؤقتاً
         update_location_cache(employee.id, lat, lng)
         update_last_saved_time(employee.id)
-        logger.info(f"✅ SAVED (5-min interval): {employee.name} ({job_number}) - lat: {lat:.4f}, lng: {lng:.4f}")
+        logger.info(f"OK SAVED (5-min interval): {employee.name} ({job_number}) - lat: {lat:.4f}, lng: {lng:.4f}")
         
         # تحليل وقت التسجيل
         recorded_at = datetime.utcnow()
@@ -300,7 +300,7 @@ def receive_employee_location():
         
         db.session.commit()
         
-        logger.info(f"✅ موقع: {employee.name} ({job_number})")
+        logger.info(f"OK موقع: {employee.name} ({job_number})")
         
         return jsonify({
             'success': True,
@@ -768,7 +768,7 @@ def get_employee_complete_profile():
             'statistics': statistics
         }
         
-        logger.info(f"✅ تم جلب الملف الشامل للموظف {employee.name} ({job_number})")
+        logger.info(f"OK تم جلب الملف الشامل للموظف {employee.name} ({job_number})")
         
         return jsonify({
             'success': True,
@@ -816,10 +816,10 @@ def verify_employee(employee_id, national_id):
         ).first()
         
         if employee:
-            logger.info(f"✅ تحقق ناجح: الموظف {employee.name} ({employee_id}) موجود")
+            logger.info(f"OK تحقق ناجح: الموظف {employee.name} ({employee_id}) موجود")
             return jsonify({'exists': True}), 200
         else:
-            logger.info(f"❌ تحقق فاشل: لا يوجد موظف بالرقم الوظيفي {employee_id} ورقم الهوية {national_id}")
+            logger.info(f"ERROR تحقق فاشل: لا يوجد موظف بالرقم الوظيفي {employee_id} ورقم الهوية {national_id}")
             return jsonify({'exists': False}), 200
             
     except Exception as e:
@@ -898,7 +898,7 @@ def get_complete_employee_profile(employee_id):
         # التحقق من مفتاح API
         api_key = request.args.get('api_key')
         if not api_key or api_key != LOCATION_API_KEY:
-            logger.warning(f"❌ محاولة وصول غير مصرح بها إلى employee-profile من {request.remote_addr}")
+            logger.warning(f"ERROR محاولة وصول غير مصرح بها إلى employee-profile من {request.remote_addr}")
             return jsonify({
                 'success': False,
                 'message': 'غير مصرح. يرجى التحقق من المفتاح',
@@ -909,7 +909,7 @@ def get_complete_employee_profile(employee_id):
         employee = Employee.query.filter_by(employee_id=employee_id).first()
         
         if not employee:
-            logger.warning(f"❌ موظف غير موجود: {employee_id}")
+            logger.warning(f"ERROR موظف غير موجود: {employee_id}")
             return jsonify({
                 'success': False,
                 'message': 'الموظف غير موجود',
@@ -1405,7 +1405,7 @@ def get_complete_employee_profile(employee_id):
             'statistics': statistics_data
         }
         
-        logger.info(f"✅ تم جلب الملف الشامل للموظف {employee.name} ({employee_id}) بنجاح")
+        logger.info(f"OK تم جلب الملف الشامل للموظف {employee.name} ({employee_id}) بنجاح")
         
         return jsonify({
             'success': True,
@@ -1414,7 +1414,7 @@ def get_complete_employee_profile(employee_id):
         }), 200
         
     except Exception as e:
-        logger.error(f"❌ خطأ في جلب الملف الشامل للموظف: {str(e)}")
+        logger.error(f"ERROR خطأ في جلب الملف الشامل للموظف: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -1679,7 +1679,7 @@ def export_all_employees_to_excel():
                 successful_count += 1
                 
             except Exception as e:
-                logger.error(f"❌ خطأ في معالجة الموظف {emp.id}: {str(e)}")
+                logger.error(f"ERROR خطأ في معالجة الموظف {emp.id}: {str(e)}")
                 # المتابعة مع الموظف التالي بدون توقف
                 continue
         
@@ -1701,7 +1701,7 @@ def export_all_employees_to_excel():
         # تحديد اسم الملف
         filename = f"employees_full_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
         
-        logger.info(f"✅ تم إنشاء ملف Excel بنجاح: {filename} ({successful_count} موظف من أصل {len(employees)})")
+        logger.info(f"OK تم إنشاء ملف Excel بنجاح: {filename} ({successful_count} موظف من أصل {len(employees)})")
         
         return send_file(
             output,
@@ -1711,7 +1711,7 @@ def export_all_employees_to_excel():
         )
         
     except Exception as e:
-        logger.error(f"❌ خطأ في تصدير الموظفين إلى Excel: {str(e)}")
+        logger.error(f"ERROR خطأ في تصدير الموظفين إلى Excel: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({

@@ -1,0 +1,433 @@
+<!-- لوحة المعلومات المدمجة -->
+<div class="row mb-3 g-3">
+    <!-- بطاقة إحصائيات سريعة للوثائق الهامة -->
+    <div class="col-12">
+        <div class="card" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.1); border: none; color: white;">
+            <div class="card-body" style="padding: 1rem;">
+                <div class="row g-2">
+                    <!-- التفويضات المنتهية -->
+                    <div class="col-lg-3 col-md-6 col-6">
+                        <div class="d-flex align-items-center p-2" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px;">
+                            <div class="me-2">
+                                <i class="fas fa-file-contract" style="color: #ef4444; font-size: 1.2rem;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 2px;">تفويضات منتهية</div>
+                                <div style="font-size: 1.1rem; font-weight: 700; color: #ef4444;">
+                                    {{ expired_authorization_vehicles | length }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- التفويضات المشرفة على الانتهاء -->
+                    <div class="col-lg-3 col-md-6 col-6">
+                        <div class="d-flex align-items-center p-2" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px;">
+                            <div class="me-2">
+                                <i class="fas fa-clock" style="color: #f59e0b; font-size: 1.2rem;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 2px;">تفويضات ستنتهي</div>
+                                <div style="font-size: 1.1rem; font-weight: 700; color: #f59e0b;">
+                                    {% set thirty_days_later = (today + timedelta(days=30)) %}
+                                    {% set expiring_auth = 0 %}
+                                    {% for vehicle in vehicles %}
+                                        {% if vehicle.authorization_expiry_date and vehicle.authorization_expiry_date >= today and vehicle.authorization_expiry_date <= thirty_days_later %}
+                                            {% set expiring_auth = expiring_auth + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ expiring_auth }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- الفحص الدوري المنتهي -->
+                    <div class="col-lg-3 col-md-6 col-6">
+                        <div class="d-flex align-items-center p-2" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px;">
+                            <div class="me-2">
+                                <i class="fas fa-clipboard-check" style="color: #ef4444; font-size: 1.2rem;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 2px;">فحص دوري منتهي</div>
+                                <div style="font-size: 1.1rem; font-weight: 700; color: #ef4444;">
+                                    {{ expired_inspection_vehicles | length }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- الفحص الدوري المشرف على الانتهاء -->
+                    <div class="col-lg-3 col-md-6 col-6">
+                        <div class="d-flex align-items-center p-2" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px;">
+                            <div class="me-2">
+                                <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.2rem;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; opacity: 0.8; margin-bottom: 2px;">فحص سينتهي</div>
+                                <div style="font-size: 1.1rem; font-weight: 700; color: #f59e0b;">
+                                    {% set expiring_inspection = 0 %}
+                                    {% for vehicle in vehicles %}
+                                        {% if vehicle.inspection_expiry_date and vehicle.inspection_expiry_date >= today and vehicle.inspection_expiry_date <= thirty_days_later %}
+                                            {% set expiring_inspection = expiring_inspection + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ expiring_inspection }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4 g-3">
+    <!-- قسم توزيع حالة السيارات -->
+    <div class="col-lg-6 col-md-12">
+        <div class="card" style="background: linear-gradient(135deg, #2d5aa0 0%, #1e3f72 100%); border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); border: none; color: white; height: 100%;">
+            <div class="card-header" style="background: transparent; color: white; border: none; padding: 1rem 1rem 0.5rem 1rem;">
+                <h6 class="mb-0" style="color: white; font-weight: 600; font-size: 0.9rem;">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    توزيع حالة السيارات
+                </h6>
+            </div>
+            <div class="card-body" style="padding: 1rem;">
+                <div class="row align-items-center">
+                    <!-- الرسم البياني الدائري -->
+                    <div class="col-6">
+                        <div class="position-relative d-flex justify-content-center">
+                            <canvas id="vehicleStatusChart" width="120" height="120" style="max-width: 120px; max-height: 120px;"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- المفاتيح والإحصائيات -->
+                    <div class="col-6">
+                        <div class="row g-1">
+                            <!-- متاحة -->
+                            <div class="col-12">
+                                <div class="d-flex align-items-center p-1" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                    <div style="width: 12px; height: 12px; background: #4ade80; border-radius: 2px; margin-left: 8px;"></div>
+                                    <div>
+                                        <div style="font-size: 0.7rem; opacity: 0.8;">متاحة</div>
+                                        <div style="font-size: 1rem; font-weight: 600;">
+                                            {% set available_count = vehicles | selectattr("status", "equalto", "available") | list | length %}
+                                            {{ available_count }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- مؤجرة -->
+                            <div class="col-12">
+                                <div class="d-flex align-items-center p-1" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                    <div style="width: 12px; height: 12px; background: #06b6d4; border-radius: 2px; margin-left: 8px;"></div>
+                                    <div>
+                                        <div style="font-size: 0.7rem; opacity: 0.8;">مؤجرة</div>
+                                        <div style="font-size: 1rem; font-weight: 600;">
+                                            {% set rented_count = vehicles | selectattr("status", "equalto", "rented") | list | length %}
+                                            {{ rented_count }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- نشطة مع سائق -->
+                            <div class="col-12">
+                                <div class="d-flex align-items-center p-1" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                    <div style="width: 12px; height: 12px; background: #fbbf24; border-radius: 2px; margin-left: 8px;"></div>
+                                    <div>
+                                        <div style="font-size: 0.7rem; opacity: 0.8;">نشطة مع سائق</div>
+                                        <div style="font-size: 1rem; font-weight: 600;">
+                                            {% set in_project_count = vehicles | selectattr("status", "equalto", "in_project") | list | length %}
+                                            {{ in_project_count }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- في الورشة صيانة -->
+                            <div class="col-12">
+                                <div class="d-flex align-items-center p-1" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                    <div style="width: 12px; height: 12px; background: #f97316; border-radius: 2px; margin-left: 8px;"></div>
+                                    <div>
+                                        <div style="font-size: 0.7rem; opacity: 0.8;">في الورشة صيانة</div>
+                                        <div style="font-size: 1rem; font-weight: 600;">
+                                            {% set in_workshop_count = vehicles | selectattr("status", "equalto", "in_workshop") | list | length %}
+                                            {{ in_workshop_count }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- في الورشة حادث -->
+                            <div class="col-12">
+                                <div class="d-flex align-items-center p-1" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                    <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 2px; margin-left: 8px;"></div>
+                                    <div>
+                                        <div style="font-size: 0.7rem; opacity: 0.8;">في الورشة حادث</div>
+                                        <div style="font-size: 1rem; font-weight: 600;">
+                                            {% set accident_count = vehicles | selectattr("status", "equalto", "accident") | list | length %}
+                                            {{ accident_count }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم توزيع الوثائق -->
+    <div class="col-lg-6 col-md-12">
+        <div class="card" style="background: linear-gradient(135deg, #7c2d12 0%, #451a03 100%); border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); border: none; color: white; height: 100%;">
+            <div class="card-header" style="background: transparent; color: white; border: none; padding: 1rem 1rem 0.5rem 1rem;">
+                <h6 class="mb-0" style="color: white; font-weight: 600; font-size: 0.9rem;">
+                    <i class="fas fa-file-alt me-2"></i>
+                    إحصائيات الوثائق
+                </h6>
+            </div>
+            <div class="card-body" style="padding: 1rem;">
+                <div class="row align-items-center">
+                    <!-- الرسم البياني الدائري -->
+                    <div class="col-6">
+                        <div class="position-relative d-flex justify-content-center">
+                            <canvas id="documentsStatusChart" width="120" height="120" style="max-width: 120px; max-height: 120px;"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- المفاتيح والإحصائيات -->
+                    <div class="col-6">
+                        <div class="row g-1">
+                            <!-- منتهية الصلاحية -->
+                            <div class="col-12">
+                                <div class="d-flex align-items-center p-1" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                    <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 2px; margin-left: 8px;"></div>
+                                    <div>
+                                        <div style="font-size: 0.7rem; opacity: 0.8;">منتهية</div>
+                                        <div style="font-size: 1rem; font-weight: 600;">
+                                            {% set expired_docs = [] %}
+                                            {% for vehicle in vehicles %}
+                                                {% if vehicle.registration_expiry_date and vehicle.registration_expiry_date < now.date() %}
+                                                    {{ expired_docs.append(1) or "" }}
+                                                {% endif %}
+                                                {% if vehicle.insurance_expiry_date and vehicle.insurance_expiry_date < now.date() %}
+                                                    {{ expired_docs.append(1) or "" }}
+                                                {% endif %}
+                                                {% if vehicle.inspection_expiry_date and vehicle.inspection_expiry_date < now.date() %}
+                                                    {{ expired_docs.append(1) or "" }}
+                                                {% endif %}
+                                                {% if vehicle.authorization_expiry_date and vehicle.authorization_expiry_date < now.date() %}
+                                                    {{ expired_docs.append(1) or "" }}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ expired_docs | length }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ستنتهي قريباً -->
+                            <div class="col-12">
+                                <div class="d-flex align-items-center p-1" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                    <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 2px; margin-left: 8px;"></div>
+                                    <div>
+                                        <div style="font-size: 0.7rem; opacity: 0.8;">ستنتهي قريباً</div>
+                                        <div style="font-size: 1rem; font-weight: 600;">
+                                            {% set thirty_days_later = (now + timedelta(days=30)).date() %}
+                                            {% set expiring_docs = [] %}
+                                            {% for vehicle in vehicles %}
+                                                {% if vehicle.registration_expiry_date and vehicle.registration_expiry_date >= now.date() and vehicle.registration_expiry_date <= thirty_days_later %}
+                                                    {{ expiring_docs.append(1) or "" }}
+                                                {% endif %}
+                                                {% if vehicle.insurance_expiry_date and vehicle.insurance_expiry_date >= now.date() and vehicle.insurance_expiry_date <= thirty_days_later %}
+                                                    {{ expiring_docs.append(1) or "" }}
+                                                {% endif %}
+                                                {% if vehicle.inspection_expiry_date and vehicle.inspection_expiry_date >= now.date() and vehicle.inspection_expiry_date <= thirty_days_later %}
+                                                    {{ expiring_docs.append(1) or "" }}
+                                                {% endif %}
+                                                {% if vehicle.authorization_expiry_date and vehicle.authorization_expiry_date >= now.date() and vehicle.authorization_expiry_date <= thirty_days_later %}
+                                                    {{ expiring_docs.append(1) or "" }}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ expiring_docs | length }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- سارية المفعول -->
+                            <div class="col-12">
+                                <div class="d-flex align-items-center p-1" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+                                    <div style="width: 12px; height: 12px; background: #10b981; border-radius: 2px; margin-left: 8px;"></div>
+                                    <div>
+                                        <div style="font-size: 0.7rem; opacity: 0.8;">سارية</div>
+                                        <div style="font-size: 1rem; font-weight: 600;">
+                                            {% set valid_docs = [] %}
+                                            {% for vehicle in vehicles %}
+                                                {% if vehicle.registration_expiry_date and vehicle.registration_expiry_date > thirty_days_later %}
+                                                    {{ valid_docs.append(1) or "" }}
+                                                {% endif %}
+                                                {% if vehicle.insurance_expiry_date and vehicle.insurance_expiry_date > thirty_days_later %}
+                                                    {{ valid_docs.append(1) or "" }}
+                                                {% endif %}
+                                                {% if vehicle.inspection_expiry_date and vehicle.inspection_expiry_date > thirty_days_later %}
+                                                    {{ valid_docs.append(1) or "" }}
+                                                {% endif %}
+                                                {% if vehicle.authorization_expiry_date and vehicle.authorization_expiry_date > thirty_days_later %}
+                                                    {{ valid_docs.append(1) or "" }}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ valid_docs | length }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript للرسوم البيانية -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // حساب بيانات الوثائق
+    var expiredDocsCount = {{ expired_docs | length }};
+    var expiringDocsCount = {{ expiring_docs | length }};
+    var validDocsCount = {{ valid_docs | length }};
+    
+    console.log('بيانات الوثائق:', {
+        expired: expiredDocsCount,
+        expiring: expiringDocsCount,
+        valid: validDocsCount
+    });
+
+    // رسم بياني لحالة السيارات
+    var ctx1 = document.getElementById('vehicleStatusChart').getContext('2d');
+    var vehicleChart = new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: ['متاحة', 'مؤجرة', 'نشطة مع سائق', 'في الورشة صيانة', 'في الورشة حادث'],
+            datasets: [{
+                data: [
+                    {{ available_count }}, 
+                    {{ rented_count }}, 
+                    {{ in_project_count }}, 
+                    {{ in_workshop_count }}, 
+                    {{ accident_count }}
+                ],
+                backgroundColor: [
+                    '#4ade80',
+                    '#06b6d4',
+                    '#fbbf24',
+                    '#f97316',
+                    '#ef4444'
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff',
+                cutout: '65%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { 
+                    display: false 
+                },
+                tooltip: {
+                    enabled: true,
+                    rtl: true,
+                    textDirection: 'rtl',
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    titleFont: {
+                        family: 'Cairo, sans-serif',
+                        size: 13
+                    },
+                    bodyFont: {
+                        family: 'Cairo, sans-serif',
+                        size: 12
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.parsed;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // رسم بياني للوثائق
+    var ctx2 = document.getElementById('documentsStatusChart').getContext('2d');
+    
+    // التأكد من وجود بيانات قبل إنشاء الرسم البياني
+    if (expiredDocsCount + expiringDocsCount + validDocsCount > 0) {
+        var documentsChart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['منتهية الصلاحية', 'ستنتهي قريباً', 'سارية المفعول'],
+                datasets: [{
+                    data: [expiredDocsCount, expiringDocsCount, validDocsCount],
+                    backgroundColor: [
+                        '#ef4444',
+                        '#f59e0b', 
+                        '#10b981'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    cutout: '65%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff'
+                    }
+                }
+            }
+        });
+    } else {
+        // إذا لم توجد بيانات، عرض رسالة أو رسم بياني فارغ
+        console.log('لا توجد بيانات وثائق لعرضها');
+        var documentsChart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['لا توجد بيانات'],
+                datasets: [{
+                    data: [1],
+                    backgroundColor: ['#6b7280'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    cutout: '65%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff'
+                    }
+                }
+            }
+        });
+    }
+});
+</script>

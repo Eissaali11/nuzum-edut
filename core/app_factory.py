@@ -164,8 +164,8 @@ def _register_legacy_blueprints(app):
     except ImportError:
         pass
     try:
-        from routes.vehicles import vehicles_bp
-        _reg(vehicles_bp, "/vehicles")
+        from modules.vehicles.presentation.web.main_routes import get_vehicles_blueprint
+        _reg(get_vehicles_blueprint(), "/vehicles")
     except ImportError:
         pass
     try:
@@ -234,7 +234,7 @@ def _register_legacy_blueprints(app):
     except ImportError:
         pass
     try:
-        from routes.vehicle_operations import vehicle_operations_bp
+        from modules.vehicles.presentation.web.vehicle_operations import vehicle_operations_bp
         _reg(vehicle_operations_bp, "/vehicle-operations")
     except ImportError:
         pass
@@ -266,6 +266,11 @@ def _register_legacy_blueprints(app):
     try:
         from routes.fees_costs import fees_costs_bp
         _reg(fees_costs_bp, "/fees-costs")
+    except ImportError:
+        pass
+    try:
+        from presentation.api.v1 import api_v1
+        app.register_blueprint(api_v1)
     except ImportError:
         pass
 

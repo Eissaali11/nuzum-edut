@@ -64,7 +64,7 @@ Write-Host "   - اسم المستخدم: admin" -ForegroundColor Gray
 Write-Host "   - كلمة المرور: admin123" -ForegroundColor Gray
 Write-Host ""
 
-python create_admin.py
+python infrastructure/scripts/create_admin.py
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan

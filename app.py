@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+from jinja2 import ChoiceLoader, FileSystemLoader
 from datetime import datetime
 
 from flask import Flask, session, redirect, url_for, render_template, request, g
@@ -75,6 +76,19 @@ csrf = CSRFProtect()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "employee_management_secret")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
+
+# Prefer module templates over global templates
+module_templates_path = os.path.join(
+    os.path.dirname(__file__),
+    "modules",
+    "vehicles",
+    "presentation",
+    "templates",
+)
+app.jinja_loader = ChoiceLoader([
+    FileSystemLoader(module_templates_path),
+    app.jinja_loader,
+])
 
 # إعفاء بعض المسارات من حماية CSRF
 app.config['WTF_CSRF_ENABLED'] = True
@@ -371,7 +385,7 @@ with app.app_context():
     from routes.documents import documents_bp
     from routes.reports import reports_bp
     from routes.auth import auth_bp
-    from routes.vehicles import vehicles_bp
+    from modules.vehicles.presentation.web.main_routes import get_vehicles_blueprint
     from routes.fees_costs import fees_costs_bp
     from routes.api import api_bp
     from routes.enhanced_reports import enhanced_reports_bp
@@ -396,7 +410,7 @@ with app.app_context():
     from routes.accounting import accounting_bp
     from routes.accounting_extended import accounting_ext_bp
     from routes.analytics_simple import analytics_simple_bp
-    from routes.vehicle_operations import vehicle_operations_bp
+    from modules.vehicles.presentation.web.vehicle_operations import vehicle_operations_bp
     from routes.integrated_simple import integrated_bp
     from routes.ai_services_simple import ai_services_bp
     from routes.email_queue import email_queue_bp
@@ -411,7 +425,6 @@ with app.app_context():
     from routes.drive_browser import drive_browser_bp
     from routes.attendance_api import attendance_api_bp
     from routes.api_accident_reports import api_accident_reports
-    from routes.database_backup import database_backup_bp
 
     # تعطيل حماية CSRF لطرق معينة
     csrf.exempt(voicehub_bp)
@@ -430,7 +443,7 @@ with app.app_context():
     app.register_blueprint(documents_bp, url_prefix='/documents')
     app.register_blueprint(reports_bp, url_prefix='/reports')
     app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(vehicles_bp, url_prefix='/vehicles')
+    app.register_blueprint(get_vehicles_blueprint(), url_prefix='/vehicles')
     app.register_blueprint(fees_costs_bp, url_prefix='/fees-costs')
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(enhanced_reports_bp, url_prefix='/enhanced-reports')
@@ -487,8 +500,6 @@ with app.app_context():
     from routes.powerbi_dashboard import powerbi_bp
     app.register_blueprint(powerbi_bp)
     
-    # Database Backup - النسخ الاحتياطي
-    app.register_blueprint(database_backup_bp, url_prefix='/backup')
 
     @app.route('/uploads/<path:filename>')
     def uploaded_file(filename):

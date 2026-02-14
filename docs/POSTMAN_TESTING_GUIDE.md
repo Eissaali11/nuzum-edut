@@ -9,15 +9,15 @@
 ### 1. تحميل الملفات
 
 قم بتحميل الملفات التالية:
-- `NUZUM_API_Collection.postman_collection.json` - مجموعة APIs الكاملة
-- `NUZUM_Environment.postman_environment.json` - متغيرات البيئة
+- `backups/NUZUM_API_Collection.postman_collection.json` - مجموعة APIs الكاملة
+- `backups/NUZUM_Environment.postman_environment.json` - متغيرات البيئة
 
 ### 2. استيراد Collection في Postman
 
 1. افتح Postman
 2. اضغط على "Import" 
-3. اسحب ملف `NUZUM_API_Collection.postman_collection.json`
-4. اسحب ملف `NUZUM_Environment.postman_environment.json`
+3. اسحب ملف `backups/NUZUM_API_Collection.postman_collection.json`
+4. اسحب ملف `backups/NUZUM_Environment.postman_environment.json`
 5. اختر Environment "نُظم - بيئة الاختبار" من القائمة المنسدلة
 
 ### 3. تحديث إعدادات البيئة

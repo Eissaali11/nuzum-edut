@@ -47,7 +47,7 @@ def verify_employee_image(image_path):
 def save_employee_image(file, employee_id, image_type):
     """حفظ صورة الموظف وإرجاع المسار - مع تحقق صارم من النجاح"""
     if not file or not file.filename:
-        print(f"❌ لا يوجد ملف للحفظ")
+        print(f"ERROR لا يوجد ملف للحفظ")
         return None
     
     try:
@@ -86,27 +86,27 @@ def save_employee_image(file, employee_id, image_type):
         
         # ✅ تحقق صارم من النجاح (تحقق ثلاثي)
         if not os.path.exists(filepath):
-            print(f"❌ الملف غير موجود بعد الحفظ: {filepath}")
+            print(f"ERROR الملف غير موجود بعد الحفظ: {filepath}")
             return None
         
         file_size = os.path.getsize(filepath)
         if file_size == 0:
-            print(f"⚠️ الملف فارغ: {filepath}")
+            print(f"WARN الملف فارغ: {filepath}")
             return None
         
         # التحقق من أن حجم الملف المحفوظ يطابق حجم الملف الأصلي
         if file_size != len(file_content):
-            print(f"⚠️ عدم تطابق حجم الملف: {file_size} != {len(file_content)}")
+            print(f"WARN عدم تطابق حجم الملف: {file_size} != {len(file_content)}")
             return None
         
         # إرجاع المسار النسبي (بدون static/)
         relative_path = f"uploads/employees/{unique_filename}"
-        print(f"✅ حفظ نجح: {relative_path} ({file_size} bytes)")
+        print(f"OK حفظ نجح: {relative_path} ({file_size} bytes)")
         
         return relative_path
         
     except Exception as e:
-        print(f"❌ خطأ في حفظ الصورة: {str(e)}")
+        print(f"ERROR خطأ في حفظ الصورة: {str(e)}")
         import traceback
         traceback.print_exc()
         return None
@@ -1873,7 +1873,7 @@ def upload_image(id):
         
         # 2️⃣ تأكيد التغييرات في قاعدة البيانات
         db.session.commit()
-        print(f"✅ DB: تم حفظ {image_path} في قاعدة البيانات")
+        print(f"OK DB: تم حفظ {image_path} في قاعدة البيانات")
         
         # 💾 الملف القديم يبقى محفوظاً - لا يتم حذف الملفات الفعلية
         if old_path:
@@ -1889,7 +1889,7 @@ def upload_image(id):
         
     except Exception as e:
         db.session.rollback()
-        print(f"❌ خطأ: {str(e)}")
+        print(f"ERROR خطأ: {str(e)}")
         import traceback
         traceback.print_exc()
         flash(f'❌ خطأ: {str(e)}', 'danger')

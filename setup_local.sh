@@ -24,12 +24,12 @@ echo "إعداد متغيرات البيئة..."
 cp .env.local .env
 
 echo "إنشاء البيانات التجريبية..."
-python create_test_data.py
+python infrastructure/scripts/create_test_data.py
 
 echo "========================================"
 echo "تم الإعداد بنجاح!"
 echo "========================================"
 echo "لتشغيل النظام:"
 echo "  source venv/bin/activate"
-echo "  python run_local.py"
+echo "  python infrastructure/scripts/run_local.py"
 echo "========================================"

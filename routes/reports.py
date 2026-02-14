@@ -67,7 +67,7 @@ def vehicle_checklist_pdf(checklist_id):
         vehicle = Vehicle.query.get_or_404(checklist.vehicle_id)
         
         # فحص حالة السيارة - عرض تحذير للسيارات خارج الخدمة
-        from routes.vehicles import check_vehicle_operation_restrictions
+        from utils.vehicle_route_helpers import check_vehicle_operation_restrictions
         restrictions = check_vehicle_operation_restrictions(vehicle)
         if restrictions['blocked']:
             # إضافة تحذير في بداية التقرير ولكن السماح بعرض التشك لست التاريخي

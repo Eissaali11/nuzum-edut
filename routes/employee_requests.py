@@ -447,7 +447,7 @@ def upload_to_drive(request_id):
                 logger.info(f"📁 فحص ملف الفاتورة: {file_path}")
                 
                 if os.path.exists(file_path):
-                    logger.info(f"✓ الملف موجود - بدء الرفع")
+                    logger.info(f"OK الملف موجود - بدء الرفع")
                     upload_result = drive_uploader.upload_invoice_image(
                         file_path=file_path,
                         folder_id=folder_result['folder_id'],
@@ -456,13 +456,13 @@ def upload_to_drive(request_id):
                     if upload_result:
                         invoice.drive_file_id = upload_result['file_id']
                         files_uploaded += 1
-                        logger.info(f"✓ تم رفع الصورة بنجاح")
+                        logger.info(f"OK تم رفع الصورة بنجاح")
                     else:
-                        logger.error(f"✗ فشل رفع الصورة إلى Drive")
+                        logger.error(f"ERROR فشل رفع الصورة إلى Drive")
                 else:
-                    logger.warning(f"✗ الملف غير موجود على القرص: {file_path}")
+                    logger.warning(f"WARN الملف غير موجود على القرص: {file_path}")
             else:
-                logger.warning(f"⚠ لا توجد فاتورة أو مسار صورة فارغ للطلب {request_id}")
+                logger.warning(f"WARN لا توجد فاتورة أو مسار صورة فارغ للطلب {request_id}")
         
         elif emp_request.request_type == RequestType.CAR_WASH:
             car_wash = CarWashRequest.query.filter_by(request_id=request_id).first()
@@ -496,7 +496,7 @@ def upload_to_drive(request_id):
         if files_uploaded == 0:
             # لم يتم رفع أي ملف - فشل العملية
             db.session.rollback()
-            logger.warning(f"⚠ فشل رفع الطلب {request_id} - لا توجد ملفات متاحة للرفع")
+            logger.warning(f"WARN فشل رفع الطلب {request_id} - لا توجد ملفات متاحة للرفع")
             return jsonify({
                 'success': False,
                 'message': 'فشل الرفع: الملفات غير موجودة على الخادم. تأكد من رفع الملفات من التطبيق أولاً.',
@@ -506,7 +506,7 @@ def upload_to_drive(request_id):
         
         db.session.commit()
         
-        logger.info(f"✅ تم رفع الطلب {request_id} يدوياً إلى Drive - {files_uploaded} ملف")
+        logger.info(f"OK تم رفع الطلب {request_id} يدوياً إلى Drive - {files_uploaded} ملف")
         
         return jsonify({
             'success': True,
@@ -612,24 +612,24 @@ def edit_advance_payment(request_id):
                     
                     # 2️⃣ التحقق من نجاح الحفظ
                     if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-                        logger.info(f"✅ تم تحديث صورة السلفة #{request_id}: {file_path}")
+                        logger.info(f"OK تم تحديث صورة السلفة #{request_id}: {file_path}")
                         
                         # 💾 الصور القديمة تبقى محفوظة - لا نحذف الملفات الفعلية
                         logger.info(f"💾 الصور القديمة محفوظة للأمان (طلب رقم {request_id})")
                     else:
-                        logger.error(f"❌ فشل في حفظ الصورة: {file_path}")
+                        logger.error(f"ERROR فشل في حفظ الصورة: {file_path}")
                 else:
                     flash('صيغة الصورة غير مدعومة. استخدم PNG, JPG, JPEG, أو HEIC', 'warning')
         
         db.session.commit()
         
-        logger.info(f"✅ تم تعديل طلب السلفة #{request_id} بواسطة {current_user.username}")
+        logger.info(f"OK تم تعديل طلب السلفة #{request_id} بواسطة {current_user.username}")
         
         flash('تم تحديث بيانات السلفة بنجاح', 'success')
         return redirect(url_for('employee_requests.view_request', request_id=request_id))
         
     except Exception as e:
-        logger.error(f"❌ خطأ في تعديل طلب السلفة #{request_id}: {str(e)}")
+        logger.error(f"ERROR خطأ في تعديل طلب السلفة #{request_id}: {str(e)}")
         import traceback
         traceback.print_exc()
         db.session.rollback()
@@ -681,7 +681,7 @@ def edit_car_wash(request_id):
                     if media.local_path:
                         logger.info(f"💾 الصورة محفوظة للأمان: {media.local_path}")
                     db.session.delete(media)
-                    logger.info(f"✅ تم إزالة مرجع الصورة #{media_id}")
+                    logger.info(f"OK تم إزالة مرجع الصورة #{media_id}")
         
         # رفع صور جديدة
         photo_fields = ['photo_plate', 'photo_front', 'photo_back', 'photo_right_side', 'photo_left_side']
@@ -735,19 +735,19 @@ def edit_car_wash(request_id):
                             new_media.local_path = f"uploads/car_wash/{unique_filename}"
                             db.session.add(new_media)
                             
-                            logger.info(f"✅ تم رفع صورة جديدة: {photo_field}")
+                            logger.info(f"OK تم رفع صورة جديدة: {photo_field}")
                         else:
-                            logger.error(f"❌ فشل في حفظ الصورة: {file_path}")
+                            logger.error(f"ERROR فشل في حفظ الصورة: {file_path}")
         
         db.session.commit()
         
-        logger.info(f"✅ تم تعديل طلب غسيل السيارة #{request_id} بواسطة {current_user.username}")
+        logger.info(f"OK تم تعديل طلب غسيل السيارة #{request_id} بواسطة {current_user.username}")
         
         flash('تم تحديث بيانات طلب غسيل السيارة بنجاح', 'success')
         return redirect(url_for('employee_requests.view_request', request_id=request_id))
         
     except Exception as e:
-        logger.error(f"❌ خطأ في تعديل طلب غسيل السيارة #{request_id}: {str(e)}")
+        logger.error(f"ERROR خطأ في تعديل طلب غسيل السيارة #{request_id}: {str(e)}")
         import traceback
         traceback.print_exc()
         db.session.rollback()
