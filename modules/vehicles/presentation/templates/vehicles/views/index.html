@@ -1,0 +1,713 @@
+{% extends 'layout.html' %}
+
+{% block title %}إدارة السيارات{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern Vehicles Management Styles */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #05122D 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --secondary-gradient: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    .form-label {
+        color: white;
+    }
+
+    /* Enhanced Page Header */
+    .vehicles-header {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.6s ease-out;
+    }
+
+    .vehicles-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+    }
+
+    .vehicles-header h2 {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 2.2rem;
+    }
+
+    /* Enhanced Action Buttons */
+    .action-btn-group {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        position: relative;
+        overflow: hidden;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.25rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--card-shadow);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 120px;
+        justify-content: center;
+        color: white !important;
+    }
+
+    .action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .action-btn:hover::before {
+        left: 100%;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+        text-decoration: none;
+    }
+
+    .btn-primary-enhanced {
+        background: var(--primary-gradient);
+    }
+
+    .btn-success-enhanced {
+        background: var(--success-gradient);
+    }
+
+    .btn-info-enhanced {
+        background: var(--info-gradient);
+    }
+
+    .btn-secondary-enhanced {
+        background: var(--secondary-gradient);
+    }
+
+    .btn-danger-enhanced {
+        background: var(--danger-gradient);
+    }
+
+    .btn-warning-enhanced {
+        background: var(--warning-gradient);
+    }
+
+    /* Enhanced Stats Cards */
+    .stats-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        animation: slideUp 0.6s ease-out both;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+    }
+
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-left: 1rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .stats-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    /* Enhanced Filter Card */
+    .filter-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        animation: slideUp 0.6s ease-out 0.2s both;
+    }
+
+    .filter-card .card-header {
+        background: linear-gradient(135deg, #3c57d2ff 0%, #05122D 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-bottom: none;
+    }
+
+    .filter-card .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .filter-card .form-control, 
+    .filter-card .form-select {
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .filter-card .form-control:focus, 
+    .filter-card .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    }
+
+    /* Enhanced Alerts Card */
+    .alerts-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        animation: slideUp 0.6s ease-out 0.3s both;
+    }
+
+    .alerts-card .card-header {
+        background: var(--warning-gradient);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-bottom: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .alerts-card .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    /* Enhanced Document Cards */
+    .document-card {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        box-shadow: var(--card-shadow);
+    }
+
+    .document-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .document-card .card-header {
+        padding: 1rem;
+        border-bottom: none;
+        color: white;
+        font-weight: 600;
+    }
+
+    .document-card-danger .card-header {
+        background: var(--danger-gradient);
+    }
+
+    .document-card-warning .card-header {
+        background: var(--warning-gradient);
+    }
+
+    .document-card-info .card-header {
+        background: var(--info-gradient);
+    }
+
+    .document-card .badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: 20px;
+    }
+
+    /* Enhanced Table */
+    .vehicles-table-container {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        /* overflow: hidden; */
+        animation: slideUp 0.6s ease-out 0.4s both;
+    }
+
+    .vehicles-table-container .card-header {
+        background: linear-gradient(135deg, #3c57d2ff 0%, #05122D 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-bottom: none;
+    }
+
+    .vehicles-table-container .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .table-responsive {
+        border-radius: 0 0 12px 12px;
+        /* overflow: hidden; */
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background: rgba(102, 126, 234, 0.1);
+        border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+        padding: 1rem;
+        font-weight: 600;
+        text-align: right;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(102, 126, 234, 0.05);
+    }
+
+    /* Enhanced Badges */
+    .status-badge {
+        padding: 0.5rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        min-width: 80px;
+        display: inline-block;
+        text-align: center;
+    }
+
+    /* Color Badges */
+    .color-badge {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    /* Action Buttons */
+    .table-actions .btn {
+        border-radius: 8px;
+        padding: 0.5rem;
+        min-width: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .table-actions .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Staggered Animation for Cards */
+    .stats-card:nth-child(1) { animation-delay: 0.1s; }
+    .stats-card:nth-child(2) { animation-delay: 0.2s; }
+    .stats-card:nth-child(3) { animation-delay: 0.3s; }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .action-btn-group {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .action-btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .vehicles-header {
+            padding: 1.5rem;
+        }
+        
+        .vehicles-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .stats-card {
+            margin-bottom: 1rem;
+        }
+        
+        .table thead th,
+        .table tbody td {
+            padding: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Enhanced Header -->
+    <div class="vehicles-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h2><i class="fas fa-car ms-2"></i>إدارة السيارات</h2>
+                <p class="text-muted mb-0">إدارة شاملة لأسطول السيارات والمستندات والعمليات</p>
+            </div>
+            <div class="action-btn-group">
+                <a href="{{ url_for('vehicles.create') }}" class="action-btn btn-primary-enhanced">
+                    <i class="fas fa-plus"></i>
+                    إضافة سيارة جديدة
+                </a>
+                <a href="{{ url_for('vehicles.detailed_list') }}" class="action-btn btn-success-enhanced">
+                    <i class="fas fa-list-alt"></i>
+                    القائمة التفصيلية
+                </a>
+                <a href="{{ url_for('vehicles.dashboard') }}" class="action-btn btn-info-enhanced">
+                    <i class="fas fa-chart-bar"></i>
+                    لوحة المعلومات
+                </a>
+                <a href="{{ url_for('vehicles.export_vehicles_excel') }}" class="action-btn btn-secondary-enhanced">
+                    <i class="fas fa-file-excel"></i>
+                    تصدير Excel
+                </a>
+                <a href="{{ url_for('vehicles.export_vehicles_pdf_english') }}" class="action-btn btn-warning-enhanced" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fas fa-file-pdf"></i>
+                    PDF English
+                </a>
+                <a href="{{ url_for('vehicles.import_vehicles') }}" class="action-btn btn-info-enhanced">
+                    <i class="fas fa-file-import"></i>
+                    استيراد Excel
+                </a>
+                <a href="{{ url_for('vehicles.expired_documents') }}" class="action-btn btn-danger-enhanced">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    الوثائق المنتهية
+                </a>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Dashboard Stats Include -->
+    {% include 'vehicles/reports/dashboard_stats.html" %}
+    <!-- Enhanced Filter Card -->
+    <div class="filter-card card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-filter ms-2"></i>فلاتر البحث</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{{ url_for('vehicles.index') }}" class="row g-3">
+                <div class="col-md-3">
+                    <label for="search_plate" class="form-label">البحث برقم السيارة</label>
+                    <input type="text" name="search_plate" id="search_plate" class="form-control" 
+                           placeholder="ادخل رقم السيارة..." value="{{ search_plate }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">فلترة حسب الحالة</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">جميع الحالات</option>
+                        {% for status in statuses %}
+                        <option value="{{ status }}" {% if status_filter == status %}selected{% endif %}>
+                            {% if status == 'available' %}✅ متاحة
+                            {% elif status == 'rented' %}🚗 مؤجرة
+                            {% elif status == 'in_project' %}🚗 نشطة مع سائق
+                            {% elif status == 'in_workshop' %}🔧 في الورشة صيانة
+                            {% elif status == 'accident' %}⚠️ في الورشة حادث
+                            {% elif status == 'out_of_service' %}🔴 خارج الخدمة
+                            {% else %}{{ status }}{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="make" class="form-label">فلترة حسب الشركة المصنعة</label>
+                    <select name="make" id="make" class="form-select">
+                        <option value="">جميع الشركات</option>
+                        {% for make in makes %}
+                        <option value="{{ make }}" {% if make_filter == make %}selected{% endif %}>{{ make }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="project" class="form-label">فلترة حسب المشروع</label>
+                    <select name="project" id="project" class="form-select">
+                        <option value="">جميع المشاريع</option>
+                        {% for project in projects %}
+                        <option value="{{ project }}" {% if project_filter == project %}selected{% endif %}>{{ project }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <div class="d-flex align-items-center">
+                        <button type="submit" class="btn btn-primary-enhanced action-btn">
+                            <i class="fas fa-search"></i>
+                            بحث
+                        </button>
+                        <a href="{{ url_for('vehicles.index') }}" class="btn btn-secondary-enhanced action-btn ms-2">
+                            <i class="fas fa-redo"></i>
+                            إعادة ضبط
+                        </a>
+                        <a href="{{ url_for('vehicles.export_vehicles_excel') }}" class="btn btn-success-enhanced action-btn ms-2">
+                            <i class="fas fa-file-excel"></i>
+                            تصدير Excel
+                        </a>
+                        <a href="{{ url_for('vehicles.import_vehicles') }}" class="btn btn-info-enhanced action-btn ms-2">
+                            <i class="fas fa-file-import"></i>
+                            استيراد Excel
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Enhanced Vehicles Table -->
+    <div class="vehicles-table-container card">
+        <div class="card-header">
+            <h5><i class="fas fa-list ms-2"></i>قائمة السيارات</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="py-3">#</th>
+                            <th class="py-3">رقم اللوحة</th>
+                            <th class="py-3">الشركة</th>
+                            <th class="py-3">الموديل</th>
+                            <th class="py-3">السنة</th>
+                            <th class="py-3">اللون</th>
+                            <th class="py-3">اسم السائق</th>
+                            <th class="py-3">الحالة</th>
+                            <th class="py-3">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if vehicles %}
+                            {% for vehicle in vehicles %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td><strong>{{ vehicle.plate_number }}</strong></td>
+                                <td>{{ vehicle.make }}</td>
+                                <td>{{ vehicle.model }}</td>
+                                <td>{{ vehicle.year }}</td>
+                                <td>
+                                    <span class="color-badge" style="background-color: {{ vehicle.color }};"></span>
+                                    {{ vehicle.color }}
+                                </td>
+                                <td>
+                                    {% if vehicle.driver_name %}
+                                        {% if vehicle.current_employee_id %}
+                                            <a href="{{ url_for('employees.view', id=vehicle.current_employee_id) }}" class="text-success fw-bold text-decoration-none" title="انقر لعرض بيانات الموظف">
+                                                {{ vehicle.driver_name }}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-success fw-bold">{{ vehicle.driver_name }}</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">غير محدد</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if vehicle.status == 'available' %}
+                                        <span class="status-badge bg-success">✅ متاحة</span>
+                                    {% elif vehicle.status == 'rented' %}
+                                        <span class="status-badge bg-info">🚗 مؤجرة</span>
+                                    {% elif vehicle.status == 'in_project' %}
+                                        <span class="status-badge bg-info">🚗 نشطة مع سائق</span>
+                                    {% elif vehicle.status == 'in_workshop' %}
+                                        <span class="status-badge bg-warning text-dark">🔧 في الورشة صيانة</span>
+                                    {% elif vehicle.status == 'accident' %}
+                                        <span class="status-badge bg-danger">⚠️ في الورشة حادث</span>
+                                    {% elif vehicle.status == 'out_of_service' %}
+                                        <span class="status-badge bg-secondary text-white">🔴 خارج الخدمة</span>
+                                    {% else %}
+                                        <span class="status-badge bg-secondary">{{ vehicle.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="table-actions">
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('vehicles.view_encoded', encoded_id=vehicle.id|encode_vehicle_id) }}" class="btn btn-info btn-sm" title="عرض التفاصيل">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('vehicles.edit', id=vehicle.id) }}" class="btn btn-warning btn-sm" title="تعديل">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('vehicles.confirm_delete', id=vehicle.id) }}" class="btn btn-danger btn-sm" title="حذف">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center py-4">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="fas fa-info-circle ms-2"></i>
+                                        لا توجد سيارات متاحة للعرض. يمكنك إضافة سيارة جديدة من خلال النقر على زر "إضافة سيارة جديدة".
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    if (typeof bootstrap !== 'undefined') {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+
+    // Add animation to table rows
+    const tableRows = document.querySelectorAll('.table tbody tr');
+    tableRows.forEach((row, index) => {
+        row.style.animation = `fadeIn 0.5s ease-in-out ${index * 0.05}s both`;
+    });
+
+    console.log('تم تحميل صفحة إدارة السيارات بنجاح');
+});
+</script>
+{% endblock %}
+<style>
+/* إصلاح عرض جميع السيارات - إضافة نظام تمرير للجدول */
+.vehicles-table-container {
+    overflow: visible !important;
+}
+
+.table-responsive {
+    max-height: 70vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    border-radius: 0 0 12px 12px;
+}
+
+/* تحسين شريط التمرير */
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* ضمان عرض جميع الصفوف */
+.table tbody {
+    height: auto !important;
+    max-height: none !important;
+}
+</style>

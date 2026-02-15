@@ -71,7 +71,7 @@ def register_vehicle_routes(bp):
         """عرض قائمة السيارات مع خيارات التصفية (البيانات من vehicle_list_service)."""
         assigned_department_id = getattr(current_user, "assigned_department_id", None)
         payload = get_vehicle_list_payload(request.args, assigned_department_id=assigned_department_id)
-        return render_template("vehicles/index.html", **payload)
+        return render_template("vehicles/views/index.html", **payload)
 
     # ---- الوثائق المنتهية ----
     @bp.route("/expired-documents")
@@ -103,7 +103,7 @@ def register_vehicle_routes(bp):
         data = get_vehicle_detail_data(id)
         if data is None:
             abort(404)
-        return render_template("vehicles/view.html", **data)
+        return render_template("vehicles/views/view.html", **data)
 
     # ---- تعديل سيارة ----
     @bp.route("/<int:id>/edit", methods=["GET", "POST"])
@@ -177,7 +177,7 @@ def register_vehicle_routes(bp):
     @login_required
     def confirm_delete(id):
         vehicle = Vehicle.query.get_or_404(id)
-        return render_template("vehicles/confirm_delete.html", vehicle=vehicle)
+        return render_template("vehicles/modals/confirm_delete.html", vehicle=vehicle)
 
     # ---- حذف سيارة ----
     @bp.route("/<int:id>/delete", methods=["POST"])

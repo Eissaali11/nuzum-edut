@@ -237,7 +237,7 @@ def confirm_delete_workshop(id):
     vehicle = Vehicle.query.get_or_404(record.vehicle_id)
     record.formatted_entry_date = format_date_arabic(record.entry_date)
     record.formatted_exit_date = format_date_arabic(record.exit_date) if record.exit_date else None
-    return render_template("vehicles/confirm_delete_workshop.html", record=record, vehicle=vehicle)
+    return render_template("vehicles/modals/confirm_delete_workshop.html", record=record, vehicle=vehicle)
 
 
 def delete_workshop(id):

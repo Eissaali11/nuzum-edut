@@ -57,7 +57,7 @@ def create_accident(id):
             flash("تم إضافة سجل الحادث المروري بنجاح!", "success")
             return redirect(url_for("vehicles.view", id=id))
 
-    return render_template("vehicles/create_accident.html", form=form, vehicle=vehicle)
+    return render_template("vehicles/forms/create_accident.html", form=form, vehicle=vehicle)
 
 
 def edit_accident(id):
@@ -86,7 +86,7 @@ def edit_accident(id):
         flash("تم تعديل سجل الحادث المروري بنجاح!", "success")
         return redirect(url_for("vehicles.view", id=vehicle.id))
 
-    return render_template("vehicles/edit_accident.html", form=form, accident=accident, vehicle=vehicle)
+    return render_template("vehicles/forms/edit_accident.html", form=form, accident=accident, vehicle=vehicle)
 
 
 def view_accident_details(id):
@@ -111,7 +111,7 @@ def confirm_delete_accident(id):
     """عرض صفحة تأكيد حذف سجل حادث مروري."""
     accident = VehicleAccident.query.get_or_404(id)
     vehicle = Vehicle.query.get_or_404(accident.vehicle_id)
-    return render_template("vehicles/delete_accident.html", accident=accident, vehicle=vehicle)
+    return render_template("vehicles/utilities/delete_accident.html", accident=accident, vehicle=vehicle)
 
 
 def delete_accident(id):

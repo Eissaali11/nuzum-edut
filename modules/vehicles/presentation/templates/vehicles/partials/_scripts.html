@@ -1,0 +1,81 @@
+{# CSS and JavaScript Assets for Vehicle Detail View #}
+
+{# CSS: Sidebar Navigation Styling #}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modules/vehicles/sidebar_navigation.css') }}">
+
+{# JavaScript: Initialize Vehicle Data and Load Navigation Module #}
+<script>
+// Global data object - populated with Jinja2 template variables
+window.vehicleData = {
+    vehicle_id: {{ vehicle.id }},
+    
+    // URLs for navigation and actions (computed via Flask url_for)
+    urls: {
+        editVehicle: "{{ url_for('vehicles.edit', id=vehicle.id) }}",
+        viewDocuments: "{{ url_for('vehicles.view_documents', id=vehicle.id) }}",
+        vehicleInspections: "{{ url_for('vehicles.vehicle_inspections', id=vehicle.id) }}",
+        vehicleSafetyChecks: "{{ url_for('vehicles.vehicle_safety_checks', id=vehicle.id) }}",
+        createExternalAuth: "{{ url_for('vehicles.create_external_authorization', vehicle_id=vehicle.id) }}",
+        createAccident: "{{ url_for('vehicles.create_accident', id=vehicle.id) }}",
+        generateReport: "{{ url_for('vehicles.generate_vehicle_report', id=vehicle.id) }}"
+    },
+    
+    // Workshop records data
+    workshop_records: [
+        {% for record in workshop_records %}
+        {
+            id: {{ record.id }},
+            formatted_entry_date: "{{ record.formatted_entry_date }}",
+            reason: "{{ record.reason }}",
+            repair_status: "{{ record.repair_status }}",
+            cost: {{ record.cost if record.cost else 0 }},
+            workshop_name: "{{ record.workshop_name or '' }}",
+            description: "{{ record.description or '' }}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ],
+    
+    // Statistics
+    total_maintenance_cost: {{ total_maintenance_cost }},
+    days_in_workshop: {{ days_in_workshop }},
+    
+    // Data collections
+    external_authorizations: {
+        total: {{ external_authorizations|length }},
+        pending: {{ external_authorizations|selectattr('status', 'equalto', 'pending')|list|length }},
+        approved: {{ external_authorizations|selectattr('status', 'equalto', 'approved')|list|length }},
+        rejected: {{ external_authorizations|selectattr('status', 'equalto', 'rejected')|list|length }}
+    },
+    
+    accidents: {
+        total: {{ accidents|length }},
+        processing: {{ accidents|selectattr('accident_status', 'equalto', 'قيد المعالجة')|list|length }},
+        closed: {{ accidents|selectattr('accident_status', 'equalto', 'مغلق')|list|length }}
+    },
+    
+    attachments_count: {{ attachments|length }},
+    
+    // Current driver information
+    {% if current_driver %}
+    current_driver: {
+        name: "{{ current_driver.name }}",
+        formatted_date: "{{ current_driver.formatted_date }}",
+        mobile: "{{ current_driver.mobile or '' }}",
+        handover_id: {{ current_driver.handover_id }}
+    },
+    {% else %}
+    current_driver: null,
+    {% endif %}
+    
+    // File links
+    {% if vehicle.drive_folder_link %}
+    drive_folder_link: "{{ vehicle.drive_folder_link }}",
+    {% endif %}
+    {% if vehicle.license_image %}
+    license_image: "{{ vehicle.license_image }}",
+    {% endif %}
+};
+</script>
+
+{# JavaScript: Load Sidebar Navigation Module #}
+<script src="{{ url_for('static', filename='js/modules/vehicles/sidebar_navigation.js') }}"></script>

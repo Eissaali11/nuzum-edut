@@ -37,8 +37,10 @@ def create_app(config_name=None):
     # بحث القوالب في مجلدين: النواة الجديدة أولاً ثم قوالب المسارات القديمة
     root_templates = str(BASE_DIR / "templates")
     from jinja2 import ChoiceLoader, FileSystemLoader
+    module_employees_templates = str(BASE_DIR / "modules" / "employees" / "templates")
     app.jinja_loader = ChoiceLoader([
         FileSystemLoader(templates_dir),
+        FileSystemLoader(module_employees_templates),
         FileSystemLoader(root_templates),
     ])
     app.config.from_object(cfg)
@@ -110,11 +112,13 @@ def _register_blueprints(app):
     from presentation.web.api_routes import api_bp
     from presentation.web.auth_routes import auth_bp
     from presentation.web.employees import employees_bp as employees_web_bp
+    from modules.employees.presentation.web.routes import employees_bp as employees_module_bp
     from presentation.web.vehicles import vehicles_web_bp
     app.register_blueprint(web_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(employees_web_bp)
+    app.register_blueprint(employees_module_bp)
     app.register_blueprint(vehicles_web_bp)
     _register_legacy_blueprints(app)
     if "root" not in app.view_functions:
@@ -143,11 +147,8 @@ def _register_legacy_blueprints(app):
         _reg(dashboard_bp, "/dashboard")
     except ImportError:
         pass
-    try:
-        from routes.employees import employees_bp
-        _reg(employees_bp, "/employees")
-    except ImportError:
-        pass
+    # employees legacy routes are intentionally not registered here to avoid
+    # URL conflicts with modules.employees (/employees)
     try:
         from routes.departments import departments_bp
         _reg(departments_bp, "/departments")

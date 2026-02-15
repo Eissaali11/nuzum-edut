@@ -53,7 +53,7 @@ def register_vehicle_extra_routes(bp):
         data = get_view_documents_context(id)
         if data is None:
             abort(404)
-        return render_template('vehicles/view_documents.html', **data)
+        return render_template('vehicles/views/view_documents.html', **data)
 
     @bp.route('/documents/edit/<int:id>', methods=['GET', 'POST'])
     @login_required
@@ -186,7 +186,7 @@ def register_vehicle_extra_routes(bp):
                         db.session.rollback()
                         flash(f'حدث خطأ في تحديث التواريخ: {str(e)}', 'danger')
 
-            return render_template('vehicles/edit_documents.html', 
+            return render_template('vehicles/forms/edit_documents.html', 
                                  form=form, vehicle=vehicle, 
                                  from_operations=bool(from_operations), 
                                  operation_id=operation_id)
@@ -286,7 +286,7 @@ def register_vehicle_extra_routes(bp):
                     flash('تم إضافة معلومات الإيجار بنجاح!', 'success')
                     return redirect(url_for('vehicles.view', id=id))
 
-            return render_template('vehicles/rental_create.html', vehicle=vehicle)
+            return render_template('vehicles/forms/rental_create.html', vehicle=vehicle)
 
     @bp.route('/rental/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
@@ -335,7 +335,7 @@ def register_vehicle_extra_routes(bp):
                     flash('تم تعديل معلومات الإيجار بنجاح!', 'success')
                     return redirect(url_for('vehicles.view', id=vehicle.id))
 
-            return render_template('vehicles/rental_edit.html', rental=rental, vehicle=vehicle)
+            return render_template('vehicles/forms/rental_edit.html', rental=rental, vehicle=vehicle)
 
 
     @bp.route('/<int:id>/project/create', methods=['GET', 'POST'])
@@ -392,7 +392,7 @@ def register_vehicle_extra_routes(bp):
                     flash('تم تخصيص السيارة للمشروع بنجاح!', 'success')
                     return redirect(url_for('vehicles.view', id=id))
 
-            return render_template('vehicles/project_create.html', vehicle=vehicle)
+            return render_template('vehicles/forms/project_create.html', vehicle=vehicle)
 
     @bp.route('/project/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
@@ -445,7 +445,7 @@ def register_vehicle_extra_routes(bp):
                     flash('تم تعديل تخصيص المشروع بنجاح!', 'success')
                     return redirect(url_for('vehicles.view', id=vehicle.id))
 
-            return render_template('vehicles/project_edit.html', project=project, vehicle=vehicle)
+            return render_template('vehicles/forms/project_edit.html', project=project, vehicle=vehicle)
 
 
     # (create_handover, edit_handover → handover_routes)
@@ -1027,7 +1027,7 @@ def register_vehicle_extra_routes(bp):
         departments = Department.query.all()
         employees = Employee.query.all()
 
-        return render_template('vehicles/edit_external_authorization.html',
+        return render_template('vehicles/forms/edit_external_authorization.html',
                              vehicle=vehicle,
                              authorization=auth,
                              departments=departments,
@@ -1198,7 +1198,7 @@ def register_vehicle_extra_routes(bp):
                                     'current_employee': current_employee
                             })
 
-                    return render_template('vehicles/handovers_list.html', vehicles_data=vehicles_data)
+                    return render_template('vehicles/handovers/handovers_list.html', vehicles_data=vehicles_data)
 
             except Exception as e:
                     flash(f'حدث خطأ أثناء تحميل البيانات: {str(e)}', 'danger')
@@ -1319,7 +1319,7 @@ def register_vehicle_extra_routes(bp):
 
             return redirect(url_for('vehicles.vehicle_license_image', vehicle_id=vehicle_id))
 
-        return render_template('vehicles/license_image.html', vehicle=vehicle)
+        return render_template('vehicles/utilities/license_image.html', vehicle=vehicle)
 
 
 
@@ -1373,7 +1373,7 @@ def register_vehicle_extra_routes(bp):
     def vehicle_drive_files(vehicle_id):
         """صفحة منفصلة لإدارة ملفات Google Drive"""
         vehicle = Vehicle.query.get_or_404(vehicle_id)
-        return render_template('vehicles/drive_files.html', 
+        return render_template('vehicles/utilities/drive_files.html', 
                              title=f'ملفات Google Drive - {vehicle.plate_number}',
                              vehicle=vehicle)
 
@@ -1402,12 +1402,12 @@ def register_vehicle_extra_routes(bp):
 
                 if not drive_link:
                     flash('يرجى إدخال رابط Google Drive', 'danger')
-                    return render_template('vehicles/drive_management.html', vehicle=vehicle)
+                    return render_template('vehicles/utilities/drive_management.html', vehicle=vehicle)
 
                 # التحقق من صحة الرابط
                 if not (drive_link.startswith('https://drive.google.com') or drive_link.startswith('https://docs.google.com')):
                     flash('يرجى إدخال رابط Google Drive صحيح', 'danger')
-                    return render_template('vehicles/drive_management.html', vehicle=vehicle)
+                    return render_template('vehicles/utilities/drive_management.html', vehicle=vehicle)
 
                 # حفظ الرابط
                 old_link = vehicle.drive_folder_link
@@ -1424,7 +1424,7 @@ def register_vehicle_extra_routes(bp):
 
             return redirect(url_for('vehicles.drive_management', vehicle_id=vehicle_id))
 
-        return render_template('vehicles/drive_management.html', vehicle=vehicle)
+        return render_template('vehicles/utilities/drive_management.html', vehicle=vehicle)
 
 
     @bp.route('/<int:id>/upload-document', methods=['POST'])
@@ -1567,7 +1567,7 @@ def register_vehicle_extra_routes(bp):
     def import_vehicles():
         """استيراد السيارات من ملف Excel"""
         if request.method == 'GET':
-            return render_template('vehicles/import_vehicles.html')
+            return render_template('vehicles/utilities/import_vehicles.html')
         if 'file' not in request.files:
             flash('لم يتم اختيار ملف للاستيراد', 'error')
             return redirect(url_for('vehicles.import_vehicles'))
@@ -1679,7 +1679,7 @@ def register_vehicle_extra_routes(bp):
         departments = Department.query.all()
         employees = Employee.query.all()
 
-        return render_template('vehicles/create_external_authorization.html',
+        return render_template('vehicles/forms/create_external_authorization.html',
                              vehicle=vehicle,
                              departments=departments,
                              employees=employees)
@@ -1691,7 +1691,7 @@ def register_vehicle_extra_routes(bp):
         vehicle = Vehicle.query.get_or_404(vehicle_id)
         auth = ExternalAuthorization.query.get_or_404(auth_id)
 
-        return render_template('vehicles/view_external_authorization.html',
+        return render_template('vehicles/views/view_external_authorization.html',
                              vehicle=vehicle,
                              authorization=auth)
 
@@ -1702,7 +1702,7 @@ def register_vehicle_extra_routes(bp):
         plate_number = request.args.get('plate_number', '').strip()
         vehicle_make = request.args.get('vehicle_make', '').strip()
         ctx = get_valid_documents_context(plate_number=plate_number, vehicle_make=vehicle_make)
-        return render_template('vehicles/valid_documents.html', **ctx)
+        return render_template('vehicles/utilities/valid_documents.html', **ctx)
 
     @bp.route('/<int:id>/edit-documents', methods=['GET', 'POST'])
     @login_required
@@ -1734,7 +1734,7 @@ def register_vehicle_extra_routes(bp):
             flash('تم تحديث تواريخ الوثائق بنجاح!', 'success')
             return redirect(url_for('vehicles.valid_documents'))
 
-        return render_template('vehicles/edit_documents.html', vehicle=vehicle)
+        return render_template('vehicles/forms/edit_documents.html', vehicle=vehicle)
 
 
     # مسار عرض الصورة في صفحة منفصلة

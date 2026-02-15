@@ -1,0 +1,59 @@
+<!-- الصور المرفقة -->
+<div class="modern-card">
+    <div class="card-header-modern">
+        <h5>
+            <span class="icon">
+                <i class="fas fa-images"></i>
+            </span>
+            الصور المرفقة 
+            <span class="image-count-badge">
+                {{ record.images|length if record.images else 0 }} صورة
+            </span>
+        </h5>
+    </div>
+    
+    {% if record.images %}
+    <div class="images-section-modern">
+        <div class="images-grid-modern">
+            {% for image in record.images %}
+            <div class="image-card-modern" data-image-link="{{ url_for('vehicles.view_workshop_image', image_id=image.id) }}">
+                <div class="image-wrapper">
+                    <img src="/{{ image.image_path }}" alt="{{ image.notes or 'صورة من الورشة' }}" loading="lazy">
+                    {% if image.image_type %}
+                    <div class="image-type-badge-modern 
+                        {% if image.image_type == 'before' %}badge-before
+                        {% elif image.image_type == 'after' %}badge-after
+                        {% else %}badge-before{% endif %}">
+                        {% if image.image_type == 'before' %}
+                            <i class="fas fa-camera"></i> قبل الإصلاح
+                        {% elif image.image_type == 'after' %}
+                            <i class="fas fa-check-circle"></i> بعد الإصلاح
+                        {% else %}
+                            {{ image.image_type }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    <div class="image-overlay">
+                        <i class="fas fa-search-plus image-overlay-icon"></i>
+                        <p class="image-overlay-text">انقر للعرض بالحجم الكامل</p>
+                    </div>
+                </div>
+                {% if image.notes %}
+                <div class="image-info-modern">
+                    <h6>{{ image.notes }}</h6>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="no-images-modern">
+        <div class="icon-large">
+            <i class="fas fa-image"></i>
+        </div>
+        <h5 class="no-images-title">لا توجد صور مرفقة</h5>
+        <p class="no-images-subtitle">لم يتم رفع أي صور لهذا السجل بعد</p>
+    </div>
+    {% endif %}
+</div>

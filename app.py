@@ -78,15 +78,22 @@ app.secret_key = os.environ.get("SESSION_SECRET", "employee_management_secret")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
 
 # Prefer module templates over global templates
-module_templates_path = os.path.join(
+vehicles_templates_path = os.path.join(
     os.path.dirname(__file__),
     "modules",
     "vehicles",
     "presentation",
     "templates",
 )
+employees_templates_path = os.path.join(
+    os.path.dirname(__file__),
+    "modules",
+    "employees",
+    "templates",
+)
 app.jinja_loader = ChoiceLoader([
-    FileSystemLoader(module_templates_path),
+    FileSystemLoader(vehicles_templates_path),
+    FileSystemLoader(employees_templates_path),
     app.jinja_loader,
 ])
 

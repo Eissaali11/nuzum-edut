@@ -1,0 +1,75 @@
+{% extends 'layout.html' %}
+
+{% block title %}تفاصيل السيارة: {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+<!-- ============================ CSS للتصميم الجديد ============================ -->
+<style>
+    :root {
+        --primary-color: #0d6efd;
+        --light-color: #f8f9fa;
+        --dark-color: #343a40;
+        --sidebar-bg: #ffffff;
+        --sidebar-width: 280px;
+        --border-radius: .375rem; /* Bootstrap's default border radius */
+        --shadow: 0 0.5rem 1rem rgba(0, 0, 0, .15);
+        --font-family-cairo: 'Cairo', sans-serif;
+    }
+
+    body {
+        font-family: var(--font-family-cairo) !important;
+        background-color: var(--light-color);
+    }
+
+    .page-wrapper {
+        display: flex;
+        padding-top: 1rem;
+    {% extends 'layout.html' %}
+
+    {% block title %}تفاصيل السيارة: {{ vehicle.plate_number }}{% endblock %}
+
+    {% block extra_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modules/vehicles/1view_styles.css') }}">
+    {% endblock %}
+
+    {% block content %}
+    <div class="container-fluid">
+        {% include 'vehicles/partials/views/_1view_top_header.html' %}
+
+        <div class="page-wrapper">
+            {% include 'vehicles/partials/views/_1view_sidebar.html' %}
+
+            <div class="content-area">
+                <main class="main-content">
+                    {% include 'vehicles/partials/views/_1view_section_main_info.html' %}
+                    {% include 'vehicles/partials/views/_1view_section_license_image.html' %}
+                    {% include 'vehicles/partials/views/_1view_section_rental.html' %}
+                    {% include 'vehicles/partials/views/_1view_section_docs.html' %}
+                    {% include 'vehicles/partials/views/_1view_section_periodic_inspection.html' %}
+                    {% include 'vehicles/partials/views/_1view_section_safety_checks.html' %}
+                    {% include 'vehicles/partials/views/_1view_section_workshop.html' %}
+                    {% include 'vehicles/partials/views/_1view_section_projects.html' %}
+                    {% include 'vehicles/partials/views/_1view_section_drivers.html' %}
+                    {% include 'vehicles/partials/views/_1view_section_handovers.html' %}
+                    {% include 'vehicles/partials/views/_1view_section_authorizations.html' %}
+                    {% include 'vehicles/partials/views/_1view_section_accidents.html' %}
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <script type="application/json" id="vehicle-config">
+    {{ {
+        "plateNumber": vehicle.plate_number,
+        "color": vehicle.color,
+        "colorText": "#000" if vehicle.color in ['white', 'yellow', 'silver'] else "#fff",
+        "licenseImageUrl": url_for('static', filename='uploads/vehicles/' + vehicle.license_image) if vehicle.license_image else "",
+        "licenseImageDownloadUrl": url_for('static', filename='uploads/vehicles/' + vehicle.license_image) if vehicle.license_image else ""
+    } | tojson }}
+    </script>
+    {% endblock %}
+
+    {% block scripts %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/modules/vehicles/1view_logic.js') }}"></script>
+    {% endblock %}

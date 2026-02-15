@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modules/vehicles/view.css') }}">
+{% endblock %}
+
+{% block title %}تفاصيل السيارة: {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Vehicle Header -->
+    {% include 'vehicles/partials/_view_header.html' %}
+
+    <!-- Tab Navigation -->
+    {% include 'vehicles/partials/_view_tabs.html' %}
+
+    <!-- Tab Content Panes -->
+    <div class="tab-content" id="vehicleTabsContent">
+        <!-- Accidents & Information -->
+        {% include 'vehicles/partials/_tab_accidents.html' %}
+        {% include 'vehicles/partials/_tab_information.html' %}
+        
+        <!-- Documents, Inspections, Workshop -->
+        {% include 'vehicles/partials/_tab_documents.html' %}
+        {% include 'vehicles/partials/_tab_inspections.html' %}
+        {% include 'vehicles/partials/_tab_workshop.html' %}
+        
+        <!-- Drivers, Projects, Authorizations -->
+        {% include 'vehicles/partials/_tab_drivers.html' %}
+        {% include 'vehicles/partials/_tab_projects.html' %}
+        {% include 'vehicles/partials/_tab_authorizations.html' %}
+    </div>
+</div>
+
+<!-- Modals -->
+{% include 'vehicles/partials/modals/_drive_modal.html' %}
+
+<!-- Hidden Data for JavaScript -->
+{% include 'vehicles/partials/_vehicle_share_data.html' %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/modules/vehicles/view_logic.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vehicle_document_share.js') }}"></script>
+{% endblock %}

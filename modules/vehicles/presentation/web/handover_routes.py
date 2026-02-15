@@ -36,7 +36,7 @@ def create_handover(id):
         employees = Employee.query.options(db.joinedload(Employee.departments)).order_by(Employee.name).all()
         departments = Department.query.order_by(Department.name).all()
         return render_template(
-            "vehicles/handover_create.html",
+            "vehicles/handovers/handover_create.html",
             vehicle=vehicle,
             handover_types=["delivery", "return"],
             employees=employees,
@@ -234,7 +234,7 @@ def edit_handover(id):
     employees = Employee.query.order_by(Employee.name).all()
     departments = Department.query.order_by(Department.name).all()
     return render_template(
-        "vehicles/handover_create.html",
+        "vehicles/handovers/handover_create.html",
         handover=handover,
         vehicle=vehicle,
         images=images,
@@ -263,7 +263,7 @@ def view_handover(id, vehicle_id=None):
     else:
         handover_type_name = handover.handover_type
     return render_template(
-        "vehicles/handover_view.html",
+        "vehicles/handovers/handover_view.html",
         handover=handover,
         vehicle=vehicle,
         images=images,
@@ -287,7 +287,7 @@ def confirm_delete_handovers(vehicle_id):
     for record in records:
         record.formatted_handover_date = format_date_arabic(record.handover_date)
     return render_template(
-        "vehicles/confirm_delete_handovers.html",
+        "vehicles/modals/confirm_delete_handovers.html",
         vehicle=vehicle,
         records=records,
         record_ids=record_ids,
@@ -348,7 +348,7 @@ def handover_view_public(id):
     handover = VehicleHandover.query.get_or_404(id)
     vehicle = Vehicle.query.get_or_404(handover.vehicle_id)
     return render_template(
-        "vehicles/handover_pdf_public.html",
+        "vehicles/handovers/handover_pdf_public.html",
         handover=handover,
         vehicle=vehicle,
         pdf_url=url_for("vehicles.handover_pdf_public", id=id),
@@ -388,7 +388,7 @@ def view_handover_form(handover_id):
         handover = VehicleHandover.query.get_or_404(handover_id)
         vehicle = Vehicle.query.get_or_404(handover.vehicle_id)
         return render_template(
-            "vehicles/handover_form_view.html",
+            "vehicles/handovers/handover_form_view.html",
             handover=handover,
             vehicle=vehicle,
         )
@@ -417,7 +417,7 @@ def update_handover_link(handover_id):
             db.session.rollback()
             flash("خطأ في تحديث الرابط: %s" % str(e), "error")
         return redirect(url_for("vehicles.view_handover", id=handover_id))
-    return render_template("vehicles/update_handover_link.html", handover=handover, vehicle=vehicle)
+    return render_template("vehicles/handovers/update_handover_link.html", handover=handover, vehicle=vehicle)
 
 
 def confirm_delete_single_handover(handover_id):
@@ -426,7 +426,7 @@ def confirm_delete_single_handover(handover_id):
     vehicle = handover.vehicle
     handover.formatted_handover_date = format_date_arabic(handover.handover_date)
     return render_template(
-        "vehicles/confirm_delete_single_handover.html",
+        "vehicles/modals/confirm_delete_single_handover.html",
         handover=handover,
         vehicle=vehicle,
     )

@@ -1,0 +1,25 @@
+<!-- أزرار الإجراءات -->
+<div class="action-section-modern">
+    <h5 class="actions-title">
+        <i class="fas fa-cogs actions-title-icon"></i>
+        الإجراءات المتاحة
+    </h5>
+    <div class="actions-grid">
+        <a href="{{ url_for('vehicles.edit_workshop', id=record.id) }}" class="action-btn-modern btn-primary-modern">
+            <i class="fas fa-edit"></i>
+            تعديل السجل
+        </a>
+        <button type="button" class="action-btn-modern btn-success-modern js-share-workshop">
+            <i class="fas fa-share-alt"></i>
+            مشاركة التفاصيل
+        </button>
+        <a href="{{ url_for('vehicles.confirm_delete_workshop', id=record.id) }}" class="action-btn-modern btn-danger-modern js-confirm-action" data-confirm-message="هل أنت متأكد من رغبتك في حذف هذا السجل؟">
+            <i class="fas fa-trash-alt"></i>
+            حذف السجل
+        </a>
+        <a href="{{ url_for('vehicles.view', id=vehicle.id) }}" class="action-btn-modern btn-secondary-modern">
+            <i class="fas fa-arrow-left"></i>
+            العودة للسيارة
+        </a>
+    </div>
+</div>

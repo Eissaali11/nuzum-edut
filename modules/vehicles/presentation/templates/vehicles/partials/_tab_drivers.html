@@ -1,0 +1,175 @@
+<!-- Drivers Tab Content -->
+<div class="tab-pane fade" id="drivers" role="tabpanel" aria-labelledby="drivers-tab">
+    <div class="row mb-4">
+        <!-- Current Driver -->
+        <div class="col-md-6">
+            <div class="vehicle-card card h-100">
+                <div class="vehicle-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-user-tie ms-2"></i> السائق الحالي</h5>
+                    <a href="{{ url_for('vehicles.create_handover', id=vehicle.id) }}?type=delivery" class="btn btn-sm btn-success">
+                        <i class="fas fa-exchange-alt ms-1"></i> تسليم
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if current_driver %}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="h5 mb-1">{{ current_driver.name }}</div>
+                            <div class="small text-muted">منذ {{ current_driver.formatted_date }}</div>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('vehicles.view_handover', id=current_driver.handover_id) }}" class="btn btn-sm btn-outline-primary" title="التفاصيل">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('vehicles.handover_pdf_public', id=current_driver.handover_id) }}" target="_blank" class="btn btn-sm btn-outline-danger ms-1" title="PDF">
+                                <i class="fas fa-file-pdf"></i>
+                            </a>
+                            {% if current_driver.mobile %}
+                            <a href="https://wa.me/{{ current_driver.mobile | replace('+', '') | replace(' ', '') | replace('-', '') }}?text={{ (
+                                'مرحباً ' ~ current_driver.name ~ '\n\n' ~
+                                'بخصوص المركبة رقم: ' ~ vehicle.plate_number ~ '\n' ~
+                                'تاريخ ' ~ current_driver.handover_type_ar ~ ': ' ~ current_driver.formatted_date ~ '\n\n' ~
+                                '🚗 عزيزي السائق، نتمنى لك قيادة آمنة\n\n' ~
+                                '⚠️ تنبيهات مهمة:\n' ~
+                                '• تأكد من تغيير زيت السيارة في موعده\n' ~
+                                '• حافظ على السيارة فهي أمانة ومسؤوليتك\n' ~
+                                '• تفقد مستوى الوقود والماء بانتظام\n' ~
+                                '• التزم بقوانين المرور وحدود السرعة\n\n' ~
+                                '📞 أرقام الطوارئ المهمة:\n' ~
+                                '• نجم: 920000560\n' ~
+                                '• المرور: 993\n' ~
+                                '• الهلال الأحمر: 997\n' ~
+                                '• الشرطة: 999\n' ~
+                                '• أمن الطرق: 996\n\n' ~
+                                '📄 المستندات:\n' ~ url_for('vehicles.handover_pdf_public', id=current_driver.handover_id, _external=True) ~
+                                '\n\n🙏 شكراً لك والسلامة في الطريق'
+                            ) | urlencode }}" class="btn btn-sm btn-success ms-1" target="_blank" title="WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-muted"><i class="fas fa-info-circle ms-1"></i> لا يوجد سائق حالي</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Previous Drivers -->
+        <div class="col-md-6">
+            <div class="vehicle-card card h-100">
+                <div class="vehicle-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-history ms-2"></i> السائقين السابقين <span class="badge-enhanced bg-secondary">{{ previous_drivers|length }}</span></h5>
+                    <a href="{{ url_for('vehicles.create_handover', id=vehicle.id) }}?type=receive" class="btn btn-sm btn-info">
+                        <i class="fas fa-exchange-alt ms-1"></i> استلام
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if previous_drivers %}
+                    <div class="list-group">
+                        {% for driver in previous_drivers %}
+                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold">{{ driver.name }}</div>
+                                <div class="small text-muted">{{ driver.formatted_date }}</div>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('vehicles.view_handover', id=driver.handover_id) }}" class="btn btn-sm btn-outline-primary" title="التفاصيل">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if driver.mobile %}
+                                <a href="https://wa.me/{{ driver.mobile | replace('+', '') | replace(' ', '') | replace('-', '') }}" class="btn btn-sm btn-success ms-1" target="_blank" title="WhatsApp">
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-muted"><i class="fas fa-info-circle ms-1"></i> لا يوجد سائقين سابقين</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Handover Records -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="vehicle-card card">
+                <div class="vehicle-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-exchange-alt ms-2"></i> سجلات التسليم والاستلام <span class="badge-enhanced bg-secondary">{{ handover_records|length }}</span></h5>
+                    <a href="{{ url_for('vehicles.create_handover', id=vehicle.id) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus ms-1"></i> إضافة سجل
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if handover_records %}
+                    <form action="{{ url_for('vehicles.confirm_delete_handovers', vehicle_id=vehicle.id) }}" method="post" id="handover-delete-form">
+                        {{ csrf_token() }}
+                        <div class="mb-3 d-flex justify-content-end">
+                            <button type="submit" class="btn btn-sm btn-danger" id="delete-selected-btn" disabled>
+                                <i class="fas fa-trash-alt ms-1"></i> حذف المحدد
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="40"><input class="form-check-input" type="checkbox" id="select-all"></th>
+                                        <th>التاريخ</th>
+                                        <th>النوع</th>
+                                        <th>الشخص</th>
+                                        <th>العداد</th>
+                                        <th>الوقود</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in handover_records %}
+                                    <tr>
+                                        <td><input class="form-check-input handover-checkbox" type="checkbox" name="handover_ids[]" value="{{ record.id }}"></td>
+                                        <td>{{ record.formatted_handover_date }}</td>
+                                        <td>
+                                            {% if record.handover_type == 'delivery' %}
+                                            <span class="badge-enhanced bg-success">تسليم</span>
+                                            {% else %}
+                                            <span class="badge-enhanced bg-info">استلام</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ record.person_name }}</td>
+                                        <td>{{ record.mileage }} كم</td>
+                                        <td>{{ record.fuel_level }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('vehicles.view_handover', id=record.id) }}" class="btn btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('vehicles.edit_handover', id=record.id) }}" class="btn btn-outline-success">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ url_for('vehicles.handover_pdf_public', id=record.id) }}" target="_blank" class="btn btn-outline-danger">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-signature fa-4x text-muted mb-3"></i>
+                        <h5>لا توجد سجلات</h5>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

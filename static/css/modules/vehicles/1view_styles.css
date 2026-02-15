@@ -1,0 +1,161 @@
+:root {
+    --primary-color: #0d6efd;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --sidebar-bg: #ffffff;
+    --sidebar-width: 280px;
+    --border-radius: .375rem;
+    --shadow: 0 0.5rem 1rem rgba(0, 0, 0, .15);
+    --font-family-cairo: 'Cairo', sans-serif;
+}
+
+body {
+    font-family: var(--font-family-cairo) !important;
+    background-color: var(--light-color);
+}
+
+.page-wrapper {
+    display: flex;
+    padding-top: 1rem;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    background-color: var(--sidebar-bg);
+    border-left: 1px solid #dee2e6;
+    height: calc(100vh - 80px);
+    position: sticky;
+    top: 20px;
+    transition: transform 0.3s ease-in-out;
+    margin-right: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+}
+
+.sidebar-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.sidebar-header h5 {
+    margin: 0;
+    font-weight: 700;
+    color: var(--dark-color);
+}
+
+.sidebar-nav {
+    overflow-y: auto;
+    max-height: calc(100% - 70px);
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0;
+}
+
+.sidebar-nav li a {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    color: #495057;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-right: 4px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.sidebar-nav li a i {
+    margin-left: 10px;
+    width: 20px;
+    text-align: center;
+    color: #6c757d;
+    transition: color 0.2s ease;
+}
+
+.sidebar-nav li a:hover,
+.sidebar-nav li a:hover i {
+    background-color: #f1f3f5;
+    color: var(--primary-color);
+}
+
+.sidebar-nav li a.active {
+    background-color: #e9ecef;
+    color: var(--primary-color);
+    border-right-color: var(--primary-color);
+}
+
+.sidebar-nav li a.active i {
+    color: var(--primary-color);
+}
+
+.content-area {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.main-content {
+    padding-bottom: 2rem;
+}
+
+.content-section {
+    display: none;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+.content-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.top-header-controls {
+    background-color: #fff;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+}
+
+.vehicle-license-image {
+    max-height: 400px;
+    max-width: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+.inline-form {
+    display: inline-block;
+}
+
+.workshop-records-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.license-modal-image {
+    max-height: 75vh;
+}
+
+@media (max-width: 992px) {
+    .page-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        margin-right: 0;
+        margin-bottom: 1.5rem;
+        border-left: none;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .sidebar-nav {
+        max-height: 250px;
+    }
+}
