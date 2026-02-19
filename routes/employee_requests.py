@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from app import db
+from core.extensions import db
 from models import (
     EmployeeRequest, InvoiceRequest, AdvancePaymentRequest,
     CarWashRequest, CarInspectionRequest, EmployeeLiability,

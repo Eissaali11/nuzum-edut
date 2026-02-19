@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
 from datetime import datetime
-from app import db
+from core.extensions import db
 from models import (
     Vehicle, VehicleExternalSafetyCheck, VehicleSafetyImage, 
     Employee, User

@@ -4,7 +4,7 @@
 """
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_user, logout_user, current_user
+from flask_login import login_user, logout_user, current_user, login_required
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -54,3 +54,10 @@ def logout():
     logout_user()
     flash("تم تسجيل الخروج", "info")
     return redirect(url_for("web.index"))
+
+
+@auth_bp.route("/profile")
+@login_required
+def profile():
+    """الملف الشخصي للمستخدم الحالي."""
+    return render_template("auth/profile.html")

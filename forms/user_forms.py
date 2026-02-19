@@ -40,9 +40,9 @@ class UserForm(FlaskForm):
             UserRole.ADMIN: 'مدير النظام',
             UserRole.MANAGER: 'مدير',
             UserRole.HR: 'موارد بشرية',
-            UserRole.FINANCE: 'مالية',
-            UserRole.FLEET: 'أسطول',
-            UserRole.USER: 'مستخدم عادي'
+            UserRole.ACCOUNTANT: 'مالية',
+            UserRole.SUPERVISOR: 'أسطول',
+            UserRole.VIEWER: 'مستخدم عادي'
         }
         return role_names.get(role, role.value)
     
@@ -123,8 +123,8 @@ class UserSearchForm(FlaskForm):
             UserRole.ADMIN: 'مدير النظام',
             UserRole.MANAGER: 'مدير',
             UserRole.HR: 'موارد بشرية',
-            UserRole.FINANCE: 'مالية',
-            UserRole.FLEET: 'أسطول',
-            UserRole.USER: 'مستخدم عادي'
+            UserRole.ACCOUNTANT: 'مالية',
+            UserRole.SUPERVISOR: 'أسطول',
+            UserRole.VIEWER: 'مستخدم عادي'
         }
         return role_names.get(role, role.value)

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import func, extract
 from models import UserRole, Module, Employee, Department
 from models_accounting import Transaction, Account, TransactionType, AccountType
-from app import db
+from core.extensions import db
 
 analytics_simple_bp = Blueprint('analytics_simple', __name__, url_prefix='/accounting/analytics')
 

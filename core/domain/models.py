@@ -38,6 +38,7 @@ class Module(enum.Enum):
     GEOFENCING = 'geofencing'
     ATTENDANCE = 'attendance'
     SALARY = 'salary'
+    SALARIES = 'salary'  # Alias for SALARY
     DOCUMENTS = 'documents'
     MOBILE_DEVICES = 'mobile_devices'
     SIM_CARDS = 'sim_cards'
@@ -51,6 +52,8 @@ class Module(enum.Enum):
     REPORTS = 'reports'
     SETTINGS = 'settings'
     SYSTEM_AUDIT = 'system_audit'
+    FEES = 'fees'  # Fee management
+    USERS = 'users'  # User management
 
 
 class Permission(object):
@@ -62,6 +65,10 @@ class Permission(object):
     EXPORT = 16     # 10000
     APPROVE = 32    # 100000
     ALL = 63        # 111111
+    
+    # Aliases for compatibility
+    ADMIN = 63      # Same as ALL
+    MANAGE = 31     # VIEW + CREATE + EDIT + DELETE + EXPORT
 
 
 # ============================================================================
@@ -71,13 +78,15 @@ class Permission(object):
 user_accessible_departments = db.Table(
     'user_accessible_departments',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), primary_key=True),
-    db.Column('department_id', db.Integer, db.ForeignKey('department.id', ondelete='CASCADE'), primary_key=True)
+    db.Column('department_id', db.Integer, db.ForeignKey('department.id', ondelete='CASCADE'), primary_key=True),
+    extend_existing=True
 )
 
 vehicle_user_access = db.Table(
     'vehicle_user_access',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), primary_key=True),
-    db.Column('vehicle_id', db.Integer, db.ForeignKey('vehicle.id', ondelete='CASCADE'), primary_key=True)
+    db.Column('vehicle_id', db.Integer, db.ForeignKey('vehicle.id', ondelete='CASCADE'), primary_key=True),
+    extend_existing=True
 )
 
 
@@ -258,7 +267,7 @@ class SystemAudit(db.Model):
         )
         
         # حفظ السجل في قاعدة البيانات
-        from app import db as app_db
+        from core.extensions import db as app_db
         app_db.session.add(audit)
         app_db.session.commit()
         

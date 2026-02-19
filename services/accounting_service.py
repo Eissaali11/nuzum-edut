@@ -4,7 +4,7 @@
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from sqlalchemy import func, and_, or_
-from app import db
+from core.extensions import db
 from models_accounting import *
 from models import Employee, Vehicle
 

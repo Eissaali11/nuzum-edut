@@ -9,7 +9,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 import json
 
-from app import db
+from core.extensions import db
 from models import UserRole, Module, Permission
 from models_accounting import *
 from forms.accounting import *

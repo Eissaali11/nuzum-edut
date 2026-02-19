@@ -11,6 +11,6 @@ __all__ = [
     'RentalProperty',
     'PropertyImage',
     'PropertyPayment',
-    PropertyFurnishing',
+    'PropertyFurnishing',
     'property_employees'
 ]

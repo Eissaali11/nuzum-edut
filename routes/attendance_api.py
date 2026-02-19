@@ -17,7 +17,7 @@ import hashlib
 import logging
 from math import radians, sin, cos, sqrt, atan2
 
-from app import db
+from core.extensions import db
 from models import Employee, Attendance, EmployeeLocation, Geofence, GeofenceSession
 
 logger = logging.getLogger(__name__)

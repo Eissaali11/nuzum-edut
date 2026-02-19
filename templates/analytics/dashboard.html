@@ -1,0 +1,596 @@
+{% extends 'layout.html' %}
+
+{% block title %}Analytics & Business Intelligence{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="background: linear-gradient(135deg, #0D1117 0%, #161B22 100%); border: 1px solid rgba(0, 212, 170, 0.3);">
+                <div class="card-header" style="background: linear-gradient(135deg, #00D4AA 0%, #00D4FF 100%); border-radius: 10px 10px 0 0;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0 text-dark">
+                            <i class="fas fa-chart-line me-2"></i>
+                            <span data-translate="page_title">Analytics & Business Intelligence</span>
+                        </h3>
+                        <div class="d-flex gap-2">
+                            <button onclick="toggleLanguage()" class="btn btn-outline-dark" id="langToggleBtn">
+                                <i class="fas fa-language me-2"></i>
+                                <span id="langText">العربية</span>
+                            </button>
+                            <a href="{{ url_for('analytics.export_powerbi') }}" class="btn btn-dark">
+                                <i class="fas fa-file-excel me-2"></i>
+                                <span data-translate="export_powerbi">Export to Power BI</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="kpi-card card h-100" style="background: linear-gradient(135deg, #00D4AA 0%, #00D4FF 50%); border: none;">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-3x mb-3 text-white"></i>
+                    <h6 class="text-white mb-2" data-translate="kpi_salary_liability">Total Salary Liability</h6>
+                    <h3 class="text-white mb-0" id="kpi-salary-liability">
+                        {{ "{:,.2f}".format(kpis.total_salary_liability) }}
+                    </h3>
+                    <small class="text-white"><span data-translate="sar_month">SAR / Month</span></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="kpi-card card h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                <div class="card-body text-center">
+                    <i class="fas fa-truck fa-3x mb-3 text-white"></i>
+                    <h6 class="text-white mb-2" data-translate="kpi_fleet_percentage">Active Fleet Percentage</h6>
+                    <h3 class="text-white mb-0" id="kpi-fleet-percentage">
+                        {{ "{:.1f}".format(kpis.fleet_active_percentage) }}%
+                    </h3>
+                    <small class="text-white">{{ kpis.active_vehicles }} / {{ kpis.total_vehicles }} <span data-translate="vehicles">Vehicles</span></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="kpi-card card h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none;">
+                <div class="card-body text-center">
+                    <i class="fas fa-project-diagram fa-3x mb-3 text-white"></i>
+                    <h6 class="text-white mb-2" data-translate="kpi_project_coverage">Project Coverage</h6>
+                    <h3 class="text-white mb-0" id="kpi-project-coverage">
+                        {{ "{:.1f}".format(kpis.project_coverage_percentage) }}%
+                    </h3>
+                    <small class="text-white">{{ kpis.active_employees }} <span data-translate="employees">Employees</span></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="kpi-card card h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none;">
+                <div class="card-body text-center">
+                    <i class="fas fa-clipboard-check fa-3x mb-3 text-white"></i>
+                    <h6 class="text-white mb-2" data-translate="kpi_attendance_rate">Attendance Rate (This Month)</h6>
+                    <h3 class="text-white mb-0" id="kpi-attendance-rate">
+                        {{ "{:.1f}".format(kpis.attendance_rate_this_month) }}%
+                    </h3>
+                    <small class="text-white" data-translate="current_month">Current Month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row mb-4">
+        <!-- Employee Distribution by Project -->
+        <div class="col-md-6 mb-3">
+            <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 212, 170, 0.3);">
+                <div class="card-header" style="background: rgba(0, 212, 170, 0.1); border-bottom: 1px solid rgba(0, 212, 170, 0.3);">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-users me-2"></i>
+                        <span data-translate="chart_emp_by_project">Employee Distribution by Project</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="employeeProjectChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Distribution by Region -->
+        <div class="col-md-6 mb-3">
+            <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 212, 170, 0.3);">
+                <div class="card-header" style="background: rgba(0, 212, 170, 0.1); border-bottom: 1px solid rgba(0, 212, 170, 0.3);">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        <span data-translate="chart_emp_by_region">Employee Distribution by Region</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="employeeRegionChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row mb-4">
+        <!-- Vehicle Status -->
+        <div class="col-md-6 mb-3">
+            <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 212, 170, 0.3);">
+                <div class="card-header" style="background: rgba(0, 212, 170, 0.1); border-bottom: 1px solid rgba(0, 212, 170, 0.3);">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-car me-2"></i>
+                        <span data-translate="chart_vehicle_status">Vehicle Status Distribution</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="vehicleStatusChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vehicle Maintenance Status -->
+        <div class="col-md-6 mb-3">
+            <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 212, 170, 0.3);">
+                <div class="card-header" style="background: rgba(0, 212, 170, 0.1); border-bottom: 1px solid rgba(0, 212, 170, 0.3);">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-wrench me-2"></i>
+                        <span data-translate="chart_maintenance_status">Vehicle Maintenance Status</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="maintenanceStatusChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 3 -->
+    <div class="row mb-4">
+        <!-- Salary by Department -->
+        <div class="col-md-6 mb-3">
+            <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 212, 170, 0.3);">
+                <div class="card-header" style="background: rgba(0, 212, 170, 0.1); border-bottom: 1px solid rgba(0, 212, 170, 0.3);">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-dollar-sign me-2"></i>
+                        <span data-translate="chart_salary_by_dept">Total Salary by Department</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salaryDepartmentChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Salary by Region -->
+        <div class="col-md-6 mb-3">
+            <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 212, 170, 0.3);">
+                <div class="card-header" style="background: rgba(0, 212, 170, 0.1); border-bottom: 1px solid rgba(0, 212, 170, 0.3);">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-map-marked-alt me-2"></i>
+                        <span data-translate="chart_salary_by_region">Total Salary by Region</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salaryRegionChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 4 - Trends -->
+    <div class="row mb-4">
+        <!-- Maintenance Cost Trend -->
+        <div class="col-md-12 mb-3">
+            <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 212, 170, 0.3);">
+                <div class="card-header" style="background: rgba(0, 212, 170, 0.1); border-bottom: 1px solid rgba(0, 212, 170, 0.3);">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-chart-area me-2"></i>
+                        <span data-translate="chart_maintenance_trend">Maintenance Cost Trend (Monthly)</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="maintenanceTrendChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Export Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 212, 170, 0.3);">
+                <div class="card-header" style="background: rgba(0, 212, 170, 0.1); border-bottom: 1px solid rgba(0, 212, 170, 0.3);">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-download me-2"></i>
+                        <span data-translate="export_options">Data Export Options</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="export-option text-center p-4" style="background: rgba(0, 212, 170, 0.1); border-radius: 10px;">
+                                <i class="fas fa-file-excel fa-3x mb-3" style="color: #00D4AA;"></i>
+                                <h6 class="text-white" data-translate="export_powerbi_title">Power BI Export</h6>
+                                <p class="text-muted small" data-translate="export_powerbi_desc">Complete Star Schema with all dimensions and facts</p>
+                                <a href="{{ url_for('analytics.export_powerbi') }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-download me-1"></i> <span data-translate="download_excel">Download Excel</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="export-option text-center p-4" style="background: rgba(0, 212, 255, 0.1); border-radius: 10px;">
+                                <i class="fas fa-database fa-3x mb-3" style="color: #00D4FF;"></i>
+                                <h6 class="text-white" data-translate="export_dim_title">Dimension Tables (JSON)</h6>
+                                <p class="text-muted small" data-translate="export_dim_desc">Employee, Vehicle, and Department dimensions</p>
+                                <a href="{{ url_for('analytics.get_dimensions') }}" class="btn btn-sm btn-info" target="_blank">
+                                    <i class="fas fa-code me-1"></i> <span data-translate="view_json">View JSON</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="export-option text-center p-4" style="background: rgba(102, 126, 234, 0.1); border-radius: 10px;">
+                                <i class="fas fa-table fa-3x mb-3" style="color: #667eea;"></i>
+                                <h6 class="text-white" data-translate="export_fact_title">Fact Tables (JSON)</h6>
+                                <p class="text-muted small" data-translate="export_fact_desc">Financial, Maintenance, and Attendance facts</p>
+                                <a href="{{ url_for('analytics.get_facts') }}" class="btn btn-sm btn-secondary" target="_blank">
+                                    <i class="fas fa-code me-1"></i> <span data-translate="view_json">View JSON</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.kpi-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 212, 170, 0.3);
+}
+
+.export-option {
+    transition: transform 0.3s ease;
+}
+
+.export-option:hover {
+    transform: scale(1.05);
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+// ===== نظام الترجمة المتعدد اللغات =====
+const translations = {
+    en: {
+        page_title: 'Analytics & Business Intelligence',
+        export_powerbi: 'Export to Power BI',
+        kpi_salary_liability: 'Total Salary Liability',
+        kpi_fleet_percentage: 'Active Fleet Percentage',
+        kpi_project_coverage: 'Project Coverage',
+        kpi_attendance_rate: 'Attendance Rate (This Month)',
+        sar_month: 'SAR / Month',
+        vehicles: 'Vehicles',
+        employees: 'Employees',
+        current_month: 'Current Month',
+        chart_emp_by_project: 'Employee Distribution by Project',
+        chart_emp_by_region: 'Employee Distribution by Region',
+        chart_vehicle_status: 'Vehicle Status Distribution',
+        chart_maintenance_status: 'Vehicle Maintenance Status',
+        chart_salary_by_dept: 'Total Salary by Department',
+        chart_salary_by_region: 'Total Salary by Region',
+        chart_maintenance_trend: 'Maintenance Cost Trend (Monthly)',
+        export_options: 'Data Export Options',
+        export_powerbi_title: 'Power BI Export',
+        export_powerbi_desc: 'Complete Star Schema with all dimensions and facts',
+        download_excel: 'Download Excel',
+        export_dim_title: 'Dimension Tables (JSON)',
+        export_dim_desc: 'Employee, Vehicle, and Department dimensions',
+        export_fact_title: 'Fact Tables (JSON)',
+        export_fact_desc: 'Financial, Maintenance, and Attendance facts',
+        view_json: 'View JSON',
+        chart_label_employees: 'Employees',
+        chart_label_salary: 'Total Salary (SAR)',
+        chart_label_maintenance: 'Maintenance Cost (SAR)'
+    },
+    ar: {
+        page_title: 'التحليلات وذكاء الأعمال',
+        export_powerbi: 'تصدير إلى Power BI',
+        kpi_salary_liability: 'إجمالي الالتزامات المالية',
+        kpi_fleet_percentage: 'نسبة الأسطول النشط',
+        kpi_project_coverage: 'تغطية المشاريع',
+        kpi_attendance_rate: 'نسبة الحضور (هذا الشهر)',
+        sar_month: 'ريال / شهر',
+        vehicles: 'مركبة',
+        employees: 'موظف',
+        current_month: 'الشهر الحالي',
+        chart_emp_by_project: 'توزيع الموظفين حسب المشر وع',
+        chart_emp_by_region: 'توزيع الموظفين حسب المنطقة',
+        chart_vehicle_status: 'توزيع حالة المركبات',
+        chart_maintenance_status: 'حالة صيانة المركبات',
+        chart_salary_by_dept: 'إجمالي الرواتب حسب القسم',
+        chart_salary_by_region: 'إجمالي الرواتب حسب المنطقة',
+        chart_maintenance_trend: 'اتجاه تكاليف الصيانة (شهري)',
+        export_options: 'خيارات تصدير البيانات',
+        export_powerbi_title: 'تصدير Power BI',
+        export_powerbi_desc: 'نظام Star Schema كامل مع جميع الأبعاد والحقائق',
+        download_excel: 'تنزيل Excel',
+        export_dim_title: 'جداول الأبعاد (JSON)',
+        export_dim_desc: 'أبعاد الموظفين والمركبات والأقسام',
+        export_fact_title: 'جداول الحقائق (JSON)',
+        export_fact_desc: 'حقائق المالية والصيانة والحضور',
+        view_json: 'عرض JSON',
+        chart_label_employees: 'الموظفين',
+        chart_label_salary: 'إجمالي الرواتب (ريال)',
+        chart_label_maintenance: 'تكلفة الصيانة (ريال)'
+    }
+};
+
+// اللغة الحالية (افتراضياً إنجليزي)
+let currentLang = localStorage.getItem('analyticsLang') || 'en';
+
+// دالة تبديل اللغة
+function toggleLanguage() {
+    currentLang = currentLang === 'en' ? 'ar' : 'en';
+    localStorage.setItem('analyticsLang', currentLang);
+    applyTranslations();
+    updateChartLabels();
+    updateLangButton();
+}
+
+// تطبيق الترجمات
+function applyTranslations() {
+    document.querySelectorAll('[data-translate]').forEach(element => {
+        const key = element.getAttribute('data-translate');
+        if (translations[currentLang][key]) {
+            element.textContent = translations[currentLang][key];
+        }
+    });
+    
+    // تغيير اتجاه الصفحة
+    if (currentLang === 'ar') {
+        document.documentElement.setAttribute('dir', 'rtl');
+    } else {
+        document.documentElement.setAttribute('dir', 'ltr');
+    }
+}
+
+// تحديث زر اللغة
+function updateLangButton() {
+    const langText = document.getElementById('langText');
+    if (langText) {
+        langText.textContent = currentLang === 'en' ? 'العربية' : 'English';
+    }
+}
+
+// تحديث labels في الرسوم البيانية
+function updateChartLabels() {
+    // سيتم تحديث الرسوم البيانية عند إعادة تحميل البيانات
+    if (window.charts) {
+        Object.values(window.charts).forEach(chart => {
+            if (chart && chart.data && chart.data.datasets) {
+                chart.data.datasets.forEach(dataset => {
+                    if (dataset.label.includes('Employees') || dataset.label.includes('الموظفين')) {
+                        dataset.label = translations[currentLang].chart_label_employees;
+                    } else if (dataset.label.includes('Salary') || dataset.label.includes('الرواتب')) {
+                        dataset.label = translations[currentLang].chart_label_salary;
+                    } else if (dataset.label.includes('Maintenance') || dataset.label.includes('الصيانة')) {
+                        dataset.label = translations[currentLang].chart_label_maintenance;
+                    }
+                });
+                chart.update();
+            }
+        });
+    }
+}
+
+// تطبيق الترجمات عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    applyTranslations();
+    updateLangButton();
+});
+
+// ===== نهاية نظام الترجمة =====
+
+// إعدادات Chart.js العامة
+Chart.defaults.color = '#ffffff';
+Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+// ألوان جميلة للرسوم البيانية
+const colors = [
+    'rgba(0, 212, 170, 0.8)',
+    'rgba(0, 212, 255, 0.8)',
+    'rgba(102, 126, 234, 0.8)',
+    'rgba(240, 147, 251, 0.8)',
+    'rgba(245, 87, 108, 0.8)',
+    'rgba(79, 172, 254, 0.8)',
+    'rgba(0, 242, 254, 0.8)',
+    'rgba(255, 163, 26, 0.8)'
+];
+
+// تخزين الرسوم البيانية للوصول إليها لاحقاً
+window.charts = {};
+
+// دالة مساعدة لإنشاء الرسم البياني
+function createChart(canvasId, type, data, options = {}) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    const chart = new Chart(ctx, {
+        type: type,
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#ffffff'
+                    }
+                }
+            },
+            ...options
+        }
+    });
+    window.charts[canvasId] = chart;
+    return chart;
+}
+
+// تحميل البيانات وإنشاء الرسوم البيانية
+document.addEventListener('DOMContentLoaded', function() {
+    // Employee Distribution by Project
+    fetch('/analytics/api/employee-distribution')
+        .then(response => response.json())
+        .then(data => {
+            createChart('employeeProjectChart', 'bar', {
+                labels: data.labels,
+                datasets: [{
+                    label: translations[currentLang].chart_label_employees,
+                    data: data.values,
+                    backgroundColor: colors,
+                    borderColor: colors.map(c => c.replace('0.8', '1')),
+                    borderWidth: 1
+                }]
+            });
+        });
+
+    // Employee Distribution by Region
+    fetch('/analytics/api/employee-by-region')
+        .then(response => response.json())
+        .then(data => {
+            createChart('employeeRegionChart', 'doughnut', {
+                labels: data.labels,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: colors,
+                    borderColor: '#0D1117',
+                    borderWidth: 2
+                }]
+            });
+        });
+
+    // Vehicle Status
+    fetch('/analytics/api/vehicle-status')
+        .then(response => response.json())
+        .then(data => {
+            createChart('vehicleStatusChart', 'pie', {
+                labels: data.labels,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: colors,
+                    borderColor: '#0D1117',
+                    borderWidth: 2
+                }]
+            });
+        });
+
+    // Maintenance Status
+    fetch('/analytics/api/maintenance-status')
+        .then(response => response.json())
+        .then(data => {
+            createChart('maintenanceStatusChart', 'doughnut', {
+                labels: data.labels,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: colors,
+                    borderColor: '#0D1117',
+                    borderWidth: 2
+                }]
+            });
+        });
+
+    // Salary by Department
+    fetch('/analytics/api/salary-by-department')
+        .then(response => response.json())
+        .then(data => {
+            createChart('salaryDepartmentChart', 'bar', {
+                labels: data.labels,
+                datasets: [{
+                    label: translations[currentLang].chart_label_salary,
+                    data: data.values,
+                    backgroundColor: 'rgba(0, 212, 170, 0.8)',
+                    borderColor: 'rgba(0, 212, 170, 1)',
+                    borderWidth: 1
+                }]
+            }, {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' SAR';
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+    // Salary by Region
+    fetch('/analytics/api/salary-by-region')
+        .then(response => response.json())
+        .then(data => {
+            createChart('salaryRegionChart', 'bar', {
+                labels: data.labels,
+                datasets: [{
+                    label: translations[currentLang].chart_label_salary,
+                    data: data.values,
+                    backgroundColor: 'rgba(0, 212, 255, 0.8)',
+                    borderColor: 'rgba(0, 212, 255, 1)',
+                    borderWidth: 1
+                }]
+            }, {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' SAR';
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+    // Maintenance Cost Trend
+    fetch('/analytics/api/maintenance-cost-trend')
+        .then(response => response.json())
+        .then(data => {
+            createChart('maintenanceTrendChart', 'line', {
+                labels: data.labels,
+                datasets: [{
+                    label: translations[currentLang].chart_label_maintenance,
+                    data: data.values,
+                    backgroundColor: 'rgba(0, 212, 170, 0.2)',
+                    borderColor: 'rgba(0, 212, 170, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            }, {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' SAR';
+                            }
+                        }
+                    }
+                }
+            });
+        });
+});
+</script>
+{% endblock %}

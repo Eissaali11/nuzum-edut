@@ -12,7 +12,7 @@ from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 from io import BytesIO
 
-from app import db
+from core.extensions import db
 from models import RentalProperty, PropertyImage, PropertyPayment, PropertyFurnishing, User, Employee, Department
 from forms.property_forms import (
     RentalPropertyForm, PropertyImagesForm, PropertyPaymentForm, PropertyFurnishingForm

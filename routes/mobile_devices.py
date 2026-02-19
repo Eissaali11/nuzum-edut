@@ -11,7 +11,7 @@ from flask import make_response
 import os
 import uuid
 
-from app import db
+from core.extensions import db
 from models import MobileDevice, Employee, Department, AuditLog, employee_departments, ImportedPhoneNumber
 
 # إنشاء Blueprint

@@ -7,7 +7,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from datetime import datetime, timedelta
 from sqlalchemy import func, or_, and_, extract
 from models import Employee, Vehicle, VehicleRental, VehicleProject, VehicleHandover, Salary, Attendance, Department, User, VehicleSafetyCheck
-from app import db
+from core.extensions import db
 # from functions.date_functions import format_date_arabic
 # from utils.audit_log import log_audit
 

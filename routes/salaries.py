@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
 from datetime import datetime
-from app import db
+from core.extensions import db
 from models import Salary, Employee, Department, SystemAudit, Attendance
 from utils.audit_logger import log_activity
 from utils.excel import parse_salary_excel, generate_salary_excel, generate_comprehensive_employee_report, generate_employee_salary_simple_excel

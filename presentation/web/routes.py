@@ -11,3 +11,21 @@ web_bp = Blueprint("web", __name__)
 def index():
     """الصفحة الرئيسية للهيكل الجديد."""
     return render_template("pages/home.html")
+
+
+@web_bp.route("/about")
+def about():
+    """صفحة من نحن."""
+    return render_template("about.html")
+
+
+@web_bp.route("/privacy")
+def privacy():
+    """صفحة سياسة الخصوصية."""
+    return render_template("privacy.html")
+
+
+@web_bp.route("/contact")
+def contact():
+    """صفحة اتصل بنا."""
+    return render_template("contact.html")

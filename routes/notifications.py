@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, jsonify, request, url_for, redirect
 from flask_login import login_required, current_user
 from datetime import datetime
-from models import Notification, User, db
+from models import Notification, User
+from core.extensions import db
 
 notifications_bp = Blueprint('notifications', __name__, url_prefix='/notifications')
 

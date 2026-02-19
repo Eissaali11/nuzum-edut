@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, jsonify, request
 from flask_login import login_required
 from sqlalchemy import func, desc, and_, or_
 from datetime import datetime, timedelta
-from app import db
+from core.extensions import db
 from models import (
     Employee, Department, Vehicle, VehicleHandover, VehicleWorkshop,
     Attendance, Salary, SystemAudit, Module, Permission, employee_departments

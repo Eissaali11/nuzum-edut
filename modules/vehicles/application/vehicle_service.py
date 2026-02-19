@@ -19,13 +19,13 @@ from modules.vehicles.domain.models import (
     VehicleWorkshopImage,
 )
 from domain.employees.models import Department, Employee, employee_departments
-from models import (
+from modules.vehicles.domain.models import (
     ExternalAuthorization,
-    OperationRequest,
     VehicleAccident,
     VehicleExternalSafetyCheck,
     VehiclePeriodicInspection,
 )
+from modules.operations.domain.models import OperationRequest
 from utils.vehicle_route_helpers import format_date_arabic
 
 # قائمة بأهم حالات السيارة للاختيار منها في النماذج

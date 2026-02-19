@@ -81,8 +81,8 @@ from models import (
     Attendance,
     FeesCost as Fee,
     Salary,
-    db,
 )
+from core.extensions import db
 from routes.operations import create_operation_request
 from modules.vehicles.application.vehicle_service import update_vehicle_driver
 from utils.vehicle_route_helpers import update_vehicle_state

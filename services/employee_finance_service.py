@@ -5,7 +5,7 @@
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from sqlalchemy import func, and_, or_
-from app import db
+from core.extensions import db
 from models import (
     Employee, EmployeeLiability, LiabilityInstallment, EmployeeRequest,
     Salary, LiabilityType, LiabilityStatus, InstallmentStatus, AdvancePaymentRequest

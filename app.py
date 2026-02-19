@@ -4,7 +4,7 @@ import logging
 from jinja2 import ChoiceLoader, FileSystemLoader
 from datetime import datetime
 
-from flask import Flask, session, redirect, url_for, render_template, request, g
+from flask import Flask, session, redirect, url_for, render_template, request, g, current_app
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_login import LoginManager, current_user, login_required
 from flask_wtf.csrf import CSRFProtect
@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()  # تحميل المتغيرات البيئية من ملف .env
 
 # عند تشغيل الملف مباشرة باستخدام `python app.py` يكون اسم الموديول `__main__`
-# بينما يقوم models.py بالاستيراد باستخدام `from app import db`
+# بينما يقوم models.py بالاستيراد باستخدام `from core.extensions import db`
 # السطر التالي يضمن أن اسم الموديول `app` يشير إلى نفس الكائن لتفادي
 # مشكلة الاستيراد الدائري الجزئي (partially initialized module).
 if __name__ == "__main__":
@@ -62,6 +62,9 @@ pymysql.install_as_MySQLdb()  # استخدام PyMySQL كبديل لـ MySQLdb
 
 # استخدام db من core.extensions لتفادي الاستيراد الدائري مع models
 from core.extensions import db
+
+# Import database backup blueprint (moved outside app_context for proper registration)
+from routes.database_backup import database_backup_bp
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -296,6 +299,18 @@ def inject_permissions():
     from utils.permissions_service import get_permissions_context
     return get_permissions_context()
 
+
+@app.context_processor
+def inject_endpoint_helpers():
+    """إضافة مساعدات endpoints للقوالب (متوافق مع layout الحديث)."""
+    def endpoint_exists(endpoint):
+        try:
+            return endpoint in current_app.view_functions
+        except Exception:
+            return False
+
+    return {'endpoint_exists': endpoint_exists}
+
 # مسار الجذر الرئيسي للتطبيق مع توجيه تلقائي حسب نوع الجهاز
 @app.route('/')
 def root():
@@ -402,9 +417,11 @@ with app.app_context():
     from routes.attendance_dashboard import attendance_dashboard_bp
     from routes.e_invoicing import e_invoicing_bp
 
-
-    # تعطيل تقارير الورشة مؤقتاً حتى يتم حل مشكلة WeasyPrint
-    # from routes.workshop_reports import workshop_reports_bp
+    # Workshop reports now using ReportLab (no GTK dependency)
+    from modules.vehicles.presentation.web.workshop_reports import register_workshop_reports_routes
+    from flask import Blueprint as FlaskBlueprint
+    workshop_reports_bp = FlaskBlueprint('workshop_reports', __name__)
+    register_workshop_reports_routes(workshop_reports_bp)
 
     from routes.employee_portal import employee_portal_bp
     from routes.insights import insights_bp
@@ -432,6 +449,7 @@ with app.app_context():
     from routes.drive_browser import drive_browser_bp
     from routes.attendance_api import attendance_api_bp
     from routes.api_accident_reports import api_accident_reports
+    # database_backup_bp import moved outside app_context block
 
     # تعطيل حماية CSRF لطرق معينة
     csrf.exempt(voicehub_bp)
@@ -459,7 +477,7 @@ with app.app_context():
     app.register_blueprint(mass_attendance_bp, url_prefix='/mass-attendance')
     app.register_blueprint(attendance_dashboard_bp, url_prefix='/attendance-dashboard')
     app.register_blueprint(e_invoicing_bp, url_prefix="/e-invoicing")
-    # app.register_blueprint(workshop_reports_bp, url_prefix='/workshop-reports')
+    app.register_blueprint(workshop_reports_bp, url_prefix='/workshop-reports')
     app.register_blueprint(employee_portal_bp, url_prefix='/employee-portal')
     app.register_blueprint(insights_bp, url_prefix='/insights')
     app.register_blueprint(external_safety_bp, url_prefix='/external-safety')
@@ -480,12 +498,17 @@ with app.app_context():
     app.register_blueprint(properties_bp, url_prefix='/properties')
     app.register_blueprint(google_drive_settings_bp)  # إعدادات Google Drive
     app.register_blueprint(geofences_bp)  # الدوائر الجغرافية
+    
+    # Analytics & Business Intelligence Blueprint
+    from routes.analytics import analytics_bp
+    app.register_blueprint(analytics_bp, url_prefix='/analytics')
     app.register_blueprint(employee_requests)  # طلبات الموظفين
     app.register_blueprint(api_employee_requests)  # API طلبات الموظفين
     app.register_blueprint(api_external_safety)  # API فحص السلامة الخارجية
     app.register_blueprint(drive_browser_bp, url_prefix='/drive')  # مستعرض Google Drive
     app.register_blueprint(attendance_api_bp)  # API الحضور
     app.register_blueprint(api_accident_reports)  # API تقارير حوادث السيارات
+    # database_backup_bp registration moved outside app_context block
     
     # استيراد وتسجيل مسار صفحة الهبوط - مسار منفصل عن النظام
     from routes.landing import landing_bp
@@ -638,6 +661,10 @@ with app.app_context():
         logger.info("Database tables created successfully.")
     except Exception as e:
         logger.info(f"Database tables already exist: {str(e)}")
+
+# Register database backup blueprint OUTSIDE app_context to avoid Flask reloader issues
+app.register_blueprint(database_backup_bp, url_prefix='/backup')
+logger.info("Database backup blueprint registered successfully at /backup")
 
 @app.before_request
 def before_request():

@@ -11,6 +11,7 @@ user_accessible_departments = db.Table(
     "user_accessible_departments",
     db.Column("user_id", db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), primary_key=True),
     db.Column("department_id", db.Integer, db.ForeignKey("department.id", ondelete="CASCADE"), primary_key=True),
+    extend_existing=True
 )
 
 employee_departments = db.Table(
@@ -24,6 +25,7 @@ employee_geofences = db.Table(
     db.Column("employee_id", db.Integer, db.ForeignKey("employee.id", ondelete="CASCADE"), primary_key=True),
     db.Column("geofence_id", db.Integer, db.ForeignKey("geofences.id", ondelete="CASCADE"), primary_key=True),
     db.Column("assigned_at", db.DateTime, default=datetime.utcnow),
+    extend_existing=True
 )
 
 

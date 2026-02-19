@@ -4,7 +4,7 @@
 
 from flask import request
 from flask_login import current_user
-from app import db
+from core.extensions import db
 from models import AuditLog
 import json
 from datetime import datetime

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محرك تقارير إكسل الاستراتيجية - Strategic Dashboard</title>
+    
+    <!-- Bootstrap RTL CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #00D4AA;
+            --secondary: #00D4FF;
+            --accent: #FFD700;
+            --warning: #FFA502;
+            --danger: #FF4757;
+            --dark-bg: #0D1117;
+            --light-gray: #ECEFF1;
+            --text-dark: #263238;
+        }
+        
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) var(--dark-bg);
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1f2e 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ecf0f1;
+        }
+        
+        .navbar {
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--primary);
+            padding: 1rem 2rem;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .container-main {
+            padding: 2rem 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .hero-section {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 212, 170, 0.2);
+        }
+        
+        .hero-section h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-section p {
+            font-size: 1.1rem;
+            color: #b0bec5;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-generate {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            color: var(--dark-bg);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 212, 170, 0.3);
+        }
+        
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 212, 170, 0.5);
+            color: var(--dark-bg);
+            text-decoration: none;
+        }
+        
+        .btn-generate:active {
+            transform: translateY(0);
+        }
+        
+        .btn-generate.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 170, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            border-color: var(--primary);
+            background: rgba(0, 212, 170, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .feature-card i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .feature-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .feature-card p {
+            color: #b0bec5;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .dashboard-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 170, 0.2);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .dashboard-section h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .dashboard-container {
+            min-height: 400px;
+            background: rgba(13, 17, 23, 0.5);
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 212, 170, 0.2);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .status-message {
+            padding: 1.2rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .status-message.success {
+            background: rgba(0, 212, 170, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .status-message.error {
+            background: rgba(255, 71, 87, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+        
+        .status-message.info {
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .download-section {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            color: var(--dark-bg);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 212, 170, 0.5);
+            color: var(--dark-bg);
+            text-decoration: none;
+        }
+        
+        .info-box {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .info-box strong {
+            color: var(--accent);
+        }
+        
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+        }
+        
+        .features-list li {
+            padding: 0.7rem 0;
+            color: #b0bec5;
+        }
+        
+        .features-list li:before {
+            content: "✓ ";
+            color: var(--primary);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .color-code {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            vertical-align: middle;
+            margin: 0 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #607d8b;
+            border-top: 1px solid rgba(0, 212, 170, 0.2);
+            margin-top: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container-main {
+                padding: 1rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .navbar {
+                padding: 0.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container-fluid">
+            <span class="navbar-brand">
+                <i class="fas fa-chart-line"></i> محرك تقارير إكسل الاستراتيجية
+            </span>
+            <span style="color: #b0bec5; font-size: 0.9rem;">Strategic Excel Dashboard Engine</span>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-main">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1>📊 محرك تقارير إكسل الاستراتيجية</h1>
+            <p>إنشاء لوحات عمل Excel احترافية مع رسوم بيانية مضمنة وتنسيق متقدم</p>
+            <p style="font-size: 0.95rem; color: #90a4ae;">Strategic Excel Dashboard with Embedded Charts & Professional Formatting</p>
+            
+            <button class="btn-generate" id="generateBtn" onclick="generateDashboard()">
+                <i class="fas fa-rocket"></i> إنشاء لوحة العمل الاستراتيجية
+            </button>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-chart-bar"></i>
+                <h3>Dashboard متقدم</h3>
+                <p>لوحة عمل مرئية بشريط KPI وملخص تنفيذي شامل</p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-chart-pie"></i>
+                <h3>رسوم بيانية مضمنة</h3>
+                <p>رسوم بيانية متعددة (أعمدة، دونات، خطوط اتجاه)</p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-palette"></i>
+                <h3>تنسيق احترافي</h3>
+                <p>ألوان شركاتية احترافية وتنسيق متقدم</p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-table"></i>
+                <h3>جداول Excel</h3>
+                <p>تحويل البيانات إلى جداول منسقة قابلة للتصفية</p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-lock"></i>
+                <h3>بيانات آمنة</h3>
+                <p>أوراق بيانات مخفية وحماية الوثائق الحساسة</p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-globe"></i>
+                <h3>دعم عربي</h3>
+                <p>دعم كامل للنصوص العربية (RTL)</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Generation Section -->
+        <div class="dashboard-section">
+            <h2>📈 توليد لوحة العمل الاستراتيجية</h2>
+            
+            <div class="info-box">
+                <strong>💡 معلومة:</strong> سيتم إنشاء ملف Excel احترافي يحتوي على:
+                <ul class="features-list" style="margin: 0.5rem 0 0 0;">
+                    <li>ملخص تنفيذي مع شريط KPI</li>
+                    <li>تحليل مالي مع رسم بياني أعمدة</li>
+                    <li>صحة الأسطول مع رسم بياني دونات</li>
+                    <li>تحليلات القوى العاملة مع رسم خطوط اتجاه</li>
+                    <li>أوراق بيانات مخفية للمرجع</li>
+                </ul>
+            </div>
+            
+            <div class="dashboard-container" id="dashboardContainer">
+                <p style="color: #90a4ae;">
+                    <i class="fas fa-info-circle"></i>
+                    اضغط على الزر أعلاه لبدء إنشاء لوحة العمل الاستراتيجية
+                </p>
+            </div>
+        </div>
+
+        <!-- Features List Section -->
+        <div class="dashboard-section">
+            <h2>✨ المميزات الرئيسية</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <h4 style="color: var(--primary); margin-bottom: 1rem;">📊 الملخص التنفيذي</h4>
+                    <ul class="features-list">
+                        <li>شريط KPI بـ 6 مقاييس رئيسية</li>
+                        <li>نظرة عامة مالية سريعة</li>
+                        <li>حالة الأسطول والقوى العاملة</li>
+                        <li>تنسيق احترافي مع الألوان الشركاتية</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="color: var(--secondary); margin-bottom: 1rem;">💰 التحليل المالي</h4>
+                    <ul class="features-list">
+                        <li>توزيع الرواتب حسب المنطقة</li>
+                        <li>رسم بياني أعمدة متقدم</li>
+                        <li>حسابات المتوسط والنسب المئوية</li>
+                        <li>بيانات المناطق الأفضل أداءً</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="color: var(--accent); margin-bottom: 1rem;">🚗 صحة الأسطول</h4>
+                    <ul class="features-list">
+                        <li>توزيع حالة المركبات</li>
+                        <li>رسم بياني دونات مرئي</li>
+                        <li>تحليل الصيانة والتكاليف</li>
+                        <li>مؤشرات حالة الصحة</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Palette Section -->
+        <div class="dashboard-section">
+            <h2>🎨 نظام الألوان الشركاتي</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div style="text-align: center;">
+                    <div class="color-code" style="background-color: #0D1117; width: 50px; height: 50px; margin: 0 auto 0.5rem;"></div>
+                    <strong style="color: #96A8B4;">Navy Blue</strong><br>
+                    <span style="color: #607d8b; font-size: 0.9rem;">#0D1117</span>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div class="color-code" style="background-color: #00D4AA; width: 50px; height: 50px; margin: 0 auto 0.5rem;"></div>
+                    <strong style="color: #00D4AA;">Emerald Green</strong><br>
+                    <span style="color: #607d8b; font-size: 0.9rem;">#00D4AA</span>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div class="color-code" style="background-color: #00D4FF; width: 50px; height: 50px; margin: 0 auto 0.5rem;"></div>
+                    <strong style="color: #00D4FF;">Cyan Blue</strong><br>
+                    <span style="color: #607d8b; font-size: 0.9rem;">#00D4FF</span>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div class="color-code" style="background-color: #FFD700; width: 50px; height: 50px; margin: 0 auto 0.5rem;"></div>
+                    <strong style="color: #FFD700;">Gold</strong><br>
+                    <span style="color: #607d8b; font-size: 0.9rem;">#FFD700</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusContainer"></div>
+
+        <!-- Download Section -->
+        <div class="download-section" id="downloadSection" style="display: none;">
+            <h3 style="color: var(--primary); margin-bottom: 1rem;">✅ تم إنشاء لوحة العمل بنجاح!</h3>
+            <p style="color: #b0bec5; margin-bottom: 1.5rem;">اضغط الزر أدناه لتحميل ملف Excel:</p>
+            <a href="#" class="btn-download" id="downloadBtn" onclick="downloadDashboard(); return false;">
+                <i class="fas fa-download"></i> تحميل لوحة العمل الاستراتيجية
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>© 2026 Nuzum Executive BI System | Strategic Excel Dashboard Engine</p>
+        <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+            محرك تقارير إكسل الاستراتيجية | نظام نُظم للذكاء التجاري التنفيذي
+        </p>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        let lastGeneratedDashboard = null;
+
+        async function generateDashboard() {
+            const btn = document.getElementById('generateBtn');
+            const container = document.getElementById('dashboardContainer');
+            const statusContainer = document.getElementById('statusContainer');
+            const downloadSection = document.getElementById('downloadSection');
+            
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';
+            
+            // Clear previous messages
+            statusContainer.innerHTML = '';
+            downloadSection.style.display = 'none';
+            
+            // Show loading spinner
+            container.innerHTML = `
+                <div class="loading-spinner"></div>
+                <p style="color: #90a4ae;">جاري إنشاء لوحة العمل الاستراتيجية...</p>
+                <p style="color: #607d8b; font-size: 0.9rem;">قد يستغرق هذا بضع ثوان</p>
+            `;
+            
+            try {
+                const response = await fetch('/analytics/generate/strategic-dashboard', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'success') {
+                    lastGeneratedDashboard = data;
+                    
+                    // Show success message
+                    container.innerHTML = `
+                        <div style="text-align: center;">
+                            <i class="fas fa-check-circle" style="color: var(--primary); font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                            <h3 style="color: var(--primary); margin-bottom: 0.5rem;">تم الإنشاء بنجاح!</h3>
+                            <p style="color: #b0bec5;">
+                                تم إنشاء لوحة العمل الاستراتيجية<br>
+                                <strong style="color: var(--secondary);">${data.file_name}</strong>
+                            </p>
+                            <p style="color: #607d8b; font-size: 0.9rem;">الحجم: ${(data.file_size / 1024).toFixed(2)} KB</p>
+                        </div>
+                    `;
+                    
+                    // Show download section
+                    downloadSection.style.display = 'block';
+                    
+                    // Show success notification
+                    showStatus('✅ تم إنشاء لوحة العمل بنجاح!', 'success');
+                } else {
+                    throw new Error(data.message || 'خطأ في الإنشاء');
+                }
+            } catch (error) {
+                const errorMsg = error.message || 'حدث خطأ غير متوقع';
+                
+                container.innerHTML = `
+                    <div style="text-align: center;">
+                        <i class="fas fa-exclamation-circle" style="color: var(--danger); font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                        <h3 style="color: var(--danger);">خطأ في الإنشاء</h3>
+                        <p style="color: #b0bec5;">${errorMsg}</p>
+                    </div>
+                `;
+                
+                showStatus('❌ خطأ: ' + errorMsg, 'error');
+            } finally {
+                // Re-enable button
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                btn.innerHTML = '<i class="fas fa-rocket"></i> إنشاء لوحة العمل الاستراتيجية';
+            }
+        }
+
+        function downloadDashboard() {
+            if (lastGeneratedDashboard) {
+                window.location.href = lastGeneratedDashboard.download_url;
+            } else {
+                alert('الرجاء أولا إنشاء لوحة عمل');
+            }
+        }
+
+        function showStatus(message, type = 'info') {
+            const container = document.getElementById('statusContainer');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status-message ${type}`;
+            statusDiv.innerHTML = message;
+            container.appendChild(statusDiv);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.style.opacity = '0';
+                setTimeout(() => statusDiv.remove(), 300);
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

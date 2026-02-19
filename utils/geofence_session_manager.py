@@ -7,7 +7,8 @@ Geofence Session Manager - نظام ذكي لإدارة جلسات الموظف�
 - إذا دخل وخرج ودخل وخرج في الساعة = دخول واحد
 - إذا دخل صباحاً ولم يخرج، ثم عاد مساءً وخرج = جلستان (صباحي + مسائي)
 """
-from models import GeofenceSession, GeofenceEvent, db
+from models import GeofenceSession, GeofenceEvent
+from core.extensions import db
 from datetime import datetime, timedelta
 import logging
 

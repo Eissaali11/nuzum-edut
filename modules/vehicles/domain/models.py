@@ -10,6 +10,7 @@ vehicle_user_access = db.Table(
     "vehicle_user_access",
     db.Column("vehicle_id", db.Integer, db.ForeignKey("vehicle.id", ondelete="CASCADE"), primary_key=True),
     db.Column("user_id", db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), primary_key=True),
+    extend_existing=True
 )
 
 
@@ -156,6 +157,14 @@ class VehicleProject(db.Model):
 
 # VehicleHandover و VehicleHandoverImage في ملف منفصل لتجاوز حد 400 سطر
 from modules.vehicles.domain.handover_models import VehicleHandover, VehicleHandoverImage  # noqa: E402
+from modules.vehicles.domain.vehicle_maintenance_models import (  # noqa: E402
+    VehiclePeriodicInspection,
+    VehicleSafetyCheck,
+    VehicleAccident,
+    VehicleAccidentImage,
+    ExternalAuthorization,
+    VehicleExternalSafetyCheck,
+)
 
 __all__ = [
     "vehicle_user_access",
@@ -166,4 +175,10 @@ __all__ = [
     "VehicleProject",
     "VehicleHandover",
     "VehicleHandoverImage",
+    "VehiclePeriodicInspection",
+    "VehicleSafetyCheck",
+    "VehicleAccident",
+    "VehicleAccidentImage",
+    "ExternalAuthorization",
+    "VehicleExternalSafetyCheck",
 ]

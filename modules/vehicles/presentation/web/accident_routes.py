@@ -7,7 +7,7 @@ from flask import request, redirect, url_for, flash, render_template, current_ap
 from flask_login import login_required
 
 from core.extensions import db
-from models import Vehicle, VehicleAccident, VehicleAccidentImage
+from modules.vehicles.domain.models import Vehicle, VehicleAccident, VehicleAccidentImage
 from forms.vehicle_forms import VehicleAccidentForm
 from modules.vehicles.application.accident_services import create_accident_record_action
 from infrastructure.storage import save_uploaded_file

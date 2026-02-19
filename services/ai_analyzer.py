@@ -9,7 +9,7 @@ import json
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from models import Employee, Vehicle, Attendance, Salary, Department, Document
-from app import db
+from core.extensions import db
 
 class AIAnalyzer:
     """محلل الذكاء الاصطناعي للأعمال"""

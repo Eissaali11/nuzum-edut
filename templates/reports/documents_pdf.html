@@ -106,7 +106,9 @@
         <tbody>
             {% if results %}
                 {% for document, employee in results %}
-                {% set today = now().date() %}
+                {% if now %}
+                    {% set today = now.date() %}
+                {% endif %}
                 {% set days_remaining = (document.expiry_date - today).days %}
                 
                 <tr>

@@ -21,7 +21,7 @@ from reportlab.lib.units import cm
 import arabic_reshaper
 from bidi.algorithm import get_display
 from reportlab.platypus import PageBreak
-from app import db
+from core.extensions import db
 from models import Document, Employee, Department, SystemAudit
 from utils.excel import parse_document_excel
 from utils.date_converter import parse_date, format_date_hijri, format_date_gregorian

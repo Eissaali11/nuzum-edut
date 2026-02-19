@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
-from app import db
+from core.extensions import db
 from flask import abort, flash, g
 from models import Module, Permission, User, UserPermission, UserRole, Employee
 from utils.audit_helpers import log_create, log_update, log_delete
@@ -40,17 +40,17 @@ DEFAULT_PERMISSIONS = {
         Module.DOCUMENTS: Permission.MANAGE,
         Module.REPORTS: Permission.VIEW
     },
-    UserRole.FINANCE: {
+    UserRole.ACCOUNTANT: {
         Module.EMPLOYEES: Permission.VIEW,
         Module.SALARIES: Permission.MANAGE,
         Module.FEES: Permission.MANAGE,
         Module.REPORTS: Permission.VIEW
     },
-    UserRole.FLEET: {
+    UserRole.SUPERVISOR: {
         Module.VEHICLES: Permission.MANAGE,
         Module.REPORTS: Permission.VIEW
     },
-    UserRole.USER: {
+    UserRole.VIEWER: {
         Module.EMPLOYEES: Permission.VIEW,
         Module.DEPARTMENTS: Permission.VIEW,
         Module.REPORTS: Permission.VIEW
@@ -62,9 +62,9 @@ ROLE_DISPLAY_NAMES = {
     UserRole.ADMIN: 'مدير النظام',
     UserRole.MANAGER: 'مدير',
     UserRole.HR: 'موارد بشرية',
-    UserRole.FINANCE: 'مالية',
-    UserRole.FLEET: 'أسطول',
-    UserRole.USER: 'مستخدم عادي'
+    UserRole.ACCOUNTANT: 'مالية',
+    UserRole.SUPERVISOR: 'أسطول',
+    UserRole.VIEWER: 'مستخدم عادي'
 }
 
 # تعريف أسماء عرض الوحدات
@@ -178,7 +178,7 @@ def create_user(
         try:
             role = UserRole(role)
         except ValueError:
-            role = UserRole.USER  # استخدام القيمة الافتراضية في حالة وجود خطأ
+            role = UserRole.VIEWER  # استخدام القيمة الافتراضية في حالة وجود خطأ
     
     # إنشاء كائن المستخدم
     user = User(

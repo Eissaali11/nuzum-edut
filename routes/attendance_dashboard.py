@@ -16,7 +16,7 @@ from openpyxl.chart import BarChart, Reference
 from openpyxl.styles import Font, PatternFill, Alignment
 
 from models import Department, Employee, Attendance, Module, employee_departments
-from app import db
+from core.extensions import db
 from utils.decorators import module_access_required
 from utils.date_converter import format_date_hijri, format_date_gregorian
 

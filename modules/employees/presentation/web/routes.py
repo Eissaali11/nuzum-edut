@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from models import Module, Permission, Department, Nationality, Employee
 from utils.permissions_service import can_edit, can_delete
 from utils.user_helpers import require_module_access
-from modules.employees.application.employee_service import (
+from modules.employees.application.core import (
     list_employees_page_data,
     create_employee,
     update_employee,
@@ -149,6 +149,13 @@ def index():
         can_delete=can_delete,
         Module=Module,
     )
+
+
+@employees_bp.route("/tracking")
+@login_required
+@require_module_access(Module.EMPLOYEES, Permission.VIEW)
+def tracking():
+    return redirect(url_for("employees.index"))
 
 
 @employees_bp.route("/create", methods=["GET", "POST"])

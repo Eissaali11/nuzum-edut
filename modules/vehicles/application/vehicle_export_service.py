@@ -545,7 +545,7 @@ def build_vehicle_report_excel(vehicle_id: int) -> Tuple[Optional[io.BytesIO], O
     Returns:
         (buffer, filename, mimetype) أو (None, None, mimetype) إذا لم تُوجد المركبة.
     """
-    from models import VehicleHandover, VehiclePeriodicInspection
+    from modules.vehicles.domain.models import VehicleHandover, VehiclePeriodicInspection
     from utils.vehicle_excel_report import generate_complete_vehicle_excel_report
 
     vehicle = Vehicle.query.get(vehicle_id)

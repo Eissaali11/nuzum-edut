@@ -29,7 +29,7 @@ class AIFinancialAnalytics:
         """جمع ملخص البيانات المالية"""
         try:
             # استيراد محلي لتجنب circular import
-            from app import db
+            from core.extensions import db
             # إحصائيات الحسابات
             accounts_query = """
                 SELECT account_type, COUNT(*) as count, 
@@ -166,7 +166,7 @@ class AIFinancialAnalytics:
         """تحليل أنماط المعاملات لاكتشاف الشذوذ"""
         try:
             # استيراد محلي لتجنب circular import
-            from app import db
+            from core.extensions import db
             # جمع بيانات المعاملات
             patterns_query = """
                 SELECT 
@@ -237,7 +237,7 @@ class AIFinancialAnalytics:
         """توليد توصيات الميزانية"""
         try:
             # استيراد محلي لتجنب circular import
-            from app import db
+            from core.extensions import db
             # جمع بيانات المصروفات حسب النوع
             # استخدام العمود الصحيح للنوع
             expenses_query = """

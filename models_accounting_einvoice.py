@@ -2,7 +2,7 @@
 نماذج الفاتورة الإلكترونية السعودية ZATCA
 النظام السعودي للفواتير الإلكترونية - ZATCA Electronic Invoice
 """
-from app import db
+from core.extensions import db
 from datetime import datetime
 from enum import Enum as PyEnum
 from sqlalchemy import Enum

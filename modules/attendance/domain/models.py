@@ -15,7 +15,8 @@ from core.extensions import db
 employee_geofences = db.Table(
     'employee_geofences',
     db.Column('employee_id', db.Integer, db.ForeignKey('employee.id', ondelete='CASCADE'), primary_key=True),
-    db.Column('geofence_id', db.Integer, db.ForeignKey('geofences.id', ondelete='CASCADE'), primary_key=True)
+    db.Column('geofence_id', db.Integer, db.ForeignKey('geofences.id', ondelete='CASCADE'), primary_key=True),
+    extend_existing=True
 )
 
 

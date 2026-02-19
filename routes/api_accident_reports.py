@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
 from functools import wraps
 from datetime import datetime, date, time
-from app import db
+from core.extensions import db
 from models import (
     Vehicle, VehicleAccident, VehicleAccidentImage,
     Employee, User

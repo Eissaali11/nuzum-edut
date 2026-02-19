@@ -10,6 +10,7 @@ vehicle_user_access = db.Table(
     "vehicle_user_access",
     db.Column("vehicle_id", db.Integer, db.ForeignKey("vehicle.id", ondelete="CASCADE"), primary_key=True),
     db.Column("user_id", db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), primary_key=True),
+    extend_existing=True
 )
 
 

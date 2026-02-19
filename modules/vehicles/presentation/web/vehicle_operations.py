@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, make_response
-from models import (Vehicle, VehicleHandover, VehicleWorkshop, VehicleExternalSafetyCheck, 
-                    VehicleMaintenance, Employee, Department, User, UserRole)
+from modules.vehicles.domain.models import Vehicle, VehicleHandover, VehicleWorkshop, VehicleExternalSafetyCheck
+from modules.vehicles.domain import VehicleMaintenance
+from domain.employees.models import Employee, Department
+from core.domain.models import User, UserRole
 from core.extensions import db
 from flask_login import current_user, login_required
 from sqlalchemy import or_, and_, func

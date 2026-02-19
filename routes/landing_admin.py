@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, request, jsonify, redirect, url_fo
 from flask_login import login_required, current_user, login_user, logout_user
 from werkzeug.security import check_password_hash
 from datetime import datetime
-from models import db, User, UserRole
+from models import User, UserRole
+from core.extensions import db
 import json
 import os
 import time

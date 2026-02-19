@@ -6,7 +6,7 @@
 from flask import Blueprint, render_template, request, jsonify, Response, send_file
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
-from app import db
+from core.extensions import db
 from models import Employee, Attendance, Document, Vehicle, Department
 from sqlalchemy import func, or_, and_, case
 from utils.user_helpers import require_module_access
@@ -218,7 +218,7 @@ def dashboard():
         else:
             doc_stats['valid'] += 1
     
-    return render_template('powerbi/dashboard.html',
+    return render_template('powerbi/dashboard_enhanced.html',
         departments=departments,
         total_employees=total_employees,
         total_vehicles=total_vehicles,

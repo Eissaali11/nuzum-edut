@@ -152,7 +152,6 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        {% set today = now() %}
                         <!-- تفويض المركبة -->
                         <div class="col-md-4 mb-3">
                             <div class="document-card card h-100 {% if vehicle.authorization_expiry_date %}{% if (vehicle.authorization_expiry_date - today).days < 0 %}border-danger{% elif (vehicle.authorization_expiry_date - today).days <= 30 %}border-warning{% else %}border-success{% endif %}{% else %}border-light{% endif %}">

@@ -15,7 +15,7 @@ ai_services_bp = Blueprint('ai_services', __name__, url_prefix='/ai')
 # محاولة استيراد النماذج
 try:
     from models import Employee, Vehicle, Attendance, Salary, Department, Document
-    from app import db
+    from core.extensions import db
     from sqlalchemy import func, desc, and_, or_
     MODELS_AVAILABLE = True
 except ImportError:

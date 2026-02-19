@@ -2719,7 +2719,7 @@ def export_employee_attendance_to_excel(employee, month=None, year=None):
             end_date = datetime(year, month + 1, 1).date() - timedelta(days=1)
         
         # استخدام استعلام أكثر فعالية للحصول على سجلات الحضور
-        from app import db
+        from core.extensions import db
         from models import Attendance
         
         # استعلام من قاعدة البيانات مباشرة

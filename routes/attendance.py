@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required
 from sqlalchemy import func, extract, or_
 from datetime import datetime, time, timedelta, date
-from app import db
+from core.extensions import db
 from models import Attendance, Employee, Department, SystemAudit, VehicleProject, Module, Permission, employee_departments, EmployeeLocation, GeofenceSession
 from utils.date_converter import parse_date, format_date_hijri, format_date_gregorian
 from utils.excel import export_attendance_by_department

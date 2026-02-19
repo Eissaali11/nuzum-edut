@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from flask_login import login_required, current_user
-from app import db
+from core.extensions import db
 from models import User, Department, UserRole, Module, Permission, AuditLog, UserPermission
 from functools import wraps
 from sqlalchemy.orm import joinedload # <<<<<--- أضف هذا السطر
@@ -51,11 +51,14 @@ def index():
             # إذا كان المستخدم مرتبط بقسم محدد، عرض المستخدمين المرتبطين بنفس القسم فقط
             user_query = user_query.filter(User.assigned_department_id == current_user.assigned_department_id)
         
-        all_users = user_query.order_by(User.name).all()
+        all_users = user_query.order_by(User.full_name).all()
         
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
         flash('حدث خطأ أثناء جلب البيانات من قاعدة البيانات.', 'danger')
         print(f"Error fetching user list: {e}")
+        print(f"Full error traceback:\n{error_details}")
         all_users = []
         all_departments = []
 
@@ -97,9 +100,9 @@ def assign_departments(user_id):
         db.session.commit()
         
         if selected_departments:
-            flash(f'تم تحديث أقسام المستخدم {user.name} بنجاح.', 'success')
+            flash(f'تم تحديث أقسام المستخدم {user.full_name} بنجاح.', 'success')
         else:
-            flash(f'تم إزالة كل الأقسام من المستخدم {user.name}.', 'info')
+            flash(f'تم إزالة كل الأقسام من المستخدم {user.full_name}.', 'info')
             
     except Exception as e:
         db.session.rollback()
@@ -122,10 +125,10 @@ def assign_department(user_id):
             return redirect(url_for('users.index'))
         
         user.assigned_department_id = department_id
-        flash(f'تم تحديد قسم "{department.name}" للمستخدم {user.name}', 'success')
+        flash(f'تم تحديد قسم "{department.name}" للمستخدم {user.full_name}', 'success')
     else:
         user.assigned_department_id = None
-        flash(f'تم إلغاء تحديد القسم للمستخدم {user.name}', 'info')
+        flash(f'تم إلغاء تحديد القسم للمستخدم {user.full_name}', 'info')
     
     db.session.commit()
     return redirect(url_for('users.index'))
@@ -141,7 +144,7 @@ def edit_role(user_id):
     if new_role in [role.value for role in UserRole]:
         user.role = UserRole(new_role)
         db.session.commit()
-        flash(f'تم تحديث دور المستخدم {user.name} إلى {new_role}', 'success')
+        flash(f'تم تحديث دور المستخدم {user.full_name} إلى {new_role}', 'success')
     else:
         flash('الدور المحدد غير صالح', 'error')
     
@@ -166,7 +169,7 @@ def toggle_active(user_id):
     db.session.commit()
     
     status = "تفعيل" if user.is_active else "إلغاء تفعيل"
-    flash(f'تم {status} المستخدم {user.name}', 'success')
+    flash(f'تم {status} المستخدم {user.full_name}', 'success')
     return redirect(url_for('users.index'))
 
 @users_bp.route('/department_users/<int:department_id>')
@@ -398,12 +401,12 @@ def edit(user_id):
     if request.method == 'POST':
         try:
             # 1. تحديث البيانات الأساسية للمستخدم
-            user.name = request.form.get('name')
+            user.full_name = request.form.get('name')
             new_email = request.form.get('email')
             password = request.form.get('password')
             role_str = request.form.get('role')
 
-            if not user.name or not new_email:
+            if not user.full_name or not new_email:
                 flash('الاسم والبريد الإلكتروني حقول مطلوبة.', 'danger')
                 return redirect(url_for('users.edit', user_id=user_id))
 
@@ -438,7 +441,7 @@ def edit(user_id):
             # 3. حفظ كل التغييرات
             db.session.commit()
             
-            flash(f'تم تحديث بيانات المستخدم {user.name} بنجاح.', 'success')
+            flash(f'تم تحديث بيانات المستخدم {user.full_name} بنجاح.', 'success')
             return redirect(url_for('users.index'))
             
         except Exception as e:
@@ -528,7 +531,7 @@ def delete(user_id):
         return redirect(url_for('users.index'))
     
     try:
-        user_name = user.name
+        user_name = user.full_name
         
         # حذف الإشعارات المرتبطة بهذا المستخدم أولاً
         from models import OperationNotification

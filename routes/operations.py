@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, current_app
 from flask_login import login_required, current_user
-from app import db
+from core.extensions import db
 from models import (OperationRequest, OperationNotification, VehicleHandover, 
                    VehicleWorkshop, ExternalAuthorization, SafetyInspection, 
                    Vehicle, User, UserRole, Employee)
@@ -27,7 +27,7 @@ import uuid
 import zipfile
 import shutil
 
-from app import db
+from core.extensions import db
 from models import (
         Vehicle, VehicleRental, VehicleWorkshop, VehicleWorkshopImage, 
         VehicleProject, VehicleHandover, VehicleHandoverImage, SystemAudit,

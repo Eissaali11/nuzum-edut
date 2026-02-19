@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, Response
 from flask_login import current_user
 from sqlalchemy import func, and_, or_
-from models import db, MobileDevice, Employee, Department, DeviceAssignment, ImportedPhoneNumber, SimCard
+from models import MobileDevice, Employee, Department, DeviceAssignment, ImportedPhoneNumber, SimCard
+from core.extensions import db
 from datetime import datetime
 import io
 import pandas as pd

@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, url_for
 from models import Employee, Department, Document, Vehicle, VehicleHandover, VehicleHandoverImage, InspectionUploadToken, VehicleInspectionRecord, VehicleInspectionImage
-from app import db
+from core.extensions import db
 import os
 import uuid
 from datetime import timedelta

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
 from flask_login import login_required
-from models import Module, Permission
+from models import Module, Permission, Employee
 from utils.user_helpers import require_module_access
 from modules.employees.application.core import (create_employee, update_employee, delete_employee, 
     update_employee_status, prepare_employee_form_context, get_employee_view_context, update_employee_iban,
@@ -199,9 +199,30 @@ def export_attendance_excel(id):
 @login_required
 @require_module_access(Module.EMPLOYEES, Permission.EDIT)
 def upload_image(id):
-    result = upload_employee_image(id, request.files.get('image'), request.form.get('image_type'))
-    flash(result.message, result.category)
-    return redirect(url_for('employees.view', id=id))
+    try:
+        print(f"=== UPLOAD IMAGE DEBUG ===")
+        print(f"Employee ID: {id}")
+        print(f"Files: {request.files}")
+        print(f"Form: {request.form}")
+        
+        employee = Employee.query.get(id)
+        if not employee:
+            print(f"ERROR: Employee {id} not found")
+            flash(f"الموظف رقم {id} غير موجود", "danger")
+            return redirect(url_for('employees.index'))
+        
+        print(f"Employee found: {employee.name}")
+        
+        result = upload_employee_image(id, request.files.get('image'), request.form.get('image_type'))
+        print(f"Upload result: success={result.success}, message={result.message}")
+        flash(result.message, result.category)
+        return redirect(url_for('employees.view', id=id))
+    except Exception as e:
+        print(f"ERROR in upload_image route: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash(f"خطأ في رفع الصورة: {str(e)}", "danger")
+        return redirect(url_for('employees.view', id=id))
 
 @employees_bp.route('/<int:id>/basic_report')
 @login_required

@@ -81,8 +81,9 @@ def _init_extensions(app):
     from core.extensions import init_extensions
     init_extensions(app)
     # تسجيل نماذج النطاقات مع SQLAlchemy (يجب استيرادها بعد تهيئة db)
-    import domain.employees.models  # noqa: F401
-    import domain.vehicles.models  # noqa: F401
+    # ملاحظة: domain.* مكررة - models.py الرئيسي يستوردها من modules
+    # import domain.employees.models  # noqa: F401
+    # import domain.vehicles.models  # noqa: F401
 
 
 def _init_redis(app):
@@ -129,7 +130,7 @@ def _register_legacy_blueprints(app):
     """تسجيل Blueprints القديمة من routes/ لتفعيل المسارات والقائمة الجانبية."""
     import sys
     from core.extensions import db
-    # جعل "from app import db" يعمل دون تحميل app.py (لتجنب 404 عند استيراد المسارات)
+    # جعل "from core.extensions import db" يعمل دون تحميل app.py (لتجنب 404 عند استيراد المسارات)
     class _AppStub:
         pass
     _stub = _AppStub()
@@ -353,7 +354,7 @@ def _register_context_processors(app):
     @app.context_processor
     def inject_globals():
         from datetime import datetime
-        from flask import url_for
+        from flask import url_for, current_app
         from flask_login import current_user
         from werkzeug.routing import BuildError
 
@@ -363,10 +364,17 @@ def _register_context_processors(app):
             except BuildError:
                 return "#"
 
+        def endpoint_exists(endpoint):
+            try:
+                return endpoint in current_app.view_functions
+            except Exception:
+                return False
+
         out = {
             "now": datetime.utcnow(),
             "current_user": current_user,
             "url_for": safe_url_for,
+            "endpoint_exists": endpoint_exists,
             "legacy_static_prefix": "/legacy-static",  # لتحميل تصميم الجوال عند استخدام create_app
         }
         try:

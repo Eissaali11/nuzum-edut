@@ -30,7 +30,9 @@ from modules.vehicles.application.vehicle_list_service import get_vehicle_list_p
 from modules.vehicles.application.vehicle_service import get_vehicle_detail_data
 from forms.vehicle_forms import VehicleCreateForm, VehicleEditForm
 from core.extensions import db
-from models import Department, User, Vehicle
+from domain.employees.models import Department
+from core.domain.models import User
+from modules.vehicles.domain.models import Vehicle
 
 
 def register_vehicle_routes(bp):

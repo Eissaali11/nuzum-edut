@@ -6,7 +6,7 @@ from flask_login import current_user
 from werkzeug.security import check_password_hash
 from functools import wraps
 from datetime import datetime, timedelta
-from app import db
+from core.extensions import db
 
 logger = logging.getLogger(__name__)
 from models import (

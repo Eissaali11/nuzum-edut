@@ -495,8 +495,8 @@ class OperationNotification(db.Model):
     read_at = db.Column(db.DateTime, nullable=True)
     
     # العلاقات
-    operation_request = db.relationship("OperationRequest", backref="notifications")
-    user = db.relationship("User", backref="notifications")
+    operation_request = db.relationship("OperationRequest", backref="unique_op_notifs")
+    user = db.relationship("User", backref="unique_user_op_notifs")
     
     def __repr__(self):
         return f"<OperationNotification {self.title} to {self.user_id}>"

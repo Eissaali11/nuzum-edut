@@ -7,7 +7,7 @@
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
-from app import db
+from core.extensions import db
 from models import Department, Employee, Attendance, SystemAudit
 
 # تعريف Blueprint للحضور الجماعي

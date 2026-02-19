@@ -155,6 +155,10 @@
             rel="stylesheet"
         />
         <link
+            href="{{ url_for('static', filename='css/modern-theme.css') }}?v={{ now.timestamp()|int }}"
+            rel="stylesheet"
+        />
+        <link
             href="{{ url_for('static', filename='css/logo.css') }}?v={{ now.timestamp()|int }}"
             rel="stylesheet"
         />
@@ -194,6 +198,9 @@
                         <hr />
                         {% endif %}
                         {% if current_user.is_authenticated %}
+                        {% set is_admin = (current_user.role == UserRole.ADMIN)
+                            or (current_user.role is string and current_user.role|lower == 'admin')
+                            or (current_user.role is not string and current_user.role.value == 'admin') %}
                         <ul
                             class="nav nav-pills flex-column mb-auto sidebar-nav"
                         >
@@ -241,6 +248,20 @@
                                     class="nav-link nav-link-custom {% if '/powerbi' in request.path %}active{% endif %}"
                                     style="background: linear-gradient(135deg, rgba(242, 200, 17, 0.12) 0%, rgba(102, 126, 234, 0.1) 100%); border-right: 3px solid #F2C811;"
                                 >
+                                    <i class="fas fa-chart-pie me-2" style="color: #F2C811;"></i>
+                                    <span>Power BI</span>
+                                </a>
+                            </li>
+                            <li class="nav-item mb-1">
+                                <a
+                                    href="{{ url_for('analytics.dashboard') }}"
+                                    class="nav-link nav-link-custom {% if '/analytics' in request.path %}active{% endif %}"
+                                    style="background: linear-gradient(135deg, rgba(0, 212, 170, 0.12) 0%, rgba(0, 212, 255, 0.1) 100%); border-right: 3px solid #00D4AA;"
+                                >
+                                    <i class="fas fa-chart-line me-2" style="color: #00D4AA;"></i>
+                                    <span>ذكاء الأعمال</span>
+                                </a>
+                            </li>
                                     <i class="fas fa-chart-line me-2" style="color: #F2C811 !important;"></i>
                                     <span>لوحة التحليلات</span>
                                     <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">BI</span>
@@ -520,8 +541,11 @@
                                         </a>
                                     </li>
                                     <li class="nav-item mb-1">
+                                        {% set external_safety_admin_endpoint = 'external_safety.admin_external_safety_checks' %}
+                                        {% set external_safety_share_endpoint = 'external_safety.share_links' %}
+                                        {% if endpoint_exists is defined and endpoint_exists(external_safety_admin_endpoint) %}
                                         <a
-                                            href="{{ url_for('external_safety.admin_external_safety_checks') }}"
+                                            href="{{ url_for(external_safety_admin_endpoint) }}"
                                             class="nav-link nav-link-custom {% if '/admin/external-safety-checks' in request.path %}active{% endif %}"
                                         >
                                             <i
@@ -529,10 +553,12 @@
                                             ></i>
                                             <span>إدارة فحوصات السلامة</span>
                                         </a>
+                                        {% endif %}
                                     </li>
                                     <li class="nav-item mb-1">
+                                        {% if endpoint_exists is defined and endpoint_exists(external_safety_share_endpoint) %}
                                         <a
-                                            href="{{ url_for('external_safety.share_links') }}"
+                                            href="{{ url_for(external_safety_share_endpoint) }}"
                                             class="nav-link nav-link-custom {% if '/share-links' in request.path %}active{% endif %}"
                                         >
                                             <i
@@ -540,6 +566,7 @@
                                             ></i>
                                             <span>مشاركة روابط الفحص</span>
                                         </a>
+                                        {% endif %}
                                     </li>
                                     <li class="nav-item mb-1">
                                         <a
@@ -564,7 +591,7 @@
                                 </ul>
                             </li>
                             
-                            {% if current_user.role == UserRole.ADMIN %}
+                            {% if is_admin %}
                             <li class="nav-item mb-1">
                                 <a
                                     href="{{ url_for('operations.operations_dashboard') }}"
@@ -579,7 +606,7 @@
                             
                             
                             {# إدارة العقارات المستأجرة #}
-                            {% if current_user.role == UserRole.ADMIN %}
+                            {% if is_admin %}
                             <li class="nav-item mb-1">
                                 <a
                                     href="{{ url_for('properties.dashboard') }}"
@@ -592,7 +619,7 @@
                             {% endif %}
                             
                             {# VoiceHub - الذكاء الاصطناعي الصوتي #}
-                            {% if current_user.role == UserRole.ADMIN %}
+                            {% if is_admin %}
                             <li class="nav-item mb-1">
                                 <a
                                     href="{{ url_for('voicehub.dashboard') }}"
@@ -602,6 +629,20 @@
                                     <span>VoiceHub AI</span>
                                 </a>
                             </li>
+                            {% endif %}
+
+                            {% if is_admin %}
+                            {% if endpoint_exists('database_backup.backup_page') %}
+                            <li class="nav-item mb-1">
+                                <a
+                                    href="{{ url_for('database_backup.backup_page') }}"
+                                    class="nav-link nav-link-custom {% if '/backup' in request.path %}active{% endif %}"
+                                >
+                                    <i class="fas fa-database me-2"></i>
+                                    <span>النسخ الاحتياطي</span>
+                                </a>
+                            </li>
+                            {% endif %}
                             {% endif %}
                             {% endif %} {# التحقق من صلاحيات المستخدمين #}
                             
@@ -805,11 +846,14 @@
         <footer class="footer mt-auto py-3">
             <div class="container text-center" style="color: black">
                 <div class="mb-2">
-                    <a href="{{ url_for('about') }}" class="text-muted mx-2" style="color: black !important; text-decoration: none;">من نحن</a>
+                    {% set about_endpoint = 'web.about' if endpoint_exists('web.about') else 'about' %}
+                    {% set privacy_endpoint = 'web.privacy' if endpoint_exists('web.privacy') else 'privacy' %}
+                    {% set contact_endpoint = 'web.contact' if endpoint_exists('web.contact') else 'contact' %}
+                    <a href="{{ url_for(about_endpoint) }}" class="text-muted mx-2" style="color: black !important; text-decoration: none;">من نحن</a>
                     <span class="text-muted">|</span>
-                    <a href="{{ url_for('privacy') }}" class="text-muted mx-2" style="color: black !important; text-decoration: none;">سياسة الخصوصية</a>
+                    <a href="{{ url_for(privacy_endpoint) }}" class="text-muted mx-2" style="color: black !important; text-decoration: none;">سياسة الخصوصية</a>
                     <span class="text-muted">|</span>
-                    <a href="{{ url_for('contact') }}" class="text-muted mx-2" style="color: black !important; text-decoration: none;">اتصل بنا</a>
+                    <a href="{{ url_for(contact_endpoint) }}" class="text-muted mx-2" style="color: black !important; text-decoration: none;">اتصل بنا</a>
                 </div>
                 <span class="text-muted" style="color: black !important"
                     >جميع الحقوق محفوظة &copy; {{ now.year }} نُظم - نظام إدارة

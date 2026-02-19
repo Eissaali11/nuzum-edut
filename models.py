@@ -14,6 +14,8 @@ All models are organized into domain-specific modules:
 - modules/fees/domain/models.py: RenewalFee, Fee, FeesCost
 """
 
+from core.extensions import db
+
 # ============================================================================
 # Core Domain Models
 # ============================================================================

@@ -10,7 +10,7 @@ from datetime import datetime, date, timedelta
 import calendar
 from decimal import Decimal
 
-from app import db
+from core.extensions import db
 from models import Employee, Department, Vehicle, Attendance, Salary, User
 from models_accounting import Transaction, Account, FiscalYear
 import os

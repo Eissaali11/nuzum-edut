@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 from flask_login import UserMixin
-from app import db
+from core.extensions import db
 import enum
 
 # في ملف models.py، يفضل وضعه قبل تعريف كلاس Employee و Department
@@ -352,7 +352,7 @@ class User(UserMixin, db.Model):
     
     def get_accessible_departments(self):
         """جلب الأقسام التي يمكن للمستخدم الوصول إليها"""
-        from app import db
+        from core.extensions import db
         
         # المديرون لديهم وصول إلى جميع الأقسام
         if self.role == UserRole.ADMIN:
@@ -516,7 +516,7 @@ class SystemAudit(db.Model):
         )
         
         # حفظ السجل في قاعدة البيانات
-        from app import db
+        from core.extensions import db
         db.session.add(audit)
         db.session.commit()
         

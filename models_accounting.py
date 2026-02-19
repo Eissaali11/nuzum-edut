@@ -1,7 +1,7 @@
 """
 نماذج قاعدة البيانات لنظام المحاسبة
 """
-from app import db
+from core.extensions import db
 from datetime import datetime
 from sqlalchemy import Enum
 from enum import Enum as PyEnum

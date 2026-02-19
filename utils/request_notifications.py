@@ -4,7 +4,7 @@
 import logging
 from datetime import datetime
 from typing import Optional, List, Dict
-from app import db
+from core.extensions import db
 from models import RequestNotification, EmployeeRequest, Employee
 
 logger = logging.getLogger(__name__)

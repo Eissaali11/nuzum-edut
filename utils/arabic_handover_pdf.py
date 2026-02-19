@@ -229,7 +229,7 @@ def handover_pdf_public(handover_id):
         sys.path.append('/home/runner/workspace')
         
         from sqlalchemy import text
-        from app import db
+        from core.extensions import db
         
         # جلب بيانات التسليم/الاستلام باستخدام SQL مباشر مع جميع البيانات المطلوبة
         result = db.session.execute(text("""

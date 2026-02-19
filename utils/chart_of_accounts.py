@@ -1,7 +1,7 @@
 """
 إنشاء وإدارة شجرة الحسابات الرئيسية
 """
-from app import db
+from core.extensions import db
 from models_accounting import Account, AccountType
 
 

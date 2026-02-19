@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
 from flask_wtf.csrf import validate_csrf
-from app import db
+from core.extensions import db
 from models import Department, Employee, SystemAudit, Module, Permission,employee_departments 
 from utils.excel import parse_employee_excel, export_employees_to_excel
 from utils.user_helpers import require_module_access

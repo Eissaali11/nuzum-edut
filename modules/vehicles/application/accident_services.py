@@ -6,7 +6,7 @@ from datetime import datetime, date
 from typing import Any, Dict, List, Optional
 
 from core.extensions import db
-from models import Vehicle, VehicleAccident, VehicleAccidentImage
+from modules.vehicles.domain.models import Vehicle, VehicleAccident, VehicleAccidentImage
 
 
 def _parse_date(value: Any) -> Optional[date]:

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
-from app import db
+from core.extensions import db
 from models import VoiceHubCall, VoiceHubAnalysis, Employee, Department
 import json
 import os

@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Union
 import ipaddress
 import logging
 
-from app import db
+from core.extensions import db
 from flask import request, g
 from models import SystemAudit, User
 

@@ -13,17 +13,11 @@ from core.extensions import db
 from sqlalchemy import func
 
 from modules.vehicles.domain.models import Vehicle, VehicleHandover, VehicleWorkshop
-from models import (
-    ExternalAuthorization,
-    OperationNotification,
-    OperationRequest,
-    User,
-    Employee,
-    Department,
-    VehicleExternalSafetyCheck,
-    VehicleMaintenance,
-    employee_departments,
-)
+from modules.vehicles.domain.models import ExternalAuthorization, VehicleExternalSafetyCheck
+from modules.vehicles.domain import VehicleMaintenance
+from modules.operations.domain.models import OperationNotification, OperationRequest
+from core.domain.models import User
+from domain.employees.models import Employee, Department, employee_departments
 
 from utils.vehicle_helpers import log_audit, allowed_file
 

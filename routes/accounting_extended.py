@@ -12,7 +12,7 @@ import io
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
-from app import db
+from core.extensions import db
 from models import UserRole, Employee, Vehicle, Department, Module, Permission
 from models_accounting import *
 from forms.accounting import *

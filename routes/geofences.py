@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, send_file
 from flask_login import login_required, current_user
-from models import Geofence, GeofenceEvent, GeofenceSession, GeofenceAttendance, Employee, Department, Attendance, EmployeeLocation, db, employee_departments
+from models import Geofence, GeofenceEvent, GeofenceSession, GeofenceAttendance, Employee, Department, Attendance, EmployeeLocation, employee_departments
+from core.extensions import db
 from datetime import datetime, timedelta
 from utils.geofence_session_manager import SessionManager
 from sqlalchemy import func, desc

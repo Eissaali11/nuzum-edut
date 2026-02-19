@@ -5,8 +5,8 @@ from datetime import datetime
 from flask import redirect, url_for, flash, send_file
 from flask_login import login_required, current_user
 
-from models import Vehicle, VehicleWorkshop
-from utils.weasyprint_workshop_pdf import generate_workshop_report_pdf
+from modules.vehicles.domain.models import Vehicle, VehicleWorkshop
+from utils.alternative_pdf_generator import generate_workshop_report_pdf
 
 
 def register_workshop_reports_routes(bp):

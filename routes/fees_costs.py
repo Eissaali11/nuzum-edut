@@ -5,7 +5,7 @@ from io import BytesIO
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
 from flask_login import login_required, current_user
 from sqlalchemy import func, extract
-from app import db
+from core.extensions import db
 from models import FeesCost, Document, Employee, Department, SystemAudit
 
 fees_costs_bp = Blueprint('fees_costs', __name__, url_prefix='/fees-costs')

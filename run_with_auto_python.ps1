@@ -13,7 +13,7 @@ $searchPaths = @(
     "$env:LOCALAPPDATA\Programs\Python\Python*\python.exe",
     "$env:LOCALAPPDATA\Programs\Python\Python*\pythonw.exe",
     "$env:PROGRAMFILES\Python*\python.exe",
-    "$env:PROGRAMFILES(X86)\Python*\python.exe",
+    "${env:PROGRAMFILES(X86)}\Python*\python.exe",
     "$env:LOCALAPPDATA\Microsoft\WindowsApps\python.exe",
     "$env:LOCALAPPDATA\Microsoft\WindowsApps\python3.exe"
 )

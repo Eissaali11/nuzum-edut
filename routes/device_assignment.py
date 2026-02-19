@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify
 from flask_login import login_required, current_user
-from models import MobileDevice, SimCard, Employee, Department, db, UserRole, DeviceAssignment
+from models import MobileDevice, SimCard, Employee, Department, UserRole, DeviceAssignment
+from core.extensions import db
 from datetime import datetime
 import logging
 from utils.audit_logger import log_activity

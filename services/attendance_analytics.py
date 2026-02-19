@@ -6,7 +6,7 @@
 from datetime import datetime, timedelta, date
 import calendar
 from sqlalchemy import func, and_, or_
-from app import db
+from core.extensions import db
 from models import Attendance, Employee, Department, employee_departments
 
 

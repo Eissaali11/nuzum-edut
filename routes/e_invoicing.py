@@ -3,7 +3,7 @@
 """
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from app import db
+from core.extensions import db
 from models_accounting_einvoice import EInvoice, EInvoiceLineItem, EInvoiceAudit, InvoiceType, VATSummary
 from models import UserRole, Module
 from datetime import datetime, timedelta

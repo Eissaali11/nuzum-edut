@@ -9,7 +9,7 @@ from pillow_heif import register_heif_opener
 # تسجيل plugin الـ HEIC/HEIF للتعامل مع صور الآيفون
 register_heif_opener()
 from models import VehicleExternalSafetyCheck, VehicleSafetyImage, Vehicle, Employee, User, UserRole, VehicleHandover
-from app import db
+from core.extensions import db
 from utils.audit_logger import log_audit
 from utils.storage_helper import upload_image, delete_image
 from utils.vehicle_drive_uploader import VehicleDriveUploader

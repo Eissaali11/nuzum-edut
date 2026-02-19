@@ -1,7 +1,7 @@
 """وظائف مساعدة لإدارة السائقين المحسنة"""
 
 from models import VehicleHandover, OperationRequest, Vehicle, Employee
-from app import db
+from core.extensions import db
 
 
 def get_vehicle_current_employee_id_approved(vehicle_id):

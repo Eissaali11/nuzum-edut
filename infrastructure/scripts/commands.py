@@ -7,7 +7,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from app import db, app
+from core.extensions import db, app
 from models import Nationality
 
 # قائمة بالجنسيات (يمكنك وضعها هنا أو استيرادها من ملف آخر)

@@ -4,7 +4,7 @@ from sqlalchemy import func, or_
 from datetime import datetime, date, timedelta
 from io import BytesIO
 from utils.pdf import create_pdf, arabic_text, create_data_table, get_styles
-from app import db
+from core.extensions import db
 from models import Department, Employee, Attendance, Salary, Document, SystemAudit, Vehicle, Fee, VehicleChecklist, VehicleDamageMarker, VehicleChecklistImage, employee_departments
 from utils.date_converter import parse_date, format_date_hijri, format_date_gregorian, get_month_name_ar
 from utils.excel import generate_employee_excel, generate_salary_excel

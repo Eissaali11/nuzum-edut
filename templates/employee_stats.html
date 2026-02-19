@@ -359,7 +359,8 @@
                     <p class="stats-count mb-1">{{ stat.count }}</p>
                     <p class="stats-percentage mb-0">
                         <i class="fas fa-percentage me-1"></i>
-                        {{ "%.1f"|format(stat.count / detailed_stats|sum(attribute='total') * 100) }}% من الموظفين
+                        {% set total = detailed_stats|sum(attribute='total') %}
+                        {{ "%.1f"|format(stat.count / total * 100) if total > 0 else "0.0" }}% من الموظفين
                     </p>
                 </div>
             </div>
@@ -434,7 +435,10 @@
                                     <td class="text-warning fw-bold">{{ dept.on_leave }}</td>
                                     <td class="text-secondary fw-bold">{{ dept.terminated }}</td>
                                     <td class="fw-bold">{{ dept.total }}</td>
-                                    <td class="fw-bold">{{ "%.1f"|format(dept.active / detailed_stats|sum(attribute='active') * 100) }}%</td>
+                                    <td class="fw-bold">
+                                        {% set active_total = detailed_stats|sum(attribute='active') %}
+                                        {{ "%.1f"|format(dept.active / active_total * 100) if active_total > 0 else "0.0" }}%
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

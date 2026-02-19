@@ -7,9 +7,10 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
 from models import (
     Employee, EmployeeLocation, Geofence, GeofenceEvent, GeofenceSession, employee_departments, 
-    VehicleHandover, db, Attendance, Salary, EmployeeRequest, EmployeeLiability,
+    VehicleHandover, Attendance, Salary, EmployeeRequest, EmployeeLiability,
     Document, MobileDevice, SimCard, Department, Vehicle
 )
+from core.extensions import db
 from sqlalchemy import func, and_, or_, extract
 from sqlalchemy.orm import joinedload
 from datetime import date

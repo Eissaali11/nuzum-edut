@@ -15,7 +15,7 @@ try:
 except ImportError:
     pd = None
 
-from app import db
+from core.extensions import db
 # استيراد النماذج الأساسية
 from models import (
     Employee, Department, Vehicle, 

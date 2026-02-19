@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, jsonify, make_response, s
 from sqlalchemy import func
 from datetime import datetime, date, timedelta
 from io import BytesIO
-from app import db
+from core.extensions import db
 from models import Department, Employee, Attendance, Salary, Document, SystemAudit
 from utils.date_converter import parse_date, format_date_hijri, format_date_gregorian, get_month_name_ar
 from utils.excel import generate_employee_excel, generate_salary_excel

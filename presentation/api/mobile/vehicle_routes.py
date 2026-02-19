@@ -48,9 +48,9 @@ from models import (
     VehicleSafetyCheck,
     VehicleWorkshop,
     VehicleWorkshopImage,
-    db,
     employee_departments,
 )
+from core.extensions import db
 from routes.operations import create_operation_request
 from modules.vehicles.application.vehicle_service import update_vehicle_driver
 from utils.audit_logger import log_activity
