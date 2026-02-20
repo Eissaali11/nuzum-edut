@@ -44,6 +44,17 @@ def dashboard():
     )
 
 
+@analytics_bp.route('/dimensions')
+@login_required
+@admin_required
+def dimensions_dashboard():
+    """واجهة عرض أبعاد البيانات (Dimensions)."""
+    return render_template(
+        'analytics/dimensions.html',
+        page_title='Dimensions Studio'
+    )
+
+
 @analytics_bp.route('/api/kpis')
 @login_required
 @admin_required

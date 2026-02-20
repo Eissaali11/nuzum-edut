@@ -132,6 +132,7 @@
             crossorigin="anonymous"
             referrerpolicy="no-referrer"
         />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
         <!-- الخط الافتراضي للمشروع: beIN-Normal (من presentation/web/static/fonts) -->
         <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <link href="{{ url_for('static', filename='css/fonts.css') }}" rel="stylesheet" />
@@ -217,6 +218,91 @@
                                 </a>
                             </li>
                             {% endif %} {# إحصائيات الموظفين متاحة لمن لديه
+                            {% if current_user.is_admin %}
+                            <li class="nav-item mb-1">
+                                <a
+                                    href="#hrManagementSubmenu"
+                                    data-bs-toggle="collapse"
+                                    class="nav-link nav-link-custom {% if '/leaves' in request.path or '/departments' in request.path %}active{% endif %}"
+                                    aria-expanded="false"
+                                >
+                                    <i class="bi bi-people-fill me-2"></i>
+                                    <span>إدارة الموارد البشرية (HR)</span>
+                                    <i class="fas fa-chevron-down ms-auto"></i>
+                                </a>
+                                <ul
+                                    class="collapse {% if '/leaves' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    id="hrManagementSubmenu"
+                                >
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('leaves.manager_dashboard') }}"
+                                            class="nav-link nav-link-custom {% if '/leaves/manager' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-user-check me-2"></i>
+                                            <span>طلبات الموافقات</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('leaves.leave_balances') }}"
+                                            class="nav-link nav-link-custom {% if '/leaves/balances' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-layer-group me-2"></i>
+                                            <span>أرصدة الإجازات</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            {% endif %}
+                            {# قسم الرواتب المنفصل #}
+                            {% if current_user.is_admin %}
+                            <li class="nav-item mb-1">
+                                <a
+                                    href="#payrollSubmenu"
+                                    data-bs-toggle="collapse"
+                                    class="nav-link nav-link-custom {% if '/payroll' in request.path %}active{% endif %}"
+                                    aria-expanded="false"
+                                >
+                                    <i class="fas fa-money-bill-wave me-2"></i>
+                                    <span>إدارة الرواتب</span>
+                                    <i class="fas fa-chevron-down ms-auto"></i>
+                                </a>
+                                <ul
+                                    class="collapse {% if '/payroll' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    id="payrollSubmenu"
+                                >
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('payroll.dashboard') }}"
+                                            class="nav-link nav-link-custom {% if '/payroll/dashboard' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-chart-bar me-2"></i>
+                                            <span>لوحة الرواتب</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('payroll.review') }}"
+                                            class="nav-link nav-link-custom {% if '/payroll/review' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-file-contract me-2"></i>
+                                            <span>مراجعة الرواتب</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('payroll.process') }}"
+                                            class="nav-link nav-link-custom {% if '/payroll/process' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-cogs me-2"></i>
+                                            <span>معالجة الرواتب</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            {% endif %}
+                            {# إحصائيات الموظفين متاحة لمن لديه
                             صلاحية العرض على الموظفين #} {% if current_user.role
                             == UserRole.ADMIN or
                             current_user|check_module_access(Module.EMPLOYEES,
@@ -254,12 +340,21 @@
                             </li>
                             <li class="nav-item mb-1">
                                 <a
-                                    href="{{ url_for('analytics.dashboard') }}"
+                                    href="{% if endpoint_exists is defined and endpoint_exists('analytics.dashboard') %}{{ url_for('analytics.dashboard') }}{% else %}/analytics/dashboard{% endif %}"
                                     class="nav-link nav-link-custom {% if '/analytics' in request.path %}active{% endif %}"
                                     style="background: linear-gradient(135deg, rgba(0, 212, 170, 0.12) 0%, rgba(0, 212, 255, 0.1) 100%); border-right: 3px solid #00D4AA;"
                                 >
                                     <i class="fas fa-chart-line me-2" style="color: #00D4AA;"></i>
                                     <span>ذكاء الأعمال</span>
+                                </a>
+                            </li>
+                            <li class="nav-item mb-1">
+                                <a
+                                    href="{% if endpoint_exists is defined and endpoint_exists('analytics.dimensions_dashboard') %}{{ url_for('analytics.dimensions_dashboard') }}{% else %}/analytics/dimensions{% endif %}"
+                                    class="nav-link nav-link-custom {% if '/analytics/dimensions' in request.path %}active{% endif %}"
+                                >
+                                    <i class="fas fa-layer-group me-2"></i>
+                                    <span>أبعاد البيانات</span>
                                 </a>
                             </li>
                                     <i class="fas fa-chart-line me-2" style="color: #F2C811 !important;"></i>
@@ -429,6 +524,15 @@
                             current_user.role == UserRole.ADMIN or
                             current_user|check_module_access(Module.DEPARTMENTS)
                             %}
+                            <li class="nav-item mb-1">
+                                <a
+                                    href="{{ url_for('departments.index') }}"
+                                    class="nav-link nav-link-custom {% if '/departments' in request.path %}active{% endif %}"
+                                >
+                                    <i class="fas fa-building me-2"></i>
+                                    <span>إدارة الأقسام</span>
+                                </a>
+                            </li>
                             <li class="nav-item mb-1">
                                 <a
                                     href="{{ url_for('powerbi.dashboard') }}"

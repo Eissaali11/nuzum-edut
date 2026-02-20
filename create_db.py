@@ -1,0 +1,1 @@
+import sys; sys.path.insert(0, '.'); from app import app; from core.extensions import db; app.app_context().push(); print('Creating tables...'); db.create_all(); print('✅ Tables created successfully!')

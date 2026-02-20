@@ -1,0 +1,422 @@
+{% extends 'layout.html' %}
+
+{% block title %}معالجة الرواتب - نُظم HR{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #667eea;
+        --success: #48bb78;
+        --danger: #f56565;
+        --warning: #ed8936;
+        --light: #f7fafc;
+        --dark: #2d3748;
+    }
+    
+    .process-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .process-shell {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 8px 22px rgba(45, 55, 72, 0.10);
+        padding: 1.25rem;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .period-badge {
+        padding: 0.45rem 0.9rem;
+        border: 1px solid #e2e8f0;
+        background: var(--light);
+        border-radius: 999px;
+        color: var(--dark);
+        font-weight: 600;
+    }
+    
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        border: 1px solid #edf2f7;
+    }
+    
+    h1 {
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+        color: #718096;
+        margin-bottom: 2rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    select,
+    input[type="month"],
+    input[type="number"] {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-family: inherit;
+    }
+    
+    input:focus,
+    select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-hint {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-top: 0.5rem;
+    }
+    
+    .buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--success) 0%, #38a169 100%);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        box-shadow: 0 8px 16px rgba(72, 187, 120, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: #cbd5e0;
+        color: var(--dark);
+    }
+    
+    .btn-secondary:hover {
+        background: #a0aec0;
+    }
+
+    .btn-secondary {
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid;
+    }
+    
+    .alert-info {
+        background: #bee3f8;
+        color: #2c5282;
+        border-left-color: var(--primary);
+    }
+    
+    .alert-warning {
+        background: #fed7d7;
+        color: #c53030;
+        border-left-color: var(--danger);
+    }
+    
+    .alert-success {
+        background: #c6f6d5;
+        color: #22543d;
+        border-left-color: var(--success);
+    }
+    
+    .processing {
+        display: none;
+        text-align: center;
+    }
+    
+    .spinner {
+        border: 4px solid var(--light);
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 1rem auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .processing-text {
+        color: var(--primary);
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+    
+    .results {
+        display: none;
+        background: var(--light);
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 4px solid var(--success);
+    }
+    
+    .result-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .result-label {
+        color: var(--dark);
+        font-weight: 600;
+    }
+    
+    .result-value {
+        color: var(--primary);
+        font-weight: 600;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    input[type="checkbox"] {
+        width: 1.2rem;
+        height: 1.2rem;
+        cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+        .process-container {
+            padding: 1rem;
+        }
+
+        .process-shell {
+            padding: 0.75rem;
+        }
+
+        .card {
+            padding: 1rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="process-container">
+    <div class="process-shell">
+    <div class="card">
+        <div class="page-header">
+            <div>
+                <h1><i class="fas fa-cog"></i> معالجة الرواتب</h1>
+                <p class="subtitle">معالجة رواتب جميع الموظفين للشهر المحدد</p>
+            </div>
+            <div class="period-badge">خطوة المعالجة</div>
+        </div>
+        
+        <div class="alert alert-info">
+            <strong><i class="fas fa-info-circle"></i> معلومة:</strong> ستتم معالجة رواتب جميع الموظفين النشطين
+            بناءً على بيانات الحضور والخصومات المسجلة في النظام.
+        </div>
+        
+        <form id="processForm" onsubmit="submitForm(event)">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="month">اختر الشهر والسنة:</label>
+                    <input type="month" id="month" name="month" required>
+                    <p class="form-hint">سيتم المعالجة بناءً على بيانات الحضور لهذا الشهر</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fiscalYear">السنة المالية:</label>
+                    <select id="fiscalYear" name="fiscal_year">
+                        <option value="2024">2024</option>
+                        <option value="2025" selected>2025</option>
+                        <option value="2026">2026</option>
+                    </select>
+                    <p class="form-hint">السنة المالية المستخدمة في المعالجة</p>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="checkbox-group">
+                    <input type="checkbox" id="recalculate" name="recalculate" value="true">
+                    <span>إعادة حساب الرواتب السابقة</span>
+                </label>
+                <p class="form-hint">إذا تم تحديد هذا الخيار، سيتم استبدال الرواتب المعالجة سابقاً</p>
+            </div>
+            
+            <div class="buttons">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check"></i> بدء المعالجة
+                </button>
+                <a href="{{ url_for('payroll.dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> العودة
+                </a>
+            </div>
+        </form>
+        
+        <!-- رسالة المعالجة -->
+        <div class="processing" id="processingDiv">
+            <div class="spinner"></div>
+            <p class="processing-text">جارٍ معالجة الرواتب...</p>
+            <p id="processingProgressText" style="color: #718096; font-size: 0.9rem; margin-top: 1rem;">
+                يرجى الانتظار قد يستغرق بضع دقائق
+            </p>
+        </div>
+        
+        <!-- نتائج المعالجة -->
+        <div class="results" id="resultsDiv">
+            <h2 style="margin-top: 0; color: var(--success);">
+                <i class="fas fa-check-circle"></i> تم المعالجة بنجاح
+            </h2>
+            <div class="result-item">
+                <span class="result-label">عدد الموظفين المعالجين:</span>
+                <span class="result-value" id="processedCount">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">إجمالي الرواتب:</span>
+                <span class="result-value" id="totalPayroll">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">إجمالي الخصومات:</span>
+                <span class="result-value" id="totalDeductions">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">الراتب الصافي:</span>
+                <span class="result-value" id="totalNetPayable">-</span>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <button type="button" onclick="goToReview()" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-list-check"></i> الذهاب إلى المراجعة والموافقة
+                </button>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<script>
+// تعيين الشهر الحالي
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    document.getElementById('month').value = `${year}-${month}`;
+});
+
+function submitForm(event) {
+    event.preventDefault();
+    
+    const month = document.getElementById('month').value;
+    const fiscalYear = document.getElementById('fiscalYear').value;
+    const recalculate = document.getElementById('recalculate').checked;
+    
+    // إخفاء النموذج وإظهار رسالة المعالجة
+    document.getElementById('processForm').style.display = 'none';
+    document.getElementById('processingDiv').style.display = 'block';
+    document.getElementById('resultsDiv').style.display = 'none';
+    
+    // إرسال الطلب
+    fetch('{{ url_for("payroll.process") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `month=${encodeURIComponent(month)}&fiscal_year=${encodeURIComponent(fiscalYear)}&recalculate=${recalculate}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // إظهار النتائج
+            document.getElementById('processingDiv').style.display = 'none';
+            document.getElementById('resultsDiv').style.display = 'block';
+            
+            document.getElementById('processedCount').textContent = data.processed_count || 0;
+            document.getElementById('totalPayroll').textContent = formatNumber(data.total_gross_salary || 0);
+            document.getElementById('totalDeductions').textContent = formatNumber(data.total_deductions || 0);
+            document.getElementById('totalNetPayable').textContent = formatNumber(data.total_net_payable || 0);
+        } else {
+            alert('حدث خطأ: ' + data.message);
+            document.getElementById('processForm').style.display = 'block';
+            document.getElementById('processingDiv').style.display = 'none';
+        }
+    })
+    .catch(error => {
+        alert('خطأ في الاتصال: ' + error);
+        document.getElementById('processForm').style.display = 'block';
+        document.getElementById('processingDiv').style.display = 'none';
+    });
+}
+
+function formatNumber(num) {
+    return new Intl.NumberFormat('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+}
+
+function goToReview() {
+    window.location.href = '{{ url_for("payroll.review", status="pending") }}';
+}
+</script>
+{% endblock %}

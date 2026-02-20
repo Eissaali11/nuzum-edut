@@ -9,6 +9,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_login import LoginManager, current_user, login_required
 from flask_wtf.csrf import CSRFProtect
 from flask_migrate import Migrate  # أضف هذا الاستيراد في الأعلى
+from flask_compress import Compress  # Gzip compression
 
 # استيراد مكتبة dotenv لقراءة ملف .env
 from dotenv import load_dotenv
@@ -199,6 +200,22 @@ def unauthorized_handler():
 # Initialize CSRF Protection
 csrf.init_app(app)
 
+# Initialize Gzip Compression
+Compress(app)
+
+# تكوين Gzip Compression
+app.config['COMPRESS_LEVEL'] = 6  # مستوى الضغط (1-9، 6 متوازن)
+app.config['COMPRESS_MIN_SIZE'] = 1024  # ضغط الملفات > 1KB
+app.config['COMPRESS_MIMETYPES'] = [
+    'text/html',
+    'text/css',
+    'text/xml',
+    'text/plain',
+    'text/javascript',
+    'application/json',
+    'application/javascript'
+]
+
 # ... بعد تعريف db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -367,6 +384,31 @@ def login_redirect():
     """إعادة توجيه من /login إلى /auth/login للتوافق"""
     return redirect(url_for('auth.login'))
 
+
+@app.route('/leave/manager')
+def legacy_leave_manager_redirect():
+    """توافق مع الروابط القديمة: /leave/manager -> /leaves/manager"""
+    return redirect(url_for('leaves.manager_dashboard'))
+
+
+@app.route('/leave/balances')
+def legacy_leave_balances_redirect():
+    """توافق مع الروابط القديمة: /leave/balances -> /leaves/balances"""
+    return redirect(url_for('leaves.leave_balances'))
+
+
+@app.route('/leave/employee')
+def legacy_leave_employee_redirect():
+    """توافق مع الروابط القديمة: /leave/employee -> /leaves/employee"""
+    return redirect(url_for('leaves.employee_view'))
+
+
+@app.route('/payroll_management/dashboard')
+@app.route('/payroll-management/dashboard')
+def legacy_payroll_dashboard_redirect():
+    """توافق مع الروابط القديمة: payroll_management -> /payroll/dashboard"""
+    return redirect(url_for('payroll.dashboard'))
+
 # معالج أخطاء الطلبات الكبيرة
 @app.errorhandler(413)
 def request_entity_too_large(error):
@@ -449,6 +491,8 @@ with app.app_context():
     from routes.drive_browser import drive_browser_bp
     from routes.attendance_api import attendance_api_bp
     from routes.api_accident_reports import api_accident_reports
+    from routes.leave_management import leave_bp
+    from routes.payroll_management import payroll_bp
     # database_backup_bp import moved outside app_context block
 
     # تعطيل حماية CSRF لطرق معينة
@@ -501,13 +545,48 @@ with app.app_context():
     
     # Analytics & Business Intelligence Blueprint
     from routes.analytics import analytics_bp
-    app.register_blueprint(analytics_bp, url_prefix='/analytics')
+    app.register_blueprint(analytics_bp)
+    # Fallback analytics routes if blueprint endpoints are missing
+    if "analytics.dashboard" not in app.view_functions:
+        @login_required
+        def _analytics_dashboard_fallback():
+            if hasattr(current_user, "is_admin") and not current_user.is_admin:
+                return render_template("pages/error.html", code=403, message="غير مصرح"), 403
+            return render_template(
+                "analytics/dashboard.html",
+                kpis={},
+                page_title="Analytics & Business Intelligence",
+            )
+
+        app.add_url_rule(
+            "/analytics/dashboard",
+            "analytics.dashboard",
+            _analytics_dashboard_fallback,
+        )
+
+    if "analytics.dimensions_dashboard" not in app.view_functions:
+        @login_required
+        def _analytics_dimensions_fallback():
+            if hasattr(current_user, "is_admin") and not current_user.is_admin:
+                return render_template("pages/error.html", code=403, message="غير مصرح"), 403
+            return render_template(
+                "analytics/dimensions.html",
+                page_title="Dimensions Studio",
+            )
+
+        app.add_url_rule(
+            "/analytics/dimensions",
+            "analytics.dimensions_dashboard",
+            _analytics_dimensions_fallback,
+        )
     app.register_blueprint(employee_requests)  # طلبات الموظفين
     app.register_blueprint(api_employee_requests)  # API طلبات الموظفين
     app.register_blueprint(api_external_safety)  # API فحص السلامة الخارجية
     app.register_blueprint(drive_browser_bp, url_prefix='/drive')  # مستعرض Google Drive
     app.register_blueprint(attendance_api_bp)  # API الحضور
     app.register_blueprint(api_accident_reports)  # API تقارير حوادث السيارات
+    app.register_blueprint(payroll_bp, url_prefix='/payroll')
+    app.register_blueprint(leave_bp, url_prefix='/leaves')
     # database_backup_bp registration moved outside app_context block
     
     # استيراد وتسجيل مسار صفحة الهبوط - مسار منفصل عن النظام

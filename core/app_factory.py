@@ -176,6 +176,11 @@ def _register_legacy_blueprints(app):
     except ImportError:
         pass
     try:
+        from routes.analytics import analytics_bp
+        _reg(analytics_bp)
+    except ImportError:
+        pass
+    try:
         from routes.reports import reports_bp
         _reg(reports_bp, "/reports")
     except ImportError:
@@ -271,10 +276,60 @@ def _register_legacy_blueprints(app):
     except ImportError:
         pass
     try:
+        from routes.payroll_management import payroll_bp
+        _reg(payroll_bp, "/payroll")
+    except ImportError:
+        pass
+    try:
+        from routes.leave_management import leave_bp
+        _reg(leave_bp, "/leaves")
+    except ImportError:
+        pass
+    try:
         from presentation.api.v1 import api_v1
         app.register_blueprint(api_v1)
     except ImportError:
         pass
+
+    # Fallback analytics routes if the legacy blueprint is unavailable
+    if "analytics.dashboard" not in app.view_functions:
+        from flask import render_template
+        from flask_login import login_required, current_user
+
+        @login_required
+        def _analytics_dashboard_fallback():
+            if hasattr(current_user, "is_admin") and not current_user.is_admin:
+                return render_template("pages/error.html", code=403, message="غير مصرح"), 403
+            return render_template(
+                "analytics/dashboard.html",
+                kpis={},
+                page_title="Analytics & Business Intelligence",
+            )
+
+        app.add_url_rule(
+            "/analytics/dashboard",
+            "analytics.dashboard",
+            _analytics_dashboard_fallback,
+        )
+
+    if "analytics.dimensions_dashboard" not in app.view_functions:
+        from flask import render_template
+        from flask_login import login_required, current_user
+
+        @login_required
+        def _analytics_dimensions_fallback():
+            if hasattr(current_user, "is_admin") and not current_user.is_admin:
+                return render_template("pages/error.html", code=403, message="غير مصرح"), 403
+            return render_template(
+                "analytics/dimensions.html",
+                page_title="Dimensions Studio",
+            )
+
+        app.add_url_rule(
+            "/analytics/dimensions",
+            "analytics.dimensions_dashboard",
+            _analytics_dimensions_fallback,
+        )
 
 
 def _register_error_handlers(app):

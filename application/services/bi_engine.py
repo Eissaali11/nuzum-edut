@@ -409,8 +409,8 @@ class BIEngine:
                 'is_late': is_late,
                 'is_absent': is_absent,
                 'is_leave': is_leave,
-                'check_in_time': att.check_in_time.isoformat() if att.check_in_time else None,
-                'check_out_time': att.check_out_time.isoformat() if att.check_out_time else None,
+                'check_in_time': att.check_in.isoformat() if att.check_in else None,
+                'check_out_time': att.check_out.isoformat() if att.check_out else None,
                 'notes': att.notes or ''
             })
         

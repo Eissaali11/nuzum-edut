@@ -150,6 +150,14 @@ from modules.fees.domain.models import (
 )
 
 # ============================================================================
+# Leave Domain Models
+# ============================================================================
+from modules.leave.domain.models import (
+    LeaveRequest,
+    LeaveBalance
+)
+
+# ============================================================================
 # EXPORT ALL MODELS
 # ============================================================================
 
@@ -196,5 +204,8 @@ __all__ = [
     
     # Fees
     'RenewalFee', 'Fee', 'FeesCost',
+
+    # Leave
+    'LeaveRequest', 'LeaveBalance',
 ]
 

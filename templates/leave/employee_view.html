@@ -1,0 +1,112 @@
+{% extends 'layout.html' %}
+
+{% block title %}طلبات الإجازة{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #667eea;
+        --success: #48bb78;
+        --danger: #f56565;
+        --warning: #ed8936;
+        --light: #f7fafc;
+        --dark: #2d3748;
+    }
+    .leave-container { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,.08); padding: 2rem; }
+    .summary-cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .summary-card { border-left: 4px solid var(--primary); background: var(--light); border-radius: 10px; padding: 1rem; }
+    .summary-card .value { font-size: 1.5rem; font-weight: 700; color: var(--dark); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .card { background: white; border: 1px solid #edf2f7; border-radius: 10px; padding: 1rem; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { padding: .8rem; border-bottom: 1px solid #edf2f7; text-align: right; }
+    .status-badge { padding: .3rem .6rem; border-radius: 6px; font-size: .85rem; font-weight: 600; }
+    .status-pending { background: #fed7d7; color: #c53030; }
+    .status-approved { background: #c6f6d5; color: #22543d; }
+    .status-rejected { background: #fbd38d; color: #7c2d12; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: .7rem; border: 1px solid #cbd5e0; border-radius: 6px; }
+    .form-textarea { min-height: 90px; }
+    .btn-primary { background: var(--primary); color: white; border: 0; border-radius: 6px; padding: .75rem 1rem; cursor: pointer; }
+    .btn-primary:hover { background: #5568d3; }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="leave-container">
+    <h1 style="margin-bottom:1rem;"><i class="fas fa-plane-departure"></i> طلبات الإجازة</h1>
+
+    <div class="summary-cards">
+        {% for b in balances %}
+        <div class="summary-card">
+            <div style="font-weight:700;">{{ b.leave_type }} - {{ b.balance_year }}</div>
+            <div>المستحق: <span class="value">{{ "%.2f"|format(b.total_accrued) }}</span></div>
+            <div>المستخدم: {{ "%.2f"|format(b.used) }}</div>
+            <div>المتبقي: {{ "%.2f"|format(b.remaining) }}</div>
+        </div>
+        {% else %}
+        <div class="summary-card">لا توجد أرصدة مسجلة لهذه السنة.</div>
+        {% endfor %}
+    </div>
+
+    <div class="grid-2">
+        <div class="card">
+            <h3 style="margin-bottom:1rem;">تقديم طلب إجازة</h3>
+            <form method="POST" action="{{ url_for('leaves.submit_request') }}">
+                <div style="margin-bottom:.8rem;">
+                    <label>نوع الإجازة</label>
+                    <select class="form-select" name="leave_type" required>
+                        <option value="Annual">Annual</option>
+                        <option value="Sick">Sick</option>
+                        <option value="Unpaid">Unpaid</option>
+                        <option value="Emergency">Emergency</option>
+                    </select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.8rem;">
+                    <div>
+                        <label>من تاريخ</label>
+                        <input class="form-input" type="date" name="start_date" required>
+                    </div>
+                    <div>
+                        <label>إلى تاريخ</label>
+                        <input class="form-input" type="date" name="end_date" required>
+                    </div>
+                </div>
+                <div style="margin-bottom:.8rem;">
+                    <label>السبب</label>
+                    <textarea class="form-textarea" name="reason" placeholder="اكتب سبب الطلب"></textarea>
+                </div>
+                <button class="btn-primary" type="submit">إرسال الطلب</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom:1rem;">طلباتي</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>النوع</th>
+                        <th>الفترة</th>
+                        <th>الأيام</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for req in requests_list %}
+                    <tr>
+                        <td>{{ req.leave_type }}</td>
+                        <td>{{ req.start_date }} → {{ req.end_date }}</td>
+                        <td>{{ req.working_days }}</td>
+                        <td>
+                            <span class="status-badge status-{{ req.status|lower }}">{{ req.status }}</span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4">لا توجد طلبات بعد.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

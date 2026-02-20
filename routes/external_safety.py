@@ -188,7 +188,10 @@ def get_all_current_driversWithEmil():
 # قم بإنشاء نسخة واحدة من الكلاس على مستوى الـ Blueprint أو التطبيق
 # من الأفضل وضعها في __init__.py الخاص بالتطبيق و استيرادها
 # استيراد whatsapp_service من app بدلاً من إنشاء نسخة جديدة
-from app import whatsapp_service 
+try:
+    from app import whatsapp_service
+except ImportError:
+    whatsapp_service = None  # التطبيق قد لا يوفر خدمة WhatsApp
 
 # ----- أضف هذه الدالة الجديدة بجانب دالة send_vehicle_email -----
 

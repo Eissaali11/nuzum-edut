@@ -1,0 +1,726 @@
+{% extends 'layout.html' %}
+
+{% block title %}أبعاد البيانات | Dimensions{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Playfair+Display:wght@600&family=Space+Grotesk:wght@500;700&display=swap');
+
+    :root {
+        --dim-bg: #0b0f14;
+        --dim-card: #141b23;
+        --dim-border: rgba(255, 255, 255, 0.08);
+        --dim-accent: #ffb347;
+        --dim-accent-2: #2dd4bf;
+        --dim-accent-3: #60a5fa;
+        --dim-text: #e6edf3;
+        --dim-muted: #9aa7b5;
+        --dim-glow: rgba(255, 179, 71, 0.2);
+    }
+
+    .dimensions-page {
+        background: radial-gradient(1200px 600px at 10% -10%, rgba(96, 165, 250, 0.2), transparent 60%),
+                    radial-gradient(900px 500px at 90% 10%, rgba(45, 212, 191, 0.2), transparent 55%),
+                    var(--dim-bg);
+        border-radius: 20px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        font-family: 'Cairo', sans-serif;
+        color: var(--dim-text);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dimensions-page[data-lang="ar"] .lang-en {
+        display: none;
+    }
+
+    .dimensions-page[data-lang="en"] .lang-ar {
+        display: none;
+    }
+
+    .dimensions-page::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, transparent 40%);
+        pointer-events: none;
+    }
+
+    .dimensions-hero {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 24px;
+        background: linear-gradient(135deg, rgba(255, 179, 71, 0.12), rgba(45, 212, 191, 0.08));
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 10px;
+    }
+
+    .title-ar {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .title-en {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.35rem;
+        color: var(--dim-accent);
+        text-transform: uppercase;
+        letter-spacing: 3px;
+    }
+
+    .hero-subtitle {
+        color: var(--dim-muted);
+        font-size: 0.95rem;
+    }
+
+    .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .lang-toggle {
+        display: inline-flex;
+        gap: 8px;
+        padding: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .lang-btn {
+        border: none;
+        background: transparent;
+        color: var(--dim-muted);
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        transition: all 0.2s ease;
+    }
+
+    .lang-btn.active {
+        background: rgba(45, 212, 191, 0.2);
+        color: var(--dim-text);
+        border: 1px solid rgba(45, 212, 191, 0.5);
+    }
+
+    .hero-chip {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        color: var(--dim-muted);
+    }
+
+    .btn-dim {
+        border: none;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-weight: 600;
+        color: #0b0f14;
+        background: linear-gradient(135deg, var(--dim-accent), #f97316);
+        box-shadow: 0 10px 20px var(--dim-glow);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-dim:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(255, 179, 71, 0.4);
+        color: #0b0f14;
+    }
+
+    .stat-card {
+        background: var(--dim-card);
+        border: 1px solid var(--dim-border);
+        border-radius: 16px;
+        padding: 18px;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        right: -40px;
+        top: -40px;
+        background: radial-gradient(circle, rgba(255, 179, 71, 0.25), transparent 70%);
+    }
+
+    .stat-label {
+        display: flex;
+        justify-content: space-between;
+        color: var(--dim-muted);
+        font-size: 0.85rem;
+    }
+
+    .stat-label span.en {
+        font-family: 'Space Grotesk', sans-serif;
+        letter-spacing: 1px;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-top: 8px;
+    }
+
+    .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .tab-btn {
+        background: transparent;
+        border: 1px solid var(--dim-border);
+        color: var(--dim-muted);
+        padding: 8px 16px;
+        border-radius: 999px;
+        transition: all 0.2s ease;
+        font-weight: 600;
+    }
+
+    .tab-btn.active {
+        background: rgba(45, 212, 191, 0.2);
+        border-color: rgba(45, 212, 191, 0.6);
+        color: var(--dim-text);
+    }
+
+    .data-section {
+        display: none;
+        margin-top: 20px;
+    }
+
+    .data-section.active {
+        display: block;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    .section-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .search-input {
+        flex: 1;
+        min-width: 220px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--dim-border);
+        border-radius: 10px;
+        padding: 8px 12px;
+        color: var(--dim-text);
+    }
+
+    .count-pill {
+        background: rgba(96, 165, 250, 0.2);
+        border: 1px solid rgba(96, 165, 250, 0.5);
+        color: #bfdbfe;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+
+    .table-wrap {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--dim-border);
+        border-radius: 16px;
+        padding: 12px;
+        overflow: auto;
+    }
+
+    .table thead th {
+        color: #94a3b8;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        color: var(--dim-text);
+        border-color: rgba(255, 255, 255, 0.04);
+        white-space: nowrap;
+    }
+
+    .badge-soft {
+        background: rgba(255, 179, 71, 0.15);
+        color: var(--dim-accent);
+        border: 1px solid rgba(255, 179, 71, 0.4);
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dimensions-hero {
+            padding: 16px;
+        }
+
+        .title-ar {
+            font-size: 1.5rem;
+        }
+
+        .title-en {
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="dimensions-page" data-lang="ar" dir="rtl">
+        <div class="dimensions-hero">
+            <div class="hero-title">
+                <span class="title-ar lang-ar">أبعاد البيانات</span>
+                <span class="title-en lang-en">Dimensions Studio</span>
+            </div>
+            <div class="hero-subtitle" id="hero-subtitle">
+                <span class="lang-ar">عرض ثنائي اللغة لبيانات الأبعاد مع تجربة بصرية واضحة.</span>
+                <span class="lang-en">Bilingual view of dimension data with a focused, readable experience.</span>
+            </div>
+            <div class="hero-actions">
+                <span class="hero-chip" id="last-updated">آخر تحديث: --</span>
+                <button class="btn-dim" id="refreshDimensions">
+                    <i class="fas fa-rotate me-2"></i>
+                    <span id="refresh-label">تحديث البيانات</span>
+                </button>
+                <a class="btn btn-outline-light" href="{{ url_for('analytics.dashboard') }}">
+                    <i class="fas fa-chart-line me-2"></i>
+                    <span id="back-label">الرجوع للوحة التحليلات</span>
+                </a>
+                <div class="lang-toggle" role="group" aria-label="Language">
+                    <button class="lang-btn active" data-lang="ar" type="button">AR</button>
+                    <button class="lang-btn" data-lang="en" type="button">EN</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label">
+                        <span class="lang-ar">الموظفون</span>
+                        <span class="en lang-en">Employees</span>
+                    </div>
+                    <div class="stat-value" id="stat-employees">--</div>
+                    <div class="text-muted">
+                        <span class="lang-ar">سجلات جاهزة للتحليل</span>
+                        <span class="lang-en">Records ready for analysis</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label">
+                        <span class="lang-ar">المركبات</span>
+                        <span class="en lang-en">Vehicles</span>
+                    </div>
+                    <div class="stat-value" id="stat-vehicles">--</div>
+                    <div class="text-muted">
+                        <span class="lang-ar">تفاصيل الأسطول التشغيلي</span>
+                        <span class="lang-en">Operational fleet dimension</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label">
+                        <span class="lang-ar">الأقسام</span>
+                        <span class="en lang-en">Departments</span>
+                    </div>
+                    <div class="stat-value" id="stat-departments">--</div>
+                    <div class="text-muted">
+                        <span class="lang-ar">نظرة على الهيكل الإداري</span>
+                        <span class="lang-en">Departmental structure overview</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs" role="tablist">
+            <button class="tab-btn active" data-target="employees">
+                <span class="lang-ar">الموظفون</span>
+                <span class="lang-en">Employees</span>
+            </button>
+            <button class="tab-btn" data-target="vehicles">
+                <span class="lang-ar">المركبات</span>
+                <span class="lang-en">Vehicles</span>
+            </button>
+            <button class="tab-btn" data-target="departments">
+                <span class="lang-ar">الأقسام</span>
+                <span class="lang-en">Departments</span>
+            </button>
+        </div>
+
+        <div class="data-section active" id="section-employees">
+            <div class="section-tools">
+                <input class="search-input" id="search-employees" type="search" data-placeholder-ar="ابحث بالاسم أو المشروع أو القسم ..." data-placeholder-en="Search by name, project, or department ..." placeholder="ابحث بالاسم أو المشروع أو القسم ...">
+                <span class="count-pill">
+                    <span class="lang-ar">عدد السجلات:</span>
+                    <span class="lang-en">Records:</span>
+                    <span id="count-employees">--</span>
+                </span>
+                <button class="btn btn-outline-light" id="more-employees">
+                    <span class="lang-ar">عرض المزيد</span>
+                    <span class="lang-en">Load more</span>
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th><span class="lang-ar">الرقم</span> / <span class="lang-en">ID</span></th>
+                            <th><span class="lang-ar">الاسم</span> / <span class="lang-en">Name</span></th>
+                            <th><span class="lang-ar">القسم</span> / <span class="lang-en">Department</span></th>
+                            <th><span class="lang-ar">المشروع</span> / <span class="lang-en">Project</span></th>
+                            <th><span class="lang-ar">المنطقة</span> / <span class="lang-en">Region</span></th>
+                            <th><span class="lang-ar">الوظيفة</span> / <span class="lang-en">Title</span></th>
+                            <th><span class="lang-ar">الحالة</span> / <span class="lang-en">Status</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-employees"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="data-section" id="section-vehicles">
+            <div class="section-tools">
+                <input class="search-input" id="search-vehicles" type="search" data-placeholder-ar="ابحث باللوحة أو المشروع أو الحالة ..." data-placeholder-en="Search by plate, project, or status ..." placeholder="ابحث باللوحة أو المشروع أو الحالة ...">
+                <span class="count-pill">
+                    <span class="lang-ar">عدد السجلات:</span>
+                    <span class="lang-en">Records:</span>
+                    <span id="count-vehicles">--</span>
+                </span>
+                <button class="btn btn-outline-light" id="more-vehicles">
+                    <span class="lang-ar">عرض المزيد</span>
+                    <span class="lang-en">Load more</span>
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th><span class="lang-ar">اللوحة</span> / <span class="lang-en">Plate</span></th>
+                            <th><span class="lang-ar">الموديل</span> / <span class="lang-en">Model</span></th>
+                            <th><span class="lang-ar">السنة</span> / <span class="lang-en">Year</span></th>
+                            <th><span class="lang-ar">الحالة</span> / <span class="lang-en">Status</span></th>
+                            <th><span class="lang-ar">القسم</span> / <span class="lang-en">Department</span></th>
+                            <th><span class="lang-ar">المنطقة</span> / <span class="lang-en">Region</span></th>
+                            <th><span class="lang-ar">الصيانة</span> / <span class="lang-en">Maintenance</span></th>
+                            <th><span class="lang-ar">المستندات</span> / <span class="lang-en">Docs</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-vehicles"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="data-section" id="section-departments">
+            <div class="section-tools">
+                <input class="search-input" id="search-departments" type="search" data-placeholder-ar="ابحث باسم القسم ..." data-placeholder-en="Search by department name ..." placeholder="ابحث باسم القسم ...">
+                <span class="count-pill">
+                    <span class="lang-ar">عدد السجلات:</span>
+                    <span class="lang-en">Records:</span>
+                    <span id="count-departments">--</span>
+                </span>
+                <button class="btn btn-outline-light" id="more-departments">
+                    <span class="lang-ar">عرض المزيد</span>
+                    <span class="lang-en">Load more</span>
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th><span class="lang-ar">القسم</span> / <span class="lang-en">Department</span></th>
+                            <th><span class="lang-ar">الوصف</span> / <span class="lang-en">Description</span></th>
+                            <th><span class="lang-ar">الموظفون</span> / <span class="lang-en">Employees</span></th>
+                            <th><span class="lang-ar">المركبات</span> / <span class="lang-en">Vehicles</span></th>
+                            <th><span class="lang-ar">الحالة</span> / <span class="lang-en">Status</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-departments"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const state = {
+        employees: { data: [], filtered: [], page: 1, pageSize: 50 },
+        vehicles: { data: [], filtered: [], page: 1, pageSize: 40 },
+        departments: { data: [], filtered: [], page: 1, pageSize: 30 }
+    };
+
+    let currentLang = 'ar';
+    let lastUpdatedAt = null;
+
+    const i18n = {
+        ar: {
+            lastUpdatedPrefix: 'آخر تحديث:',
+            updateFailed: 'تعذر تحديث البيانات',
+            refresh: 'تحديث البيانات',
+            refreshing: 'جاري التحديث...',
+            back: 'الرجوع للوحة التحليلات',
+            noData: 'لا توجد بيانات لعرضها',
+            statusActive: 'نشط',
+            statusInactive: 'غير نشط'
+        },
+        en: {
+            lastUpdatedPrefix: 'Last updated:',
+            updateFailed: 'Unable to update data',
+            refresh: 'Refresh data',
+            refreshing: 'Refreshing...',
+            back: 'Back to analytics',
+            noData: 'No data available',
+            statusActive: 'Active',
+            statusInactive: 'Inactive'
+        }
+    };
+
+    const t = (key) => i18n[currentLang][key] || key;
+
+    const fmt = (value, fallback = '--') => value === null || value === undefined || value === '' ? fallback : value;
+
+    const updateStats = () => {
+        document.getElementById('stat-employees').textContent = state.employees.data.length;
+        document.getElementById('stat-vehicles').textContent = state.vehicles.data.length;
+        document.getElementById('stat-departments').textContent = state.departments.data.length;
+    };
+
+    const renderTable = (key) => {
+        const tbody = document.getElementById(`table-${key}`);
+        const countEl = document.getElementById(`count-${key}`);
+        const dataset = state[key];
+        const rows = dataset.filtered.length ? dataset.filtered : dataset.data;
+        const limit = dataset.page * dataset.pageSize;
+        const visible = rows.slice(0, limit);
+
+        countEl.textContent = rows.length;
+        tbody.innerHTML = '';
+
+        if (!visible.length) {
+            const colSpan = key === 'employees' ? 7 : key === 'vehicles' ? 8 : 5;
+            tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center text-muted">${t('noData')}</td></tr>`;
+            return;
+        }
+
+        visible.forEach((item) => {
+            if (key === 'employees') {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${fmt(item.employee_id)}</td>
+                        <td>${fmt(item.employee_name)}</td>
+                        <td>${fmt(item.department)}</td>
+                        <td>${fmt(item.project)}</td>
+                        <td>${fmt(item.region)}</td>
+                        <td>${fmt(item.job_title)}</td>
+                        <td><span class="badge-soft">${fmt(item.contract_status)}</span></td>
+                    </tr>
+                `;
+            } else if (key === 'vehicles') {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${fmt(item.plate_number)}</td>
+                        <td>${fmt(item.make)} ${fmt(item.model)}</td>
+                        <td>${fmt(item.year)}</td>
+                        <td><span class="badge-soft">${fmt(item.status)}</span></td>
+                        <td>${fmt(item.department)}</td>
+                        <td>${fmt(item.region)}</td>
+                        <td>${fmt(item.maintenance_status)}</td>
+                        <td>${fmt(item.documents_status)}</td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${fmt(item.department_name)}</td>
+                        <td>${fmt(item.description)}</td>
+                        <td>${fmt(item.employees_count)}</td>
+                        <td>${fmt(item.vehicles_count)}</td>
+                        <td><span class="badge-soft">${item.is_active ? t('statusActive') : t('statusInactive')}</span></td>
+                    </tr>
+                `;
+            }
+        });
+    };
+
+    const applyLanguage = (lang) => {
+        currentLang = lang;
+        const page = document.querySelector('.dimensions-page');
+        if (page) {
+            page.dataset.lang = lang;
+            page.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+        }
+
+        const refreshLabel = document.getElementById('refresh-label');
+        if (refreshLabel) {
+            refreshLabel.textContent = t('refresh');
+        }
+
+        const backLabel = document.getElementById('back-label');
+        if (backLabel) {
+            backLabel.textContent = t('back');
+        }
+
+        document.querySelectorAll('.search-input').forEach((input) => {
+            const ar = input.getAttribute('data-placeholder-ar');
+            const en = input.getAttribute('data-placeholder-en');
+            input.setAttribute('placeholder', lang === 'ar' ? ar : en);
+        });
+
+        const prefix = t('lastUpdatedPrefix');
+        if (lastUpdatedAt) {
+            const locale = lang === 'ar' ? 'ar' : 'en';
+            document.getElementById('last-updated').textContent = `${prefix} ${lastUpdatedAt.toLocaleString(locale)}`;
+        } else {
+            document.getElementById('last-updated').textContent = `${prefix} --`;
+        }
+
+        renderTable('employees');
+        renderTable('vehicles');
+        renderTable('departments');
+    };
+
+    const attachSearch = (key, fields) => {
+        const input = document.getElementById(`search-${key}`);
+        input.addEventListener('input', (event) => {
+            const term = event.target.value.trim().toLowerCase();
+            const dataset = state[key];
+            dataset.page = 1;
+            if (!term) {
+                dataset.filtered = [];
+            } else {
+                dataset.filtered = dataset.data.filter((item) =>
+                    fields.some((field) => String(item[field] ?? '').toLowerCase().includes(term))
+                );
+            }
+            renderTable(key);
+        });
+    };
+
+    const attachMore = (key) => {
+        document.getElementById(`more-${key}`).addEventListener('click', () => {
+            state[key].page += 1;
+            renderTable(key);
+        });
+    };
+
+    const setupTabs = () => {
+        document.querySelectorAll('.tab-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+                document.querySelectorAll('.data-section').forEach((section) => section.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`section-${btn.dataset.target}`).classList.add('active');
+            });
+        });
+    };
+
+    const fetchDimensions = async () => {
+        const response = await fetch('{{ url_for('analytics.get_dimensions') }}');
+        if (!response.ok) {
+            throw new Error('Failed to fetch dimensions');
+        }
+        return response.json();
+    };
+
+    const loadDimensions = async () => {
+        const refreshBtn = document.getElementById('refreshDimensions');
+        refreshBtn.disabled = true;
+        const refreshLabel = document.getElementById('refresh-label');
+        if (refreshLabel) {
+            refreshLabel.textContent = t('refreshing');
+        }
+
+        try {
+            const data = await fetchDimensions();
+            state.employees.data = data.employees || [];
+            state.vehicles.data = data.vehicles || [];
+            state.departments.data = data.departments || [];
+
+            state.employees.filtered = [];
+            state.vehicles.filtered = [];
+            state.departments.filtered = [];
+
+            updateStats();
+            renderTable('employees');
+            renderTable('vehicles');
+            renderTable('departments');
+
+            const now = new Date();
+            lastUpdatedAt = now;
+            const prefix = t('lastUpdatedPrefix');
+            const locale = currentLang === 'ar' ? 'ar' : 'en';
+            document.getElementById('last-updated').textContent = `${prefix} ${now.toLocaleString(locale)}`;
+        } catch (error) {
+            console.error(error);
+            document.getElementById('last-updated').textContent = t('updateFailed');
+        } finally {
+            refreshBtn.disabled = false;
+            if (refreshLabel) {
+                refreshLabel.textContent = t('refresh');
+            }
+        }
+    };
+
+    document.getElementById('refreshDimensions').addEventListener('click', loadDimensions);
+
+    document.querySelectorAll('.lang-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.lang-btn').forEach((b) => b.classList.remove('active'));
+            btn.classList.add('active');
+            applyLanguage(btn.dataset.lang);
+        });
+    });
+
+    setupTabs();
+    attachSearch('employees', ['employee_name', 'employee_id', 'department', 'project', 'region', 'job_title']);
+    attachSearch('vehicles', ['plate_number', 'make', 'model', 'status', 'department', 'region', 'project']);
+    attachSearch('departments', ['department_name', 'description']);
+    attachMore('employees');
+    attachMore('vehicles');
+    attachMore('departments');
+
+    applyLanguage('ar');
+    loadDimensions();
+</script>
+{% endblock %}

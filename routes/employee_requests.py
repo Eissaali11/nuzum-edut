@@ -53,7 +53,12 @@ def index():
         page=page, per_page=per_page, error_out=False
     )
     
-    employees = Employee.query.all()
+    # ✅ FIXED: Use joinedload to prevent N+1 queries
+    from sqlalchemy.orm import joinedload
+    employees = Employee.query.options(
+        joinedload(Employee.departments),
+        joinedload(Employee.nationality_rel)
+    ).all()
     
     stats = {
         'total': EmployeeRequest.query.count(),
