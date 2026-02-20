@@ -1393,10 +1393,17 @@ def export_excel_dashboard():
         selected_department = request.args.get('department', None)
         selected_project = request.args.get('project', None)
         
-        return AttendanceReportService.export_dashboard_summary(selected_department, selected_project)
+        result = AttendanceReportService.export_dashboard_summary(selected_department, selected_project)
+        
+        return send_file(
+            result['buffer'],
+            mimetype=result['mimetype'],
+            as_attachment=True,
+            download_name=result['filename']
+        )
         
     except Exception as e:
-        logger.error(f"خطأ في تصدير Excel: {str(e)}")
+        logger.error(f"Export Excel Dashboard Error: {type(e).__name__}: {str(e)}", exc_info=True)
         flash('حدث خطأ أثناء تصدير الملف', 'error')
         return redirect(url_for('attendance.dashboard'))
 
@@ -1551,19 +1558,34 @@ def department_details():
 @attendance_bp.route('/export-excel-department')
 def export_excel_department():
     """تصدير تفاصيل القسم إلى Excel"""
+    logger.info("[EXPORT] export_excel_department route called")
     try:
-        from services.attendance_reports import AttendanceReportService
-        
         department_name = request.args.get('department')
+        logger.info(f"[EXPORT] Department requested: {department_name}")
         selected_project = request.args.get('project', None)
         
         if not department_name:
+            logger.warning("[EXPORT] No department provided")
             flash('يجب تحديد القسم', 'error')
             return redirect(url_for('attendance.dashboard'))
         
-        return AttendanceReportService.export_department_details(department_name, selected_project)
+        logger.info("[EXPORT] Loading AttendanceReportService")
+        from services.attendance_reports import AttendanceReportService
+        
+        logger.info(f"[EXPORT] Calling export_department_details for: {department_name}")
+        result = AttendanceReportService.export_department_details(department_name, selected_project)
+        logger.info(f"[EXPORT] Service returned result with filename: {result.get('filename')}")
+        
+        logger.info("[EXPORT] Sending file...")
+        return send_file(
+            result['buffer'],
+            mimetype=result['mimetype'],
+            as_attachment=True,
+            download_name=result['filename']
+        )
         
     except Exception as e:
+        logger.error(f"Export Excel Department Error: {type(e).__name__}: {str(e)}", exc_info=True)
         flash(f'خطأ: {str(e)}', 'error')
         return redirect(url_for('attendance.dashboard'))
 

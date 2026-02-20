@@ -71,8 +71,11 @@ class AttendanceReportService:
                 output = BytesIO()
                 wb.save(output)
                 output.seek(0)
-                return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                               as_attachment=True, download_name=f'تقرير_الحضور_{today.strftime("%Y%m%d")}.xlsx')
+                return {
+                    'buffer': output,
+                    'filename': f'تقرير_الحضور_{today.strftime("%Y%m%d")}.xlsx',
+                    'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                }
             
             # إنشاء ملف Excel
             wb = Workbook()
@@ -236,13 +239,13 @@ class AttendanceReportService:
             filename = f'📊_لوحة_معلومات_الحضور_{today.strftime("%Y%m%d")}.xlsx'
             if selected_department:
                 filename = f'📊_{selected_department}_{today.strftime("%Y%m%d")}.xlsx'
-                
-            return send_file(
-                output,
-                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                as_attachment=True,
-                download_name=filename
-            )
+            
+            # إرجاع البيانات بدل استدعاء send_file (سيتم التعامل معها في الـ route)
+            return {
+                'buffer': output,
+                'filename': filename,
+                'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            }
             
         except Exception as e:
             raise Exception(f"خطأ في تصدير لوحة المعلومات: {str(e)}")
@@ -494,12 +497,12 @@ class AttendanceReportService:
             
             filename = f'تفاصيل_قسم_{department.name}_{today.strftime("%Y%m%d")}.xlsx'
             
-            return send_file(
-                output,
-                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                as_attachment=True,
-                download_name=filename
-            )
+            # إرجاع البيانات بدل استدعاء send_file (سيتم التعامل معها في الـ route)
+            return {
+                'buffer': output,
+                'filename': filename,
+                'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            }
             
         except Exception as e:
             raise Exception(f"خطأ في تصدير تفاصيل القسم: {str(e)}")
