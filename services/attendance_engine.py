@@ -322,3 +322,120 @@ class AttendanceEngine:
                 Attendance.date <= end_date
             )
         ).order_by(Attendance.date).all()
+    
+    @staticmethod
+    def bulk_record_period(employee_ids, period_type, default_status, period_params, 
+                          skip_weekends=False, overwrite_existing=False):
+        """
+        تسجيل حضور جماعي لفترة زمنية محددة
+        
+        Args:
+            employee_ids: قائمة معرفات الموظفين
+            period_type: نوع الفترة (daily, weekly, monthly, custom)
+            default_status: حالة الحضور الافتراضية
+            period_params: معاملات الفترة (تختلف حسب النوع)
+                - daily: {'single_date': date}
+                - weekly: {'week_start': date}
+                - monthly: {'month_year': 'YYYY-MM'}
+                - custom: {'start_date': date, 'end_date': date}
+            skip_weekends: هل يتم تجاهل عطلة نهاية الأسبوع
+            overwrite_existing: هل يتم استبدال السجلات الموجودة
+            
+        Returns:
+            tuple: (count, message)
+        """
+        try:
+            # تحديد قائمة التواريخ بناءً على نوع الفترة
+            dates = []
+            
+            if period_type == 'daily':
+                dates = [period_params['single_date']]
+                
+            elif period_type == 'weekly':
+                week_start = period_params['week_start']
+                dates = [week_start + timedelta(days=i) for i in range(7)]
+                
+            elif period_type == 'monthly':
+                month_year = period_params['month_year']
+                year, month = map(int, month_year.split('-'))
+                import calendar
+                days_in_month = calendar.monthrange(year, month)[1]
+                dates = [date_type(year, month, day) for day in range(1, days_in_month + 1)]
+                
+            elif period_type == 'custom':
+                start_date = period_params['start_date']
+                end_date = period_params['end_date']
+                current_date = start_date
+                while current_date <= end_date:
+                    dates.append(current_date)
+                    current_date += timedelta(days=1)
+            else:
+                return 0, f'نوع الفترة غير معروف: {period_type}'
+            
+            # تصفية عطلة نهاية الأسبوع إذا كان مطلوباً
+            if skip_weekends:
+                dates = [d for d in dates if d.weekday() not in [4, 5]]  # الجمعة والسبت
+            
+            if not dates:
+                return 0, 'لا توجد تواريخ صالحة للفترة المحددة'
+            
+            # التحقق من الموظفين
+            if not employee_ids:
+                return 0, 'لا يوجد موظفين مختاري'
+            
+            # تسجيل الحضور
+            count = 0
+            for employee_id in employee_ids:
+                employee = Employee.query.get(employee_id)
+                if not employee:
+                    continue
+                
+                for att_date in dates:
+                    # التحقق من وجود سجل سابق
+                    existing = Attendance.query.filter_by(
+                        employee_id=employee_id,
+                        date=att_date
+                    ).first()
+                    
+                    if existing:
+                        if overwrite_existing:
+                            existing.status = default_status
+                            if default_status != 'present':
+                                existing.check_in = None
+                                existing.check_out = None
+                            count += 1
+                    else:
+                        attendance = Attendance(
+                            employee_id=employee_id,
+                            date=att_date,
+                            status=default_status
+                        )
+                        db.session.add(attendance)
+                        count += 1
+            
+            db.session.commit()
+            
+            # تسجيل العملية في سجل النشاط
+            emp_count = len(employee_ids)
+            date_count = len(dates)
+            log_attendance_activity(
+                action='bulk_record_period',
+                attendance_data={
+                    'employee_count': emp_count,
+                    'date_count': date_count,
+                    'period_type': period_type,
+                    'status': default_status,
+                    'records_count': count
+                },
+                employee_name=f'{emp_count} موظف × {date_count} يوم'
+            )
+            
+            if count > 0:
+                return count, f'تم تسجيل {count} سجل حضور بنجاح'
+            else:
+                return 0, 'لم يتم إضافة أي سجلات جديدة'
+        
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error in bulk_record_period: {str(e)}", exc_info=True)
+            return 0, f'خطأ: {str(e)}'
