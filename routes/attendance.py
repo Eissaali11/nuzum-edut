@@ -1,25 +1,23 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
-from flask_login import login_required
+from flask_login import login_required, current_user
 from sqlalchemy import func, extract, or_
 from datetime import datetime, time, timedelta, date
 from core.extensions import db
-from models import Attendance, Employee, Department, SystemAudit, VehicleProject, Module, Permission, employee_departments, EmployeeLocation, GeofenceSession
+from models import Attendance, Employee, Department, SystemAudit, employee_departments
 from utils.date_converter import parse_date, format_date_hijri, format_date_gregorian
 from utils.excel import export_attendance_by_department
 from utils.excel_dashboard import export_attendance_by_department_with_dashboard
-from utils.user_helpers import check_module_access
-from utils.audit_logger import log_attendance_activity, log_system_activity, log_activity
+from utils.audit_logger import log_activity
 from services.attendance_analytics import AttendanceAnalytics
+from services.attendance_engine import AttendanceEngine
 import calendar
 import logging
-import time as time_module  # Renamed to avoid conflict with datetime.time
+import time as time_module
 from utils.decorators import module_access_required
 import pandas as pd
 from io import BytesIO
 
-# Setup logging
 logger = logging.getLogger(__name__)
-
 attendance_bp = Blueprint('attendance', __name__)
 
 

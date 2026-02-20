@@ -161,6 +161,11 @@ def _register_legacy_blueprints(app):
     except ImportError:
         pass
     try:
+        from routes.attendance_admin import attendance_admin_bp
+        _reg(attendance_admin_bp)
+    except ImportError:
+        pass
+    try:
         from routes.salaries import salaries_bp
         _reg(salaries_bp, "/salaries")
     except ImportError:
