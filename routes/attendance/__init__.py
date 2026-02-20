@@ -16,13 +16,14 @@ from pathlib import Path
 # Get the parent routes directory
 parent_dir = Path(__file__).parent.parent
 
-# Import the original attendance module
+# Import the original attendance module (_attendance_main.py)
 sys.path.insert(0, str(parent_dir))
 
 # Import the original attendance blueprint 
 import importlib.util
-spec = importlib.util.spec_from_file_location("attendance_original", str(parent_dir / "attendance.py"))
+spec = importlib.util.spec_from_file_location("_attendance_main", str(parent_dir / "_attendance_main.py"))
 attendance_module = importlib.util.module_from_spec(spec)
+sys.modules['_attendance_main'] = attendance_module
 spec.loader.exec_module(attendance_module)
 
 # Get the blueprint from the original module
