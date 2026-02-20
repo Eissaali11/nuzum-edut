@@ -132,7 +132,7 @@ def index():
     except Exception as e:
         logger.error(f'Critical error in index(): {str(e)}', exc_info=True)
         flash('حدث خطأ في تحميل البيانات. الرجاء المحاولة مرة أخرى.', 'danger')
-        return render_template('pages/error.html', code=500, message='خطأ في النظام'), 500
+        return render_template('error.html', error_title='خطأ في النظام', error_message='فشل تحميل بيانات الحضور'), 500
 
 @attendance_bp.route('/record', methods=['GET', 'POST'])
 def record():
