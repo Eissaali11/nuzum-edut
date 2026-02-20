@@ -93,21 +93,17 @@ def index():
             departments = Department.query.all()
         
         # Single call to AttendanceEngine for all attendance data
-        attendances_data = AttendanceEngine.get_unified_attendance_list(
-            date=date,
+        unified_attendances = AttendanceEngine.get_unified_attendance_list(
+            att_date=date,
             department_id=int(department_id) if department_id else None,
             status_filter=status if status else None
         )
         
-        # Extract unified list and statistics
-        unified_attendances = attendances_data.get('attendances', [])
-        stats = attendances_data.get('statistics', {})
-        
-        # Safe extraction of stats with defaults
-        present_count = stats.get('present', 0)
-        absent_count = stats.get('absent', 0)
-        leave_count = stats.get('leave', 0)
-        sick_count = stats.get('sick', 0)
+        # Calculate statistics from unified list
+        present_count = sum(1 for rec in unified_attendances if rec['status'] == 'present')
+        absent_count = sum(1 for rec in unified_attendances if rec['status'] == 'absent')
+        leave_count = sum(1 for rec in unified_attendances if rec['status'] == 'leave')
+        sick_count = sum(1 for rec in unified_attendances if rec['status'] == 'sick')
         
         # Format dates for display
         hijri_date = format_date_hijri(date)
