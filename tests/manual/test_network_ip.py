@@ -58,7 +58,7 @@ def main():
     print(f"  {status} Main Page: http://127.0.0.1:{PORT}/attendance/ (Status: {code})")
     
     if code != 200:
-        print("\n[ERROR] Server not responding. Run: python start_phase2_5001.py\n")
+        print("\n[ERROR] Server not responding. Run: python ops/launchers/start_phase2_5001.py\n")
         return
     
     print()
@@ -73,7 +73,7 @@ def main():
     if code != 200:
         print(f"\n[ERROR] Cannot reach from network IP {BASE_IP}:{PORT}")
         print("[INFO] This means the server is not listening on 0.0.0.0")
-        print("[FIX] Ensure start_phase2_5001.py has: app.run(host='0.0.0.0', ...)\n")
+        print("[FIX] Ensure ops/launchers/start_phase2_5001.py has: app.run(host='0.0.0.0', ...)\n")
         return
     
     print()

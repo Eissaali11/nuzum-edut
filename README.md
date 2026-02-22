@@ -212,16 +212,16 @@ modules/attendance_module/
 ### الملفات الموجودة
 | الملف | الوصف |
 |------|--------|
-| [SOLUTION.md](SOLUTION.md) | شرح الحل الجذري |
-| [STARTUP_GUIDE.md](STARTUP_GUIDE.md) | دليل التشغيل الشامل |
-| [QUICK_START.md](QUICK_START.md) | البدء السريع |
+| [دليل الحل](docs/guides/README_SOLUTION.txt) | شرح الحل الجذري |
+| [دليل التشغيل](docs/guides/STARTUP_GUIDE.md) | دليل التشغيل الشامل |
+| [البدء السريع](QUICKSTART.md) | البدء السريع |
 | [.env.example](.env.example) | متغيرات البيئة |
-| [health_check.py](health_check.py) | فحص صحة النظام |
+| [health_check.py](tools/diagnostics/health_check.py) | فحص صحة النظام |
 
 ### قراءة التوثيق
-1. **للبدء السريع:** اقرأ [QUICK_START.md](QUICK_START.md)
-2. **للشرح التفصيلي:** اقرأ [SOLUTION.md](SOLUTION.md)
-3. **لحل المشاكل:** اقرأ [STARTUP_GUIDE.md](STARTUP_GUIDE.md)
+1. **للبدء السريع:** اقرأ [QUICKSTART.md](QUICKSTART.md)
+2. **للشرح التفصيلي:** اقرأ [README_SOLUTION.txt](docs/guides/README_SOLUTION.txt)
+3. **لحل المشاكل:** اقرأ [STARTUP_GUIDE.md](docs/guides/STARTUP_GUIDE.md)
 
 ---
 
