@@ -1,0 +1,86 @@
+════════════════════════════════════════════════════════════════════════════════
+🚀 NUZUM GitHub Upload - Manual Steps
+🚀 رفع نزوم على GitHub - خطوات يدوية
+════════════════════════════════════════════════════════════════════════════════
+
+⚠️ There's an encoding issue with the current terminal.
+   Please follow these manual steps instead:
+
+════════════════════════════════════════════════════════════════════════════════
+📋 Manual Steps to Upload on GitHub
+════════════════════════════════════════════════════════════════════════════════
+
+1️⃣  Open Command Prompt (cmd.exe) or PowerShell
+
+2️⃣  Change to project directory:
+    cd D:\nuzm
+
+3️⃣  Configure Git (run these commands):
+
+    C:\Program Files (x86)\Git\bin\git.exe config --global user.name "NUZUM"
+    C:\Program Files (x86)\Git\bin\git.exe config --global user.email "admin@nuzum.local"
+
+4️⃣  Initialize Git repository:
+
+    C:\Program Files (x86)\Git\bin\git.exe init
+
+5️⃣  Add all files:
+
+    C:\Program Files (x86)\Git\bin\git.exe add .
+
+6️⃣  Check status (optional):
+
+    C:\Program Files (x86)\Git\bin\git.exe status
+
+7️⃣  Create first commit:
+
+    C:\Program Files (x86)\Git\bin\git.exe commit -m "Initial commit: NUZUM System Production Ready"
+
+8️⃣  Go to GitHub and create repository:
+    https://github.com/new
+    
+    - Name: NUZUM
+    - Description: Smart Attendance Tracking System
+    - Click Create Repository
+
+9️⃣  Copy the HTTPS URL from GitHub (looks like):
+    https://github.com/YOUR_USERNAME/NUZUM.git
+
+🔟  Add remote and push (replace YOUR_USERNAME):
+
+    C:\Program Files (x86)\Git\bin\git.exe remote add origin https://github.com/YOUR_USERNAME/NUZUM.git
+    C:\Program Files (x86)\Git\bin\git.exe branch -M main
+    C:\Program Files (x86)\Git\bin\git.exe push -u origin main
+
+1️⃣1️⃣  When prompted for password, use your Personal Access Token:
+    https://github.com/settings/tokens
+
+════════════════════════════════════════════════════════════════════════════════
+⚡ Quick Alternative: Use GitHub Desktop
+════════════════════════════════════════════════════════════════════════════════
+
+If you prefer a GUI:
+
+1. Download GitHub Desktop: https://desktop.github.com/
+2. Sign in with your GitHub account
+3. Click "Add" > "Add Local Repository"
+4. Select D:\nuzm
+5. Publish to GitHub
+
+════════════════════════════════════════════════════════════════════════════════
+✅ Verification
+════════════════════════════════════════════════════════════════════════════════
+
+After uploading, verify:
+1. Go to GitHub repository URL
+2. Should see README.md
+3. Should see all files (50+)
+4. Should see commit history
+
+════════════════════════════════════════════════════════════════════════════════
+
+Status: Ready for manual upload
+All files prepared and documented
+Help files available in START_HERE_GITHUB.txt and GITHUB_UPLOAD_GUIDE.md
+
+════════════════════════════════════════════════════════════════════════════════

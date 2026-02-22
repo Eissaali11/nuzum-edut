@@ -4,12 +4,36 @@ from datetime import datetime, timedelta
 from flask_login import login_required, current_user
 from core.extensions import db
 from utils.decorators import module_access_required
+import logging
+
+logger = logging.getLogger(__name__)
 
 # ملاحظة مهمة:
 # تم نقل استيراد الموديلات من models إلى داخل الدوال (استيراد كسول / lazy import)
 # لتجنب مشكلة الدوران في الاستيراد (circular import) بين app.py و models.py و routes.dashboard
 
 dashboard_bp = Blueprint('dashboard', __name__)
+
+
+def _render_dashboard_fallback(now=None):
+    """Render dashboard with safe defaults when runtime/data errors occur."""
+    now = now or datetime.now()
+    return render_template(
+        'dashboard.html',
+        now=now,
+        total_employees=0,
+        total_all_employees=0,
+        total_departments=0,
+        today_attendance=0,
+        document_stats={'total': 0, 'valid': 0, 'expired': 0, 'expiring': 0, 'no_expiry': 0},
+        expiring_documents=0,
+        recent_employees=[],
+        dept_labels=['لا يوجد أقسام'],
+        dept_data=[0],
+        salary_labels=['لا يوجد بيانات'],
+        salary_data=[0],
+        status_data=[],
+    )
 
 @dashboard_bp.route('/')
 @login_required
@@ -27,117 +51,106 @@ def index():
         UserRole,
         employee_departments,
     )
-    # Get basic statistics - count only active employees
-    total_active_employees = Employee.query.filter_by(status='active').count()
-    total_all_employees = Employee.query.count()
-    total_departments = Department.query.count()
-    
-    # Get current date and time for calculations
     now = datetime.now()
-    today = now.date()
-    
-    # Get attendance for today
-    today_attendance = Attendance.query.filter_by(date=today).count()
-    
-    # Get documents statistics using single aggregation query with CASE
-    expiry_threshold = today + timedelta(days=30)
-    
-    from sqlalchemy import case
-    doc_stats_result = db.session.query(
-        func.count().label('total'),
-        func.sum(case((Document.expiry_date < today, 1), else_=0)).label('expired'),
-        func.sum(case(((Document.expiry_date >= today) & (Document.expiry_date <= expiry_threshold), 1), else_=0)).label('expiring'),
-        func.sum(case((Document.expiry_date > expiry_threshold, 1), else_=0)).label('valid'),
-        func.sum(case((Document.expiry_date.is_(None), 1), else_=0)).label('no_expiry')
-    ).one()
-    
-    total_documents = doc_stats_result.total or 0
-    expired_documents = doc_stats_result.expired or 0
-    expiring_documents = doc_stats_result.expiring or 0
-    valid_documents = doc_stats_result.valid or 0
-    no_expiry_documents = doc_stats_result.no_expiry or 0
-    
-    # Document statistics for template
-    document_stats = {
-        'total': total_documents,
-        'valid': valid_documents,
-        'expired': expired_documents,
-        'expiring': expiring_documents,
-        'no_expiry': no_expiry_documents
-    }
-    
-    # Get department statistics - only count active employees using many-to-many relationship
-    departments = db.session.query(
-        Department.name,
-        func.count(Employee.id).label('employee_count')
-    ).outerjoin(
-        employee_departments, Department.id == employee_departments.c.department_id
-    ).outerjoin(
-        Employee, (employee_departments.c.employee_id == Employee.id) & (Employee.status == 'active')
-    ).group_by(Department.id, Department.name).all()
-    
-    # Get recent activity
-    recent_employees = Employee.query.order_by(Employee.created_at.desc()).limit(5).all()
-    
-    # Get monthly salary totals for the current year
-    current_year = now.year
-    monthly_salaries = db.session.query(
-        Salary.month,
-        func.sum(Salary.net_salary).label('total')
-    ).filter(
-        Salary.year == current_year
-    ).group_by(Salary.month).all()
-    
-    # Format data for charts
-    dept_labels = [dept.name for dept in departments]
-    dept_data = [count for _, count in departments]
-    
-    # If no departments, add default data to avoid empty chart error
-    if not dept_labels:
-        dept_labels = ["لا يوجد أقسام"]
-        dept_data = [0]
-    
-    salary_labels = [f"شهر {month}" for month, _ in monthly_salaries]
-    salary_data = [float(total) for _, total in monthly_salaries]
-    
-    # If no salary data, add default data to avoid empty chart error
-    if not salary_labels:
-        salary_labels = ["لا يوجد بيانات"]
-        salary_data = [0]
-    
-    # إحصائيات الموظفين حسب الحالة
-    status_stats = db.session.query(
-        Employee.status,
-        func.count(Employee.id).label('count')
-    ).group_by(Employee.status).all()
-    
-    # ترجمة حالات الموظفين
-    status_map = {
-        'active': 'نشط',
-        'inactive': 'غير نشط',
-        'on_leave': 'في إجازة',
-        'terminated': 'متوقف عن العمل'
-    }
-    
-    status_data = [
-        {'status': status_map.get(stat.status, stat.status), 'count': stat.count}
-        for stat in status_stats
-    ]
-    
-    return render_template('dashboard.html',
-                          now=now,
-                          total_employees=total_active_employees,
-                          total_all_employees=total_all_employees,
-                          total_departments=total_departments,
-                          today_attendance=today_attendance,
-                          document_stats=document_stats,
-                          expiring_documents=expiring_documents,
-                          recent_employees=recent_employees,
-                          dept_labels=dept_labels,
-                          dept_data=dept_data,
-                          salary_labels=salary_labels,
-                          salary_data=salary_data,
-                          status_data=status_data)
+    try:
+        total_active_employees = Employee.query.filter_by(status='active').count()
+        total_all_employees = Employee.query.count()
+        total_departments = Department.query.count()
+
+        today = now.date()
+        today_attendance = Attendance.query.filter_by(date=today).count()
+
+        expiry_threshold = today + timedelta(days=30)
+
+        from sqlalchemy import case
+        doc_stats_result = db.session.query(
+            func.count().label('total'),
+            func.sum(case((Document.expiry_date < today, 1), else_=0)).label('expired'),
+            func.sum(case(((Document.expiry_date >= today) & (Document.expiry_date <= expiry_threshold), 1), else_=0)).label('expiring'),
+            func.sum(case((Document.expiry_date > expiry_threshold, 1), else_=0)).label('valid'),
+            func.sum(case((Document.expiry_date.is_(None), 1), else_=0)).label('no_expiry')
+        ).one()
+
+        total_documents = doc_stats_result.total or 0
+        expired_documents = doc_stats_result.expired or 0
+        expiring_documents = doc_stats_result.expiring or 0
+        valid_documents = doc_stats_result.valid or 0
+        no_expiry_documents = doc_stats_result.no_expiry or 0
+
+        document_stats = {
+            'total': total_documents,
+            'valid': valid_documents,
+            'expired': expired_documents,
+            'expiring': expiring_documents,
+            'no_expiry': no_expiry_documents
+        }
+
+        departments = db.session.query(
+            Department.name,
+            func.count(Employee.id).label('employee_count')
+        ).outerjoin(
+            employee_departments, Department.id == employee_departments.c.department_id
+        ).outerjoin(
+            Employee, (employee_departments.c.employee_id == Employee.id) & (Employee.status == 'active')
+        ).group_by(Department.id, Department.name).all()
+
+        recent_employees = Employee.query.order_by(Employee.created_at.desc()).limit(5).all()
+
+        current_year = now.year
+        monthly_salaries = db.session.query(
+            Salary.month,
+            func.sum(Salary.net_salary).label('total')
+        ).filter(
+            Salary.year == current_year
+        ).group_by(Salary.month).all()
+
+        dept_labels = [dept.name for dept in departments]
+        dept_data = [count for _, count in departments]
+        if not dept_labels:
+            dept_labels = ["لا يوجد أقسام"]
+            dept_data = [0]
+
+        salary_labels = [f"شهر {month}" for month, _ in monthly_salaries]
+        salary_data = [float(total) for _, total in monthly_salaries]
+        if not salary_labels:
+            salary_labels = ["لا يوجد بيانات"]
+            salary_data = [0]
+
+        status_stats = db.session.query(
+            Employee.status,
+            func.count(Employee.id).label('count')
+        ).group_by(Employee.status).all()
+
+        status_map = {
+            'active': 'نشط',
+            'inactive': 'غير نشط',
+            'on_leave': 'في إجازة',
+            'terminated': 'متوقف عن العمل'
+        }
+
+        status_data = [
+            {'status': status_map.get(stat.status, stat.status), 'count': stat.count}
+            for stat in status_stats
+        ]
+
+        return render_template('dashboard.html',
+                              now=now,
+                              total_employees=total_active_employees,
+                              total_all_employees=total_all_employees,
+                              total_departments=total_departments,
+                              today_attendance=today_attendance,
+                              document_stats=document_stats,
+                              expiring_documents=expiring_documents,
+                              recent_employees=recent_employees,
+                              dept_labels=dept_labels,
+                              dept_data=dept_data,
+                              salary_labels=salary_labels,
+                              salary_data=salary_data,
+                              status_data=status_data)
+    except Exception as e:
+        logger.exception("Dashboard index failed: %s", str(e))
+        flash('تعذر تحميل بيانات لوحة التحكم بالكامل حالياً، وتم عرض نسخة مبسطة.', 'warning')
+        return _render_dashboard_fallback(now=now)
 
 @dashboard_bp.route('/employee-stats')
 @login_required

@@ -1,0 +1,11 @@
+{
+  "status": "deployed",
+  "deployed_at": "2026-02-22T12:43:44.718463",
+  "version": "2.0.0",
+  "module": "documents",
+  "files": {
+    "service": "services/document_service.py",
+    "controller": "routes/documents_controller.py",
+    "api": "routes/api_documents_v2.py"
+  }
+}

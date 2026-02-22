@@ -196,6 +196,26 @@ def _register_legacy_blueprints(app):
     except ImportError:
         pass
     try:
+        from api.v2.documents_api import documents_api_v2_bp
+        from core.extensions import csrf
+        csrf.exempt(documents_api_v2_bp)
+        _reg(documents_api_v2_bp)
+    except ImportError:
+        try:
+            import importlib.util
+            from pathlib import Path
+
+            module_path = Path(__file__).resolve().parents[1] / "api" / "v2" / "documents_api.py"
+            spec = importlib.util.spec_from_file_location("nuzm_api_v2_documents_api", module_path)
+            if spec and spec.loader:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                from core.extensions import csrf
+                csrf.exempt(module.documents_api_v2_bp)
+                _reg(module.documents_api_v2_bp)
+        except Exception:
+            pass
+    try:
         from routes.users import users_bp
         _reg(users_bp, "/users")
     except ImportError:

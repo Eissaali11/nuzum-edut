@@ -78,7 +78,6 @@ class FileService:
             
             # تسجيل العملية في السجل
             log_activity(
-                user_id=current_user.id if current_user.is_authenticated else None,
                 action='file_upload',
                 entity_type='file',
                 entity_id=None,
@@ -89,7 +88,6 @@ class FileService:
             
         except Exception as e:
             log_activity(
-                user_id=current_user.id if current_user.is_authenticated else None,
                 action='file_upload_failed',
                 entity_type='file',
                 entity_id=None,
@@ -140,7 +138,6 @@ class FileService:
                 os.remove(file_path)
                 
                 log_activity(
-                    user_id=current_user.id if current_user.is_authenticated else None,
                     action='file_delete',
                     entity_type='file',
                     entity_id=None,
@@ -151,7 +148,6 @@ class FileService:
             return False
         except Exception as e:
             log_activity(
-                user_id=current_user.id if current_user.is_authenticated else None,
                 action='file_delete_failed',
                 entity_type='file',
                 entity_id=None,

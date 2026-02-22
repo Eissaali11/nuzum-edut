@@ -1,0 +1,55 @@
+# .gitattributes
+# Handle line endings consistently across Windows, Linux, and macOS
+
+# Auto detect text files and normalize line endings to LF
+* text=auto
+
+# Source Files
+*.py text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.jsx text eol=lf
+*.tsx text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.sql text eol=lf
+
+# Batch/Shell Scripts
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.bash text eol=lf
+*.sh text eol=lf
+
+# Binary files
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.tar binary
+*.zip binary
+*.gz binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+
+# Diff settings
+*.diff diff=unified
+*.patch diff=unified
+
+# Git files
+.git* export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore

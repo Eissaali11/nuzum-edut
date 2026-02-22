@@ -52,8 +52,8 @@ def login():
 def logout():
     """تسجيل الخروج."""
     logout_user()
-    flash("تم تسجيل الخروج", "info")
-    return redirect(url_for("web.index"))
+    flash("تم تسجيل الخروج بنجاح. شكراً لاستخدام نُظم", "success")
+    return redirect(url_for("auth.login"))
 
 
 @auth_bp.route("/profile")

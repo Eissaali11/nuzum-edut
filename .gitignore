@@ -1,41 +1,139 @@
-# Virtual Environment
+# ============================================
+# Python & Environment
+# ============================================
 venv/
 *.venv
 env/
-
-# Python cache (do not track; run cleanup to remove)
+ENV/
+.venv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# IDE files
+# ============================================
+# IDE & Editor
+# ============================================
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
 
-# Environment variables file
+# ============================================
+# Environment & Secrets
+# ============================================
 .env
-
-# Secrets (do not commit)
+.env.local
+.env.*.local
+*.key
+*.pem
+*.crt
+*.cer
+secrets/
 utils/google_drive_credentials.json
 
-
-
-# Other
-.DS_Store
-node_modules/
-
-# Local DB and uploads
+# ============================================
+# Database & Instance
+# ============================================
+instance/
 instance/*.db
-static/uploads**
+instance/*.sqlite
+instance/*.sqlite3
+*.db
+*.sqlite
+*.sqlite3
+*.pot
 
-# Large archives (avoid timeout on push)
+# ============================================
+# Uploads & Temporary Files
+# ============================================
+static/uploads/
+uploads/
+temp/
+tmp/
+*.tmp
+*.log
+*.pot
+.pytest_cache/
+.coverage
+coverage.xml
+
+# ============================================
+# OS & System Files
+# ============================================
+.DS_Store
+Thumbs.db
+*.lnk
+.AppleDouble
+.LSOverride
+._*
+
+# ============================================
+# Node.js (if used)
+# ============================================
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# ============================================
+# Large Archives & Backups
+# ============================================
 *.rar
+*.zip
+*.tar.gz
+*.7z
+*.backup
+*.bak
 *_deployment_*.tar.gz
 *_cloudpanel_*.zip
 attached_assets.zip
 attached_assets/
+backups/
+_graveyard_archive/
+repl-backup*.sql
+
+# ============================================
+# Project-Specific
+# ============================================
 car_care-main.zip
 functions/node_modules/
-repl-backup*.sql
+cookies.txt
+admin_cookies.txt
+auth_cookies.txt
+*.html.bak
+.cache/
+
+# ============================================
+# Private Files
+# ============================================
+private/
+secrets/
+.secrets/
+.private/
+passwords.txt

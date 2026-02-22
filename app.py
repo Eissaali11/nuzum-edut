@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import sqlite3
 from jinja2 import ChoiceLoader, FileSystemLoader
 from datetime import datetime
 
@@ -66,6 +67,8 @@ from core.extensions import db
 
 # Import database backup blueprint (moved outside app_context for proper registration)
 from routes.database_backup import database_backup_bp
+from routes.documents_controller import documents_refactored_bp
+from routes.api_documents_v2 import api_documents_v2_bp
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -107,17 +110,99 @@ app.config['WTF_CSRF_CHECK_DEFAULT'] = False  # تعطيل التحقق التل
 
 # Configure database connection with flexible support for different databases
 database_url = os.environ.get("DATABASE_URL")
+APP_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def _sqlite_has_tables(db_path, required_tables):
+    """تحقق سريع أن ملف SQLite يحتوي الجداول المطلوبة."""
+    try:
+        normalized_path = db_path
+        if not os.path.isabs(normalized_path):
+            normalized_path = os.path.abspath(os.path.join(APP_BASE_DIR, normalized_path))
+
+        conn = sqlite3.connect(normalized_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        existing_tables = {row[0] for row in cursor.fetchall()}
+        conn.close()
+        return all(table in existing_tables for table in required_tables)
+    except Exception:
+        return False
+
+
+def _sqlite_uri_to_path(sqlite_uri):
+    """تحويل URI من شكل sqlite:///path.db إلى مسار ملف محلي."""
+    if not sqlite_uri.startswith("sqlite:///"):
+        return None
+    path = sqlite_uri.replace("sqlite:///", "", 1).replace('/', os.sep)
+    if not os.path.isabs(path):
+        path = os.path.abspath(os.path.join(APP_BASE_DIR, path))
+    return path
+
+
+def _build_sqlite_uri(file_path):
+    absolute_path = file_path
+    if not os.path.isabs(absolute_path):
+        absolute_path = os.path.abspath(os.path.join(APP_BASE_DIR, absolute_path))
+    return f"sqlite:///{absolute_path.replace(os.sep, '/')}"
 
 
 
 # If no DATABASE_URL is provided, use SQLite as fallback
 if not database_url:
-    # إنشاء مجلد database إذا لم يكن موجوداً
-    os.makedirs('database', exist_ok=True)
-    database_url = "sqlite:///database/nuzum.db"
-    logger.info("Using SQLite database: database/nuzum.db")
+    required_tables = ['employee', 'user']
+    candidate_sqlite_files = [
+        os.path.join('instance', 'nuzum_local.db'),
+        os.path.join('database', 'nuzum.db'),
+        os.path.join('instance', 'nuzm_dev.db'),
+    ]
+
+    selected_sqlite = None
+    for sqlite_file in candidate_sqlite_files:
+        if os.path.exists(sqlite_file) and _sqlite_has_tables(sqlite_file, required_tables):
+            selected_sqlite = sqlite_file
+            break
+
+    if not selected_sqlite:
+        for sqlite_file in candidate_sqlite_files:
+            if os.path.exists(sqlite_file):
+                selected_sqlite = sqlite_file
+                break
+
+    if not selected_sqlite:
+        os.makedirs('database', exist_ok=True)
+        selected_sqlite = os.path.join('database', 'nuzum.db')
+
+    database_url = _build_sqlite_uri(selected_sqlite)
+    logger.info(f"Using SQLite database: {selected_sqlite}")
 else:
     logger.info(f"Using database: {database_url.split('@')[0]}@***")
+
+    # حماية إضافية: إذا كان DATABASE_URL يشير إلى SQLite غير صالح، نعيد التوجيه لملف SQLite صالح.
+    if database_url.startswith("sqlite:///"):
+        required_tables = ['employee', 'user']
+        configured_sqlite_path = _sqlite_uri_to_path(database_url)
+
+        if configured_sqlite_path and not _sqlite_has_tables(configured_sqlite_path, required_tables):
+            fallback_candidates = [
+                configured_sqlite_path,
+                os.path.join('instance', 'nuzum_local.db'),
+                os.path.join('database', 'nuzum.db'),
+                os.path.join('instance', 'nuzm_dev.db'),
+            ]
+
+            repaired_sqlite = None
+            for sqlite_file in fallback_candidates:
+                if os.path.exists(sqlite_file) and _sqlite_has_tables(sqlite_file, required_tables):
+                    repaired_sqlite = sqlite_file
+                    break
+
+            if repaired_sqlite:
+                database_url = _build_sqlite_uri(repaired_sqlite)
+                logger.warning(
+                    f"Configured SQLite database '{configured_sqlite_path}' missing required tables; "
+                    f"switched to '{repaired_sqlite}'"
+                )
 
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 
@@ -488,6 +573,23 @@ with app.app_context():
     from routes.employee_requests import employee_requests
     from routes.api_employee_requests import api_employee_requests
     from routes.api_external_safety import api_external_safety
+    documents_api_v2_bp = None
+    try:
+        from api.v2.documents_api import documents_api_v2_bp as _documents_api_v2_bp
+        documents_api_v2_bp = _documents_api_v2_bp
+    except ImportError:
+        try:
+            import importlib.util
+            from pathlib import Path
+
+            module_path = Path(__file__).resolve().parent / 'api' / 'v2' / 'documents_api.py'
+            spec = importlib.util.spec_from_file_location('nuzm_app_documents_api_v2', module_path)
+            if spec and spec.loader:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                documents_api_v2_bp = module.documents_api_v2_bp
+        except Exception:
+            documents_api_v2_bp = None
     from routes.drive_browser import drive_browser_bp
     from routes.attendance_api import attendance_api_bp
     from routes.api_accident_reports import api_accident_reports
@@ -504,7 +606,11 @@ with app.app_context():
     csrf.exempt(api_external_safety)  # API فحص السلامة الخارجية
     csrf.exempt(api_accident_reports)  # API تقارير الحوادث
     csrf.exempt(attendance_api_bp)  # API الحضور بدون CSRF
+    if documents_api_v2_bp is not None:
+        csrf.exempt(documents_api_v2_bp)  # API v2 المستندات بدون CSRF
     app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
+    app.register_blueprint(documents_refactored_bp)
+    app.register_blueprint(api_documents_v2_bp)
     app.register_blueprint(employees_bp, url_prefix='/employees')
     app.register_blueprint(departments_bp, url_prefix='/departments')
     app.register_blueprint(attendance_bp, url_prefix='/attendance')
@@ -581,6 +687,8 @@ with app.app_context():
         )
     app.register_blueprint(employee_requests)  # طلبات الموظفين
     app.register_blueprint(api_employee_requests)  # API طلبات الموظفين
+    if documents_api_v2_bp is not None:
+        app.register_blueprint(documents_api_v2_bp)  # API v2 المستندات
     app.register_blueprint(api_external_safety)  # API فحص السلامة الخارجية
     app.register_blueprint(drive_browser_bp, url_prefix='/drive')  # مستعرض Google Drive
     app.register_blueprint(attendance_api_bp)  # API الحضور
@@ -925,4 +1033,10 @@ atexit.register(lambda: scheduler.shutdown())
 
 # تشغيل خادم Flask عند تنفيذ الملف مباشرة
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=os.environ.get("FLASK_DEBUG", "False").lower() == "true")
+    default_port = 5000
+    run_port = int(os.environ.get("APP_PORT", os.environ.get("PORT", default_port)))
+    app.run(
+        host="0.0.0.0",
+        port=run_port,
+        debug=os.environ.get("FLASK_DEBUG", "False").lower() == "true"
+    )
