@@ -9,7 +9,7 @@ cd /d "%~dp0"
 
 if not exist "venv\Scripts\python.exe" (
     echo [خطأ] البيئة الافتراضية غير موجودة
-    echo يرجى تشغيل: .\run_with_auto_python.ps1
+    echo يرجى تشغيل: .\ops\scripts\windows\run_with_auto_python.ps1
     pause
     exit /b 1
 )
