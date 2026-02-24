@@ -116,11 +116,15 @@ def _register_blueprints(app):
     from presentation.web.employees import employees_bp as employees_web_bp
     from modules.employees.presentation.web.routes import employees_bp as employees_module_bp
     from presentation.web.vehicles import vehicles_web_bp
+    from modules.vehicles.presentation.web.main_routes import get_vehicles_blueprint
+
+    vehicles_core_bp = get_vehicles_blueprint()
     app.register_blueprint(web_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(employees_web_bp)
     app.register_blueprint(employees_module_bp)
+    app.register_blueprint(vehicles_core_bp, url_prefix="/vehicles")
     app.register_blueprint(vehicles_web_bp)
     _register_legacy_blueprints(app)
     if "root" not in app.view_functions:
@@ -169,11 +173,6 @@ def _register_legacy_blueprints(app):
     try:
         from routes.salaries import salaries_bp
         _reg(salaries_bp, "/salaries")
-    except ImportError:
-        pass
-    try:
-        from modules.vehicles.presentation.web.main_routes import get_vehicles_blueprint
-        _reg(get_vehicles_blueprint(), "/vehicles")
     except ImportError:
         pass
     try:
