@@ -1,0 +1,312 @@
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #05122D 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Enhanced Page Header */
+    .stats-header {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.6s ease-out;
+    }
+
+    .stats-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+    }
+
+    .stats-header h1 {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 2.5rem;
+    }
+
+    .breadcrumb-enhanced {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(5px);
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .breadcrumb-item.active {
+        font-weight: 600;
+        color: #05122D;
+    }
+
+    /* Enhanced Stats Cards */
+    .stats-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        height: 100%;
+        position: relative;
+        animation: slideUp 0.6s ease-out both;
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+
+    .stats-card:hover::before {
+        transform: translateX(100%);
+    }
+
+    .stats-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .stats-card .card-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+        position: relative;
+    }
+
+    .stats-card .card-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+
+    .stats-card .card-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    .stats-card .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Status Cards */
+    .total-employees-enhanced {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .active-card-enhanced {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .inactive-card-enhanced {
+        background: var(--danger-gradient);
+        color: white;
+    }
+
+    .on-leave-card-enhanced {
+        background: var(--warning-gradient);
+        color: white;
+    }
+
+    .stats-count {
+        font-size: 2.8rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-percentage {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    /* Enhanced Table */
+    .department-table-enhanced {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .department-table-enhanced th {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1rem;
+        font-weight: 600;
+        border: none;
+    }
+
+    .department-table-enhanced td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .department-table-enhanced tr:last-child td {
+        border-bottom: none;
+    }
+
+    .department-table-enhanced tfoot th {
+        background: #05122D;
+        color: white;
+    }
+
+    .department-link {
+        font-weight: 600;
+        color: #05122D;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .department-link:hover {
+        color: #667eea;
+        text-decoration: underline;
+    }
+
+    /* Chart Enhancements */
+    .chart-container-enhanced {
+        position: relative;
+        height: 350px;
+        padding: 1rem;
+    }
+
+    .chart-wrapper-enhanced {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--card-shadow);
+    }
+
+    .chart-info-enhanced {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(5px);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+    }
+
+    .chart-info-enhanced .total-count,
+    .chart-info-enhanced .departments-count {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .chart-info-enhanced span {
+        display: block;
+    }
+
+    .chart-info-enhanced #totalEmployees,
+    .chart-info-enhanced #departmentsCount {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #05122D;
+        margin-bottom: 0.5rem;
+    }
+
+    .chart-info-enhanced .info-label {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Staggered Animation for Cards */
+    .stats-card:nth-child(1) { animation-delay: 0.1s; }
+    .stats-card:nth-child(2) { animation-delay: 0.2s; }
+    .stats-card:nth-child(3) { animation-delay: 0.3s; }
+    .stats-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .stats-header {
+            padding: 1.25rem;
+        }
+        
+        .stats-header h1 {
+            font-size: 2rem;
+        }
+        
+        .stats-count {
+            font-size: 2.2rem;
+        }
+        
+        .chart-container-enhanced {
+            height: 300px;
+        }
+        
+        .department-table-enhanced th,
+        .department-table-enhanced td {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>

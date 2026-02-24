@@ -1,0 +1,301 @@
+<div class="container-fluid">
+    <!-- Enhanced Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>إدارة الموظفين</h1>
+                <p class="text-muted mb-0">إدارة شاملة لبيانات الموظفين والأقسام</p>
+            </div>
+            <div class="action-buttons">
+                <a href="{{ url_for('employees.create') }}" class="btn-enhanced btn-success">
+                    <i class="fas fa-plus"></i>
+                    إضافة موظف
+                </a>
+                <a href="{{ url_for('employees.import_excel') }}" class="btn-enhanced btn-primary">
+                    <i class="fas fa-file-import"></i>
+                    استيراد من Excel
+                </a>
+                <a href="{{ url_for('employees.export_excel') }}" class="btn-enhanced btn-secondary">
+                    <i class="fas fa-file-export"></i>
+                    تصدير إلى Excel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Main Card -->
+    <div class="card main-card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    قائم ة الموظفين
+                </h5>
+                <div class="text-white-50 small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    <span>يمكنك التمرير لعرض جميع البيانات</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Filter Section -->
+        <div class="filter-section" style="padding: 16px;">
+            <form method="GET" action="{{ url_for('employees.index') }}" id="filterForm">
+                <div class="row">
+                    <!-- Enhanced Search Input -->
+                    <div class="col-md-6 mb-3">
+                        <div class="search-input-group input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search text-primary"></i>
+                            </span>
+                            <input type="text" id="searchInput" class="form-control" 
+                                   placeholder="ابحث عن موظف (الاسم، الرقم الوظيفي، رقم الهوية، رقم الجوال)" 
+                                   aria-label="البحث عن موظف">
+                        </div>
+                    </div>
+                    
+                    <!-- Enhanced Department Filter -->
+                    <div class="col-md-2 mb-3">
+                        <select name="department" class="form-select form-select-enhanced" onchange="this.form.submit()">
+                            <option value="">جميع الأقسام</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if current_department == dept.id|string %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Enhanced Status Filter -->
+                    <div class="col-md-2 mb-3">
+                        <select name="status" class="form-select form-select-enhanced" onchange="this.form.submit()">
+                            <option value="">جميع الحالات</option>
+                            <option value="active" {% if current_status == 'active' %}selected{% endif %}>نشط</option>
+                            <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>غير نشط</option>
+                            <option value="on_leave" {% if current_status == 'on_leave' %}selected{% endif %}>في إجازة</option>
+                            <option value="terminated" {% if current_status == 'terminated' %}selected{% endif %}>متوقف عن العمل</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Enhanced Multi Department Filter -->
+                    <div class="col-md-2 mb-3">
+                        <select name="multi_department" class="form-select form-select-enhanced" onchange="this.form.submit()">
+                            <option value="">جميع الموظفين</option>
+                            <option value="yes" {% if current_multi_department == 'yes' %}selected{% endif %}>
+                                أكثر من قسم ({{ multi_dept_count }})
+                            </option>
+                            <option value="no" {% if current_multi_department == 'no' %}selected{% endif %}>
+                                قسم واحد ({{ single_dept_count }})
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Second Row for Additional Filters -->
+                <div class="row">
+                    <!-- No Department Filter -->
+                    <div class="col-md-3 mb-3">
+                        <select name="no_department" class="form-select form-select-enhanced" onchange="this.form.submit()">
+                            <option value="">بحسب الأقسام</option>
+                            <option value="yes" {% if current_no_department == 'yes' %}selected{% endif %}>
+                                ⚠️ بدون أقسام ({{ no_dept_count }})
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <!-- Duplicate Names Filter -->
+                    <div class="col-md-3 mb-3">
+                        <select name="duplicate_names" class="form-select form-select-enhanced" onchange="this.form.submit()">
+                            <option value="">بحسب الأسماء</option>
+                            <option value="yes" {% if current_duplicate_names == 'yes' %}selected{% endif %}>
+                                🔄 أسماء مكررة ({{ duplicate_names_count }})
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            استخدم هذه الفلاتر لعرض الموظفين بدون أقسام أو بأسماء مكررة
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Enhanced Results and Statistics -->
+                <div class="row mt-2">
+                    <div class="col-md-8">
+                        <div id="searchResultsInfo" class="small text-muted" style="display:none;">
+                            <i class="fas fa-search me-1"></i>
+                            نتائج البحث: <strong id="employeeCount">0</strong> موظف
+                        </div>
+                        
+                        <!-- Active Filters Display -->
+                        {% if current_department or current_status or current_multi_department or current_no_department or current_duplicate_names %}
+                        <div class="filter-info">
+                            <div class="small text-info">
+                                <i class="fas fa-filter me-1"></i>
+                                الفلاتر النشطة: 
+                                {% if current_department %}
+                                    {% for dept in departments %}
+                                        {% if dept.id|string == current_department %}
+                                            <span class="badge badge-primary-enhanced me-1">{{ dept.name }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                {% if current_status %}
+                                    <span class="badge badge-success-enhanced me-1">
+                                        {% if current_status == 'active' %}نشط
+                                        {% elif current_status == 'inactive' %}غير نشط
+                                        {% elif current_status == 'on_leave' %}في إجازة
+                                        {% elif current_status == 'terminated' %}متوقف عن العمل
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                                {% if current_multi_department %}
+                                    <span class="badge badge-warning-enhanced me-1">
+                                        {% if current_multi_department == 'yes' %}أكثر من قسم
+                                        {% else %}قسم واحد{% endif %}
+                                    </span>
+                                {% endif %}
+                                {% if current_no_department %}
+                                    <span class="badge badge-danger-enhanced me-1">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>بدون أقسام
+                                    </span>
+                                {% endif %}
+                                {% if current_duplicate_names %}
+                                    <span class="badge badge-info-enhanced me-1">
+                                        <i class="fas fa-copy me-1"></i>أسماء مكررة
+                                    </span>
+                                {% endif %}
+                                <a href="{{ url_for('employees.index') }}" class="btn btn-sm btn-outline-secondary ms-2">
+                                    <i class="fas fa-times me-1"></i> إزالة الفلاتر
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <small class="text-muted">
+                            <i class="fas fa-users me-1"></i>
+                            إجمالي الموظفين: <strong>{{ employees|length }}</strong>
+                        </small>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Enhanced Table Section -->
+        <div class="card-body p-0">
+            <div class="table-horizontal-scroll p-3">
+                <table id="employeesTable" class="table table-enhanced">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-id-card me-1"></i>الرقم الوظيفي</th>
+                            <th><i class="fas fa-user me-1"></i>الاسم</th>
+                            <th><i class="fas fa-id-badge me-1"></i>رقم الهوية</th>
+                            <th><i class="fas fa-mobile-alt me-1"></i>الجوال</th>
+                            <th><i class="fas fa-briefcase me-1"></i>المسمى الوظيفي</th>
+                            <th><i class="fas fa-building me-1"></i>القسم</th>
+                            <th><i class="fas fa-toggle-on me-1"></i>الحالة</th>
+                            <th><i class="fas fa-calendar me-1"></i>تاريخ التعيين</th>
+                            <th><i class="fas fa-cogs me-1"></i>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees %}
+                        <tr class="{% if employee.status == 'inactive' %}row-inactive{% elif employee.status == 'on_leave' %}row-on-leave{% elif employee.status == 'terminated' %}row-terminated{% endif %}">
+                            <td>
+                                <span class="badge badge-secondary-enhanced">{{ employee.employee_id }}</span>
+                            </td>
+                            <td>
+                                {% if employee.status == 'terminated' %}
+                                    <del>{{ employee.name }}</del>
+                                {% else %}
+                                    <strong>{{ employee.name }}</strong>
+                                {% endif %}
+                                {% if employee.name in duplicate_names_set %}
+                                    <span class="badge badge-warning-enhanced duplicate-indicator ms-1" title="اسم مكرر">
+                                        <i class="fas fa-copy"></i>
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ employee.national_id }}</td>
+                            <td>{{ employee.mobile }}</td>
+                            <td>{{ employee.job_title }}</td>
+                            <td>
+                                {%- if employee.departments -%}
+                                    {%- if employee.departments|length > 1 -%}
+                                        <div class="d-flex flex-wrap gap-1">
+                                            {%- for dept in employee.departments -%}
+                                                <span class="badge badge-primary-enhanced">{{ dept.name }}</span>
+                                            {%- endfor -%}
+                                        </div>
+                                        <small class="text-success mt-1 d-block">
+                                            <i class="fas fa-layer-group me-1"></i>متعدد الأقسام
+                                        </small>
+                                    {%- else -%}
+                                        <span class="badge badge-secondary-enhanced">{{ employee.departments[0].name }}</span>
+                                    {%- endif -%}
+                                {%- else -%}
+                                    <span class="text-muted">-</span>
+                                {%- endif -%}
+                            </td>
+                            <td>
+                                {% if employee.status == 'active' %}
+                                <span class="badge badge-success-enhanced">
+                                    <i class="fas fa-check-circle me-1"></i>نشط
+                                </span>
+                                {% elif employee.status == 'inactive' %}
+                                <span class="badge badge-danger-enhanced">
+                                    <i class="fas fa-times-circle me-1"></i>غير نشط
+                                </span>
+                                {% elif employee.status == 'on_leave' %}
+                                <span class="badge badge-warning-enhanced">
+                                    <i class="fas fa-clock me-1"></i>في إجازة
+                                </span>
+                                {% elif employee.status == 'terminated' %}
+                                <span class="badge badge-secondary-enhanced">
+                                    <i class="fas fa-ban me-1"></i>متوقف عن العمل
+                                </span>
+                                {% else %}
+                                <span class="badge badge-secondary-enhanced">{{ employee.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if employee.join_date %}
+                                <span class="gregorian-date">{{ employee.join_date.strftime('%d/%m/%Y') }}</span>
+                                <span class="hijri-date" style="display: none;"></span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-enhanced">
+                                    <a href="{{ url_for('employees.view', id=employee.id) }}" 
+                                       class="btn btn-sm btn-info-enhanced" 
+                                       title="عرض"
+                                       data-bs-toggle="tooltip">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('employees.edit', id=employee.id) }}" 
+                                       class="btn btn-sm btn-primary-enhanced-sm" 
+                                       title="تعديل"
+                                       data-bs-toggle="tooltip">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('employees.confirm_delete', id=employee.id) }}" 
+                                       class="btn btn-sm btn-danger-enhanced" 
+                                       title="حذف"
+                                       data-bs-toggle="tooltip">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

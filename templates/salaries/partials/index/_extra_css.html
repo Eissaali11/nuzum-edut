@@ -1,0 +1,382 @@
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #05122D 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Enhanced Page Header */
+    .salary-header {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.6s ease-out;
+    }
+
+    .salary-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+    }
+
+    .salary-header h1 {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 2.5rem;
+    }
+
+    /* Enhanced Action Buttons */
+    .btn-enhanced {
+        position: relative;
+        overflow: hidden;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--card-shadow);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 140px;
+        justify-content: center;
+    }
+
+    .btn-enhanced::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-enhanced:hover::before {
+        left: 100%;
+    }
+
+    .btn-enhanced:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+        text-decoration: none;
+    }
+
+    .btn-success-enhanced {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .btn-primary-enhanced {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .btn-secondary-enhanced {
+        background: #6c757d;
+        color: white;
+    }
+
+    /* Enhanced Filter Card */
+    .filter-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+        animation: slideUp 0.6s ease-out 0.2s both;
+    }
+
+    .filter-card .card-header {
+        background: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1.5rem;
+    }
+
+    .filter-card .card-header h5 {
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .filter-card .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Enhanced Summary Card */
+    .summary-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .summary-card .card-header {
+        background: var(--success-gradient);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+    }
+
+    .summary-card .card-header h5 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .summary-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .summary-item {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .summary-item:hover {
+        background: rgba(0,0,0,0.03);
+        transform: translateY(-3px);
+    }
+
+    .summary-item h6 {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+
+    .summary-item h4 {
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+
+    .summary-item.net-salary {
+        background: rgba(56, 239, 125, 0.1);
+        border: 1px solid rgba(56, 239, 125, 0.3);
+    }
+
+    .summary-item.net-salary h4 {
+        color: #11998e;
+    }
+
+    /* Enhanced Table Card */
+    .table-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+    }
+
+    .table-card .card-header {
+        background: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1.5rem;
+    }
+
+    .table-card .card-body {
+        padding: 0;
+    }
+
+    /* Enhanced Table */
+    .table-enhanced {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table-enhanced thead th {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1rem;
+        font-weight: 600;
+        border: none;
+    }
+
+    .table-enhanced tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .table-enhanced tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-enhanced .employee-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .table-enhanced .employee-avatar {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        color: white;
+        font-weight: 600;
+        margin-left: 0.75rem;
+    }
+
+    .table-enhanced .salary-value {
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .table-enhanced .net-salary-value {
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .table-enhanced .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .table-enhanced .btn-action {
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.3s ease;
+    }
+
+    .table-enhanced .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Enhanced Empty State */
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #ccc;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state-actions {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    /* Enhanced Input Fields */
+    .salary-input {
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #ddd;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .salary-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    }
+
+    /* Enhanced Smart Save Alert */
+    .smart-save-alert {
+        background: rgba(23, 162, 184, 0.1);
+        border-left: 4px solid #17a2b8;
+        border-radius: 8px;
+        animation: slideUp 0.6s ease-out;
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .salary-header {
+            padding: 1.5rem;
+        }
+        
+        .salary-header h1 {
+            font-size: 2rem;
+        }
+        
+        .summary-item {
+            padding: 0.75rem;
+        }
+        
+        .table-enhanced thead th,
+        .table-enhanced tbody td {
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .table-enhanced .action-buttons {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .empty-state-actions {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+</style>

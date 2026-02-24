@@ -1,0 +1,63 @@
+<div class="main-wrapper">
+    <div class="container">
+        <!-- شريط التنقل -->
+        <div class="page-navigator">
+            <a href="{{ url_for('properties.dashboard') }}">
+                <i class="fas fa-building"></i> العقارات
+            </a>
+            <span class="mx-2">/</span>
+            <a href="{{ url_for('properties.view', property_id=property.id) }}">
+                {{ property.city }}
+            </a>
+            <span class="mx-2">/</span>
+            <span>إضافة قسم كامل</span>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-building me-2"></i>
+                إضافة قسم كامل - {{ property.city }}
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('properties.add_department_residents', property_id=property.id) }}">
+                    <div class="mb-4">
+                        <label for="departmentSelect" class="form-label">
+                            <i class="fas fa-building me-2"></i>
+                            اختر القسم
+                        </label>
+                        <select class="form-select form-select-lg" id="departmentSelect" name="department_id" required>
+                            <option value="">-- اختر قسم --</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}">
+                                    {{ dept.name }} ({{ dept_employee_counts.get(dept.id, 0) }} موظف)
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted mt-2 d-block">
+                            <i class="fas fa-info-circle me-1"></i>
+                            سيتم إضافة جميع الموظفين النشطين في القسم المحدد
+                        </small>
+                    </div>
+
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>تنبيه:</strong> 
+                        عند اختيار قسم، سيتم إضافة جميع الموظفين النشطين التابعين له إلى العقار. 
+                        الموظفين المضافين مسبقاً لن يتم تكرارهم.
+                    </div>
+
+                    <div class="d-flex gap-3 justify-content-end">
+                        <a href="{{ url_for('properties.view', property_id=property.id) }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>
+                            إلغاء
+                        </a>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-users me-1"></i>
+                            إضافة القسم
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,316 @@
+<div class="container-fluid py-4">
+    <!-- Enhanced Main Header -->
+    <div class="report-main-header card mb-4">
+        <div class="card-body text-center">
+            <h2 class="display-5 fw-bold mb-3">
+                <i class="fas fa-chart-pie me-2"></i>
+                نظام التقارير الشامل
+            </h2>
+            <p class="lead mb-0">مرحبًا بك في نظام التقارير الشامل. يمكنك من هنا الوصول إلى مختلف أنواع التقارير وتصديرها بصيغ متعددة.</p>
+        </div>
+    </div>
+    
+    <!-- Enhanced Reports Card -->
+    <div class="report-feature-card enhanced-reports-card card mb-4 report-card" style="animation: slideUp 0.6s ease-out both;">
+        <div class="report-card-header">
+            <div class="row align-items-center">
+                <div class="col-md-9">
+                    <h3 class="mb-2">
+                        <i class="fas fa-file-pdf me-2"></i>
+                        التقارير المحسنة (بدعم كامل للغة العربية)
+                    </h3>
+                    <p class="mb-0">استخدم التقارير المحسنة للحصول على ملفات PDF عالية الجودة مع دعم كامل للغة العربية والأرقام، مع تصميم أنيق وحديث.</p>
+                </div>
+                <div class="col-md-3 text-center text-md-end mt-3 mt-md-0">
+                    <a href="{{ url_for('enhanced_reports.index') }}" class="report-btn btn-enhanced-reports">
+                        <i class="fas fa-star me-1"></i>
+                        استخدام التقارير المحسنة
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Employees Report -->
+        <div class="col-md-6 mb-4 report-card employees-report" style="animation: slideUp 0.6s ease-out both;">
+            <div class="report-feature-card h-100">
+                <div class="report-card-header">
+                    <h4 class="card-title mb-0 text-center">
+                        <i class="fas fa-users me-2"></i>
+                        تقارير الموظفين
+                    </h4>
+                </div>
+                <div class="report-card-body">
+                    <p class="card-text lead text-center mb-4">عرض وتصدير بيانات الموظفين حسب القسم والحالة الوظيفية.</p>
+                    <div class="feature-list">
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            قائمة كاملة بجميع الموظفين
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تصفية حسب القسم والحالة
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تصدير إلى PDF و Excel
+                        </div>
+                    </div>
+                    <a href="{{ url_for('reports.employees_report') }}" class="report-btn btn-employees">
+                        <i class="fas fa-file-alt me-1"></i>
+                        عرض تقارير الموظفين
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Attendance Report -->
+        <div class="col-md-6 mb-4 report-card attendance-report" style="animation: slideUp 0.6s ease-out 0.2s both;">
+            <div class="report-feature-card h-100">
+                <div class="report-card-header">
+                    <h4 class="card-title mb-0 text-center">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        تقارير الحضور والغياب
+                    </h4>
+                </div>
+                <div class="report-card-body">
+                    <p class="card-text lead text-center mb-4">تقارير شاملة عن حضور وغياب الموظفين خلال فترة زمنية محددة.</p>
+                    <div class="feature-list">
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تحديد فترة زمنية مخصصة
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تصفية حسب القسم وحالة الحضور
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تصدير إلى PDF و Excel
+                        </div>
+                    </div>
+                    <a href="{{ url_for('reports.attendance_report') }}" class="report-btn btn-attendance">
+                        <i class="fas fa-file-alt me-1"></i>
+                        عرض تقارير الحضور
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Salaries Report -->
+        <div class="col-md-6 mb-4 report-card salaries-report" style="animation: slideUp 0.6s ease-out 0.3s both;">
+            <div class="report-feature-card h-100">
+                <div class="report-card-header">
+                    <h4 class="card-title mb-0 text-center">
+                        <i class="fas fa-money-bill-wave me-2"></i>
+                        تقارير الرواتب
+                    </h4>
+                </div>
+                <div class="report-card-body">
+                    <p class="card-text lead text-center mb-4">تقارير مفصلة عن رواتب الموظفين خلال شهر وسنة محددة.</p>
+                    <div class="feature-list">
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            عرض حسب الشهر والسنة
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تصفية حسب القسم
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تصدير إلى PDF و Excel
+                        </div>
+                    </div>
+                    <a href="{{ url_for('reports.salaries_report') }}" class="report-btn btn-salaries">
+                        <i class="fas fa-file-alt me-1"></i>
+                        عرض تقارير الرواتب
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Documents Report -->
+        <div class="col-md-6 mb-4 report-card documents-report" style="animation: slideUp 0.6s ease-out 0.4s both;">
+            <div class="report-feature-card h-100">
+                <div class="report-card-header">
+                    <h4 class="card-title mb-0 text-center">
+                        <i class="fas fa-id-card me-2"></i>
+                        تقارير الوثائق
+                    </h4>
+                </div>
+                <div class="report-card-body">
+                    <p class="card-text lead text-center mb-4">تقارير مفصلة عن وثائق الموظفين مع تنبيهات الوثائق التي ستنتهي قريبًا.</p>
+                    <div class="feature-list">
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            عرض جميع الوثائق أو المنتهية فقط
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تصفية حسب القسم ونوع الوثيقة
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تصدير إلى PDF و Excel
+                        </div>
+                    </div>
+                    <a href="{{ url_for('reports.documents_report') }}" class="report-btn btn-documents">
+                        <i class="fas fa-file-alt me-1"></i>
+                        عرض تقارير الوثائق
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vehicles Report -->
+        <div class="col-md-6 mb-4 report-card vehicles-report" style="animation: slideUp 0.6s ease-out 0.5s both;">
+            <div class="report-feature-card h-100">
+                <div class="report-card-header">
+                    <h4 class="card-title mb-0 text-center">
+                        <i class="fas fa-car me-2"></i>
+                        تقارير السيارات
+                    </h4>
+                </div>
+                <div class="report-card-body">
+                    <p class="card-text lead text-center mb-4">تقارير شاملة عن أسطول السيارات وحالتها وورش الصيانة.</p>
+                    <div class="feature-list">
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تقارير السيارات المفصلة
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تقارير ورش الصيانة
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تصدير PDF و Excel
+                        </div>
+                    </div>
+                    <a href="{{ url_for('vehicles.detailed_list') }}" class="report-btn btn-purple">
+                        <i class="fas fa-file-alt me-1"></i>
+                        عرض تقارير السيارات
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analytics Report -->
+        <div class="col-md-6 mb-4 report-card analytics-report" style="animation: slideUp 0.6s ease-out 0.6s both;">
+            <div class="report-feature-card h-100">
+                <div class="report-card-header">
+                    <h4 class="card-title mb-0 text-center">
+                        <i class="fas fa-chart-line me-2"></i>
+                        التحليلات المالية الذكية
+                    </h4>
+                </div>
+                <div class="report-card-body">
+                    <p class="card-text lead text-center mb-4">تحليلات مالية متقدمة مدعومة بالذكاء الاصطناعي للتنبؤات والتوصيات.</p>
+                    <div class="feature-list">
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            تحليلات مالية بالذكاء الاصطناعي
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            توصيات ذكية للتوفير
+                        </div>
+                        <div class="feature-list-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            رسوم بيانية تفاعلية
+                        </div>
+                    </div>
+                    <a href="/accounting/analytics" class="report-btn btn-analytics">
+                        <i class="fas fa-brain me-1"></i>
+                        عرض التحليلات الذكية
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Second Row - Additional Reports -->
+    <div class="row mt-2">
+        <!-- Integrated System Report -->
+        <div class="col-md-4 mb-4 report-card integrated-report" style="animation: slideUp 0.6s ease-out 0.7s both;">
+            <div class="report-feature-card h-100">
+                <div class="report-card-header">
+                    <h4 class="card-title mb-0 text-center">
+                        <i class="fas fa-layer-group me-2"></i>
+                        النظام المتكامل
+                    </h4>
+                </div>
+                <div class="report-card-body">
+                    <p class="card-text text-center mb-3">لوحة معلومات شاملة لجميع أنظمة الشركة.</p>
+                    <a href="/integrated/dashboard" class="report-btn btn-integrated">
+                        <i class="fas fa-tachometer-alt me-1"></i>
+                        عرض النظام المتكامل
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Accounting Report -->
+        <div class="col-md-4 mb-4 report-card accounting-report" style="animation: slideUp 0.6s ease-out 0.8s both;">
+            <div class="report-feature-card h-100">
+                <div class="report-card-header">
+                    <h4 class="card-title mb-0 text-center">
+                        <i class="fas fa-calculator me-2"></i>
+                        النظام المحاسبي
+                    </h4>
+                </div>
+                <div class="report-card-body">
+                    <p class="card-text text-center mb-3">تقارير مالية شاملة ودليل الحسابات.</p>
+                    <a href="/accounting" class="report-btn btn-accounting">
+                        <i class="fas fa-coins me-1"></i>
+                        عرض النظام المحاسبي
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Devices Report -->
+        <div class="col-md-4 mb-4 report-card mobile-report" style="animation: slideUp 0.6s ease-out 0.9s both;">
+            <div class="report-feature-card h-100">
+                <div class="report-card-header">
+                    <h4 class="card-title mb-0 text-center">
+                        <i class="fas fa-mobile-alt me-2"></i>
+                        الأجهزة المحمولة
+                    </h4>
+                </div>
+                <div class="report-card-body">
+                    <p class="card-text text-center mb-3">إدارة وتقارير الأجهزة المحمولة والشرائح.</p>
+                    <a href="/mobile-devices" class="report-btn btn-mobile">
+                        <i class="fas fa-list me-1"></i>
+                        عرض الأجهزة المحمولة
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- صف إضافي للذكاء الاصطناعي -->
+        <div class="row mt-2">
+            <!-- بطاقة الذكاء الاصطناعي المتقدم -->
+            <div class="col-md-4 mb-4 report-card ai-report" style="animation: slideUp 0.6s ease-out 1.0s both;">
+                <div class="report-feature-card h-100">
+                    <div class="report-card-header">
+                        <h4 class="card-title mb-0 text-center">
+                            <i class="fas fa-brain me-2"></i>
+                            الذكاء الاصطناعي
+                        </h4>
+                    </div>
+                    <div class="report-card-body">
+                        <p class="card-text text-center mb-3">تحليل ذكي وتوصيات احترافية مدعومة بالذكاء الاصطناعي.</p>
+                        <a href="/ai/" class="report-btn btn-ai">
+                            <i class="fas fa-robot me-1"></i>
+                            خدمات الذكاء الاصطناعي
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

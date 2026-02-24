@@ -1,0 +1,144 @@
+<div class="container-fluid mt-4" dir="rtl">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-calendar-edit"></i>
+                            تعديل تواريخ وثائق السيارة: {{ vehicle.plate_number }}
+                        </h4>
+                        <a href="{{ url_for('vehicles.valid_documents') }}" class="btn btn-light btn-sm">
+                            <i class="fas fa-arrow-left"></i> العودة
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- معلومات السيارة -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">معلومات السيارة</h6>
+                                    <p><strong>رقم اللوحة:</strong> {{ vehicle.plate_number }}</p>
+                                    <p><strong>الشركة المصنعة:</strong> {{ vehicle.make }}</p>
+                                    <p><strong>الموديل:</strong> {{ vehicle.model }}</p>
+                                    <p><strong>السنة:</strong> {{ vehicle.year }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">التواريخ الحالية</h6>
+                                    <p><strong>انتهاء الاستمارة:</strong> 
+                                        {% if vehicle.registration_expiry_date %}
+                                            {{ vehicle.registration_expiry_date.strftime('%Y-%m-%d') }}
+                                        {% else %}
+                                            <span class="text-muted">غير محدد</span>
+                                        {% endif %}
+                                    </p>
+                                    <p><strong>انتهاء الفحص الدوري:</strong> 
+                                        {% if vehicle.inspection_expiry_date %}
+                                            {{ vehicle.inspection_expiry_date.strftime('%Y-%m-%d') }}
+                                        {% else %}
+                                            <span class="text-muted">غير محدد</span>
+                                        {% endif %}
+                                    </p>
+                                    <p><strong>انتهاء التفويض:</strong> 
+                                        {% if vehicle.authorization_expiry_date %}
+                                            {{ vehicle.authorization_expiry_date.strftime('%Y-%m-%d') }}
+                                        {% else %}
+                                            <span class="text-muted">غير محدد</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- نموذج التعديل -->
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="registration_expiry_date" class="form-label">
+                                    <i class="fas fa-file-contract"></i>
+                                    تاريخ انتهاء الاستمارة
+                                </label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="registration_expiry_date" 
+                                       name="registration_expiry_date"
+                                       value="{{ vehicle.registration_expiry_date.strftime('%Y-%m-%d') if vehicle.registration_expiry_date else '' }}">
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="inspection_expiry_date" class="form-label">
+                                    <i class="fas fa-search"></i>
+                                    تاريخ انتهاء الفحص الدوري
+                                </label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="inspection_expiry_date" 
+                                       name="inspection_expiry_date"
+                                       value="{{ vehicle.inspection_expiry_date.strftime('%Y-%m-%d') if vehicle.inspection_expiry_date else '' }}">
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="authorization_expiry_date" class="form-label">
+                                    <i class="fas fa-certificate"></i>
+                                    تاريخ انتهاء التفويض
+                                </label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="authorization_expiry_date" 
+                                       name="authorization_expiry_date"
+                                       value="{{ vehicle.authorization_expiry_date.strftime('%Y-%m-%d') if vehicle.authorization_expiry_date else '' }}">
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ url_for('vehicles.valid_documents') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times"></i> إلغاء
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save"></i> حفظ التغييرات
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn {
+    border-radius: 5px;
+    font-weight: 500;
+}
+</style>

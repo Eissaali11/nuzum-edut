@@ -1,0 +1,255 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ضبط الموضوع المشترك للمخططات
+    Chart.defaults.font.family = 'Tajawal, sans-serif';
+    Chart.defaults.color = '#666';
+    
+    // مخطط معدل الحضور اليومي (دائري)
+    const dailyRateChart = new Chart(document.getElementById('dailyRateChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [{{ daily_attendance_rate }}, 100 - {{ daily_attendance_rate }}],
+                backgroundColor: ['#4CAF50', '#f0f0f0'],
+                borderWidth: 0,
+                cutout: '80%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: false
+                }
+            }
+        }
+    });
+    
+    // مخطط معدل الحضور الأسبوعي (دائري)
+    const weeklyRateChart = new Chart(document.getElementById('weeklyRateChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [{{ weekly_attendance_rate }}, 100 - {{ weekly_attendance_rate }}],
+                backgroundColor: ['#9C27B0', '#f0f0f0'],
+                borderWidth: 0,
+                cutout: '80%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: false
+                }
+            }
+        }
+    });
+    
+    // مخطط معدل الحضور الشهري (دائري)
+    const monthlyRateChart = new Chart(document.getElementById('monthlyRateChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [{{ monthly_attendance_rate }}, 100 - {{ monthly_attendance_rate }}],
+                backgroundColor: ['#1D976C', '#f0f0f0'],
+                borderWidth: 0,
+                cutout: '80%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: false
+                }
+            }
+        }
+    });
+    
+    // مخطط توزيع حالات الحضور اليومي
+    const dailyDistributionChart = new Chart(document.getElementById('dailyDistributionChart').getContext('2d'), {
+        type: 'pie',
+        data: {{ daily_chart_data|tojson }},
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                }
+            }
+        }
+    });
+    
+    // مخطط توزيع حالات الحضور الشهري
+    const monthlyDistributionChart = new Chart(document.getElementById('monthlyDistributionChart').getContext('2d'), {
+        type: 'pie',
+        data: {{ monthly_chart_data|tojson }},
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                }
+            }
+        }
+    });
+    
+    // مخطط تطور الحضور اليومي
+    const dailyTrendChart = new Chart(document.getElementById('dailyTrendChart').getContext('2d'), {
+        type: 'line',
+        data: {{ daily_trend_chart_data|tojson }},
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                }
+            }
+        }
+    });
+    
+    // تحميل إحصائيات الأقسام
+    loadDepartmentStats('weekly');
+    
+    // مستمع للتبديل بين الأسبوعي والشهري
+    document.querySelectorAll('input[name="periodType"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            loadDepartmentStats(this.value);
+        });
+    });
+    
+    // دالة تحميل إحصائيات الأقسام
+    function loadDepartmentStats(period) {
+        const projectParam = '{{ selected_project }}' ? '&project={{ selected_project }}' : '';
+        fetch(`/attendance/department-stats?period=${period}${projectParam}`)
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('departmentStatsBody');
+                tbody.innerHTML = '';
+                
+                if (data.departments && data.departments.length > 0) {
+                    data.departments.forEach(dept => {
+                        const row = document.createElement('tr');
+                        const attendanceRate = dept.total_employees > 0 
+                            ? Math.round((dept.present / dept.total_employees) * 100) 
+                            : 0;
+                        
+                        // تحديد لون شريط التقدم
+                        let progressClass = 'bg-success';
+                        if (attendanceRate < 70) progressClass = 'bg-danger';
+                        else if (attendanceRate < 85) progressClass = 'bg-warning';
+                        
+                        row.innerHTML = `
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-building text-muted me-2"></i>
+                                    <strong>${dept.name}</strong>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary">${dept.total_employees}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">${dept.present}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-danger">${dept.absent}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-warning">${dept.leave}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info">${dept.sick}</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="progress me-2" style="width: 60px; height: 8px;">
+                                        <div class="progress-bar ${progressClass}" 
+                                             style="width: ${attendanceRate}%"></div>
+                                    </div>
+                                    <small class="fw-bold">${attendanceRate}%</small>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="showDepartmentDetails('${dept.name}', '${period}')">
+                                    <i class="fas fa-eye me-1"></i>تفاصيل
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                لا توجد بيانات متاحة للفترة المحددة
+                            </td>
+                        </tr>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('خطأ في تحميل إحصائيات الأقسام:', error);
+                document.getElementById('departmentStatsBody').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-danger py-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            خطأ في تحميل البيانات
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+    
+    // دالة عرض تفاصيل القسم
+    function showDepartmentDetails(departmentName, period) {
+        const projectParam = '{{ selected_project }}' ? '&project={{ selected_project }}' : '';
+        const url = `/attendance/department-details?department=${encodeURIComponent(departmentName)}&period=${period}${projectParam}`;
+        
+        // فتح نافذة جديدة لعرض التفاصيل
+        window.open(url, '_blank', 'width=1000,height=600,scrollbars=yes');
+    }
+});
+</script>

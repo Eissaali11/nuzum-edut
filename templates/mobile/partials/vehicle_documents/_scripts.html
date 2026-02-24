@@ -1,0 +1,56 @@
+<script>
+  function toggleFilters() {
+    const filtersSection = document.getElementById('filtersSection');
+    if (filtersSection.style.display === 'none') {
+      filtersSection.style.display = 'block';
+    } else {
+      filtersSection.style.display = 'none';
+    }
+  }
+  
+  function applyFilters() {
+    const vehicleFilter = document.querySelector('.mobile-form-select:nth-child(1)');
+    const typeFilter = document.querySelectorAll('.mobile-form-select')[1];
+    const statusFilter = document.querySelectorAll('.mobile-form-select')[2];
+    
+    const documents = document.querySelectorAll('.mobile-document-item');
+    
+    documents.forEach(doc => {
+      let show = true;
+      
+      // فلتر حسب حالة الوثيقة
+      if (statusFilter && statusFilter.value) {
+        const docStatus = doc.querySelector('.mobile-document-status');
+        if (docStatus && !docStatus.classList.contains(statusFilter.value)) {
+          show = false;
+        }
+      }
+      
+      // فلتر حسب نوع الوثيقة
+      if (typeFilter && typeFilter.value) {
+        const docTitle = doc.querySelector('.mobile-document-title');
+        if (docTitle) {
+          const titleText = docTitle.textContent.trim();
+          let matchesType = false;
+          
+          if (typeFilter.value === 'registration' && titleText.includes('رخصة سير')) {
+            matchesType = true;
+          } else if (typeFilter.value === 'authorization' && titleText.includes('تفويض')) {
+            matchesType = true;
+          } else if (typeFilter.value === 'inspection' && titleText.includes('فحص دوري')) {
+            matchesType = true;
+          }
+          
+          if (!matchesType) {
+            show = false;
+          }
+        }
+      }
+      
+      doc.style.display = show ? 'flex' : 'none';
+    });
+    
+    // إخفاء الفلاتر بعد التطبيق
+    toggleFilters();
+  }
+</script>

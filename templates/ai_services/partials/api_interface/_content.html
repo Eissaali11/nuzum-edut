@@ -1,0 +1,204 @@
+<div class="api-container">
+    <!-- رأس الصفحة -->
+    <div class="api-header">
+        <h1 class="text-light mb-3">
+            <i class="fas fa-code me-3" style="color: var(--ai-accent);"></i>
+            واجهة برمجة التطبيقات الذكية
+        </h1>
+        <p class="lead text-light mb-0">
+            API متقدمة للذكاء الاصطناعي - تكامل سهل مع أنظمة خارجية
+        </p>
+        <div class="mt-3">
+            <span class="status-indicator status-active"></span>
+            <span class="text-light">API نشطة ومتاحة</span>
+        </div>
+    </div>
+
+    <!-- معلومات API Key -->
+    <div class="api-key-section">
+        <h4 class="text-warning mb-3">
+            <i class="fas fa-key me-2"></i>
+            مفتاح API
+        </h4>
+        <p class="text-light mb-2">للوصول للـ API، استخدم المفتاح التالي في Header:</p>
+        <div class="code-block">
+            Authorization: Bearer YOUR_API_KEY_HERE
+            <button class="copy-button" onclick="copyToClipboard('Authorization: Bearer YOUR_API_KEY_HERE')">نسخ</button>
+        </div>
+        <small class="text-muted">* تواصل مع المطور للحصول على مفتاح API الخاص بك</small>
+    </div>
+
+    <!-- نقاط النهاية المتاحة -->
+    <div class="api-section">
+        <h3 class="text-light mb-4">
+            <i class="fas fa-list me-2"></i>
+            نقاط النهاية المتاحة
+        </h3>
+
+        <!-- إحصائيات لوحة التحكم -->
+        <div class="endpoint-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="method-badge method-get">GET</span>
+                    <strong class="text-light">/ai/api/dashboard-stats</strong>
+                </div>
+                <button class="test-button" onclick="testEndpoint('/ai/api/dashboard-stats', 'GET')">
+                    <i class="fas fa-play me-1"></i> تجربة
+                </button>
+            </div>
+            <p class="text-light mt-2 mb-1">الحصول على إحصائيات لوحة التحكم</p>
+            <div class="code-block">
+curl -X GET "{{ request.url_root }}ai/api/dashboard-stats" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+                <button class="copy-button" onclick="copyToClipboard('curl -X GET \"{{ request.url_root }}ai/api/dashboard-stats\" -H \"Authorization: Bearer YOUR_API_KEY\"')">نسخ</button>
+            </div>
+            <div class="response-example">
+                <strong class="text-success">Response Example:</strong>
+                <pre class="text-light mt-2">{
+  "total_employees": 45,
+  "total_vehicles": 12,
+  "total_departments": 5,
+  "attendance_rate": 92.5
+}</pre>
+            </div>
+        </div>
+
+        <!-- توليد رؤى ذكية -->
+        <div class="endpoint-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="method-badge method-post">POST</span>
+                    <strong class="text-light">/ai/api/generate-insights</strong>
+                </div>
+                <button class="test-button" onclick="testEndpoint('/ai/api/generate-insights', 'POST')">
+                    <i class="fas fa-play me-1"></i> تجربة
+                </button>
+            </div>
+            <p class="text-light mt-2 mb-1">توليد رؤى ذكية مخصصة</p>
+            <div class="code-block">
+curl -X POST "{{ request.url_root }}ai/api/generate-insights" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "general"}'
+                <button class="copy-button" onclick="copyToClipboard('curl -X POST \"{{ request.url_root }}ai/api/generate-insights\" -H \"Authorization: Bearer YOUR_API_KEY\" -H \"Content-Type: application/json\" -d \'{\"type\": \"general\"}\'')">نسخ</button>
+            </div>
+            <div class="response-example">
+                <strong class="text-success">Request Body:</strong>
+                <pre class="text-light mt-2">{
+  "type": "general" // أو "employees", "vehicles", "financial"
+}</pre>
+                <strong class="text-success">Response:</strong>
+                <pre class="text-light mt-2">{
+  "success": true,
+  "insight": "النظام يعمل بكفاءة عالية...",
+  "recommendations": ["توصية 1", "توصية 2"]
+}</pre>
+            </div>
+        </div>
+
+        <!-- تحديث التنبيهات -->
+        <div class="endpoint-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="method-badge method-get">GET</span>
+                    <strong class="text-light">/ai/api/refresh-alerts</strong>
+                </div>
+                <button class="test-button" onclick="testEndpoint('/ai/api/refresh-alerts', 'GET')">
+                    <i class="fas fa-play me-1"></i> تجربة
+                </button>
+            </div>
+            <p class="text-light mt-2 mb-1">الحصول على التنبيهات الذكية المحدثة</p>
+            <div class="code-block">
+curl -X GET "{{ request.url_root }}ai/api/refresh-alerts" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+                <button class="copy-button" onclick="copyToClipboard('curl -X GET \"{{ request.url_root }}ai/api/refresh-alerts\" -H \"Authorization: Bearer YOUR_API_KEY\"')">نسخ</button>
+            </div>
+            <div class="response-example">
+                <strong class="text-success">Response:</strong>
+                <pre class="text-light mt-2">{
+  "alerts": [
+    {
+      "type": "warning",
+      "title": "تنبيه مهم",
+      "message": "رسالة التنبيه",
+      "time": "منذ ساعة",
+      "action_url": "/action"
+    }
+  ],
+  "count": 1
+}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- تجربة مباشرة -->
+    <div class="api-section">
+        <h3 class="text-light mb-4">
+            <i class="fas fa-terminal me-2"></i>
+            تجربة مباشرة
+        </h3>
+        <div class="live-demo">
+            <h5 class="text-success mb-3">
+                <i class="fas fa-rocket me-2"></i>
+                اختبار API مباشر
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="text-light mb-2">اختر نقطة النهاية:</label>
+                    <select id="endpoint-select" class="form-control mb-3" style="background: #2d3748; color: white; border: 1px solid #4a5568;">
+                        <option value="/ai/api/dashboard-stats">إحصائيات لوحة التحكم</option>
+                        <option value="/ai/api/refresh-alerts">التنبيهات الذكية</option>
+                    </select>
+                    <button class="test-button w-100" onclick="runLiveTest()">
+                        <i class="fas fa-play me-2"></i>
+                        تشغيل الاختبار
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <label class="text-light mb-2">النتيجة:</label>
+                    <div id="live-result" class="code-block" style="min-height: 120px;">
+                        اضغط على "تشغيل الاختبار" لرؤية النتيجة...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- معلومات إضافية -->
+    <div class="api-section">
+        <h3 class="text-light mb-4">
+            <i class="fas fa-info-circle me-2"></i>
+            معلومات إضافية
+        </h3>
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="text-info">معدل الطلبات</h5>
+                <p class="text-light">حد أقصى: 1000 طلب/ساعة لكل مفتاح API</p>
+            </div>
+            <div class="col-md-6">
+                <h5 class="text-info">تشفير البيانات</h5>
+                <p class="text-light">جميع البيانات مشفرة بـ HTTPS/TLS 1.3</p>
+            </div>
+            <div class="col-md-6">
+                <h5 class="text-info">التوثيق</h5>
+                <p class="text-light">يتم تحديث التوثيق تلقائياً مع كل إضافة جديدة</p>
+            </div>
+            <div class="col-md-6">
+                <h5 class="text-info">الدعم الفني</h5>
+                <p class="text-light">متاح 24/7 للمساعدة في التكامل</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- أزرار التنقل -->
+    <div class="text-center mt-4">
+        <a href="/ai/" class="btn btn-outline-light btn-lg me-3">
+            <i class="fas fa-arrow-left me-2"></i>
+            العودة للذكاء الاصطناعي
+        </a>
+        <button class="btn btn-outline-info btn-lg" onclick="downloadSDK()">
+            <i class="fas fa-download me-2"></i>
+            تحميل SDK
+        </button>
+    </div>
+</div>

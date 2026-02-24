@@ -106,6 +106,7 @@ GET /api/v1/info
 - `API_DOCUMENTATION.md` - Complete API reference
 - `POSTMAN_TESTING_GUIDE.md` - Step-by-step testing guide
 - `API_SUMMARY.md` - Project overview and features
+- `HANDOVER_REPORT_DESIGN_LOCK.md` - المرجع الإلزامي لتصميم تقرير التسليم/الاستلام
 - `backups/NUZUM_API_Collection.postman_collection.json` - Postman collection
 - `backups/NUZUM_Environment.postman_environment.json` - Environment variables
 

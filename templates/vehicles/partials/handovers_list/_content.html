@@ -1,0 +1,147 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-enhanced">
+                <div class="card-header card-header-enhanced d-flex justify-content-between align-items-center">
+                    <h4 class="card-title card-title-enhanced">
+                        <i class="fas fa-car ms-2"></i>
+                        السيارات المخصصة حالياً
+                    </h4>
+                    <div>
+                        <span class="badge badge-enhanced badge-info-enhanced">
+                            <i class="fas fa-car me-1"></i>
+                            {{ vehicles_data|length }} سيارة
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if vehicles_data %}
+                        <div class="table-responsive">
+                            <table class="table table-enhanced table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>رقم اللوحة</th>
+                                        <th>الطراز</th>
+                                        <th>الحالة الحالية</th>
+                                        <th>الموظف المخصص</th>
+                                        <th>آخر تسليم</th>
+                                        <th>آخر استلام</th>
+                                        <th>النموذج الإلكتروني</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for data in vehicles_data %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>
+                                            <strong>{{ data.vehicle.plate_number }}</strong>
+                                        </td>
+                                        <td>{{ data.vehicle.make }} {{ data.vehicle.model }}</td>
+                                        <td>
+                                            {% if data.current_status == 'مُسلم' %}
+                                                <span class="badge badge-enhanced badge-warning-enhanced">
+                                                    <i class="fas fa-hand-holding me-1"></i>
+                                                    مُسلم
+                                                </span>
+                                            {% else %}
+                                                <span class="badge badge-enhanced badge-success-enhanced">
+                                                    <i class="fas fa-check-circle me-1"></i>
+                                                    متاح
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if data.current_employee %}
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-user ms-1 text-primary"></i>
+                                                    <span class="fw-bold">{{ data.current_employee }}</span>
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted">غير مخصص</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if data.latest_delivery %}
+                                                <div class="text-sm">
+                                                    <div class="fw-bold">{{ data.latest_delivery.handover_date.strftime('%Y-%m-%d') }}</div>
+                                                    <div class="text-muted">{{ data.latest_delivery.employee_name }}</div>
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted">لا يوجد</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if data.latest_return %}
+                                                <div class="text-sm">
+                                                    <div class="fw-bold">{{ data.latest_return.handover_date.strftime('%Y-%m-%d') }}</div>
+                                                    <div class="text-muted">{{ data.latest_return.employee_name }}</div>
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted">لا يوجد</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if data.latest_delivery %}
+                                                <div class="d-flex flex-column gap-1 align-items-center">
+                                                    <a href="{{ url_for('employee_portal.view_handover', handover_id=data.latest_delivery.id) }}" 
+                                                       class="form-btn-enhanced form-btn-primary" 
+                                                       target="_blank"
+                                                       title="فتح النموذج الإلكتروني للتسليم">
+                                                        <i class="fas fa-external-link-alt me-1"></i>
+                                                        فتح النموذج
+                                                    </a>
+                                                    <small class="text-muted">تسليم</small>
+                                                </div>
+                                            {% elif data.latest_return %}
+                                                <div class="d-flex flex-column gap-1 align-items-center">
+                                                    <a href="{{ url_for('employee_portal.view_handover', handover_id=data.latest_return.id) }}" 
+                                                       class="form-btn-enhanced form-btn-success" 
+                                                       target="_blank"
+                                                       title="فتح النموذج الإلكتروني للاستلام">
+                                                        <i class="fas fa-external-link-alt me-1"></i>
+                                                        فتح النموذج
+                                                    </a>
+                                                    <small class="text-muted">استلام</small>
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted">لا يوجد نموذج</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-enhanced" role="group">
+                                                <a href="{{ url_for('vehicles.view', id=data.vehicle.id) }}" 
+                                                   class="btn btn-enhanced btn-outline-info-enhanced" 
+                                                   title="عرض تفاصيل السيارة">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('vehicles.create_handover', id=data.vehicle.id) }}" 
+                                                   class="btn btn-enhanced btn-outline-primary-enhanced" 
+                                                   title="إضافة تسليم/استلام">
+                                                    <i class="fas fa-plus"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state-enhanced">
+                            <i class="fas fa-car"></i>
+                            <h5 class="text-muted">لا توجد سيارات مسجلة</h5>
+                            <p class="text-muted mb-3">قم بإضافة سيارات جديدة لعرضها هنا</p>
+                            <a href="{{ url_for('vehicles.add') }}" class="btn btn-enhanced btn-primary-enhanced">
+                                <i class="fas fa-plus me-1"></i>
+                                إضافة سيارة جديدة
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

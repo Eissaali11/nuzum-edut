@@ -1,0 +1,317 @@
+CANDIDATES 316
+3414 | templates/mobile/vehicle_details.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+2669 | templates/vehicles/view.html | content=1 include=0 extra=1 scripts=1 style=1 script=1
+2075 | templates/mobile/vehicle_checklist3.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+1929 | templates/mobile/vehicle_checklist1.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+1882 | templates/vehicles/3view.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+1882 | modules/vehicles/presentation/templates/vehicles/views/3view.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+1830 | templates/geofences/view.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+1787 | templates/landing/features.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+1728 | templates/vehicles/handover_create.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+1672 | modules/vehicles/presentation/templates/vehicles/handovers/handover_create.html | content=1 include=0 extra=1 scripts=1 style=0 script=1
+1664 | templates/documents/create.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+1504 | templates/operations/view.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+1428 | templates/vehicles/4view.html | content=1 include=0 extra=0 scripts=1 style=0 script=1
+1418 | templates/mobile/operation_details.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+1367 | templates/admin_external_safety_checks.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+1353 | templates/geofences/index.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+1290 | templates/mobile/employee_details.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+1280 | templates/external_safety_check.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+1265 | templates/vehicles/1view.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+1189 | templates/powerbi/dashboard.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+1154 | templates/vehicles/view_with_sidebar.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+1148 | templates/vehicles/workshop_details.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+1108 | templates/integrated/auto_accounting_enhanced.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+1106 | templates/mobile/vehicle_details_new.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+1095 | templates/vehicles/view_clean.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+1095 | modules/vehicles/presentation/templates/vehicles/views/view_clean.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+1091 | templates/mobile/report_vehicles.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+1077 | templates/layout.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+1074 | templates/salaries/index.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+1063 | templates/departments/view_new.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+1060 | templates/mobile/tracking.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+1059 | templates/landing/pricing.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+1055 | templates/mobile/dashboard_new.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+1043 | templates/geofences/view_new.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+1020 | templates/mobile/workshop_details.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+1019 | templates/attendance/mass_departments.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+1011 | templates/mobile/fuel_consumption_stats.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+1003 | templates/device_assignment/index.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+1002 | templates/dashboard.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 992 | templates/mobile/geofence_details.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 950 | templates/admin_edit_safety_check.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 944 | templates/attendance/dashboard_new.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 924 | templates/device_management/index.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 920 | templates/landing/index.html | content=1 include=0 extra=1 scripts=0 style=1 script=0
+ 919 | templates/mobile/document_details.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 900 | templates/landing/contact.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 876 | templates/attendance/employee_attendance.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 867 | templates/mobile/dashboard.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 862 | templates/vehicles/detailed_list.html | content=1 include=0 extra=1 scripts=1 style=1 script=1
+ 862 | modules/vehicles/presentation/templates/vehicles/reports/detailed_list.html | content=1 include=0 extra=1 scripts=1 style=1 script=1
+ 854 | templates/vehicles/handover_report.html | content=0 include=0 extra=0 scripts=0 style=1 script=0
+ 854 | modules/vehicles/presentation/templates/vehicles/handovers/handover_report.html | content=0 include=0 extra=0 scripts=0 style=1 script=0
+ 850 | templates/drive_browser/index.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 840 | templates/sim_management/index.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 838 | templates/landing/demo.html | content=1 include=0 extra=1 scripts=0 style=1 script=0
+ 831 | templates/accounting/analytics_simple.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 828 | templates/integrated/auto_accounting_comprehensive.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 827 | templates/mobile/vehicle_checklist.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 824 | templates/mobile/salary_details.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 822 | templates/attendance/index.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 815 | templates/powerbi/dashboard_enhanced.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 807 | templates/mobile_devices/edit.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 802 | templates/mobile/vehicle_checklist2.html | content=1 include=0 extra=0 scripts=1 style=0 script=1
+ 796 | templates/mobile/attendance.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 794 | templates/integrated/dashboard_simple.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 791 | templates/operations/view_workshop.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 780 | templates/mobile/edit_employee.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 769 | templates/mobile/add_employee.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 766 | templates/attendance/department_period.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 752 | templates/documents/index.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 750 | templates/vehicles/handover_report1.html | content=0 include=0 extra=0 scripts=0 style=1 script=0
+ 750 | modules/vehicles/presentation/templates/vehicles/handovers/handover_report1.html | content=0 include=0 extra=0 scripts=0 style=1 script=0
+ 747 | templates/auth/login.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 747 | templates/documents/dashboard.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 747 | templates/mobile/vehicles.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 747 | presentation/web/templates/auth/login.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 743 | templates/employees/partials/edit/_content.html | content=0 include=0 extra=0 scripts=0 style=0 script=0
+ 727 | templates/analytics/dimensions.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 720 | templates/integrated/comprehensive_report.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 716 | templates/mobile/add_attendance.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 714 | templates/vehicles/dashboard.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 714 | templates/vehicles/index.html | content=1 include=0 extra=1 scripts=1 style=1 script=1
+ 714 | modules/vehicles/presentation/templates/vehicles/reports/dashboard.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 714 | modules/vehicles/presentation/templates/vehicles/views/index.html | content=1 include=1 extra=1 scripts=1 style=1 script=1
+ 712 | templates/mobile/add_fuel_consumption.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 712 | templates/vehicles/view_modern.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 712 | modules/vehicles/presentation/templates/vehicles/views/view_modern.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 711 | templates/reports/index.html | content=1 include=0 extra=1 scripts=0 style=1 script=0
+ 711 | templates/vehicles/view_cards.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 711 | modules/vehicles/presentation/templates/vehicles/views/view_cards.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 709 | templates/payroll/review.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 707 | templates/departments/index.html | content=1 include=0 extra=1 scripts=1 style=1 script=1
+ 701 | templates/device_assignment/reports.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 700 | templates/mobile/login.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 680 | templates/mobile/vehicle_checklist_details.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 679 | templates/vehicles/accident_details.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 679 | modules/vehicles/presentation/templates/vehicles/views/accident_details.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 672 | templates/insights/dashboard.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 668 | templates/employee_stats.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 668 | templates/employee_requests/view.html | content=1 include=0 extra=1 scripts=0 style=1 script=0
+ 665 | templates/external_safety_share_links.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 664 | templates/mobile/salaries.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 663 | templates/vehicle_operations_list.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 659 | templates/integrated/dashboard_fixed.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 652 | templates/vehicles/expired_documents.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 652 | modules/vehicles/presentation/templates/vehicles/utilities/expired_documents.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 651 | templates/sim_management/details.html | content=1 include=0 extra=1 scripts=0 style=1 script=0
+ 646 | templates/properties/view.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 634 | templates/mobile/employees.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 631 | templates/attendance/dashboard.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 631 | templates/mobile/add_vehicle.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 630 | templates/properties/create.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 624 | templates/device_management/assignment_detail_single.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 624 | templates/employee_portal/salaries.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 615 | templates/mobile_devices/assign.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 612 | templates/departments/dashboard.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 604 | templates/analytics/strategic_dashboard.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 601 | templates/analytics/dashboard.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 600 | templates/employee_portal/profile_enhanced.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 600 | templates/mobile/documents.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 595 | templates/analytics/executive_report.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 585 | templates/employees/partials/view/_profile_work_section.html | content=0 include=0 extra=0 scripts=0 style=0 script=0
+ 577 | templates/fees_costs/index.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 577 | templates/mobile_devices/dashboard.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 577 | templates/vehicles/edit.html | content=1 include=0 extra=1 scripts=1 style=1 script=1
+ 577 | modules/vehicles/presentation/templates/vehicles/forms/edit.html | content=1 include=0 extra=1 scripts=1 style=1 script=1
+ 575 | templates/employee_portal/vehicles_enhanced.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 574 | templates/vehicles/license_image.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 574 | modules/vehicles/presentation/templates/vehicles/utilities/license_image.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 573 | templates/payroll/details.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 563 | templates/attendance/departments_circles_overview.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 563 | templates/vehicles/handover_view.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 563 | modules/vehicles/presentation/templates/vehicles/handovers/handover_view.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 562 | templates/admin_view_safety_check.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 560 | templates/attendance/enhanced_dashboard.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 546 | templates/mobile/notifications.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 544 | templates/integrated/dashboard.html | content=0 include=1 extra=0 scripts=0 style=1 script=1
+ 538 | templates/mobile/fee_details.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 536 | templates/mobile/edit_workshop_record.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 532 | templates/old_layouts/landing/layout.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 527 | templates/vehicles/create_external_authorization.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 527 | modules/vehicles/presentation/templates/vehicles/forms/create_external_authorization.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 526 | templates/mobile/edit_salary.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 525 | templates/ai_services/dashboard.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 519 | templates/mobile_devices/index.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 514 | templates/attendance/department.html | content=1 include=0 extra=1 scripts=0 style=1 script=0
+ 514 | templates/vehicles/edit_handover.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 514 | modules/vehicles/presentation/templates/vehicles/handovers/edit_handover.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 509 | templates/mobile/operations.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 502 | templates/attendance/all_departments.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 502 | modules/vehicles/presentation/templates/vehicles/handovers/handover_create_refactored.html | content=1 include=0 extra=1 scripts=1 style=0 script=1
+ 500 | templates/documents/department_bulk_create.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 499 | templates/device_management/assignment_details.html | content=1 include=0 extra=1 scripts=0 style=1 script=0
+ 499 | templates/payroll/dashboard.html | content=1 include=0 extra=1 scripts=0 style=1 script=0
+ 497 | templates/landing_admin/dashboard.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 496 | templates/documents/excel_dashboard.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 493 | templates/employee_portal/attendance_enhanced.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 493 | templates/employee_portal/safety_check_view.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 492 | templates/mobile/layout.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 492 | templates/mobile/maintenance_details.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 487 | templates/departments/view_jquery.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 486 | templates/properties/edit.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 482 | templates/mobile/index.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 480 | templates/mobile/documents_dashboard.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 478 | templates/mobile/attendance_dashboard.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 470 | templates/ai_services/api_interface.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 470 | templates/attendance/multi_day_department.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 468 | templates/integrated/dashboard_improved.html | content=1 include=1 extra=0 scripts=0 style=1 script=1
+ 459 | templates/users/index.html | content=1 include=0 extra=1 scripts=1 style=1 script=1
+ 458 | templates/integrated/auto_accounting.html | content=0 include=1 extra=0 scripts=0 style=1 script=1
+ 457 | templates/payroll/configuration.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 452 | templates/attendance/edit_attendance.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 449 | templates/departments/view.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 443 | templates/operations/accident_report_details.html | content=1 include=0 extra=0 scripts=0 style=0 script=0
+ 440 | templates/safety_check_pdf_template.html | content=0 include=0 extra=0 scripts=0 style=1 script=0
+ 438 | templates/mobile/edit_attendance.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 437 | templates/integrated/dashboard_compact.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 436 | templates/sim_management/assign.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 434 | templates/vehicles/handovers_list.html | content=1 include=0 extra=1 scripts=1 style=1 script=1
+ 434 | modules/vehicles/presentation/templates/vehicles/handovers/handovers_list.html | content=1 include=0 extra=1 scripts=1 style=1 script=1
+ 433 | templates/vehicles/dashboard_stats.html | content=0 include=0 extra=0 scripts=0 style=0 script=1
+ 433 | modules/vehicles/presentation/templates/vehicles/reports/dashboard_stats.html | content=0 include=0 extra=0 scripts=0 style=0 script=1
+ 432 | templates/accounting/chart_of_accounts.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 432 | templates/mobile/create_handover.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 432 | templates/properties/dashboard.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 430 | templates/ai_services/smart_alerts.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 430 | templates/mobile/operations_list.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 430 | templates/voicehub/dashboard.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 428 | templates/mobile/department_details.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 428 | templates/employees/partials/index/_scripts.html | content=0 include=0 extra=0 scripts=0 style=0 script=1
+ 428 | modules/employees/templates/employees/partials/module_index/_scripts.html | content=0 include=0 extra=0 scripts=0 style=0 script=1
+ 423 | templates/accounting/account_balance.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 423 | templates/payroll/process.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 421 | templates/mobile/report_salaries.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 414 | templates/mobile/report_fees.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 412 | templates/old_layouts/landing_admin/layout.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 410 | templates/mobile/report_documents.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 410 | templates/vehicles/edit_external_authorization.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 410 | modules/vehicles/presentation/templates/vehicles/forms/edit_external_authorization.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 409 | templates/mobile/report_employees.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 408 | templates/external_safety_check_view.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 408 | templates/vehicles/reports.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 408 | modules/vehicles/presentation/templates/vehicles/reports/reports.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 405 | templates/device_assignment/department_management.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 404 | templates/documents/expiring.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 400 | templates/mobile/report_attendance.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 399 | templates/about.html | content=1 include=0 extra=1 scripts=0 style=1 script=0
+ 398 | templates/mobile/operations_notifications.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 395 | templates/employees/partials/track_history/_scripts.html | content=0 include=0 extra=0 scripts=0 style=0 script=0
+ 394 | templates/accounting/analytics_real.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 394 | templates/users/view.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 391 | templates/landing_admin/features.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 390 | templates/operations/dashboard.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 388 | templates/mobile/vehicle_checklist_list.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 387 | templates/documents/dashboard_stats.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 385 | templates/attendance/department_bulk.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 382 | templates/accounting/create_journal_entry.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 382 | templates/accounting/dashboard.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 381 | templates/vehicles/handover_form_view.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 381 | modules/vehicles/presentation/templates/vehicles/handovers/handover_form_view.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 380 | templates/mobile/fees.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 379 | templates/ai_services/recommendations.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 372 | templates/vehicles/workshop_edit.html | content=1 include=0 extra=0 scripts=1 style=0 script=1
+ 372 | modules/vehicles/presentation/templates/vehicles/forms/workshop_edit.html | content=1 include=0 extra=0 scripts=1 style=0 script=1
+ 369 | templates/old_layouts/admin_dashboard/layout.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 368 | templates/vehicles/drive_files.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 368 | modules/vehicles/presentation/templates/vehicles/utilities/drive_files.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 364 | templates/vehicles/create.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 364 | templates/employees/partials/create/_scripts.html | content=0 include=0 extra=0 scripts=0 style=0 script=0
+ 364 | modules/vehicles/presentation/templates/vehicles/forms/create.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 362 | templates/mobile/view_external_authorization.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 361 | templates/departments/analytics.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 360 | templates/mobile/change_password.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 357 | templates/admin_dashboard/dashboard.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 357 | templates/device_assignment/assign_device.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 354 | templates/mobile/handover_view.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 353 | templates/mobile/edit_handover.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 353 | templates/mobile/settings.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 352 | templates/employee_portal/dashboard.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 350 | templates/users/activity_log.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 349 | templates/departments/view_simple.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 348 | templates/accounting/analytics/dashboard.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 345 | templates/device_management/devices_only.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 343 | templates/landing_admin/contact.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 341 | templates/landing_admin/demo_dashboard.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 341 | templates/old_layouts/templates/layout_simple.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 340 | templates/reports/documents.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 333 | templates/attendance/department_details_enhanced.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 333 | templates/mobile_devices/create.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 324 | templates/landing_admin/pricing.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 318 | templates/employees/partials/tracking/_scripts.html | content=0 include=0 extra=0 scripts=0 style=0 script=0
+ 316 | templates/safety_check_image_view.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 314 | templates/landing_admin/content.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 314 | templates/users/profile.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 313 | templates/admin_dashboard/mobile_devices.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 312 | templates/mobile/splash.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 311 | templates/landing/demo_iframe.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 310 | templates/employee_portal/vehicles_new.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 309 | templates/external_safety_success.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 309 | templates/salaries/edit.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 308 | modules/vehicles/presentation/templates/vehicles/partials/views/_4view_workshop.html | content=0 include=0 extra=0 scripts=0 style=0 script=0
+ 305 | templates/properties/add_resident.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 305 | templates/reports/enhanced.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 303 | templates/accounting/cost_centers.html | content=1 include=1 extra=0 scripts=0 style=1 script=1
+ 303 | templates/mobile/add_vehicle_document.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 303 | templates/employees/partials/index/_content.html | content=0 include=0 extra=0 scripts=0 style=0 script=0
+ 303 | modules/employees/templates/employees/partials/module_index/_content.html | content=0 include=0 extra=0 scripts=0 style=0 script=0
+ 302 | templates/device_management/edit.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 302 | templates/employees/partials/index_new/_content.html | content=0 include=0 extra=0 scripts=0 style=0 script=0
+ 301 | templates/salaries/create.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 300 | templates/vehicles/handover_view_public.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 300 | templates/employees/partials/edit/_scripts.html | content=0 include=0 extra=0 scripts=0 style=0 script=0
+ 300 | modules/vehicles/presentation/templates/vehicles/handovers/handover_view_public.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 298 | templates/mobile/add_vehicle_expense.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 296 | templates/properties/furnishing_view.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 296 | templates/vehicles/workshop_image_view.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 296 | modules/vehicles/presentation/templates/vehicles/views/workshop_image_view.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 293 | templates/device_assignment/history.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 292 | templates/ai_services/employee_insights.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 290 | templates/employee_portal/profile.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 290 | templates/operations/list.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 289 | templates/documents/confirm_delete.html | content=1 include=0 extra=1 scripts=0 style=1 script=0
+ 289 | templates/reports/salaries.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 286 | templates/mobile/contact.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 285 | templates/vehicles/import_vehicles.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 285 | modules/vehicles/presentation/templates/vehicles/utilities/import_vehicles.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 282 | templates/mobile/profile.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 282 | templates/vehicles/view_simple.html | content=1 include=0 extra=0 scripts=0 style=0 script=0
+ 282 | modules/vehicles/presentation/templates/vehicles/views/view_simple.html | content=1 include=0 extra=0 scripts=0 style=0 script=0
+ 281 | templates/mobile/add_attendance_new.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 281 | templates/mobile/vehicle_documents.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 280 | templates/employee_requests/invoices.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 280 | templates/mobile/vehicle_expenses.html | content=1 include=0 extra=0 scripts=1 style=1 script=1
+ 278 | templates/voicehub/call_detail.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 277 | templates/admin_dashboard/users.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 276 | templates/mobile/edit_vehicle.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 275 | templates/sim_management/import_excel.html | content=1 include=0 extra=1 scripts=0 style=1 script=1
+ 273 | templates/mobile/edit_workshop_record_simple.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 273 | templates/employees/partials/view/_additional_cards.html | content=0 include=0 extra=0 scripts=0 style=0 script=0
+ 272 | templates/users/activity_logs.html | content=1 include=0 extra=1 scripts=0 style=1 script=0
+ 270 | templates/device_assignment/departments_view.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 269 | templates/admin_reject_safety_check.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 269 | templates/auth/register.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 268 | templates/employee_portal/handover_view.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 264 | templates/landing_admin/testimonials.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 263 | templates/landing/login.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 262 | templates/properties/payments_list.html | content=1 include=0 extra=0 scripts=0 style=1 script=0
+ 261 | templates/attendance/circle_accessed_details.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 259 | templates/accounting/create_cost_center.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 259 | templates/operations/accident_reports_list.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 259 | templates/vehicles/print_workshop.html | content=0 include=0 extra=0 scripts=0 style=1 script=0
+ 259 | modules/vehicles/presentation/templates/vehicles/reports/print_workshop.html | content=0 include=0 extra=0 scripts=0 style=1 script=0
+ 255 | templates/admin_dashboard/employees.html | content=1 include=0 extra=0 scripts=0 style=0 script=1
+ 255 | templates/employee_portal/vehicles.html | content=0 include=0 extra=0 scripts=0 style=1 script=1
+ 254 | templates/accounting/transactions/quick_form.html | content=1 include=0 extra=0 scripts=0 style=1 script=1
+ 252 | templates/admin_delete_safety_check.html | content=1 include=0 extra=0 scripts=0 style=1 script=0

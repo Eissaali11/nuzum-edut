@@ -1,0 +1,331 @@
+<div class="details-container">
+    <!-- رأس الصفحة -->
+    <div class="header-section">
+        <h1><i class="fas fa-file-invoice"></i> تفاصيل الراتب</h1>
+        <div class="employee-info">
+            <div class="info-item">
+                <span>الموظف:</span>
+                <strong>{{ payroll.employee.name }}</strong>
+            </div>
+            <div class="info-item">
+                <span>رقم الموظف:</span>
+                <strong>{{ payroll.employee.employee_id }}</strong>
+            </div>
+            <div class="info-item">
+                <span>البريد الإلكتروني:</span>
+                <strong>{{ payroll.employee.email }}</strong>
+            </div>
+            <div class="info-item">
+                <span>الهاتف:</span>
+                <strong>{{ payroll.employee.phone }}</strong>
+            </div>
+            <div class="info-item">
+                <span>الحالة:</span>
+                <strong>
+                    <span class="status-badge status-{{ payroll.payment_status }}">
+                        {% if payroll.payment_status == 'pending' %}
+                            قيد الانتظار
+                        {% elif payroll.payment_status == 'approved' %}
+                            معتمدة
+                        {% elif payroll.payment_status == 'rejected' %}
+                            مرفوضة
+                        {% else %}
+                            مدفوعة
+                        {% endif %}
+                    </span>
+                </strong>
+            </div>
+            <div class="info-item">
+                <span>تاريخ المعالجة:</span>
+                <strong>{{ payroll.calculated_at.strftime('%Y-%m-%d') if payroll.calculated_at else '-' }}</strong>
+            </div>
+        </div>
+    </div>
+    
+    <div class="two-column">
+        <!-- العمود الأيسر: المزايا والخصومات -->
+        <div>
+            <!-- المزايا -->
+            <div class="content-card">
+                <div class="card-title"><i class="fas fa-plus-circle"></i> المزايا</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">الراتب الأساسي</div>
+                        <div class="detail-value positive">{{ "%.2f"|format(payroll.basic_salary) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">مزية السكن</div>
+                        <div class="detail-value positive">{{ "%.2f"|format(payroll.housing_allowance) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">مزية النقل</div>
+                        <div class="detail-value positive">{{ "%.2f"|format(payroll.transportation) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">مزية الطعام</div>
+                        <div class="detail-value positive">{{ "%.2f"|format(payroll.meal_allowance) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">مكافأة الأداء</div>
+                        <div class="detail-value positive">{{ "%.2f"|format(payroll.performance_bonus) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">مكافأة الحضور</div>
+                        <div class="detail-value positive">{{ "%.2f"|format(payroll.attendance_bonus) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">مزايا أخرى</div>
+                        <div class="detail-value positive">{{ "%.2f"|format(payroll.other_allowances) }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- الخصومات -->
+            <div class="content-card">
+                <div class="card-title"><i class="fas fa-minus-circle"></i> الخصومات</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">خصم الغياب</div>
+                        <div class="detail-value negative">{{ "%.2f"|format(payroll.absence_deduction) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">خصم التأخير</div>
+                        <div class="detail-value negative">{{ "%.2f"|format(payroll.late_deduction) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">خصم المغادرة المبكرة</div>
+                        <div class="detail-value negative">{{ "%.2f"|format(payroll.early_leave_deduction) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">الضمان الاجتماعي (موظف)</div>
+                        <div class="detail-value negative">{{ "%.2f"|format(payroll.gosi_employee) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">ضريبة الدخل</div>
+                        <div class="detail-value negative">{{ "%.2f"|format(payroll.income_tax) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">خصم القرض</div>
+                        <div class="detail-value negative">{{ "%.2f"|format(payroll.loan_deduction) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">سلفة راتب</div>
+                        <div class="detail-value negative">{{ "%.2f"|format(payroll.advance_salary) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">خصم التأمين</div>
+                        <div class="detail-value negative">{{ "%.2f"|format(payroll.insurance_deduction) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- العمود الأيمن: الملخص والحضور -->
+        <div>
+            <!-- ملخص الراتب -->
+            <div class="content-card">
+                <div class="card-title"><i class="fas fa-calculator"></i> ملخص الراتب</div>
+                <div class="summary-section">
+                    <div class="summary-row">
+                        <span class="summary-label">الراتب الإجمالي:</span>
+                        <span class="summary-value positive">{{ "%.2f"|format(payroll.gross_salary) }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">إجمالي الخصومات:</span>
+                        <span class="summary-value negative">{{ "%.2f"|format(payroll.total_deductions) }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">الضمان الاجتماعي (الشركة):</span>
+                        <span class="summary-value">{{ "%.2f"|format(payroll.gosi_company) }}</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span class="summary-label">الراتب الصافي:</span>
+                        <span class="summary-value" style="color: var(--primary); font-size: 1.3em;">{{ "%.2f"|format(payroll.net_payable) }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- بيانات الحضور -->
+            <div class="content-card">
+                <div class="card-title"><i class="fas fa-clock"></i> سجل الحضور</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">أيام العمل المطلوبة</div>
+                        <div class="detail-value">22</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">أيام الحضور</div>
+                        <div class="detail-value positive">{{ payroll.attendance_present | default(0) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">أيام الغياب</div>
+                        <div class="detail-value negative">{{ payroll.attendance_absent | default(0) }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">أيام الإجازة</div>
+                        <div class="detail-value">{{ payroll.attendance_leave | default(0) }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- معلومات الموافقة -->
+            <div class="content-card">
+                <div class="card-title"><i class="fas fa-badge-check"></i> معلومات المراجعة</div>
+                <div class="audit-trail">
+                    {% if payroll.approved_at %}
+                    <div class="audit-item">
+                        <strong>تمت الموافقة على:</strong> {{ payroll.approved_at.strftime('%Y-%m-%d %H:%M') }}
+                    </div>
+                    <div class="audit-item">
+                        <strong>من قبل:</strong> {{ payroll.approved_by_user.name if payroll.approved_by_user else 'غير محدد' }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if payroll.payment_status == 'rejected' %}
+                    <div class="audit-item">
+                        <strong>سبب الرفض:</strong> {{ payroll.admin_notes or 'لم يتم تحديد سبب' }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if payroll.is_locked %}
+                    <div class="audit-item">
+                        <strong>الحالة:</strong> مقفول (يقبل عدم التعديل)
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- أزرار الإجراء -->
+    {% if payroll.payment_status == 'pending' %}
+    <div class="content-card">
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="approveClick()">
+                <i class="fas fa-check"></i> الموافقة
+            </button>
+            <button class="btn btn-primary" style="background: var(--danger);" onclick="rejectClick()">
+                <i class="fas fa-times"></i> الرفض
+            </button>
+            <a href="{{ url_for('payroll.review', status='pending') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> العودة
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="content-card">
+        <div class="action-buttons">
+            <a href="{{ url_for('payroll.review') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> العودة
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- موديال الموافقة -->
+<div id="approveModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 2rem;">
+    <div style="background: white; margin: auto; padding: 2rem; border-radius: 12px; max-width: 500px; margin-top: 5rem;">
+        <h2><i class="fas fa-check-circle"></i> تأكيد الموافقة</h2>
+        <p>هل تريد الموافقة على هذا الراتب؟</p>
+        
+        <textarea id="approveNotes" placeholder="ملاحظات إضافية (اختياري)" style="width: 100%; padding: 1rem; border: 1px solid #ccc; border-radius: 6px; margin: 1rem 0;"></textarea>
+        
+        <div style="display: flex; gap: 1rem;">
+            <button onclick="confirmApprove()" style="flex: 1; padding: 0.75rem; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                موافق
+            </button>
+            <button onclick="cancelApprove()" style="flex: 1; padding: 0.75rem; background: #ccc; border: none; border-radius: 6px; cursor: pointer;">
+                إلغاء
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- موديال الرفض -->
+<div id="rejectModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 2rem;">
+    <div style="background: white; margin: auto; padding: 2rem; border-radius: 12px; max-width: 500px; margin-top: 5rem;">
+        <h2><i class="fas fa-times-circle"></i> تأكيد الرفض</h2>
+        <p>حدد السبب برجاء:</p>
+        
+        <textarea id="rejectReason" placeholder="السبب..." style="width: 100%; padding: 1rem; border: 1px solid #ccc; border-radius: 6px; margin: 1rem 0;" required></textarea>
+        
+        <div style="display: flex; gap: 1rem;">
+            <button onclick="confirmReject()" style="flex: 1; padding: 0.75rem; background: var(--danger); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                رفض
+            </button>
+            <button onclick="cancelReject()" style="flex: 1; padding: 0.75rem; background: #ccc; border: none; border-radius: 6px; cursor: pointer;">
+                إلغاء
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function approveClick() {
+    document.getElementById('approveModal').style.display = 'flex';
+}
+
+function cancelApprove() {
+    document.getElementById('approveModal').style.display = 'none';
+}
+
+function confirmApprove() {
+    const notes = document.getElementById('approveNotes').value;
+    
+    fetch('{{ url_for("payroll.approve_payroll", payroll_id=payroll.id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `notes=${encodeURIComponent(notes)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('تمت الموافقة بنجاح');
+            location.reload();
+        } else {
+            alert('خطأ: ' + data.message);
+        }
+    });
+    
+    document.getElementById('approveModal').style.display = 'none';
+}
+
+function rejectClick() {
+    document.getElementById('rejectModal').style.display = 'flex';
+}
+
+function cancelReject() {
+    document.getElementById('rejectModal').style.display = 'none';
+}
+
+function confirmReject() {
+    const reason = document.getElementById('rejectReason').value;
+    
+    if (!reason.trim()) {
+        alert('يجب إدخال سبب الرفض');
+        return;
+    }
+    
+    fetch('{{ url_for("payroll.reject_payroll", payroll_id=payroll.id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `reason=${encodeURIComponent(reason)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('تم الرفض بنجاح');
+            location.href = '{{ url_for("payroll.review", status="pending") }}';
+        } else {
+            alert('خطأ: ' + data.message);
+        }
+    });
+    
+    document.getElementById('rejectModal').style.display = 'none';
+}
+</script>

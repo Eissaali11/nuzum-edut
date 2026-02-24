@@ -1,0 +1,131 @@
+                    <!-- معلومات أساسية -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="name" class="form-label required-field">الاسم الكامل</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ form_data.get('name', '') if form_data else '' }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="employee_id" class="form-label required-field">الرقم الوظيفي</label>
+                            <input type="text" class="form-control" id="employee_id" name="employee_id" value="{{ form_data.get('employee_id', '') if form_data else '' }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="national_id" class="form-label required-field">رقم الهوية</label>
+                            <input type="text" class="form-control" id="national_id" name="national_id" value="{{ form_data.get('national_id', '') if form_data else '' }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label for="mobile" class="form-label required-field">جوال العمل</label>
+                            <div class="mobile-dropdown-container" style="position: relative;">
+                                <!-- حقل البحث -->
+                                <input type="text" class="form-control" id="mobile_search" 
+                                       placeholder="ابحث عن رقم الجوال أو اكتب رقم جديد..." 
+                                       autocomplete="off">
+                                
+                                <!-- القائمة المخفية للأرقام المتاحة -->
+                                <div class="mobile-dropdown-list" id="mobile_dropdown_list" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; background: #ffffff; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.15);">
+                                    {% for phone in available_phone_numbers %}
+                                    <div class="mobile-dropdown-item" data-value="{{ phone.phone_number }}" 
+                                         style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f0f0f0; color: #333; background: #fff;">
+                                        <div style="font-weight: bold; color: #2c3e50; font-size: 14px;">{{ phone.phone_number }}</div>
+                                        {% if phone.carrier or phone.plan_type %}
+                                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 2px;">
+                                            {% if phone.carrier %}{{ phone.carrier }}{% endif %}
+                                            {% if phone.plan_type %} - {{ phone.plan_type }}{% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- الحقل المخفي لحفظ القيمة -->
+                                <input type="hidden" id="mobile" name="mobile" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-3">
+                            <label for="mobilePersonal" class="form-label">الجوال الشخصي</label>
+                            <input type="text" class="form-control" id="mobilePersonal" name="mobilePersonal" value="{{ form_data.get('mobilePersonal', '') if form_data else '' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="email" class="form-label">البريد الإلكتروني</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ form_data.get('email', '') if form_data else '' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="job_title" class="form-label required-field">المسمى الوظيفي</label>
+                            <input type="text" class="form-control" id="job_title" name="job_title" value="{{ form_data.get('job_title', '') if form_data else '' }}" required>
+                        </div>
+                    </div>
+
+                    <!-- قائمة الجنسيات -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="nationality_id" class="form-label">الجنسية</label>
+                            <select class="form-select" id="nationality_id" name="nationality_id">
+                                <option value="" selected>- اختر الجنسية -</option>
+                                {% for nat in nationalities %}
+                                <option value="{{ nat.id }}" {% if form_data and form_data.get('nationality_id') == nat.id|string %}selected{% endif %}>{{ nat.name_ar }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="contract_status" class="form-label">حالة العقد</label>
+                            <select class="form-select" id="contract_status" name="contract_status">
+                                <option value="">- غير محدد -</option>
+                                <option value="Active" selected>ساري</option>
+                                <option value="Expired">منتهي</option>
+                                <option value="Probation">فترة تجربة</option>
+                                <option value="Terminated">منهى</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- حالة الرخصة -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="license_status" class="form-label">حالة الرخصة</label>
+                            <select class="form-select" id="license_status" name="license_status">
+                                <option value="">- غير محدد -</option>
+                                <option value="Valid">سارية</option>
+                                <option value="Expired">منتهية</option>
+                                <option value="Suspended">موقوفة</option>
+                                <option value="Not-Applicable" selected>لا تنطبق</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- نوع الموظف -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="employee_type" class="form-label required-field">نوع الموظف</label>
+                            <select class="form-select" id="employee_type" name="employee_type" required onchange="toggleCustodyFields()">
+                                <option value="regular">موظف عادي</option>
+                                <option value="driver">موظف سائق</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- معلومات العمل -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="status" class="form-label required-field">الحالة</label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="active">نشط</option>
+                                <option value="inactive">غير نشط</option>
+                                <option value="on_leave">في إجازة</option>
+                                <option value="terminated">متوقف عن العمل</option>
+                            </select>
+                        </div>
+                    </div>

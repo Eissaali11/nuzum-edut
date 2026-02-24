@@ -1,0 +1,1028 @@
+    {{ super() }} <!-- هذا يحافظ على أي سكربتات موجودة في layout.html -->
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+
+
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // التحقق من وجود عنصر canvas قبل تنفيذ كود الرسم
+            const canvasElement = document.getElementById('damage-canvas');
+            if (!canvasElement) {
+                console.log('Canvas not found, skipping canvas initialization');
+                return;
+            }
+
+            // 1. تهيئة لوحة الرسم (Canvas)
+            const canvas = new fabric.Canvas('damage-canvas', {
+                isDrawingMode: false, // ابدأ في وضع التحديد وليس الرسم
+                backgroundColor: '#fff',
+                selection: true
+            });
+
+            // مسار صورة هيكل السيارة (خريطة تحديد الأضرار)
+            const imageUrl = "{{ url_for('static', filename='images/vehicle_diagram.png') }}";
+
+            function setCanvasBackground(img) {
+                canvas.setWidth(img.width);
+                canvas.setHeight(img.height);
+                canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+                    scaleX: canvas.width / img.width,
+                    scaleY: canvas.height / img.height
+                });
+            }
+
+            function loadExistingDamageDiagram() {
+                {% if edit_mode and handover and handover.damage_diagram_path %}
+                const existingDiagramUrl = "{{ url_for('static', filename=handover.damage_diagram_path.replace('static/', '')) if handover.damage_diagram_path else '' }}";
+                if (existingDiagramUrl) {
+                    fabric.Image.fromURL(existingDiagramUrl, function(existingImg) {
+                        existingImg.scaleToWidth(canvas.width);
+                        existingImg.scaleToHeight(canvas.height);
+                        existingImg.set({ left: 0, top: 0, selectable: false, evented: false });
+                        canvas.add(existingImg);
+                        canvas.renderAll();
+                    }, { crossOrigin: 'anonymous' });
+                }
+                {% endif %}
+            }
+
+            function showPlaceholder() {
+                canvas.setWidth(600);
+                canvas.setHeight(400);
+                canvas.add(new fabric.Text('ارسم أماكن الضرر على الهيكل هنا', {
+                    left: 50, top: 180, fontSize: 20, fill: '#666', fontFamily: 'Arial'
+                }));
+                canvas.renderAll();
+            }
+
+            fabric.util.loadImage(imageUrl, { crossOrigin: 'anonymous' }, function(htmlImg) {
+                if (!htmlImg) {
+                    showPlaceholder();
+                    return;
+                }
+                var fImg = new fabric.Image(htmlImg);
+                setCanvasBackground(fImg);
+                loadExistingDamageDiagram();
+            });
+
+            
+            // 2. ربط الأحداث بأدوات التحكم
+            const drawModeBtn = document.getElementById('draw-mode-btn');
+            const selectModeBtn = document.getElementById('select-mode-btn');
+            const colorPicker = document.getElementById('draw-color-picker');
+            const lineWidth = document.getElementById('draw-line-width');
+            const clearBtn = document.getElementById('clear-canvas-btn');
+            const form = document.querySelector('form'); // الحصول على النموذج الرئيسي
+
+            // تفعيل/إلغاء وضع الرسم
+            if (drawModeBtn) {
+                drawModeBtn.addEventListener('click', () => {
+                    canvas.isDrawingMode = true;
+                });
+            }
+
+            if (selectModeBtn) {
+                selectModeBtn.addEventListener('click', () => {
+                    canvas.isDrawingMode = false;
+                });
+            }
+
+            // تغيير لون الفرشاة
+            colorPicker.addEventListener('change', (event) => {
+                canvas.freeDrawingBrush.color = event.target.value;
+            });
+            
+            // تغيير حجم الفرشاة
+            lineWidth.addEventListener('change', (event) => {
+                canvas.freeDrawingBrush.width = parseInt(event.target.value, 10) || 1;
+            });
+
+            // مسح الرسوم
+            clearBtn.addEventListener('click', () => {
+                // لا نحذف الخلفية، فقط الرسوم
+                canvas.getObjects().forEach(function(obj) {
+                    canvas.remove(obj);
+                });
+                canvas.renderAll();
+            });
+
+
+            // 3. حفظ بيانات الرسم قبل إرسال النموذج
+            const hiddenInput = document.getElementById('damage-diagram-data');
+            
+            // متغير لتتبع ما إذا تم إجراء تغييرات على الرسم
+            let hasDrawingChanges = false;
+            
+            // تتبع أي رسم جديد
+            canvas.on('object:added', function() {
+                hasDrawingChanges = true;
+            });
+            canvas.on('path:created', function() {
+                hasDrawingChanges = true;
+            });
+            
+            form.addEventListener('submit', function (event) {
+                // تصدير اللوحة إذا كان هناك رسومات (سواء جديدة أو محملة)
+                if (canvas.getObjects().length > 0 || hasDrawingChanges) {
+                    // تصدير اللوحة (مع الخلفية) إلى صورة Base64
+                    const imageDataURL = canvas.toDataURL({
+                        format: 'png',
+                        quality: 0.8
+                    });
+                    // وضع بيانات الصورة في الحقل المخفي
+                    hiddenInput.value = imageDataURL;
+                } else {
+                    // إذا لم يتم الرسم، أرسل قيمة فارغة
+                    hiddenInput.value = '';
+                }
+                // فحص أن الرسم موجود فعلاً قبل الإرسال
+                if (!hiddenInput.value || hiddenInput.value.length < 100) {
+                    alert('يجب رسم المخطط قبل الحفظ.');
+                    event.preventDefault();
+                    return false;
+                }
+            });
+
+        });
+
+             // ... بعد ربط الأحداث بالأزرار القديمة
+
+            // تحسين تجربة المستخدم لتبديل الأزرار (إظهار الزر النشط)
+            drawModeBtn.addEventListener('click', () => {
+                canvas.isDrawingMode = true;
+                drawModeBtn.classList.add('active', 'btn-primary');
+                drawModeBtn.classList.remove('btn-outline-primary');
+                selectModeBtn.classList.remove('active', 'btn-primary');
+                selectModeBtn.classList.add('btn-outline-secondary');
+            });
+
+            selectModeBtn.addEventListener('click', () => {
+                canvas.isDrawingMode = false;
+                selectModeBtn.classList.add('active', 'btn-primary');
+                selectModeBtn.classList.remove('btn-outline-secondary');
+                drawModeBtn.classList.remove('active', 'btn-primary');
+                drawModeBtn.classList.add('btn-outline-primary');
+            });
+
+            // تأكد من تفعيل الزر الافتراضي عند التحميل
+            // بما أن وضع الرسم هو الافتراضي، نفعّل زره
+            drawModeBtn.click();
+
+            
+</script>
+    
+<script>
+
+// --- بداية منطق التواقيع (نسخة مصححة ومعزولة) ---
+
+const signaturePads = {}; // كائن لتخزين لوحات التوقيع المهيأة
+
+// دالة لتهيئة أو تحديث أبعاد لوحة التوقيع
+function initializeSignaturePad(canvasId) {
+    const canvasEl = document.getElementById(canvasId);
+    if (!canvasEl) return;
+
+    // إذا تم تهيئة اللوحة من قبل, فقط حدث أبعادها
+    if (signaturePads[canvasId]) {
+        const container = canvasEl.parentElement;
+        const pad = signaturePads[canvasId];
+        // التأكد من أن الأبعاد قد تغيرت قبل إعادة الرسم
+        if (pad.width !== container.offsetWidth || pad.height !== container.offsetHeight) {
+            pad.setWidth(container.offsetWidth - 2); // -2 لتجنب المشاكل مع الحدود
+            pad.setHeight(container.offsetHeight - 2);
+            pad.renderAll();
+        }
+        return;
+    }
+
+    // التهيئة لأول مرة
+    const container = canvasEl.parentElement;
+    canvasEl.width = container.offsetWidth - 2;
+    canvasEl.height = container.offsetHeight - 2;
+
+    const signaturePad = new fabric.Canvas(canvasEl, {
+        isDrawingMode: true,
+        backgroundColor: 'rgba(255, 255, 255, 0)', // خلفية شفافة
+    });
+    signaturePad.freeDrawingBrush.color = "#000000"; // قلم أسود
+    signaturePad.freeDrawingBrush.width = 2; // قلم رفيع
+    
+    // تخزين اللوحة المهيأة في الكائن
+    signaturePads[canvasId] = signaturePad;
+}
+
+// 1. تهيئة اللوحات عند تحميل الصفحة لأول مرة
+initializeSignaturePad('supervisor-signature-canvas');
+initializeSignaturePad('driver-signature-canvas');
+initializeSignaturePad('movement-officer-signature-canvas'); // <-- أضف هذا السطر فقط
+
+
+
+// 2. معالجة مسح التوقيع
+document.querySelectorAll('.clear-signature').forEach(button => {
+    button.addEventListener('click', function() {
+        const canvasId = this.dataset.canvasId;
+        const pad = signaturePads[canvasId];
+        if (pad) {
+            pad.clear();
+            // مسح الحقل المخفي أيضاً
+            const targetInputId = canvasId.replace('-canvas', '-data');
+            document.getElementById(targetInputId).value = '';
+        }
+    });
+});
+
+
+// 3. معالجة رفع صورة التوقيع
+document.querySelectorAll('.signature-upload').forEach(input => {
+    input.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        // البحث عن عنصر المعاينة داخل نفس الحاوية (البحث الدقيق)
+        const previewEl = this.closest('.tab-pane').querySelector('.signature-preview');
+        const targetInputId = this.dataset.targetInput;
+
+        if (file && previewEl) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // عرض الصورة للمعاينة
+                previewEl.src = e.target.result;
+                previewEl.classList.remove('d-none');
+                
+                // حفظ البيانات كـ Base64 في الحقل المخفي
+                document.getElementById(targetInputId).value = e.target.result;
+                
+                // مسح لوحة الرسم المقابلة لضمان عدم وجود توقيعين
+                const canvasId = targetInputId.replace('-data', '-canvas');
+                const pad = signaturePads[canvasId];
+                if (pad) {
+                    pad.clear();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+
+
+// 4. إعادة تهيئة حجم اللوحة ومعالجة التضارب عند التبديل بين التبويبات
+document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+    tab.addEventListener('shown.bs.tab', function (event) {
+        const targetTabPaneId = event.target.getAttribute('data-bs-target');
+        
+        // إذا كان التبويب الجديد هو تبويب "الرسم"
+        if (targetTabPaneId && targetTabPaneId.includes('-draw-tab')) {
+            const canvasId = targetTabPaneId.replace('#', '').replace('-draw-tab', '-signature-canvas');
+            // استدعاء التهيئة مرة أخرى للتأكد من أن الأبعاد صحيحة الآن بعد أن أصبح مرئياً
+            initializeSignaturePad(canvasId);
+
+            // مسح أي صورة تم رفعها في التبويب الآخر لمنع حفظ الاثنين
+            const signatureType = canvasId.split('-')[0]; // "supervisor" or "driver"
+            const uploadInput = document.querySelector(`.signature-upload[data-target-input="${signatureType}-signature-data"]`);
+            if (uploadInput) {
+                uploadInput.value = ''; // مسح اختيار الملف
+                const previewEl = uploadInput.closest('.tab-pane').querySelector('.signature-preview');
+                if (previewEl) {
+                    previewEl.classList.add('d-none'); // إخفاء المعاينة
+                    previewEl.src = '';
+                }
+            }
+             // مسح قيمة الحقل المخفي
+             document.getElementById(`${signatureType}-signature-data`).value = '';
+        }
+    });
+});
+
+
+// 5. تحديث الحقول المخفية قبل إرسال النموذج مباشرة
+const mainForm = document.querySelector('form[method="post"]');
+if (mainForm) {
+    mainForm.addEventListener('submit', function (event) {
+        // المرور على لوحات التوقيع فقط
+        for (const canvasId in signaturePads) {
+            const pad = signaturePads[canvasId];
+            const targetInputId = canvasId.replace('-canvas', '-data');
+            const targetInput = document.getElementById(targetInputId);
+
+            // نتحقق مما إذا كان الحقل المخفي يحتوي بالفعل على بيانات (من صورة مرفوعة)
+            // إذا كان يحتوي على بيانات، فلا نغيره
+            if (targetInput && targetInput.value.startsWith('data:image/')) {
+                continue; 
+            }
+            
+            // إذا كان الحقل فارغاً وهناك رسم على اللوحة، فاحفظ الرسم
+            if (pad && pad.getObjects().length > 0) {
+                targetInput.value = pad.toDataURL({ format: 'png' });
+            }
+        }
+    });
+}
+// --- نهاية منطق التواقيع ---
+
+</script>
+
+<script>
+// وظيفة البحث عن الموظفين في الجدول
+// كود مبسط للبحث عن الموظفين وتصفيتهم
+document.addEventListener('DOMContentLoaded', function() {
+    // تحديد عناصر واجهة المستخدم بطريقة آمنة
+    var searchInput = document.getElementById('employeeSearchInput');
+    var searchBtn = document.getElementById('searchEmployeeBtn');
+    var departmentSelect = document.getElementById('departmentSelect');
+    var employeeRows = document.querySelectorAll('.employee-row');
+    var noResultsAlert = document.getElementById('noResultsAlert');
+    var personNameInput = document.getElementById('person_name');
+    
+    console.log('تم العثور على:', {
+        searchInput: !!searchInput,
+        searchBtn: !!searchBtn,
+        departmentSelect: !!departmentSelect,
+        employeeRows: employeeRows.length,
+        noResultsAlert: !!noResultsAlert,
+        personNameInput: !!personNameInput
+    });
+    
+    // دالة مشتركة لتصفية الموظفين
+    function filterEmployees() {
+        try {
+            // التحقق من العناصر قبل المتابعة
+            if (!searchInput || !departmentSelect) {
+                console.error('عناصر واجهة البحث غير موجودة');
+                return;
+            }
+            
+            // إعادة تحديث عناصر الصفوف في حالة تحديث DOM
+            var currentEmployeeRows = document.querySelectorAll('.employee-row');
+            if (!currentEmployeeRows || currentEmployeeRows.length === 0) {
+                console.error('لم يتم العثور على صفوف موظفين للبحث');
+                return;
+            }
+            
+            var searchTerm = searchInput.value.trim().toLowerCase();
+            var departmentId = departmentSelect.value.trim(); // إزالة أي مسافات إضافية
+            
+            console.log('قيم البحث:', {
+                searchTerm: searchTerm,
+                departmentId: departmentId,
+                employeeRowsCount: currentEmployeeRows.length
+            });
+            
+            var resultsFound = false;
+            
+            console.log('تصفية الموظفين:', {
+                searchTerm: searchTerm,
+                departmentId: departmentId,
+                employeeCount: currentEmployeeRows.length
+            });
+            
+            // فحص كل صف موظف
+            Array.from(currentEmployeeRows).forEach(function(row, index) {
+                // استخراج البيانات من صف الموظف
+                var name = (row.getAttribute('data-name') || '').toLowerCase();
+                var employeeId = (row.getAttribute('data-employee-id') || '').toLowerCase();
+                var nationalId = (row.getAttribute('data-national-id') || '').toLowerCase();
+                var department = (row.getAttribute('data-department') || '').toLowerCase();
+                var rowDepartmentId = row.getAttribute('data-department-id') || '';
+                
+                // تحويل رقم قسم الموظف إلى سلسلة نصية
+                if (rowDepartmentId !== null && rowDepartmentId !== undefined && rowDepartmentId !== '') {
+                    rowDepartmentId = String(rowDepartmentId);
+                }
+                
+                // تطابق القسم - التعامل مع أقسام متعددة
+                var departmentMatch = true; // افتراضي: عرض جميع الموظفين
+                if (departmentId && departmentId !== '') {
+                    // تحويل معرفات الأقسام إلى مصفوفة
+                    var employeeDeptIds = rowDepartmentId ? rowDepartmentId.split(',') : [];
+                    departmentMatch = employeeDeptIds.includes(String(departmentId));
+                }
+                
+                // سجل معلومات تشخيصية حول مطابقة القسم
+                if (index < 3) {
+                    console.log('تطابق القسم للموظف:', {
+                        employeeName: name,
+                        searchDepartmentId: departmentId,
+                        employeeDepartmentIds: rowDepartmentId,
+                        departmentMatch: departmentMatch
+                    });
+                }
+                
+                // تطابق البحث - البحث في جميع الحقول
+                var searchMatch = !searchTerm || 
+                    name.includes(searchTerm) || 
+                    employeeId.includes(searchTerm) || 
+                    nationalId.includes(searchTerm) || 
+                    department.includes(searchTerm);
+                
+                // سجل معلومات تشخيصية للصفوف الثلاثة الأولى
+                if (index < 3) {
+                    console.log('فحص صف:', {
+                        index: index,
+                        name: name,
+                        departmentId: rowDepartmentId,
+                        matchesDept: departmentMatch,
+                        matchesSearch: searchMatch
+                    });
+                }
+                
+                // إظهار أو إخفاء الصف بناء على نتائج التطابق
+                if (departmentMatch && searchMatch) {
+                    row.style.display = '';
+                    resultsFound = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // إظهار أو إخفاء رسالة "لا توجد نتائج"
+            if (noResultsAlert) {
+                if (resultsFound) {
+                    noResultsAlert.classList.add('d-none');
+                } else {
+                    noResultsAlert.classList.remove('d-none');
+                }
+            }
+            
+            return resultsFound;
+        } catch (error) {
+            console.error('خطأ أثناء تصفية الموظفين:', error);
+            return false;
+        }
+    }
+    
+    // ربط أحداث واجهة المستخدم
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            console.log('تم النقر على زر البحث');
+            filterEmployees();
+        });
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                console.log('تم الضغط على Enter في حقل البحث');
+                filterEmployees();
+            }
+        });
+    }
+    
+    if (departmentSelect) {
+        // إزالة جميع مستمعي الأحداث السابقة لمنع التكرار
+        departmentSelect.removeEventListener('change', handleDepartmentChange);
+        
+        // إضافة مستمع جديد لتغيير القسم
+        departmentSelect.addEventListener('change', handleDepartmentChange);
+        
+        function handleDepartmentChange(event) {
+            var selectedValue = event.target.value;
+            console.log('تم تغيير القسم إلى:', selectedValue, typeof selectedValue);
+            
+            // إضافة تأخير قصير للسماح للتسجيل بالظهور قبل تنفيذ الوظيفة
+            setTimeout(function() {
+                filterEmployees();
+            }, 50);
+        }
+    }
+    
+    // استخدام تفويض الأحداث (event delegation) بدلاً من ربط مستمع منفصل لكل زر
+    document.addEventListener('click', function(event) {
+        var target = event.target;
+        
+        // إذا كان العنصر الذي تم النقر عليه هو زر اختيار الموظف أو أحد عناصره الفرعية
+        if (target.classList && target.classList.contains('select-employee-btn') || 
+            (target.closest && target.closest('.select-employee-btn'))) {
+            
+            // الحصول على الزر (إما العنصر نفسه أو العنصر الأب الذي يحتوي على الفئة)
+            var button = target.classList.contains('select-employee-btn') ? 
+                target : target.closest('.select-employee-btn');
+                
+            // التأكد من أن الزر موجود وحقل اسم الشخص موجود أيضًا
+            if (button && personNameInput) {
+                var employeeName = button.getAttribute('data-name');
+                var row = button.closest('tr');
+                var employeeId = row ? row.getAttribute('data-id') : '';
+                
+                if (employeeName) {
+                    personNameInput.value = employeeName;
+                    
+                    // تحديث حقل معرف الموظف المخفي
+                    var employeeIdInput = document.getElementById('employee_id');
+                    if (employeeIdInput && employeeId) {
+                        employeeIdInput.value = employeeId;
+                    }
+                    
+                    console.log('تم اختيار الموظف عبر التفويض:', employeeName, 'المعرف:', employeeId);
+                }
+            }
+        }
+    });
+    
+    // دالة لإعادة تحديث العناصر والتأكد من عملها
+    function refreshElements() {
+        searchInput = document.getElementById('employeeSearchInput');
+        departmentSelect = document.getElementById('departmentSelect');
+        personNameInput = document.getElementById('person_name');
+        
+        console.log('تحديث العناصر:', {
+            searchInput: !!searchInput,
+            departmentSelect: !!departmentSelect,
+            personNameInput: !!personNameInput
+        });
+        
+        if (searchInput && departmentSelect) {
+            filterEmployees();
+        }
+    }
+    
+    // تشغيل البحث الأولي بعد تحميل الصفحة
+    setTimeout(refreshElements, 200);
+    
+    // إعادة تشغيل البحث عند تحديث DOM
+    document.addEventListener('DOMSubtreeModified', function() {
+        setTimeout(refreshElements, 100);
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+        // ضبط تاريخ اليوم كقيمة افتراضية
+        const today = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('handover_date');
+        if (dateInput) {
+            dateInput.value = today;
+        }
+        
+        // تحديث عنوان النموذج وفقًا لنوع العملية
+        const handoverTypeSelect = document.getElementById('handover_type');
+        const updateFormTitle = function() {
+            if (!handoverTypeSelect) return;
+            
+            const type = handoverTypeSelect.value;
+            const title = document.querySelector('h3');
+            
+            if (!title) return;
+            
+            if (type === 'delivery') {
+                title.innerHTML = '<i class="fas fa-share ms-2"></i> نموذج تسليم السيارة: {{ vehicle.plate_number }}';
+            } else if (type === 'return') {
+                title.innerHTML = '<i class="fas fa-reply ms-2"></i> نموذج استلام السيارة: {{ vehicle.plate_number }}';
+            }
+        };
+        
+        if (handoverTypeSelect) {
+            handoverTypeSelect.addEventListener('change', updateFormTitle);
+            updateFormTitle(); // تحديث العنوان عند تحميل الصفحة
+        }
+        
+
+        
+
+        // // ===== إدارة رفع الملفات =====
+        // const filesInput = document.getElementById('files');
+        // const pdfFilesInput = document.getElementById('pdf-files');
+        // const filePreviews = document.getElementById('file-previews');
+        // const imagePreviewTemplate = document.getElementById('image-preview-template');
+        // const pdfPreviewTemplate = document.getElementById('pdf-preview-template');
+        // const filterImagesBtn = document.getElementById('filterImages');
+        // const filterPdfsBtn = document.getElementById('filterPdfs');
+        
+        // // مصفوفة لتخزين الملفات المؤقتة
+        // let filesTransferList = new DataTransfer();
+        
+        // // إضافة معاينة للملف المختار
+        // function addFilePreview(file) {
+        //     // إضافة الملف إلى قائمة النقل
+        //     filesTransferList.items.add(file);
+            
+        //     // تحديث قائمة الملفات في حقل الإدخال
+        //     filesInput.files = filesTransferList.files;
+            
+        //     // تحديد نوع الملف وإنشاء معاينة مناسبة
+        //     const isPdf = file.name.toLowerCase().endsWith('.pdf');
+        //     const previewTemplate = isPdf ? pdfPreviewTemplate : imagePreviewTemplate;
+        //     const previewClone = previewTemplate.querySelector('.preview-item').cloneNode(true);
+            
+        //     // ضبط بيانات الملف
+        //     if (isPdf) {
+        //         previewClone.querySelector('.pdf-filename').textContent = file.name;
+        //     } else {
+        //         const imageElement = previewClone.querySelector('.preview-image');
+        //         const reader = new FileReader();
+        //         reader.onload = function(e) {
+        //             imageElement.src = e.target.result;
+        //         };
+        //         reader.readAsDataURL(file);
+        //     }
+            
+        //     // ضبط حقل الوصف
+        //     const descriptionInput = previewClone.querySelector('.file-description');
+        //     descriptionInput.name = `description_${file.name}`;
+        //     descriptionInput.dataset.fileName = file.name;
+            
+        //     // الاحتفاظ بمرجع للملف في عنصر المعاينة
+        //     previewClone.dataset.fileName = file.name;
+            
+        //     // إضافة المعاينة إلى القسم
+        //     filePreviews.appendChild(previewClone);
+        //     filePreviews.classList.remove('d-none');
+        // }
+        
+        // // حذف معاينة ملف وإزالته من قائمة الملفات
+        // function removeFilePreview(previewItem) {
+        //     const fileName = previewItem.dataset.fileName;
+            
+        //     // إنشاء قائمة نقل جديدة بدون الملف المحذوف
+        //     const newTransferList = new DataTransfer();
+            
+        //     for (let i = 0; i < filesTransferList.files.length; i++) {
+        //         const file = filesTransferList.files[i];
+        //         if (file.name !== fileName) {
+        //             newTransferList.items.add(file);
+        //         }
+        //     }
+            
+        //     // تحديث قائمة النقل وحقل الإدخال
+        //     filesTransferList = newTransferList;
+        //     filesInput.files = filesTransferList.files;
+            
+        //     // إزالة عنصر المعاينة من DOM
+        //     filePreviews.removeChild(previewItem);
+            
+        //     // إخفاء قسم المعاينة إذا لم تعد هناك معاينات
+        //     if (filePreviews.querySelectorAll('.preview-item').length <= 1) {
+        //         filePreviews.classList.add('d-none');
+        //     }
+        // }
+        
+        // // معالجة اختيار الملفات الرئيسية
+        // filesInput.addEventListener('change', function() {
+        //     if (this.files.length > 0) {
+        //         // إضافة معاينة لكل ملف تم اختياره
+        //         Array.from(this.files).forEach(file => {
+        //             addFilePreview(file);
+        //         });
+                
+        //         // مسح حقل الإدخال للسماح باختيار نفس الملفات مرة أخرى
+        //         this.value = '';
+        //     }
+        // });
+        
+        // // معالجة اختيار ملفات PDF من التبويب الثاني
+        // pdfFilesInput.addEventListener('change', function() {
+        //     if (this.files.length > 0) {
+        //         // إضافة معاينة لكل ملف PDF تم اختياره
+        //         Array.from(this.files).forEach(file => {
+        //             addFilePreview(file);
+        //         });
+                
+        //         // مسح حقل الإدخال للسماح باختيار نفس الملفات مرة أخرى
+        //         this.value = '';
+            // }
+        // });
+
+
+
+
+        // تصفية الملفات حسب النوع (صور فقط)
+        const filterImagesBtn = document.getElementById('filterImages');
+        if (filterImagesBtn) {
+            filterImagesBtn.addEventListener('click', function() {
+                filesInput.setAttribute('accept', 'image/*');
+                filesInput.click();
+                filesInput.setAttribute('accept', 'image/*,.pdf');
+            });
+        }
+        
+        // تصفية الملفات حسب النوع (PDF فقط)
+        const filterPdfsBtn = document.getElementById('filterPdfs');
+        if (filterPdfsBtn) {
+            filterPdfsBtn.addEventListener('click', function() {
+                const pdfFilesInput = document.getElementById('pdf-files');
+                if (pdfFilesInput) pdfFilesInput.click();
+            });
+        }
+        
+        // إدارة حذف الملفات عند النقر على زر الحذف
+        filePreviews.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-file')) {
+                // العثور على عنصر المعاينة الذي يحتوي على الملف
+                const previewItem = e.target.closest('.preview-item');
+                if (previewItem) {
+                    removeFilePreview(previewItem);
+                }
+            }
+        });
+        
+        // معالجة إرسال النموذج
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // التحقق من وجود ملفات مرفقة
+            if (filesTransferList.files.length === 0) {
+                if (!confirm('لم تقم برفع أي ملفات توثيقية (صور أو PDF). هل ترغب في المتابعة بدون ملفات؟')) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+    });
+
+            
+document.addEventListener('DOMContentLoaded', function () {
+
+
+// ===== بداية إدارة الملفات (نسخة مصححة مبنية على الكود الأصلي) =====
+
+const filesInput = document.getElementById('files');
+const filePreviews = document.getElementById('file-previews');
+const imagePreviewTemplate = document.getElementById('image-preview-template');
+const pdfPreviewTemplate = document.getElementById('pdf-preview-template');
+const triggerFileSelectBtn = document.getElementById('trigger-file-select');
+
+// مصفوفة لتخزين الملفات المجمعة
+let filesTransferList = new DataTransfer();
+
+// وظيفة إضافة معاينة للملف المختار
+function addFilePreview(file) {
+    // 1. التحقق من عدم وجود الملف مسبقاً
+    for (let i = 0; i < filesTransferList.files.length; i++) {
+        if (filesTransferList.files[i].name === file.name && filesTransferList.files[i].size === file.size) {
+            console.log(`الملف ${file.name} موجود بالفعل.`);
+            return; // لا تقم بإضافته مرة أخرى
+        }
+    }
+
+    // 2. إضافة الملف إلى قائمة النقل
+    filesTransferList.items.add(file);
+    
+    // 3. تحديث قائمة الملفات في حقل الإدخال الأصلي (هذه هي الخطوة الحاسمة)
+    filesInput.files = filesTransferList.files;
+    
+    // 4. إنشاء المعاينة في الواجهة
+    const isPdf = file.name.toLowerCase().endsWith('.pdf');
+    const template = isPdf ? pdfPreviewTemplate : imagePreviewTemplate;
+    const previewClone = template.firstElementChild.cloneNode(true);
+    
+    // ربط زر الحذف بالوظيفة الصحيحة
+    const removeBtn = previewClone.querySelector('.remove-file');
+    removeBtn.addEventListener('click', () => removeFilePreview(previewClone, file));
+
+    if (isPdf) {
+        previewClone.querySelector('.pdf-filename').textContent = file.name;
+    } else {
+        const imageElement = previewClone.querySelector('.preview-image');
+        const reader = new FileReader();
+        reader.onload = e => { imageElement.src = e.target.result; };
+        reader.readAsDataURL(file);
+    }
+    
+    const descriptionInput = previewClone.querySelector('.file-description');
+    descriptionInput.name = `description_${file.name}`; // لتمييز الوصف في الخادم
+    
+    filePreviews.appendChild(previewClone);
+}
+
+// وظيفة حذف معاينة ملف وإزالته من قائمة الملفات
+function removeFilePreview(previewItem, fileToRemove) {
+    const newTransferList = new DataTransfer();
+    
+    for (let i = 0; i < filesTransferList.files.length; i++) {
+        const file = filesTransferList.files[i];
+        if (file.name !== fileToRemove.name || file.size !== fileToRemove.size) {
+            newTransferList.items.add(file);
+        }
+    }
+    
+    filesTransferList = newTransferList; // تحديث القائمة العالمية
+    filesInput.files = filesTransferList.files; // تحديث حقل الإدخال
+    
+    previewItem.remove(); // إزالة عنصر المعاينة من الصفحة
+}
+
+// زر مرئي لتشغيل حقل الإدخال المخفي
+triggerFileSelectBtn.addEventListener('click', () => {
+    // ننشئ حقل إدخال مؤقت في كل مرة للسماح باختيار ملفات جديدة
+    const tempInput = document.createElement('input');
+    tempInput.type = 'file';
+    tempInput.multiple = true;
+    tempInput.accept = "image/*,application/pdf";
+    
+    tempInput.addEventListener('change', () => {
+        Array.from(tempInput.files).forEach(addFilePreview);
+    });
+
+    tempInput.click();
+});
+
+// --- هذا الكود لم يعد مطلوباً لأننا وحدنا عملية الرفع ---
+// const pdfFilesInput = ...
+// const filterImagesBtn = ...
+// const filterPdfsBtn = ...
+// event listeners الخاصة بهم
+// ----------------------------------------------------
+
+// ===== نهاية إدارة الملفات =====
+
+            
+        });
+
+
+
+// ===== بداية كود تفعيل قسم المشرف =====
+document.addEventListener('DOMContentLoaded', function() {
+    // تحديد عناصر قسم المشرف
+    const supervisorDepartmentSelect = document.getElementById('supervisorDepartmentSelect');
+    const supervisorSearchInput = document.getElementById('supervisorSearchInput');
+    const supervisorsTableBody = document.getElementById('supervisorsTableBody');
+    const supervisorNameInput = document.getElementById('supervisor_name');
+    const supervisorIdInput = document.getElementById('supervisor_employee_id');
+
+    // التأكد من وجود العناصر قبل إضافة أي وظائف
+    if (supervisorsTableBody && supervisorDepartmentSelect && supervisorSearchInput && supervisorNameInput && supervisorIdInput) {
+
+        const allSupervisorRows = supervisorsTableBody.querySelectorAll('.supervisor-row');
+
+        // دالة التصفية الخاصة بالمشرفين فقط
+        function filterSupervisors() {
+            const departmentId = supervisorDepartmentSelect.value.trim();
+            const searchTerm = supervisorSearchInput.value.toLowerCase().trim();
+
+            allSupervisorRows.forEach(row => {
+                const rowDeptId = row.dataset.departmentId || '';
+                const rowText = row.textContent.toLowerCase();
+
+                // تطابق القسم - التعامل مع أقسام متعددة
+                let departmentMatch = true;
+                if (departmentId && departmentId !== '') {
+                    // تحويل معرفات الأقسام إلى مصفوفة
+                    const employeeDeptIds = rowDeptId ? rowDeptId.split(',') : [];
+                    departmentMatch = employeeDeptIds.includes(String(departmentId));
+                }
+                
+                const searchMatch = !searchTerm || rowText.includes(searchTerm);
+
+                if (departmentMatch && searchMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // ربط أحداث التصفية بعناصر المشرف
+        supervisorDepartmentSelect.addEventListener('change', filterSupervisors);
+        supervisorSearchInput.addEventListener('keyup', filterSupervisors);
+
+        // استخدام تفويض الأحداث لزر "اختيار" في جدول المشرفين
+        supervisorsTableBody.addEventListener('click', function(e) {
+            const selectButton = e.target.closest('.select-supervisor-btn');
+            
+            if (selectButton) {
+                const selectedRow = selectButton.closest('tr');
+                const employeeName = selectedRow.dataset.name;
+                const employeeId = selectedRow.dataset.id;
+                
+                // تعبئة حقول المشرف فقط
+                supervisorNameInput.value = employeeName;
+                supervisorIdInput.value = employeeId;
+            }
+        });
+    } else {
+        console.error('One or more supervisor selector elements are missing from the page.');
+    }
+});
+// ===== نهاية كود تفعيل قسم المشرف =====
+
+// ===== حذف الصور الموجودة =====
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAllImages');
+    const imageCheckboxes = document.querySelectorAll('.image-checkbox');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedImages');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const deleteButtons = document.querySelectorAll('.delete-existing-image');
+    
+    // تحديد الكل
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            imageCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateDeleteButton();
+        });
+    }
+    
+    // تحديث عداد الصور المحددة وإظهار زر الحذف
+    function updateDeleteButton() {
+        const checkedCount = document.querySelectorAll('.image-checkbox:checked').length;
+        if (selectedCountSpan) selectedCountSpan.textContent = checkedCount;
+        
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.style.display = checkedCount > 0 ? 'inline-block' : 'none';
+        }
+        
+        // تحديث حالة تحديد الكل
+        if (selectAllCheckbox) {
+            const allChecked = imageCheckboxes.length > 0 && 
+                             Array.from(imageCheckboxes).every(cb => cb.checked);
+            selectAllCheckbox.checked = allChecked;
+        }
+    }
+    
+    // تحديث عند تغيير أي صورة
+    imageCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateDeleteButton);
+    });
+    
+    // حذف الصور المحددة
+    if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.image-checkbox:checked');
+            const imageIds = Array.from(checkedBoxes).map(cb => cb.dataset.imageId);
+            
+            if (imageIds.length === 0) return;
+            
+            if (confirm(`هل أنت متأكد من حذف ${imageIds.length} صورة؟ لا يمكن التراجع عن هذا الإجراء.`)) {
+                // حذف كل صورة محددة
+                let deletedCount = 0;
+                imageIds.forEach(imageId => {
+                    fetch(`/vehicles/handover/image/${imageId}/delete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const imageContainer = document.getElementById('existing-image-' + imageId);
+                            if (imageContainer) {
+                                imageContainer.style.display = 'none';
+                            }
+                            deletedCount++;
+                            
+                            // عرض رسالة نجاح بعد حذف جميع الصور
+                            if (deletedCount === imageIds.length) {
+                                const alertDiv = document.createElement('div');
+                                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                                alertDiv.innerHTML = `
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    تم حذف ${deletedCount} صورة بنجاح
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                `;
+                                document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.container-fluid').firstChild);
+                                setTimeout(() => alertDiv.remove(), 3000);
+                                updateDeleteButton();
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء حذف الصورة');
+                    });
+                });
+            }
+        });
+    }
+    
+    // حذف صورة واحدة
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const imageId = this.getAttribute('data-image-id');
+            const imageContainer = document.getElementById('existing-image-' + imageId);
+            
+            if (confirm('هل أنت متأكد من حذف هذه الصورة؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                fetch(`/vehicles/handover/image/${imageId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        imageContainer.style.display = 'none';
+                        
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                        alertDiv.innerHTML = `
+                            <i class="fas fa-check-circle me-2"></i>
+                            تم حذف الصورة بنجاح
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                        document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.container-fluid').firstChild);
+                        setTimeout(() => alertDiv.remove(), 3000);
+                        updateDeleteButton();
+                    } else {
+                        alert('حدث خطأ أثناء حذف الصورة: ' + (data.message || 'خطأ غير معروف'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء حذف الصورة');
+                });
+            }
+        });
+    });
+});
+// ===== نهاية حذف الصور =====
+</script>

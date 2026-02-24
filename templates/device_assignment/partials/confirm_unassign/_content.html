@@ -1,0 +1,69 @@
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="confirm-card text-center">
+                <i class="fas fa-exclamation-triangle warning-icon"></i>
+                <h2 class="mb-4">تأكيد فك الربط</h2>
+                
+                <div class="assignment-details text-start">
+                    <h5 class="mb-3">
+                        <i class="fas fa-user me-2"></i>
+                        الموظف: <strong>{{ assignment.employee.name }}</strong>
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-light">رقم الموظف: {{ assignment.employee.employee_id }}</small><br>
+                            <small class="text-light">رقم الهوية: {{ assignment.employee.national_id or 'غير محدد' }}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-light">تاريخ الربط: {{ assignment.assignment_date.strftime('%Y-%m-%d') if assignment.assignment_date }}</small><br>
+                            <small class="text-light">نوع الربط: {{ assignment.assignment_type }}</small>
+                        </div>
+                    </div>
+                    
+                    {% if assignment.device %}
+                    <div class="device-info mt-3">
+                        <h6><i class="fas fa-mobile-alt me-2"></i>الجهاز المربوط</h6>
+                        <p class="mb-1"><strong>IMEI:</strong> {{ assignment.device.imei }}</p>
+                        <p class="mb-0"><small>{{ assignment.device.device_brand or 'غير محدد' }} {{ assignment.device.device_model or 'غير محدد' }}</small></p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if assignment.sim_card %}
+                    <div class="sim-info mt-3">
+                        <h6><i class="fas fa-sim-card me-2"></i>بطاقة SIM المربوطة</h6>
+                        <p class="mb-1"><strong>الرقم:</strong> {{ assignment.sim_card.phone_number }}</p>
+                        <p class="mb-0"><small>الشبكة: {{ assignment.sim_card.carrier }}</small></p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <form method="POST" action="{{ url_for('device_assignment.unassign', assignment_id=assignment.id) }}">
+                    <div class="mb-4 text-start">
+                        <label class="form-label text-light" for="reason">سبب فك الربط</label>
+                        <textarea name="reason" id="reason" class="form-control" rows="4" 
+                                  placeholder="اذكر سبب فك الربط... (مثال: انتهاء عقد الموظف، تلف الجهاز، إعادة تخصيص الجهاز)"
+                                  required></textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('device_assignment.index') }}" class="btn btn-cancel">
+                            <i class="fas fa-times me-2"></i>إلغاء
+                        </a>
+                        <button type="submit" class="btn btn-confirm">
+                            <i class="fas fa-unlink me-2"></i>تأكيد فك الربط
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-4">
+                    <small class="text-light opacity-75">
+                        <i class="fas fa-info-circle me-1"></i>
+                        سيتم تسجيل هذه العملية في سجل النشاطات
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

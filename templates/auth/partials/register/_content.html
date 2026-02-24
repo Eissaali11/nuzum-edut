@@ -1,0 +1,59 @@
+<div class="auth-wrapper">
+    <div class="container">
+        <div class="register-container">
+            <div class="register-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="شعار النظام" class="img-fluid">
+            </div>
+            <h1 class="system-name">نظام إدارة الموظفين</h1>
+            <h2 class="register-title mb-4">إنشاء حساب جديد</h2>
+            
+            <form method="POST" action="{{ url_for('auth.register') }}">
+                {{ form.hidden_tag() if form }}
+                <div class="mb-3">
+                    <label for="name" class="form-label">الاسم</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">
+                            <i class="fas fa-user text-info"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0" id="name" name="name" placeholder="أدخل اسمك الكامل" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">البريد الإلكتروني</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">
+                            <i class="fas fa-envelope text-info"></i>
+                        </span>
+                        <input type="email" class="form-control border-start-0" id="email" name="email" placeholder="أدخل بريدك الإلكتروني" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">كلمة المرور</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">
+                            <i class="fas fa-lock text-info"></i>
+                        </span>
+                        <input type="password" class="form-control border-start-0" id="password" name="password" placeholder="أدخل كلمة المرور" required>
+                    </div>
+                    <div class="form-text mt-1">يجب أن تكون كلمة المرور أكثر من 6 أحرف</div>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label">تأكيد كلمة المرور</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">
+                            <i class="fas fa-lock text-info"></i>
+                        </span>
+                        <input type="password" class="form-control border-start-0" id="confirm_password" name="confirm_password" placeholder="أعد إدخال كلمة المرور" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary register-btn">
+                    <i class="fas fa-user-plus me-2"></i>إنشاء حساب
+                </button>
+            </form>
+            
+            <div class="mt-4 text-center">
+                <p class="mb-1">لديك حساب بالفعل؟ <a href="{{ url_for('auth.login') }}">تسجيل الدخول</a></p>
+            </div>
+        </div>
+    </div>
+</div>

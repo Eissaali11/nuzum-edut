@@ -1,0 +1,142 @@
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>تعديل سجل راتب</h1>
+        <a href="{{ url_for('salaries.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة للقائمة
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">بيانات الراتب</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('salaries.edit', id=salary.id) }}" method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="employee_id" class="form-label required-field">الموظف</label>
+                                <select class="form-select" id="employee_id" name="employee_id" disabled>
+                                    <option value="{{ salary.employee.id }}" selected>
+                                        {{ salary.employee.name }} ({{ salary.employee.employee_id }})
+                                    </option>
+                                </select>
+                                <div class="form-text">لا يمكن تغيير الموظف، يمكنك إنشاء سجل جديد بدلاً من ذلك.</div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label for="month" class="form-label required-field">الشهر</label>
+                                <select class="form-select" id="month" name="month">
+                                    {% for m in range(1, 13) %}
+                                        <option value="{{ m }}" {% if m == salary.month %}selected{% endif %}>{{ m }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label for="year" class="form-label required-field">السنة</label>
+                                <select class="form-select" id="year" name="year">
+                                    {% for y in range(current_year-3, current_year+2) %}
+                                        <option value="{{ y }}" {% if y == salary.year %}selected{% endif %}>{{ y }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- قسم حساب الراتب من الحضور -->
+                        <div class="mb-4">
+                            <div class="alert alert-primary border-primary">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-calendar-check me-2"></i>
+                                        <strong>حساب الراتب من سجلات الحضور</strong>
+                                        <p class="mb-0 mt-2 small">سيتم حساب الخصومات تلقائياً بناءً على أيام الغياب</p>
+                                    </div>
+                                    <button type="button" class="btn btn-success" id="calculate_from_attendance_btn" onclick="calculateFromAttendance()">
+                                        <i class="fas fa-calculator me-1"></i> احسب من الحضور
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- منطقة عرض ملخص الحضور -->
+                            <div id="attendance_summary" class="alert alert-info d-none mt-3">
+                                <h6><i class="fas fa-chart-bar me-2"></i>ملخص الحضور</h6>
+                                <div id="attendance_details"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="basic_salary" class="form-label required-field">الراتب الأساسي</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="basic_salary" name="basic_salary" 
+                                           min="0" step="0.01" required onchange="calculateNetSalary()" value="{{ salary.basic_salary }}">
+                                    <span class="input-group-text">ر.س</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="allowances" class="form-label">البدلات</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="allowances" name="allowances" 
+                                           min="0" step="0.01" value="{{ salary.allowances }}" onchange="calculateNetSalary()">
+                                    <span class="input-group-text">ر.س</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="deductions" class="form-label">الخصومات</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="deductions" name="deductions" 
+                                           min="0" step="0.01" value="{{ salary.deductions }}" onchange="calculateNetSalary()">
+                                    <span class="input-group-text">ر.س</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="bonus" class="form-label">المكافآت</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="bonus" name="bonus" 
+                                           min="0" step="0.01" value="{{ salary.bonus }}" onchange="calculateNetSalary()">
+                                    <span class="input-group-text">ر.س</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">ملاحظات</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3">{{ salary.notes }}</textarea>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calculator me-3 fs-4"></i>
+                                <div>
+                                    <p class="mb-1">صافي الراتب:</p>
+                                    <h3 id="net_salary_display">{{ salary.net_salary }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 d-flex justify-content-between">
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i> حفظ التعديلات
+                                </button>
+                                <a href="{{ url_for('salaries.index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times me-1"></i> إلغاء
+                                </a>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('salaries.confirm_delete', id=salary.id) }}" class="btn btn-danger">
+                                    <i class="fas fa-trash me-1"></i> حذف الراتب
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

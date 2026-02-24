@@ -1,0 +1,136 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const departmentCheckboxes = document.querySelectorAll('input[name="department_ids"]');
+    const submitBtn = document.getElementById('submitBtn');
+    const selectedSummary = document.getElementById('selectedSummary');
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+    
+    // Toggle تحديد قسم
+    window.toggleDepartment = function(id) {
+        const checkbox = document.getElementById('dept' + id);
+        const card = document.getElementById('deptCard' + id);
+        
+        checkbox.checked = !checkbox.checked;
+        if (checkbox.checked) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
+        
+        updateCounts();
+    };
+    
+    // تحديد الكل
+    selectAllBtn.addEventListener('click', function() {
+        const allSelected = Array.from(departmentCheckboxes).every(cb => cb.checked);
+        
+        departmentCheckboxes.forEach(checkbox => {
+            checkbox.checked = !allSelected;
+            const card = document.getElementById('deptCard' + checkbox.value);
+            if (!allSelected) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        });
+        
+        if (!allSelected) {
+            selectAllBtn.classList.add('active');
+            selectAllBtn.innerHTML = '<i class="fas fa-check-square"></i> إلغاء الكل';
+        } else {
+            selectAllBtn.classList.remove('active');
+            selectAllBtn.innerHTML = '<i class="fas fa-check-square"></i> تحديد الكل';
+        }
+        
+        updateCounts();
+    });
+    
+    // تحديث العدادات
+    function updateCounts() {
+        let totalEmployees = 0;
+        let totalDepartments = 0;
+        
+        departmentCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                totalDepartments++;
+                totalEmployees += parseInt(checkbox.dataset.employees) || 0;
+            }
+        });
+        
+        // حساب عدد الأيام
+        const days = calculateDays();
+        const totalRecords = totalEmployees * days;
+        
+        // تحديث العرض
+        document.getElementById('totalEmployees').textContent = totalEmployees;
+        document.getElementById('totalDepartments').textContent = totalDepartments;
+        document.getElementById('totalDays').textContent = days;
+        document.getElementById('totalRecords').textContent = totalRecords;
+        
+        // تحديث عدادات الحالة
+        document.getElementById('countPresent').textContent = totalEmployees;
+        document.getElementById('countAbsent').textContent = totalEmployees;
+        document.getElementById('countLeave').textContent = totalEmployees;
+        document.getElementById('countSick').textContent = totalEmployees;
+        
+        // إظهار/إخفاء العداد
+        if (totalDepartments > 0) {
+            selectedSummary.classList.add('show');
+            submitBtn.disabled = false;
+        } else {
+            selectedSummary.classList.remove('show');
+            submitBtn.disabled = true;
+        }
+    }
+    
+    // حساب عدد الأيام
+    function calculateDays() {
+        const start = new Date(startDate.value);
+        const end = new Date(endDate.value);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays + 1; // +1 لتضمين اليوم الأخير
+    }
+    
+    // عند تغيير التواريخ
+    startDate.addEventListener('change', updateCounts);
+    endDate.addEventListener('change', updateCounts);
+    
+    // عند تغيير checkbox
+    departmentCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const card = document.getElementById('deptCard' + this.value);
+            if (this.checked) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+            updateCounts();
+        });
+    });
+    
+    // إعادة التعيين
+    document.querySelector('.reset-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        departmentCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            document.getElementById('deptCard' + checkbox.value).classList.remove('selected');
+        });
+        selectAllBtn.classList.remove('active');
+        selectAllBtn.innerHTML = '<i class="fas fa-check-square"></i> تحديد الكل';
+        updateCounts();
+    });
+    
+    // تأكيد قبل الإرسال
+    document.getElementById('massAttendanceForm').addEventListener('submit', function(e) {
+        const totalRecords = parseInt(document.getElementById('totalRecords').textContent);
+        if (totalRecords > 100) {
+            if (!confirm(`سيتم إنشاء ${totalRecords} سجل حضور. هل أنت متأكد؟`)) {
+                e.preventDefault();
+            }
+        }
+    });
+});
+</script>

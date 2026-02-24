@@ -1,0 +1,367 @@
+<div class="container-fluid mt-4">
+    <!-- Enhanced Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h2 class="mb-0">
+                    <i class="fas fa-list-alt ms-2"></i>
+                    القائمة التفصيلية للسيارات
+                </h2>
+                <p class="text-muted mb-0">إدارة شاملة لمعلومات جميع السيارات</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('vehicles.create') }}" class="btn-enhanced btn-success-enhanced">
+                    <i class="fas fa-plus ms-1"></i>
+                    إضافة سيارة
+                </a>
+                <a href="{{ url_for('vehicles.index') }}" class="btn-enhanced btn-secondary-enhanced">
+                    <i class="fas fa-list ms-1"></i>
+                    القائمة المختصرة
+                </a>
+                <a href="{{ url_for('vehicles.dashboard') }}" class="btn-enhanced btn-info-enhanced">
+                    <i class="fas fa-tachometer-alt ms-1"></i>
+                    لوحة المعلومات
+                </a>
+                <form method="post" action="{{ url_for('vehicles.update_drivers') }}" style="display: inline;">
+                    {{ csrf_token() }}
+                    <button type="submit" class="btn-enhanced btn-warning-enhanced" onclick="return confirm('هل تريد تحديث أسماء جميع السائقين من سجلات التسليم؟')">
+                        <i class="fas fa-sync ms-1"></i>
+                        تحديث السائقين
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Enhanced Filters Section -->
+    <div class="filters-section collapse show" id="filtersSection">
+        <form method="get" action="{{ url_for('vehicles.detailed_list') }}">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label for="status" class="form-label">حالة السيارة</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">الكل</option>
+                        <option value="available" {% if request.args.get('status') == 'available' %}selected{% endif %}>متاحة</option>
+                        <option value="rented" {% if request.args.get('status') == 'rented' %}selected{% endif %}>مؤجرة</option>
+                        <option value="in_project" {% if request.args.get('status') == 'in_project' %}selected{% endif %}>في المشروع</option>
+                        <option value="in_workshop" {% if request.args.get('status') == 'in_workshop' %}selected{% endif %}>في الورشة</option>
+                        <option value="accident" {% if request.args.get('status') == 'accident' %}selected{% endif %}>حادث</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="make" class="form-label">الشركة المصنعة</label>
+                    <select class="form-select" id="make" name="make">
+                        <option value="">الكل</option>
+                        {% for make in makes %}
+                            <option value="{{ make }}" {% if request.args.get('make') == make %}selected{% endif %}>{{ make }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="year" class="form-label">سنة الصنع</label>
+                    <select class="form-select" id="year" name="year">
+                        <option value="">الكل</option>
+                        {% for year in years %}
+                            <option value="{{ year }}" {% if request.args.get('year') == year|string %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="project" class="form-label">المشروع</label>
+                    <select class="form-select" id="project" name="project">
+                        <option value="">الكل</option>
+                        {% for project in projects %}
+                            <option value="{{ project }}" {% if request.args.get('project') == project %}selected{% endif %}>{{ project }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="location" class="form-label">الموقع</label>
+                    <select class="form-select" id="location" name="location">
+                        <option value="">الكل</option>
+                        {% for location in locations %}
+                            <option value="{{ location }}" {% if request.args.get('location') == location %}selected{% endif %}>{{ location }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="sort" class="form-label">ترتيب حسب</label>
+                    <select class="form-select" id="sort" name="sort">
+                        <option value="plate_number" {% if request.args.get('sort') == 'plate_number' %}selected{% endif %}>رقم اللوحة</option>
+                        <option value="make" {% if request.args.get('sort') == 'make' %}selected{% endif %}>الشركة المصنعة</option>
+                        <option value="year" {% if request.args.get('sort') == 'year' %}selected{% endif %}>سنة الصنع</option>
+                        <option value="status" {% if request.args.get('sort') == 'status' %}selected{% endif %}>الحالة</option>
+                        <option value="created_at" {% if request.args.get('sort') == 'created_at' %}selected{% endif %}>تاريخ الإضافة</option>
+                    </select>
+                </div>
+                <div class="col-md-9">
+                    <label for="search" class="form-label">بحث</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="search" name="search" 
+                               value="{{ request.args.get('search', '') }}" 
+                               placeholder="ابحث برقم اللوحة، النوع، اللون...">
+                    </div>
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn-enhanced btn-primary-enhanced flex-grow-1">
+                        <i class="fas fa-search ms-1"></i>
+                        بحث
+                    </button>
+                    <a href="{{ url_for('vehicles.detailed_list') }}" class="btn-enhanced btn-secondary-enhanced">
+                        <i class="fas fa-redo ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Filter Toggle Button -->
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-sm filter-toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#filtersSection">
+            <i class="fas fa-filter ms-1"></i>
+            <span class="filter-text">إخفاء خيارات البحث</span>
+        </button>
+    </div>
+    
+    <!-- Results Count -->
+    <div class="mb-3 d-flex gap-2">
+        <span class="badge badge-enhanced bg-secondary">
+            <i class="fas fa-car me-1"></i>
+            إجمالي السيارات: {{ total_count }}
+        </span>
+        {% if vehicles %}
+            <span class="badge badge-enhanced bg-info">
+                <i class="fas fa-list me-1"></i>
+                عدد النتائج: {{ vehicles|length }}
+            </span>
+        {% endif %}
+    </div>
+    
+    <!-- Enhanced Vehicles Table -->
+    <div class="table-container mb-4">
+        <div class="table-responsive">
+            <table class="table table-hover vehicle-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>رقم اللوحة</th>
+                        <th>نوع السيارة</th>
+                        <th>سنة الصنع</th>
+                        <th>اللون</th>
+                        <th>اسم السائق</th>
+                        <th>الحالة</th>
+                        <th>حالة الإيجار</th>
+                        <th>تكلفة الإيجار</th>
+                        <th>تاريخ دخول الورشة</th>
+                        <th>إيصال الورشة</th>
+                        <th>المشروع</th>
+                        <th>الموقع</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if vehicles %}
+                        {% for vehicle in vehicles %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    <span class="badge badge-enhanced badge-plate">
+                                        <i class="fas fa-car me-1"></i>
+                                        {{ vehicle.plate_number }}
+                                    </span>
+                                </td>
+                                <td>{{ vehicle.make }} {{ vehicle.model }}</td>
+                                <td>{{ vehicle.year }}</td>
+                                <td>
+                                    <span class="badge badge-enhanced rounded-pill" style="background-color: {{ vehicle.color }}; color: {{ '#000' if vehicle.color in ['white', 'yellow', 'silver'] else '#fff' }};">
+                                        <i class="fas fa-palette me-1"></i>
+                                        {{ vehicle.color }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if vehicle.driver_name %}
+                                        <span class="fw-bold text-primary">
+                                            <i class="fas fa-user ms-1"></i>
+                                            {{ vehicle.driver_name }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">غير محدد</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="vehicle-status status-{{ vehicle.status }}"></span>
+                                    {% if vehicle.status == 'available' %}
+                                        <span class="badge badge-enhanced bg-success">متاحة</span>
+                                    {% elif vehicle.status == 'rented' %}
+                                        <span class="badge badge-enhanced bg-primary">مؤجرة</span>
+                                    {% elif vehicle.status == 'in_project' %}
+                                        <span class="badge badge-enhanced bg-info">في المشروع</span>
+                                    {% elif vehicle.status == 'in_workshop' %}
+                                        <span class="badge badge-enhanced bg-warning">في الورشة</span>
+                                    {% elif vehicle.status == 'accident' %}
+                                        <span class="badge badge-enhanced bg-danger">حادث</span>
+                                    {% else %}
+                                        <span class="badge badge-enhanced bg-secondary">{{ vehicle.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if vehicle.active_rental %}
+                                        <span class="badge badge-enhanced bg-primary">
+                                            <i class="fas fa-check-circle ms-1"></i>
+                                            مؤجرة
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-enhanced bg-secondary">
+                                            <i class="fas fa-times-circle ms-1"></i>
+                                            غير مؤجرة
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if vehicle.active_rental %}
+                                        <span class="fw-bold">{{ "{:,.0f}".format(vehicle.active_rental.monthly_cost) }} ريال</span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if vehicle.latest_workshop %}
+                                        <span class="badge badge-enhanced bg-warning">
+                                            <i class="fas fa-calendar-day me-1"></i>
+                                            {{ vehicle.latest_workshop.entry_date.strftime('%Y-%m-%d') }}
+                                        </span>
+                                        {% if not vehicle.latest_workshop.exit_date %}
+                                            <span class="badge badge-enhanced bg-danger mt-1 d-block">ما زالت بالورشة</span>
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if vehicle.latest_workshop %}
+                                        {% if vehicle.latest_workshop.cost > 0 %}
+                                            <span class="fw-bold">{{ "{:,.0f}".format(vehicle.latest_workshop.cost) }} ريال</span>
+                                        {% else %}
+                                            <span class="badge badge-enhanced bg-secondary">لا يوجد</span>
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if vehicle.active_project %}
+                                        <span class="badge badge-enhanced badge-project">
+                                            <i class="fas fa-hard-hat me-1"></i>
+                                            {{ vehicle.active_project.project_name }}
+                                        </span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if vehicle.active_project %}
+                                        <span class="badge badge-enhanced badge-location">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            {{ vehicle.active_project.location }}
+                                        </span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url_for('vehicles.view', id=vehicle.id) }}" 
+                                           class="btn btn-sm btn-primary-enhanced"
+                                           title="عرض التفاصيل">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('vehicles.edit', id=vehicle.id) }}" 
+                                           class="btn btn-sm btn-warning-enhanced"
+                                           title="تعديل السيارة">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="14">
+                                <div class="empty-state">
+                                    <i class="fas fa-car"></i>
+                                    <h5>لا توجد سيارات لعرضها</h5>
+                                    <p class="text-muted">جرب تغيير معايير البحث أو <a href="{{ url_for('vehicles.create') }}" class="text-primary">أضف سيارة جديدة</a></p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+    </div>
+    
+    <!-- Enhanced Pagination -->
+    {% if pagination and pagination.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination pagination-enhanced">
+                {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('vehicles.detailed_list', page=pagination.prev_num, **request.args) }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        {% if page != pagination.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('vehicles.detailed_list', page=page, **request.args) }}">{{ page }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item active">
+                                <a class="page-link" href="#">{{ page }}</a>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">...</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('vehicles.detailed_list', page=pagination.next_num, **request.args) }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+    
+    <!-- Export Button -->
+    <div class="text-center mt-4 mb-5">
+        <a href="{{ url_for('vehicles.export_vehicles_excel', **request.args) }}" class="btn-enhanced btn-success-enhanced">
+            <i class="fas fa-file-excel me-1"></i>
+            تصدير النتائج إلى Excel
+        </a>
+    </div>
+</div>

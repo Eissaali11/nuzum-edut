@@ -1,0 +1,113 @@
+<div class="leave-container">
+    <h1 style="margin-bottom:1rem;"><i class="fas fa-user-check"></i> إدارة طلبات الإجازة</h1>
+
+    <h3>الطلبات المعلقة</h3>
+    <table class="table" id="pendingTable">
+        <thead>
+            <tr>
+                <th>الموظف</th>
+                <th>النوع</th>
+                <th>الفترة</th>
+                <th>الأيام</th>
+                <th>السبب</th>
+                <th>الإجراء</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in pending_requests %}
+            <tr id="req-row-{{ req.id }}">
+                <td>{{ req.employee.name if req.employee else req.employee_id }}</td>
+                <td>{{ req.leave_type }}</td>
+                <td>{{ req.start_date }} → {{ req.end_date }}</td>
+                <td>{{ req.working_days }}</td>
+                <td>{{ req.reason or '-' }}</td>
+                <td>
+                    <button class="btn btn-approve" onclick="approveRequest({{ req.id }})">موافقة</button>
+                    <button class="btn btn-reject" onclick="rejectRequest({{ req.id }})">رفض</button>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">لا توجد طلبات معلقة.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr style="margin:1.5rem 0; border:0; border-top:1px solid #edf2f7;">
+
+    <h3>عرض تقويم الإجازات</h3>
+    <form class="controls" method="GET" action="{{ url_for('leaves.manager_dashboard') }}">
+        <label>الشهر</label>
+        <input type="number" name="month" min="1" max="12" value="{{ month }}">
+        <label>السنة</label>
+        <input type="number" name="year" min="2000" max="2100" value="{{ year }}">
+        <button class="btn" style="background:var(--primary);color:white;" type="submit">عرض</button>
+    </form>
+
+    <table class="calendar-grid">
+        <thead>
+            <tr>
+                <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for week in days_matrix %}
+            <tr>
+                {% for day in week %}
+                <td>
+                    {% if day != 0 %}
+                        <div class="day-num">{{ day }}</div>
+                        {% for ev in calendar_events.get(day, []) %}
+                            <div class="event-item event-{{ ev.status|lower }}">{{ ev.employee }} - {{ ev.type }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function approveRequest(requestId) {
+    const managerNotes = prompt('ملاحظات المدير (اختياري):', '') || '';
+    const body = new URLSearchParams({ manager_notes: managerNotes });
+
+    fetch(`{{ url_for('leaves.approve_leave_request', request_id=0) }}`.replace('0', requestId), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const row = document.getElementById(`req-row-${requestId}`);
+            if (row) row.remove();
+        } else {
+            alert(data.message || 'تعذر الموافقة');
+        }
+    });
+}
+
+function rejectRequest(requestId) {
+    const reason = prompt('سبب الرفض:');
+    if (!reason) return;
+
+    const body = new URLSearchParams({ rejection_reason: reason });
+
+    fetch(`{{ url_for('leaves.reject_leave_request', request_id=0) }}`.replace('0', requestId), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const row = document.getElementById(`req-row-${requestId}`);
+            if (row) row.remove();
+        } else {
+            alert(data.message || 'تعذر الرفض');
+        }
+    });
+}
+</script>

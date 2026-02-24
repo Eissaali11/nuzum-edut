@@ -1,0 +1,76 @@
+<div class="leave-container">
+    <h1 style="margin-bottom:1rem;"><i class="fas fa-plane-departure"></i> طلبات الإجازة</h1>
+
+    <div class="summary-cards">
+        {% for b in balances %}
+        <div class="summary-card">
+            <div style="font-weight:700;">{{ b.leave_type }} - {{ b.balance_year }}</div>
+            <div>المستحق: <span class="value">{{ "%.2f"|format(b.total_accrued) }}</span></div>
+            <div>المستخدم: {{ "%.2f"|format(b.used) }}</div>
+            <div>المتبقي: {{ "%.2f"|format(b.remaining) }}</div>
+        </div>
+        {% else %}
+        <div class="summary-card">لا توجد أرصدة مسجلة لهذه السنة.</div>
+        {% endfor %}
+    </div>
+
+    <div class="grid-2">
+        <div class="card">
+            <h3 style="margin-bottom:1rem;">تقديم طلب إجازة</h3>
+            <form method="POST" action="{{ url_for('leaves.submit_request') }}">
+                <div style="margin-bottom:.8rem;">
+                    <label>نوع الإجازة</label>
+                    <select class="form-select" name="leave_type" required>
+                        <option value="Annual">Annual</option>
+                        <option value="Sick">Sick</option>
+                        <option value="Unpaid">Unpaid</option>
+                        <option value="Emergency">Emergency</option>
+                    </select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.8rem;">
+                    <div>
+                        <label>من تاريخ</label>
+                        <input class="form-input" type="date" name="start_date" required>
+                    </div>
+                    <div>
+                        <label>إلى تاريخ</label>
+                        <input class="form-input" type="date" name="end_date" required>
+                    </div>
+                </div>
+                <div style="margin-bottom:.8rem;">
+                    <label>السبب</label>
+                    <textarea class="form-textarea" name="reason" placeholder="اكتب سبب الطلب"></textarea>
+                </div>
+                <button class="btn-primary" type="submit">إرسال الطلب</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom:1rem;">طلباتي</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>النوع</th>
+                        <th>الفترة</th>
+                        <th>الأيام</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for req in requests_list %}
+                    <tr>
+                        <td>{{ req.leave_type }}</td>
+                        <td>{{ req.start_date }} → {{ req.end_date }}</td>
+                        <td>{{ req.working_days }}</td>
+                        <td>
+                            <span class="status-badge status-{{ req.status|lower }}">{{ req.status }}</span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4">لا توجد طلبات بعد.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

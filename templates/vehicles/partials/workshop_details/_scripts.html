@@ -1,0 +1,262 @@
+{{ super() }}
+<script>
+// تم إزالة كود النافذة المنبثقة - الصور تفتح الآن في صفحة منفصلة
+
+// مشاركة تفاصيل الورشة مع الصور
+async function shareWorkshopDetails() {
+    try {
+        // جمع معلومات الصور
+        const beforeImages = [];
+        const afterImages = [];
+        const imageFiles = [];
+        
+        {% if record.images %}
+        {% for image in record.images %}
+        {% if image.image_type == 'before' %}
+        beforeImages.push({
+            src: '/static/{{ image.image_path }}',
+            description: '{{ image.notes or "صورة قبل الإصلاح" }}'
+        });
+        {% elif image.image_type == 'after' %}
+        afterImages.push({
+            src: '/static/{{ image.image_path }}',
+            description: '{{ image.notes or "صورة بعد الإصلاح" }}'
+        });
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        // تحويل الصور إلى ملفات للمشاركة
+        for (const beforeImg of beforeImages) {
+            try {
+                const response = await fetch(beforeImg.src);
+                const blob = await response.blob();
+                const file = new File([blob], `قبل_الإصلاح_{{ vehicle.plate_number }}.jpg`, {type: blob.type});
+                imageFiles.push(file);
+            } catch (e) {
+                console.log('خطأ في تحميل صورة قبل الإصلاح:', e);
+            }
+        }
+        
+        for (const afterImg of afterImages) {
+            try {
+                const response = await fetch(afterImg.src);
+                const blob = await response.blob();
+                const file = new File([blob], `بعد_الإصلاح_{{ vehicle.plate_number }}.jpg`, {type: blob.type});
+                imageFiles.push(file);
+            } catch (e) {
+                console.log('خطأ في تحميل صورة بعد الإصلاح:', e);
+            }
+        }
+
+        // إنشاء رسالة منظمة ومفصلة
+        let shareText = `🚗 تقرير سجل الورشة - {{ vehicle.plate_number }}
+═══════════════════════════════════════
+
+📋 معلومات السيارة الكاملة:
+━━━━━━━━━━━━━━━━━━━━━━━
+• رقم اللوحة: {{ vehicle.plate_number }}
+• الماركة: {{ vehicle.make }}
+• الموديل: {{ vehicle.model }}
+• السنة: {{ vehicle.year }}
+
+🏪 معلومات الورشة:
+━━━━━━━━━━━━━━━━━━━━━━━
+• اسم الورشة: {{ record.workshop_name or 'غير محدد' }}
+• تاريخ الدخول: {{ record.formatted_entry_date or 'غير محدد' }}`;
+
+{% if record.exit_date %}
+shareText += `
+• تاريخ الخروج: {{ record.formatted_exit_date }}`;
+{% endif %}
+
+{% if record.technician_name %}
+shareText += `
+• الفني المسؤول: {{ record.technician_name }}`;
+{% endif %}
+
+shareText += `
+
+🔧 تفاصيل الإصلاح:
+━━━━━━━━━━━━━━━━━━━━━━━
+• سبب الدخول: {% if record.reason == 'maintenance' %}🔧 صيانة دورية{% elif record.reason == 'breakdown' %}⚠️ عطل{% elif record.reason == 'accident' %}💥 حادث{% else %}{{ record.reason or 'غير محدد' }}{% endif %}
+• حالة الإصلاح: {% if record.repair_status == 'completed' %}✅ تم الإصلاح{% elif record.repair_status == 'in_progress' %}🔄 قيد التنفيذ{% elif record.repair_status == 'pending_approval' %}⏳ بانتظار الموافقة{% else %}{{ record.repair_status or 'غير محدد' }}{% endif %}`;
+
+{% if record.cost and record.cost > 0 %}
+shareText += `
+• التكلفة الإجمالية: {{ '{:,.2f}'.format(record.cost) }} ريال سعودي`;
+{% endif %}
+
+{% if record.description %}
+shareText += `
+
+📝 وصف المشكلة والأعمال المنفذة:
+━━━━━━━━━━━━━━━━━━━━━━━
+{{ record.description }}`;
+{% endif %}
+
+        // إضافة معلومات الصور
+        if (beforeImages.length > 0 || afterImages.length > 0) {
+            shareText += `
+
+📸 الصور المرفقة (${beforeImages.length + afterImages.length} صورة):
+━━━━━━━━━━━━━━━━━━━━━━━`;
+            
+            if (beforeImages.length > 0) {
+                shareText += `
+📷 صور قبل الإصلاح (${beforeImages.length} صورة):`;
+                beforeImages.forEach((img, index) => {
+                    if (img.description && img.description !== 'صورة قبل الإصلاح') {
+                        shareText += `
+  ${index + 1}. ${img.description}`;
+                    } else {
+                        shareText += `
+  ${index + 1}. صورة قبل الإصلاح`;
+                    }
+                });
+            }
+            
+            if (afterImages.length > 0) {
+                shareText += `
+✅ صور بعد الإصلاح (${afterImages.length} صورة):`;
+                afterImages.forEach((img, index) => {
+                    if (img.description && img.description !== 'صورة بعد الإصلاح') {
+                        shareText += `
+  ${index + 1}. ${img.description}`;
+                    } else {
+                        shareText += `
+  ${index + 1}. صورة بعد الإصلاح`;
+                    }
+                });
+            }
+        } else {
+            shareText += `
+
+📸 الصور المرفقة:
+━━━━━━━━━━━━━━━━━━━━━━━
+لا توجد صور مرفقة لهذا السجل`;
+        }
+
+{% if record.delivery_link or record.reception_link %}
+shareText += `
+
+🔗 الروابط الخارجية:
+━━━━━━━━━━━━━━━━━━━━━━━`;
+{% if record.delivery_link %}
+shareText += `
+• رابط تسليم الورشة:
+  {{ record.delivery_link }}`;
+{% endif %}
+{% if record.reception_link %}
+shareText += `
+• رابط استلام من الورشة:
+  {{ record.reception_link }}`;
+{% endif %}
+{% endif %}
+
+{% if record.notes %}
+shareText += `
+
+📝 ملاحظات إضافية:
+━━━━━━━━━━━━━━━━━━━━━━━
+{{ record.notes }}`;
+{% endif %}
+
+        shareText += `
+
+═══════════════════════════════════════
+📅 تاريخ إنشاء التقرير: ${new Date().toLocaleDateString('ar-SA')}
+🕒 وقت إنشاء التقرير: ${new Date().toLocaleTimeString('ar-SA')}
+🏢 نظام نُظم لإدارة الأساطيل`;
+
+        console.log('تم إنشاء الرسالة:', shareText);
+
+        // محاولة المشاركة مع الملفات
+        const shareData = {
+            title: 'تقرير سجل الورشة - {{ vehicle.plate_number }}',
+            text: shareText
+        };
+
+        // إضافة الملفات إذا كان المتصفح يدعمها
+        if (navigator.canShare && imageFiles.length > 0) {
+            shareData.files = imageFiles;
+        }
+
+        if (navigator.share) {
+            await navigator.share(shareData);
+            console.log('تم مشاركة التقرير بنجاح!');
+        } else {
+            // نسخ النص للحافظة كبديل
+            await navigator.clipboard.writeText(shareText);
+            
+            // إظهار رسالة نجاح
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+                z-index: 10000;
+                font-weight: 600;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.innerHTML = `
+                <i class="fas fa-check-circle" style="margin-left: 8px;"></i>
+                تم نسخ تفاصيل الورشة للحافظة!
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+    } catch (error) {
+        console.error('خطأ في مشاركة التقرير:', error);
+        
+        // إظهار رسالة خطأ
+        const errorToast = document.createElement('div');
+        errorToast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+            z-index: 10000;
+            font-weight: 600;
+        `;
+        errorToast.innerHTML = `
+            <i class="fas fa-exclamation-triangle" style="margin-left: 8px;"></i>
+            حدث خطأ في المشاركة. حاول مرة أخرى.
+        `;
+        
+        document.body.appendChild(errorToast);
+        
+        setTimeout(() => errorToast.remove(), 3000);
+    }
+}
+
+// إضافة CSS للتحريك
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>

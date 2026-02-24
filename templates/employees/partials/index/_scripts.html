@@ -1,0 +1,150 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof bootstrap !== 'undefined') {
+        const tooltipNodes = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltipNodes.forEach(node => new bootstrap.Tooltip(node));
+    }
+
+    const searchInput = document.getElementById('searchInput');
+    const rows = Array.from(document.querySelectorAll('#employeesTable tbody tr'));
+    const info = document.getElementById('searchResultsInfo');
+    const count = document.getElementById('employeeCount');
+    const rowsPerPageSelect = document.getElementById('rowsPerPage');
+    const pageInfo = document.getElementById('employeesPageInfo');
+    const pagination = document.getElementById('employeesPagination');
+
+    let currentPage = 1;
+
+    const getFilteredRows = () => {
+        const term = (searchInput?.value || '').trim().toLowerCase();
+        if (!term) {
+            return rows;
+        }
+        return rows.filter(row => row.textContent.toLowerCase().includes(term));
+    };
+
+    const renderPagination = (totalPages) => {
+        if (!pagination) {
+            return;
+        }
+
+        pagination.innerHTML = '';
+
+        if (totalPages <= 1) {
+            return;
+        }
+
+        const createPageItem = (label, page, disabled = false, active = false) => {
+            const li = document.createElement('li');
+            li.className = `page-item${disabled ? ' disabled' : ''}${active ? ' active' : ''}`;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'page-link';
+            btn.textContent = label;
+            btn.disabled = disabled;
+            btn.addEventListener('click', () => {
+                if (!disabled) {
+                    currentPage = page;
+                    renderTable();
+                }
+            });
+
+            li.appendChild(btn);
+            pagination.appendChild(li);
+        };
+
+        createPageItem('السابق', Math.max(1, currentPage - 1), currentPage === 1);
+
+        const maxButtons = 5;
+        let start = Math.max(1, currentPage - 2);
+        let end = Math.min(totalPages, start + maxButtons - 1);
+
+        if (end - start + 1 < maxButtons) {
+            start = Math.max(1, end - maxButtons + 1);
+        }
+
+        for (let page = start; page <= end; page += 1) {
+            createPageItem(String(page), page, false, page === currentPage);
+        }
+
+        createPageItem('التالي', Math.min(totalPages, currentPage + 1), currentPage === totalPages);
+    };
+
+    const renderTable = () => {
+        const filteredRows = getFilteredRows();
+        const perPage = parseInt(rowsPerPageSelect?.value || '10', 10);
+        const total = filteredRows.length;
+
+        rows.forEach(row => {
+            row.style.display = 'none';
+        });
+
+        let startIndex = 0;
+        let endIndex = total;
+        let totalPages = 1;
+
+        if (perPage > 0) {
+            totalPages = Math.max(1, Math.ceil(total / perPage));
+            if (currentPage > totalPages) {
+                currentPage = totalPages;
+            }
+            startIndex = (currentPage - 1) * perPage;
+            endIndex = Math.min(startIndex + perPage, total);
+        } else {
+            currentPage = 1;
+        }
+
+        filteredRows.slice(startIndex, endIndex).forEach(row => {
+            row.style.display = '';
+        });
+
+        if (pageInfo) {
+            if (total === 0) {
+                pageInfo.textContent = 'عرض 0 إلى 0 من 0 سجل';
+            } else {
+                pageInfo.textContent = `عرض ${startIndex + 1} إلى ${endIndex} من ${total} سجل`;
+            }
+        }
+
+        if (info && count) {
+            const term = (searchInput?.value || '').trim();
+            if (term) {
+                info.style.display = 'block';
+                count.textContent = String(total);
+            } else {
+                info.style.display = 'none';
+            }
+        }
+
+        renderPagination(totalPages);
+    };
+
+    if (searchInput) {
+        let timerId = null;
+        searchInput.addEventListener('input', () => {
+            window.clearTimeout(timerId);
+            timerId = window.setTimeout(() => {
+                currentPage = 1;
+                renderTable();
+            }, 150);
+        });
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                currentPage = 1;
+                renderTable();
+            }
+        });
+    }
+
+    if (rowsPerPageSelect) {
+        rowsPerPageSelect.addEventListener('change', () => {
+            currentPage = 1;
+            renderTable();
+        });
+    }
+
+    renderTable();
+});
+</script>

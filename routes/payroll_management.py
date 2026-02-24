@@ -1,3 +1,3 @@
-from routes.payroll_admin import payroll_bp
+from .admin.payroll_management import payroll_bp
 
-__all__ = ['payroll_bp']
+__all__ = ["payroll_bp"]

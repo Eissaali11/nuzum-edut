@@ -1,0 +1,704 @@
+<div class="salary-details-page">
+    <!-- رأس بيانات الموظف -->
+    <div class="employee-header">
+        <div class="employee-avatar">
+            {% if salary.employee.profile_image %}
+            <img src="{{ url_for('static', filename='uploads/employees/' + salary.employee.profile_image) }}" 
+                 alt="{{ salary.employee.name }}" 
+                 class="avatar-img">
+            {% else %}
+            <i class="fas fa-user avatar-icon"></i>
+            {% endif %}
+        </div>
+        <div class="employee-info">
+            <h3 class="employee-name">{{ salary.employee.name }}</h3>
+            <p class="employee-details">
+                <span><i class="fas fa-id-card"></i> {{ salary.employee.employee_number or 'غير محدد' }}</span>
+                {% if salary.employee.departments %}
+                <span><i class="fas fa-building"></i> {{ salary.employee.departments[0].name }}</span>
+                {% endif %}
+            </p>
+            <div class="salary-period">
+                <i class="fas fa-calendar"></i>
+                {{ month_name }} {{ salary.year }}
+            </div>
+        </div>
+    </div>
+
+    <!-- بطاقة صافي الراتب -->
+    <div class="net-salary-card">
+        <div class="net-salary-label">صافي الراتب</div>
+        <div class="net-salary-amount">{{ '{:,.0f}'.format(salary.net_salary) }} ريال</div>
+        <div class="payment-status">
+            {% if salary.is_paid %}
+            <span class="status-badge paid"><i class="fas fa-check-circle"></i> تم الدفع</span>
+            {% else %}
+            <span class="status-badge unpaid"><i class="fas fa-clock"></i> لم يتم الدفع</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- تفاصيل الراتب -->
+    <div class="salary-breakdown">
+        <h4 class="section-title">
+            <i class="fas fa-chart-pie"></i>
+            تفاصيل الراتب
+        </h4>
+        
+        <div class="breakdown-items">
+            <div class="breakdown-item basic">
+                <div class="item-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="item-details">
+                    <div class="item-label">الراتب الأساسي</div>
+                    <div class="item-amount">{{ '{:,.0f}'.format(salary.basic_salary) }} ريال</div>
+                </div>
+            </div>
+
+            {% if salary.allowances > 0 %}
+            <div class="breakdown-item allowances">
+                <div class="item-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="item-details">
+                    <div class="item-label">البدلات والمكافآت</div>
+                    <div class="item-amount">+{{ '{:,.0f}'.format(salary.allowances) }} ريال</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if salary.bonus > 0 %}
+            <div class="breakdown-item bonus">
+                <div class="item-icon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <div class="item-details">
+                    <div class="item-label">المكافآت والحوافز</div>
+                    <div class="item-amount">+{{ '{:,.0f}'.format(salary.bonus) }} ريال</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if salary.bonus > 0 %}
+            <div class="breakdown-item bonus">
+                <div class="item-icon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <div class="item-details">
+                    <div class="item-label">المكافآت والحوافز</div>
+                    <div class="item-amount">+{{ '{:,.0f}'.format(salary.bonus) }} ريال</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if salary.deductions > 0 %}
+            <div class="breakdown-item deductions">
+                <div class="item-icon">
+                    <i class="fas fa-minus-circle"></i>
+                </div>
+                <div class="item-details">
+                    <div class="item-label">الخصومات</div>
+                    <div class="item-amount">-{{ '{:,.0f}'.format(salary.deductions) }} ريال</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if salary.overtime_hours and salary.overtime_hours > 0 %}
+            <div class="breakdown-item overtime">
+                <div class="item-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="item-details">
+                    <div class="item-label">ساعات إضافية</div>
+                    <div class="item-amount">{{ salary.overtime_hours }} ساعة</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- إحصائيات الموظف -->
+    <div class="employee-stats">
+        <h4 class="section-title">
+            <i class="fas fa-chart-bar"></i>
+            إحصائيات الموظف
+        </h4>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ employee_stats.total_salaries }}</div>
+                <div class="stat-label">إجمالي الرواتب</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ employee_stats.total_paid }}</div>
+                <div class="stat-label">تم الدفع</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ employee_stats.total_unpaid }}</div>
+                <div class="stat-label">لم يتم الدفع</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ '{:,.0f}'.format(employee_stats.avg_net_salary) }}</div>
+                <div class="stat-label">متوسط الراتب</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- معلومات إضافية -->
+    <div class="additional-info">
+        <h4 class="section-title">
+            <i class="fas fa-info-circle"></i>
+            معلومات إضافية
+            <i class="fas fa-info-circle"></i>
+            معلومات إضافية
+        </h4>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-calendar-plus"></i>
+                    تاريخ الإنشاء
+                </div>
+                <div class="info-value">{{ salary.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+            
+            {% if salary.updated_at and salary.updated_at != salary.created_at %}
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-edit"></i>
+                    آخر تعديل
+                </div>
+                <div class="info-value">{{ salary.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('mobile.salaries') }}" class="btn btn-primary">
+                <i class="fas fa-list me-2"></i>
+                العودة لقائمة الرواتب
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- أزرار الإجراءات -->
+    <div class="action-buttons">
+        <a href="{{ url_for('mobile.edit_salary', salary_id=salary.id) }}" class="action-btn edit-btn">
+            <i class="fas fa-edit"></i>
+            تعديل الراتب
+        </a>
+        
+        <a href="{{ url_for('mobile.edit_salary', salary_id=salary.id) }}" class="action-btn edit-btn">
+            <i class="fas fa-edit"></i>
+            تعديل الراتب
+        </a>
+        
+        <button onclick="shareSalaryWhatsApp({{ salary.id }}, '{{ salary.employee.name }}', '{{ salary.year }}', '{{ '%02d'|format(salary.month) }}', '{{ '{:,.0f}'.format(salary.basic_salary) }}', '{{ '{:,.0f}'.format(salary.allowances) }}', '{{ '{:,.0f}'.format(salary.deductions) }}', '{{ '{:,.0f}'.format(salary.net_salary) }}', '{{ 'تم الدفع' if salary.is_paid else 'لم يتم الدفع' }}')" 
+                class="action-btn whatsapp-btn">
+            <i class="fab fa-whatsapp"></i>
+            مشاركة في واتساب
+        </button>
+        
+        <a href="{{ url_for('mobile.salaries') }}" class="action-btn back-btn">
+            <i class="fas fa-list"></i>
+            العودة لقائمة الرواتب
+        </a>
+    </div>
+
+    <!-- معلومات إضافية -->
+    {% if salary.notes %}
+    <div class="additional-info">
+        <h4 class="section-title">
+            <i class="fas fa-sticky-note"></i>
+            ملاحظات
+        </h4>
+        <div class="notes-content">{{ salary.notes }}</div>
+    </div>
+    {% endif %}
+
+
+
+<style>
+.salary-details-page {
+    padding: 15px;
+    padding-top: 85px !important; /* مسافة من أعلى لتجنب اختفاء المحتوى خلف البانر */
+    padding-bottom: 120px !important; /* مسافة من أسفل لتجنب اختفاء المحتوى خلف القائمة السفلية */
+    min-height: calc(100vh - 85px - 120px);
+}
+
+/* رأس بيانات الموظف */
+.employee-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    margin-top: 10px; /* مسافة إضافية من أعلى */
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.employee-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-icon {
+    font-size: 24px;
+    color: white;
+}
+
+.employee-info {
+    flex: 1;
+}
+
+.employee-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+}
+
+.employee-details {
+    margin: 0 0 8px 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+.employee-details span {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.employee-details i {
+    width: 16px;
+    margin-left: 8px;
+}
+
+.salary-period {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    display: inline-block;
+}
+
+/* بطاقة صافي الراتب */
+.net-salary-card {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(5, 150, 105, 0.3);
+}
+
+.net-salary-label {
+    font-size: 16px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+
+.net-salary-amount {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.payment-status .status-badge {
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-badge.paid {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.status-badge.unpaid {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* تفاصيل الراتب */
+.salary-breakdown, .employee-stats, .additional-info {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title i {
+    color: #4f46e5;
+}
+
+/* عناصر تفاصيل الراتب */
+.breakdown-items {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.breakdown-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 4px solid;
+}
+
+.breakdown-item.basic {
+    background: #f0f9ff;
+    border-color: #0ea5e9;
+}
+
+.breakdown-item.allowances {
+    background: #f0fdf4;
+    border-color: #22c55e;
+}
+
+.breakdown-item.deductions {
+    background: #fef2f2;
+    border-color: #ef4444;
+}
+
+.breakdown-item.overtime {
+    background: #fefbeb;
+    border-color: #f59e0b;
+}
+
+.breakdown-item.bonus {
+    background: #fdf4ff;
+    border-color: #a855f7;
+}
+
+.breakdown-item.bonus {
+    background: #fdf4ff;
+    border-color: #a855f7;
+}
+
+.item-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.breakdown-item.basic .item-icon {
+    background: rgba(14, 165, 233, 0.2);
+    color: #0ea5e9;
+}
+
+.breakdown-item.allowances .item-icon {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.breakdown-item.deductions .item-icon {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.breakdown-item.overtime .item-icon {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.breakdown-item.bonus .item-icon {
+    background: rgba(168, 85, 247, 0.2);
+    color: #a855f7;
+}
+
+.breakdown-item.bonus .item-icon {
+    background: rgba(168, 85, 247, 0.2);
+    color: #a855f7;
+}
+
+.item-details {
+    flex: 1;
+}
+
+.item-label {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.item-amount {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+/* إحصائيات الموظف */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.stat-card {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #4f46e5;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #64748b;
+}
+
+/* معلومات إضافية */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-right: 3px solid #4f46e5;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.info-label i {
+    color: #4f46e5;
+}
+
+.info-value {
+    font-size: 14px;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.notes-section {
+    margin-top: 20px;
+}
+
+.notes-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.notes-title i {
+    color: #4f46e5;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-right: 3px solid #4f46e5;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.info-label i {
+    color: #4f46e5;
+}
+
+.info-value {
+    font-size: 14px;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.notes-section {
+    margin-top: 20px;
+}
+
+.notes-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.notes-title i {
+    color: #4f46e5;
+}
+
+.notes-content {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    color: #374151;
+    line-height: 1.6;
+    border-right: 4px solid #4f46e5;
+}
+
+/* أزرار الإجراءات */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 30px;
+    margin-bottom: 40px; /* مسافة إضافية من أسفل لضمان عدم تداخل زر العودة */
+    position: relative;
+    z-index: 2;
+}
+
+.action-btn {
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.whatsapp-btn {
+    background: linear-gradient(135deg, #25D366, #20c157);
+    color: white;
+}
+
+.whatsapp-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+}
+
+.edit-btn {
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    color: white;
+}
+
+.edit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+.edit-btn {
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    color: white;
+}
+
+.edit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+.back-btn {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.back-btn:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+}
+
+/* تجاوب مع الشاشات الصغيرة */
+@media (max-width: 480px) {
+    .salary-details-page {
+        padding: 10px;
+    }
+    
+    .employee-header {
+        padding: 15px;
+    }
+    
+    .employee-name {
+        font-size: 18px;
+    }
+    
+    .net-salary-amount {
+        font-size: 24px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

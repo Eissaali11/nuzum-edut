@@ -1,0 +1,294 @@
+<style>
+    body {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        font-family: 'Cairo', 'Segoe UI', sans-serif;
+        direction: rtl;
+        min-height: 100vh;
+    }
+
+    .container-fluid {
+        background: rgba(255, 255, 255, 0.95);
+        margin: 20px;
+        border-radius: 25px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        backdrop-filter: blur(10px);
+        max-width: 1000px;
+        margin: 20px auto;
+    }
+
+    .detail-card {
+        background: white;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 25px;
+        overflow: hidden;
+    }
+
+    .detail-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 25px;
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.1em;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .detail-card:hover .card-header::before {
+        left: 100%;
+    }
+
+    .card-body {
+        padding: 25px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f1f3f4;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #495057;
+        min-width: 200px;
+        font-size: 1.05em;
+        display: flex;
+        align-items: center;
+    }
+
+    .detail-value {
+        flex: 1;
+        text-align: left;
+        font-weight: 500;
+        color: #212529;
+        font-size: 1.1em;
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 600;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .status-available {
+        background: linear-gradient(135deg, #00c851 0%, #007e33 100%);
+        color: white;
+    }
+
+    .status-assigned {
+        background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+        color: white;
+    }
+
+    .status-device-assigned {
+        background: linear-gradient(135deg, #ff8800 0%, #ff6600 100%);
+        color: white;
+    }
+
+    .carrier-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 600;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .carrier-stc {
+        background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+        color: white;
+    }
+
+    .carrier-mobily {
+        background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+        color: white;
+    }
+
+    .carrier-zain {
+        background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+        color: white;
+    }
+
+    .btn-back {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-back:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .info-icon {
+        margin-left: 8px;
+        color: #667eea;
+        min-width: 20px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 3em;
+        margin-bottom: 15px;
+        color: #dee2e6;
+    }
+
+    .highlight-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
+        padding: 40px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .highlight-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .highlight-card:hover::before {
+        left: 100%;
+    }
+
+    .phone-number {
+        font-size: 2.8em;
+        font-weight: 700;
+        margin-bottom: 15px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+    }
+
+    .page-title {
+        font-size: 1.2em;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .device-link-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        border-radius: 8px;
+        padding: 6px 12px;
+        text-decoration: none;
+        font-size: 0.85em;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .device-link-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    .imei-badge {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+        font-weight: 600;
+    }
+
+    .warranty-active {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+    }
+
+    .warranty-expired {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+    }
+
+    .btn-export {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-export:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+</style>

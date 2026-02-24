@@ -1,0 +1,1270 @@
+
+    /* Modern Employee Management Styles */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #05122D 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --secondary-gradient: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 20px 25px -5px rgba(255, 255, 255, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        direction: rtl;
+        min-height: 100vh;
+    }
+
+
+    /* Enhanced Header */
+    .page-header {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        animation: slideDown 0.6s ease-out;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+    }
+
+    .page-header h1 {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        margin-bottom: 0;
+        font-size: 2.5rem;
+    }
+
+    /* Enhanced Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-enhanced {
+        position: relative;
+        overflow: hidden;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--card-shadow);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 140px;
+        justify-content: center;
+    }
+
+    .btn-enhanced::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-enhanced:hover::before {
+        left: 100%;
+    }
+
+    .btn-enhanced:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+        text-decoration: none;
+    }
+
+    .btn-success-enhanced {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .btn-success-enhanced:hover {
+        color: white;
+    }
+    .btn-primary-enhanced {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .btn-primary-enhanced:hover {
+        color: white;
+    }
+    .btn-secondary-enhanced {
+        background: var(--secondary-gradient);
+        color: white;
+    }
+
+    .btn-secondary-enhanced:hover {
+        color: white;
+    }
+    /* Enhanced Main Card */
+    .main-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        animation: slideUp 0.6s ease-out;
+    }
+
+    .main-card .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #05122D 100%);
+        color: white;
+        border-bottom: none;
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .main-card .card-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+
+    /* Enhanced Filter Section */
+    .filter-section {
+        padding: 10px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid var(--glass-border);
+        padding: 2rem;
+        position: relative;
+    }
+
+    .filter-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #667eea, #05122D, #667eea);
+    }
+
+    .search-input-group {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .search-input-group:focus-within {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .search-input-group .input-group-text {
+        background: white;
+        border: none;
+        padding: 1rem;
+    }
+
+    .search-input-group .form-control {
+        border: none;
+        padding: 1rem;
+        font-size: 1rem;
+        background: white;
+    }
+
+    .search-input-group .form-control:focus {
+        box-shadow: none;
+        outline: none;
+    }
+
+    /* Enhanced Select Inputs */
+    .form-select-enhanced {
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+        padding: 0.75rem 1rem;
+        background: white;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .form-select-enhanced:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        transform: translateY(-1px);
+    }
+
+    /* Enhanced Badges */
+    .badge-enhanced {
+        padding: 0.5rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        box-shadow: 0 2px 4px rgba(255, 255, 255, 0.9);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .badge-enhanced:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .badge-primary-enhanced {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .badge-success-enhanced {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .badge-warning-enhanced {
+        background: var(--warning-gradient);
+        color: white;
+    }
+
+    .badge-danger-enhanced {
+        background: var(--danger-gradient);
+        color: white;
+    }
+
+    .badge-secondary-enhanced {
+        background: var(--secondary-gradient);
+        color: white;
+    }
+
+    .badge-info-enhanced {
+        background: var(--info-gradient);
+        color: white;
+    }
+
+    /* Enhanced Table */
+    .table-enhanced {
+        margin-bottom: 0;
+    }
+
+    .table-enhanced thead th {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 2px solid #dee2e6;
+        font-weight: 700;
+        color: #495057;
+        padding: 1.25rem 1rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .table-enhanced tbody tr {
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #f1f3f4;
+    }
+
+    .table-enhanced tbody tr:hover {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 9) 100%);
+        transform: scale(1.01);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-enhanced td {
+        padding: 1.25rem 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f3f4;
+    }
+
+    /* Enhanced Action Buttons in Table */
+    .btn-group-enhanced .btn {
+        border-radius: 8px;
+        margin: 0 2px;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.3s ease;
+        border: none;
+        font-weight: 600;
+        min-width: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-group-enhanced .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(255, 255, 255, 1);
+        text-decoration: none;
+    }
+
+    .btn-info-enhanced {
+        background: var(--info-gradient);
+        color: white;
+    }
+
+    .btn-info-enhanced:hover {
+        color: white;
+    }
+    .btn-primary-enhanced-sm {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .btn-primary-enhanced-sm:hover {
+        color: white;
+    }
+    .btn-danger-enhanced {
+        background: var(--danger-gradient);
+        color: white;
+    }
+
+    .btn-danger-enhanced:hover {
+        color: white;
+    }
+    /* Enhanced Alert Container */
+    .alert-enhanced {
+        border: none;
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        backdrop-filter: blur(10px);
+        animation: slideInRight 0.5s ease-out;
+    }
+
+    /* Filter Info Section */
+    .filter-info {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    /* Horizontal Scroll Enhancement */
+    .table-horizontal-scroll {
+        overflow: auto;
+        max-height: 70vh; /* ارتفاع أقصى 70% من شاشة المتصفح */
+        min-height: 400px; /* ارتفاع أدنى 400 بيكسل */
+        border-radius: 12px;
+        box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+    }
+
+    .table-horizontal-scroll::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .table-horizontal-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .table-horizontal-scroll::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 4px;
+    }
+
+    .table-horizontal-scroll::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Search Results Highlight */
+    .table-primary-enhanced {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.9) 100%) !important;
+        border-left: 4px solid #667eea;
+    }
+
+    /* Status-specific row styling */
+    .row-inactive {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.9) 100%);
+    }
+
+    .row-on-leave {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
+    }
+
+    .row-terminated {
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.5) 0%, rgba(176, 42, 55, 0.1) 100%);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding: 1rem;
+        }
+        
+        .page-header {
+            padding: 1.5rem;
+        }
+        
+        .page-header h1 {
+            font-size: 2rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn-enhanced {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .filter-section {
+            padding: 1.5rem;
+        }
+        
+        .table-enhanced td,
+        .table-enhanced th {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Loading Animation */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Pulse effect for important elements */
+    .pulse-effect {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
+    }
+
+    /* Enhanced duplicate name indicator */
+    .duplicate-indicator {
+        position: relative;
+        animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+        from { box-shadow: 0 0 5px rgba(255, 193, 7, 0.5); }
+        to { box-shadow: 0 0 10px rgba(255, 193, 7, 0.8); }
+    }
+
+/* أنماط الاستجابة للموبايل */
+@media (max-width: 768px) {
+    /* تحسين رأس الصفحة للموبايل */
+    .d-flex.justify-content-between.align-items-center {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 15px;
+    }
+    
+    .d-flex.justify-content-between.align-items-center h1 {
+        font-size: 1.5rem !important;
+        margin-bottom: 0 !important;
+    }
+    
+    /* تحسين الأزرار للموبايل */
+    .d-flex.justify-content-between.align-items-center > div {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 8px;
+    }
+    
+    .d-flex.justify-content-between.align-items-center .btn {
+        width: 100% !important;
+        text-align: center !important;
+        padding: 12px 15px !important;
+        font-size: 14px !important;
+    }
+    
+    /* تحسين card header للموبايل */
+    .card-header.d-flex {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px;
+    }
+    
+    .card-header .text-muted {
+        font-size: 12px !important;
+    }
+    
+    /* تحسين الفلاتر للموبايل */
+    .col-md-6, .col-md-2, .col-md-3 {
+        width: 100% !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .form-select {
+        padding: 12px 15px !important;
+        font-size: 16px !important; /* منع التكبير التلقائي في iOS */
+    }
+    
+    .input-group .form-control {
+        padding: 12px 15px !important;
+        font-size: 16px !important;
+    }
+    
+    /* تحسين placeholder للموبايل */
+    #searchInput::placeholder {
+        font-size: 14px !important;
+    }
+    
+    /* تحسين الجدول للموبايل */
+    .table-responsive {
+        border: none !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    .table {
+        min-width: 800px !important;
+        font-size: 12px !important;
+    }
+    
+    .table th, .table td {
+        padding: 8px 4px !important;
+        white-space: nowrap !important;
+        vertical-align: middle !important;
+    }
+    
+    /* تحسين العمود الأول (الاسم) */
+    .table td:first-child, .table th:first-child {
+        position: sticky !important;
+        left: 0 !important;
+        background: white !important;
+        z-index: 1 !important;
+        min-width: 120px !important;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
+    }
+    
+    .table thead th:first-child .table th:first-child {
+        background: #f8f9fa !important;
+    }
+    
+    /* تحسين badges للموبايل */
+    .badge {
+        font-size: 10px !important;
+        padding: 3px 6px !important;
+        margin: 1px !important;
+        display: inline-block !important;
+    }
+    
+    /* تحسين أزرار الإجراءات للموبايل */
+    .btn-sm {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+        margin: 1px !important;
+    }
+    
+    /* تحسين الفلاتر النشطة للموبايل */
+    .badge.bg-primary, .badge.bg-success, .badge.bg-warning, 
+    .badge.bg-danger, .badge.bg-info {
+        margin: 2px !important;
+        font-size: 10px !important;
+    }
+    
+    /* تحسين النص الصغير للموبايل */
+    .small, .text-muted {
+        font-size: 12px !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* تحسين pagination للموبايل */
+    .pagination {
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .pagination .page-link {
+        padding: 8px 12px !important;
+        font-size: 14px !important;
+        margin: 2px !important;
+    }
+    
+    /* إخفاء النص الإضافي في الأزرار للموبايل */
+    .btn .fas + span {
+        display: none !important;
+    }
+    
+    .btn .fas {
+        margin: 0 !important;
+    }
+    
+    /* تحسين container للموبايل */
+    .container-fluid {
+        padding: 10px !important;
+    }
+    
+    .card {
+        margin: 0 !important;
+        border-radius: 8px !important;
+    }
+    
+    .card-body {
+        padding: 15px !important;
+    }
+}
+
+/* تحسينات للأجهزة اللوحية */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .col-md-6 {
+        width: 100% !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .col-md-2, .col-md-3 {
+        width: 50% !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .table {
+        font-size: 13px !important;
+    }
+    
+    .table th, .table td {
+        padding: 10px 6px !important;
+    }
+}
+
+/* تحسينات عامة للاستجابة */
+.table-responsive {
+    border-radius: 8px !important;
+}
+
+/* تحسين عرض الصور الشخصية للموبايل */
+@media (max-width: 768px) {
+    .table .profile-image {
+        width: 30px !important;
+        height: 30px !important;
+    }
+}
+
+/* تحسين عرض البيانات الطويلة */
+.employee-name {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+    .employee-name {
+        max-width: 100px;
+    }
+}
+
+/* تحسين تمرير الجدول */
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.table.td
+
+/* مؤشر التمرير للجدول */
+.scroll-indicator {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 10;
+}
+
+@media (max-width: 768px) {
+    .scroll-indicator {
+        display: block !important;
+    }
+}
+
+.th {
+ color:#dee2e6
+ 
+}
+
+.th :hover{
+    color:#f1f1f1
+}
+
+/* إصلاح شامل لمشكلة عرض الموظفين والتمرير */
+#employeesTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#employeesTable thead th {
+    background: linear-gradient(135deg, #667eea 0%, #05122D 100%) !important;
+    color: white !important;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    font-weight: bold;
+    text-align: right;
+}
+
+/* تحسينات responsive محدثة وشاملة لجميع الشاشات */
+
+/* الشاشات الصغيرة جداً (320px - 480px) */
+@media (max-width: 480px) {
+    .container-fluid {
+        padding: 8px !important;
+    }
+    
+    .page-header {
+        padding: 12px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .page-header h1 {
+        font-size: 1.4rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    .filter-section {
+        padding: 12px !important;
+    }
+    
+    .form-control, .form-select {
+        padding: 8px !important;
+        font-size: 14px !important;
+    }
+    
+    .btn {
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+    }
+    
+    .table {
+        font-size: 11px !important;
+    }
+    
+    .table th {
+        padding: 6px 4px !important;
+        font-size: 10px !important;
+    }
+    
+    .table td {
+        padding: 6px 4px !important;
+        font-size: 11px !important;
+    }
+    
+    /* إخفاء أعمدة إضافية في الشاشات الصغيرة جداً */
+    .table th:nth-child(3),
+    .table td:nth-child(3),
+    .table th:nth-child(4), 
+    .table td:nth-child(4),
+    .table th:nth-child(8),
+    .table td:nth-child(8) {
+        display: none !important;
+    }
+    
+    .btn-group .btn {
+        font-size: 10px !important;
+        padding: 4px 6px !important;
+        margin: 0 1px !important;
+    }
+}
+
+/* الجوالات العادية (481px - 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+    .container-fluid {
+        padding: 12px !important;
+    }
+    
+    .page-header h1 {
+        font-size: 1.8rem !important;
+    }
+    
+    .action-buttons {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+    
+    .action-buttons .btn {
+        flex: 1 1 45% !important;
+        min-width: 120px !important;
+    }
+    
+    .table {
+        font-size: 12px !important;
+    }
+    
+    .table th {
+        padding: 8px 6px !important;
+        font-size: 11px !important;
+    }
+    
+    .table td {
+        padding: 8px 6px !important;
+        font-size: 12px !important;
+    }
+    
+    /* إخفاء عمود تاريخ التعيين فقط */
+    .table th:nth-child(8),
+    .table td:nth-child(8) {
+        display: none !important;
+    }
+}
+
+/* الأجهزة اللوحية الصغيرة (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .container-fluid {
+        padding: 16px !important;
+    }
+    
+    .action-buttons {
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+    
+    .action-buttons .btn {
+        flex: 1 1 200px !important;
+    }
+    
+    .table {
+        font-size: 13px !important;
+    }
+    
+    .table th, .table td {
+        padding: 10px 8px !important;
+    }
+    
+    .filter-section .row .col-md-6 {
+        width: 100% !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .filter-section .row .col-md-2,
+    .filter-section .row .col-md-3 {
+        width: 50% !important;
+        margin-bottom: 10px !important;
+    }
+}
+
+/* الأجهزة اللوحية الكبيرة (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .container-fluid {
+        padding: 20px !important;
+    }
+    
+    .action-buttons .btn {
+        min-width: 160px !important;
+    }
+    
+    .table {
+        font-size: 14px !important;
+    }
+}
+
+/* تحسينات للاتجاهات المختلفة */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+    .page-header {
+        padding: 10px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .page-header h1 {
+        font-size: 1.4rem !important;
+    }
+    
+    .filter-section {
+        padding: 10px !important;
+    }
+    
+    .main-card .card-header {
+        padding: 10px !important;
+    }
+}
+
+/* تحسين عرض البيانات الطويلة */
+.employee-name {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 767px) {
+    .employee-name {
+        max-width: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    .employee-name {
+        max-width: 80px;
+    }
+}
+
+/* تحسين أزرار الإجراءات للشاشات الصغيرة */
+@media (max-width: 767px) {
+    .btn-group {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 2px !important;
+    }
+    
+    .btn-group .btn {
+        flex: 1 !important;
+        max-width: 35px !important;
+        padding: 6px 4px !important;
+        border-radius: 4px !important;
+    }
+    
+    .btn-group .btn i {
+        font-size: 12px !important;
+    }
+}
+
+/* تحسين badges للشاشات الصغيرة */
+@media (max-width: 767px) {
+    .badge {
+        font-size: 9px !important;
+        padding: 2px 6px !important;
+    }
+    
+    .badge i {
+        font-size: 8px !important;
+        margin-left: 2px !important;
+    }
+}
+
+/* تحسين عرض أقسام متعددة للموبايل */
+@media (max-width: 767px) {
+    .d-flex.flex-wrap.gap-1 {
+        flex-direction: column !important;
+        gap: 2px !important;
+    }
+    
+    .d-flex.flex-wrap.gap-1 .badge {
+        align-self: flex-start !important;
+        max-width: fit-content !important;
+    }
+}
+
+/* إضافة تأثيرات تفاعلية محسنة للموبايل */
+@media (hover: none) and (pointer: coarse) {
+    .table tbody tr:hover {
+        transform: none !important;
+        background: rgba(0,0,0,0.05) !important;
+    }
+    
+    .btn:hover {
+        transform: none !important;
+    }
+    
+    .btn:active {
+        transform: scale(0.95) !important;
+    }
+}
+
+/* تحسين مؤشر التمرير للشاشات الصغيرة */
+@media (max-width: 767px) {
+    .scroll-indicator {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        padding: 8px 12px !important;
+        border-radius: 20px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+        animation: pulse-indicator 2s infinite !important;
+    }
+    
+    @keyframes pulse-indicator {
+        0%, 100% { transform: translateY(-50%) scale(1); opacity: 1; }
+        50% { transform: translateY(-50%) scale(1.05); opacity: 0.8; }
+    }
+}
+
+/* تحسين container الجدول لعرض جميع الموظفين */
+
+/* ===== إصلاح نهائي للـ responsive design ===== */
+@media (max-width: 767.98px) {
+    /* إخفاء القائمة الجانبية تماماً على الجوال */
+    .col-lg-2, .col-md-3 {
+        display: none !important;
+    }
+    
+    /* جعل المحتوى يأخذ العرض الكامل */
+    .col-lg-10, .col-md-9 {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+    
+    .content-wrapper {
+        width: 100% !important;
+        padding: 10px !important;
+        margin: 0 !important;
+    }
+    
+    .container-fluid {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .row {
+        margin: 0 !important;
+    }
+    
+    /* تحسين العناصر للجوال */
+    .page-header {
+        margin: 5px !important;
+        padding: 10px !important;
+    }
+    
+    .main-card {
+        margin: 5px !important;
+        border-radius: 8px !important;
+    }
+    
+    .filter-section {
+        padding: 10px !important;
+    }
+    
+    /* تحسين الأزرار */
+    .action-buttons {
+        flex-direction: column !important;
+        gap: 5px !important;
+    }
+    
+    .action-buttons .btn {
+        width: 100% !important;
+        margin-bottom: 5px !important;
+    }
+}
+
+/* للشاشات الصغيرة جداً */
+@media (max-width: 575.98px) {
+    .container-fluid {
+        padding: 5px !important;
+    }
+    
+    .content-wrapper {
+        padding: 5px !important;
+    }
+    
+    .card {
+        margin: 2px 0 !important;
+    }
+}
+.table-responsive.table-horizontal-scroll {
+    max-height: 75vh !important;
+    min-height: 500px !important;
+    overflow: auto !important;
+    border: 2px solid #667eea;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    background: linear-gradient(135deg, #667eea 0%, #05122D 100%);
+    padding: 0;
+}
+
+/* تحسين التمرير للجدول */
+.table-responsive.table-horizontal-scroll::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.table-responsive.table-horizontal-scroll::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.table-responsive.table-horizontal-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #05122D 100%);
+    border-radius: 6px;
+}
+
+.table-responsive.table-horizontal-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #031020 100%);
+}
+
+/* تحسين عرض البيانات */
+#employeesTable tbody tr {
+    transition: all 0.3s ease;
+    background: white !important;
+}
+
+
+
+/* تحسين واضح للنصوص - بيانات بيضاء */
+#employeesTable {
+    background: white !important;
+    border-radius: 8px;
+    overflow: hidden;
+    table-layout: auto;
+}
+
+#employeesTable tbody {
+    background: white !important;
+}
+
+#employeesTable tbody tr {
+    background: white !important;
+}
+
+#employeesTable tbody td {
+    font-size: 14px;
+    padding: 12px 8px;
+    vertical-align: middle;
+    background: white !important;
+    color: #333 !important;
+    border-bottom: 1px solid #e9ecef;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: visible;
+}
+
+/* تحسين خاص لعمود الأسماء لإظهار النص بالكامل */
+.employee-name {
+    min-width: 200px !important;
+    max-width: none !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow: visible !important;
+    text-overflow: visible !important;
+}
+
+.employee-name strong {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #333 !important;
+    display: block !important;
+    line-height: 1.4 !important;
+}
+
+/* تحسين hover للصفوف البيضاء */
+#employeesTable tbody tr:hover {
+    background: rgba(102, 126, 234, 0.05) !important;
+    transform: translateX(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* تحسين إضافي لضمان وضوح جميع النصوص */
+#employeesTable th {
+    font-size: 14px !important;
+    font-weight: bold !important;
+    padding: 15px 10px !important;
+}
+
+#employeesTable td {
+    font-size: 14px !important;
+    padding: 15px 10px !important;
+    line-height: 1.5 !important;
+}
+
+/* تحسين خاص للأعمدة المهمة */
+#employeesTable td:nth-child(2) { /* عمود الاسم */
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+}
+
+#employeesTable td:nth-child(1) { /* عمود الرقم الوظيفي */
+    font-weight: 500 !important;
+    color: #3498db !important;
+}
+
+.has-horizontal-scroll::before,
+.has-horizontal-scroll::after {
+  display: none !important;
+  /* or, if you still need the empty pseudo-element but want no background:
+  content: ''; */
+  background: none !important;
+  box-shadow: none !important;
+}
+

@@ -1,0 +1,93 @@
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card confirm-delete-card">
+                <div class="card-header">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h4>هل أنت متأكد من رغبتك في حذف طلب فحص السلامة؟</h4>
+                </div>
+                
+                <div class="card-body">
+                    <div class="warning-section">
+                        <div class="text-center">
+                            <p class="text-danger-custom mb-3">
+                                <i class="fas fa-exclamation-circle ms-2"></i>
+                                تحذير: هذا الإجراء لا يمكن التراجع عنه!
+                            </p>
+                            <p class="mb-0">
+                                سيتم حذف طلب فحص السلامة نهائياً مع جميع الصور والملفات المرفقة.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="safety-info">
+                        <h5 class="mb-3 text-center" style="color: #58a6ff;">
+                            <i class="fas fa-info-circle ms-2"></i>
+                            معلومات الطلب المراد حذفه
+                        </h5>
+                        <table>
+                            <tr>
+                                <td><strong>رقم الطلب:</strong></td>
+                                <td>#{{ safety_check.id }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>رقم اللوحة:</strong></td>
+                                <td>{{ safety_check.vehicle_plate_number }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>اسم السائق:</strong></td>
+                                <td>{{ safety_check.driver_name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>رقم الهوية:</strong></td>
+                                <td>{{ safety_check.driver_id }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>تاريخ الفحص:</strong></td>
+                                <td>{{ safety_check.inspection_date.strftime('%Y-%m-%d') if safety_check.inspection_date else 'غير محدد' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>حالة الاعتماد:</strong></td>
+                                <td>
+                                    {% if safety_check.is_approved %}
+                                        <span class="badge bg-success">معتمد</span>
+                                    {% elif safety_check.is_rejected %}
+                                        <span class="badge bg-danger">مرفوض</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">قيد المراجعة</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>عدد الصور:</strong></td>
+                                <td>{{ safety_check.safety_images|length }} صورة</td>
+                            </tr>
+                            <tr>
+                                <td><strong>تاريخ الإنشاء:</strong></td>
+                                <td>{{ safety_check.created_at.strftime('%Y-%m-%d %H:%M') if safety_check.created_at else 'غير محدد' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="btn-group-custom">
+                        <form method="POST" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-delete">
+                                <i class="fas fa-trash-alt ms-2"></i>
+                                تأكيد الحذف نهائياً
+                            </button>
+                        </form>
+                        
+                        <a href="{{ url_for('external_safety.admin_view_safety_check', check_id=safety_check.id) }}" 
+                           class="btn btn-cancel">
+                            <i class="fas fa-times ms-2"></i>
+                            إلغاء والعودة
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

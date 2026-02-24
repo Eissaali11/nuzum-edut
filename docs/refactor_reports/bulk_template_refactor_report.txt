@@ -1,0 +1,699 @@
+PROCESSED 194
++ templates/about.html
++ templates/admin_edit_safety_check.html
++ templates/admin_external_safety_checks.html
++ templates/admin_view_safety_check.html
++ templates/dashboard.html
++ templates/employee_stats.html
++ templates/external_safety_check_view.html
++ templates/external_safety_share_links.html
++ templates/vehicle_operations_list.html
++ templates/accounting/account_balance.html
++ templates/accounting/analytics_real.html
++ templates/accounting/analytics_simple.html
++ templates/accounting/chart_of_accounts.html
++ templates/accounting/create_journal_entry.html
++ templates/accounting/dashboard.html
++ templates/admin_dashboard/dashboard.html
++ templates/ai_services/api_interface.html
++ templates/ai_services/dashboard.html
++ templates/ai_services/recommendations.html
++ templates/ai_services/smart_alerts.html
++ templates/analytics/dashboard.html
++ templates/analytics/dimensions.html
++ templates/attendance/all_departments.html
++ templates/attendance/dashboard.html
++ templates/attendance/dashboard_new.html
++ templates/attendance/department.html
++ templates/attendance/departments_circles_overview.html
++ templates/attendance/department_bulk.html
++ templates/attendance/department_period.html
++ templates/attendance/edit_attendance.html
++ templates/attendance/employee_attendance.html
++ templates/attendance/enhanced_dashboard.html
++ templates/attendance/index.html
++ templates/attendance/mass_departments.html
++ templates/attendance/multi_day_department.html
++ templates/departments/analytics.html
++ templates/departments/dashboard.html
++ templates/departments/index.html
++ templates/departments/view.html
++ templates/departments/view_jquery.html
++ templates/departments/view_new.html
++ templates/device_assignment/assign_device.html
++ templates/device_assignment/department_management.html
++ templates/device_assignment/index.html
++ templates/device_assignment/reports.html
++ templates/device_management/assignment_details.html
++ templates/device_management/assignment_detail_single.html
++ templates/device_management/index.html
++ templates/documents/create.html
++ templates/documents/dashboard.html
++ templates/documents/department_bulk_create.html
++ templates/documents/excel_dashboard.html
++ templates/documents/expiring.html
++ templates/documents/index.html
++ templates/drive_browser/index.html
++ templates/employee_requests/view.html
++ templates/fees_costs/index.html
++ templates/insights/dashboard.html
++ templates/integrated/comprehensive_report.html
++ templates/integrated/dashboard_improved.html
++ templates/landing/contact.html
++ templates/landing/demo.html
++ templates/landing/features.html
++ templates/landing/index.html
++ templates/landing/pricing.html
++ templates/landing_admin/dashboard.html
++ templates/landing_admin/features.html
++ templates/mobile/add_attendance.html
++ templates/mobile/add_employee.html
++ templates/mobile/add_fuel_consumption.html
++ templates/mobile/attendance.html
++ templates/mobile/attendance_dashboard.html
++ templates/mobile/change_password.html
++ templates/mobile/create_handover.html
++ templates/mobile/dashboard_new.html
++ templates/mobile/department_details.html
++ templates/mobile/documents.html
++ templates/mobile/documents_dashboard.html
++ templates/mobile/document_details.html
++ templates/mobile/edit_attendance.html
++ templates/mobile/edit_employee.html
++ templates/mobile/edit_salary.html
++ templates/mobile/edit_workshop_record.html
++ templates/mobile/employees.html
++ templates/mobile/employee_details.html
++ templates/mobile/fees.html
++ templates/mobile/fee_details.html
++ templates/mobile/fuel_consumption_stats.html
++ templates/mobile/handover_view.html
++ templates/mobile/index.html
++ templates/mobile/maintenance_details.html
++ templates/mobile/notifications.html
++ templates/mobile/operations.html
++ templates/mobile/operations_list.html
++ templates/mobile/operations_notifications.html
++ templates/mobile/operation_details.html
++ templates/mobile/report_attendance.html
++ templates/mobile/report_documents.html
++ templates/mobile/report_employees.html
++ templates/mobile/report_fees.html
++ templates/mobile/report_salaries.html
++ templates/mobile/report_vehicles.html
++ templates/mobile/salaries.html
++ templates/mobile/salary_details.html
++ templates/mobile/settings.html
++ templates/mobile/vehicles.html
++ templates/mobile/vehicle_checklist.html
++ templates/mobile/vehicle_checklist1.html
++ templates/mobile/vehicle_checklist2.html
++ templates/mobile/vehicle_checklist3.html
++ templates/mobile/vehicle_checklist_details.html
++ templates/mobile/vehicle_checklist_list.html
++ templates/mobile/vehicle_details.html
++ templates/mobile/vehicle_details_new.html
++ templates/mobile/view_external_authorization.html
++ templates/mobile/workshop_details.html
++ templates/mobile_devices/assign.html
++ templates/mobile_devices/dashboard.html
++ templates/mobile_devices/edit.html
++ templates/mobile_devices/index.html
++ templates/operations/accident_report_details.html
++ templates/operations/dashboard.html
++ templates/operations/view.html
++ templates/operations/view_workshop.html
++ templates/payroll/configuration.html
++ templates/payroll/dashboard.html
++ templates/payroll/details.html
++ templates/payroll/process.html
++ templates/payroll/review.html
++ templates/powerbi/dashboard.html
++ templates/powerbi/dashboard_enhanced.html
++ templates/properties/create.html
++ templates/properties/dashboard.html
++ templates/properties/edit.html
++ templates/properties/view.html
++ templates/reports/index.html
++ templates/salaries/index.html
++ templates/sim_management/assign.html
++ templates/sim_management/details.html
++ templates/sim_management/index.html
++ templates/users/activity_log.html
++ templates/users/index.html
++ templates/users/view.html
++ templates/vehicles/1view.html
++ templates/vehicles/3view.html
++ templates/vehicles/4view.html
++ templates/vehicles/accident_details.html
++ templates/vehicles/create.html
++ templates/vehicles/create_external_authorization.html
++ templates/vehicles/dashboard.html
++ templates/vehicles/detailed_list.html
++ templates/vehicles/drive_files.html
++ templates/vehicles/edit.html
++ templates/vehicles/edit_external_authorization.html
++ templates/vehicles/edit_handover.html
++ templates/vehicles/expired_documents.html
++ templates/vehicles/handovers_list.html
++ templates/vehicles/handover_create.html
++ templates/vehicles/handover_form_view.html
++ templates/vehicles/handover_view.html
++ templates/vehicles/index.html
++ templates/vehicles/license_image.html
++ templates/vehicles/reports.html
++ templates/vehicles/view.html
++ templates/vehicles/view_cards.html
++ templates/vehicles/view_clean.html
++ templates/vehicles/view_modern.html
++ templates/vehicles/view_with_sidebar.html
++ templates/vehicles/workshop_details.html
++ templates/vehicles/workshop_edit.html
++ templates/voicehub/dashboard.html
++ modules/vehicles/presentation/templates/vehicles/forms/create.html
++ modules/vehicles/presentation/templates/vehicles/forms/create_external_authorization.html
++ modules/vehicles/presentation/templates/vehicles/forms/edit.html
++ modules/vehicles/presentation/templates/vehicles/forms/edit_external_authorization.html
++ modules/vehicles/presentation/templates/vehicles/forms/workshop_edit.html
++ modules/vehicles/presentation/templates/vehicles/handovers/edit_handover.html
++ modules/vehicles/presentation/templates/vehicles/handovers/handovers_list.html
++ modules/vehicles/presentation/templates/vehicles/handovers/handover_create.html
++ modules/vehicles/presentation/templates/vehicles/handovers/handover_create_refactored.html
++ modules/vehicles/presentation/templates/vehicles/handovers/handover_form_view.html
++ modules/vehicles/presentation/templates/vehicles/handovers/handover_view.html
++ modules/vehicles/presentation/templates/vehicles/reports/dashboard.html
++ modules/vehicles/presentation/templates/vehicles/reports/detailed_list.html
++ modules/vehicles/presentation/templates/vehicles/reports/reports.html
++ modules/vehicles/presentation/templates/vehicles/utilities/drive_files.html
++ modules/vehicles/presentation/templates/vehicles/utilities/expired_documents.html
++ modules/vehicles/presentation/templates/vehicles/utilities/license_image.html
++ modules/vehicles/presentation/templates/vehicles/views/3view.html
++ modules/vehicles/presentation/templates/vehicles/views/accident_details.html
++ modules/vehicles/presentation/templates/vehicles/views/index.html
++ modules/vehicles/presentation/templates/vehicles/views/view_cards.html
++ modules/vehicles/presentation/templates/vehicles/views/view_clean.html
++ modules/vehicles/presentation/templates/vehicles/views/view_modern.html
+
+SKIPPED 702
+- templates\admin_delete_safety_check.html :: small:252
+- templates\admin_reject_safety_check.html :: small:269
+- templates\contact.html :: small:216
+- templates\error.html :: small:39
+- templates\external_safety_check.html :: no eligible block
+- templates\external_safety_success.html :: small:309
+- templates\layout.html :: core layout
+- templates\privacy.html :: small:224
+- templates\restricted.html :: small:156
+- templates\safety_check_image_view.html :: small:316
+- templates\safety_check_pdf_template.html :: no eligible block
+- templates\accounting\cost_centers.html :: small:303
+- templates\accounting\cost_center_tree_item.html :: small:64
+- templates\accounting\create_cost_center.html :: small:259
+- templates\accounting\edit_account.html :: small:190
+- templates\accounting\edit_cost_center.html :: small:232
+- templates\accounting\navigation.html :: small:183
+- templates\accounting\quick_entry.html :: small:95
+- templates\accounting\salary_processing.html :: small:104
+- templates\accounting\view_cost_center.html :: small:220
+- templates\accounting\view_transaction.html :: small:218
+- templates\admin_dashboard\departments.html :: small:190
+- templates\admin_dashboard\employees.html :: small:255
+- templates\admin_dashboard\mobile_devices.html :: small:313
+- templates\admin_dashboard\users.html :: small:277
+- templates\admin_dashboard\vehicles.html :: small:239
+- templates\ai_services\employee_insights.html :: small:292
+- templates\ai_services\predictive_analytics.html :: small:184
+- templates\ai_services\vehicle_analytics.html :: small:239
+- templates\analytics\executive_report.html :: no eligible block
+- templates\analytics\strategic_dashboard.html :: no eligible block
+- templates\attendance\all_departments_simple.html :: small:142
+- templates\attendance\bulk_record.html :: small:212
+- templates\attendance\circle_accessed_details.html :: small:261
+- templates\attendance\confirm_delete.html :: small:212
+- templates\attendance\department_details.html :: small:237
+- templates\attendance\department_details_enhanced.html :: small:333
+- templates\attendance\employee.html :: small:186
+- templates\attendance\export.html :: small:103
+- templates\attendance\record.html :: small:246
+- templates\attendance\stats_bar.html :: small:47
+- templates\auth\login.html :: no eligible block
+- templates\auth\profile.html :: small:136
+- templates\auth\register.html :: small:269
+- templates\auth\unauthorized.html :: small:65
+- templates\backup\index.html :: small:218
+- templates\departments\confirm_delete_employees.html :: small:136
+- templates\departments\create.html :: small:59
+- templates\departments\delete.html :: small:49
+- templates\departments\edit.html :: small:61
+- templates\departments\import_employees.html :: small:89
+- templates\departments\view_simple.html :: small:349
+- templates\device_assignment\confirm_unassign.html :: small:146
+- templates\device_assignment\departments_view.html :: small:270
+- templates\device_assignment\history.html :: small:293
+- templates\device_management\create.html :: small:193
+- templates\device_management\devices_only.html :: small:345
+- templates\device_management\edit.html :: small:302
+- templates\device_management\import_excel.html :: small:196
+- templates\documents\confirm_delete.html :: small:289
+- templates\documents\dashboard_stats.html :: no eligible block
+- templates\documents\download_template.html :: small:38
+- templates\documents\import.html :: small:87
+- templates\documents\update_expiry.html :: small:74
+- templates\email_queue\list.html :: small:191
+- templates\employees\confirm_delete.html :: small:13
+- templates\employees\create.html :: small:12
+- templates\employees\edit.html :: small:17
+- templates\employees\import.html :: small:6
+- templates\employees\index.html :: small:14
+- templates\employees\index.new.html :: small:14
+- templates\employees\tracking.html :: small:21
+- templates\employees\tracking_dashboard.html :: small:10
+- templates\employees\track_history.html :: small:23
+- templates\employees\view.html :: small:21
+- templates\employee_portal\attendance.html :: small:231
+- templates\employee_portal\attendance_enhanced.html :: no eligible block
+- templates\employee_portal\dashboard.html :: no eligible block
+- templates\employee_portal\handover_view.html :: small:268
+- templates\employee_portal\login.html :: small:164
+- templates\employee_portal\profile.html :: small:290
+- templates\employee_portal\profile_enhanced.html :: no eligible block
+- templates\employee_portal\safety_check_view.html :: no eligible block
+- templates\employee_portal\salaries.html :: no eligible block
+- templates\employee_portal\vehicles.html :: small:255
+- templates\employee_portal\vehicles_enhanced.html :: no eligible block
+- templates\employee_portal\vehicles_new.html :: small:310
+- templates\employee_requests\advance_payments.html :: small:163
+- templates\employee_requests\edit.html :: small:113
+- templates\employee_requests\index.html :: small:233
+- templates\employee_requests\invoices.html :: small:280
+- templates\employee_requests\liabilities.html :: small:175
+- templates\e_invoicing\create.html :: small:1
+- templates\e_invoicing\dashboard.html :: small:118
+- templates\e_invoicing\view.html :: small:1
+- templates\fees_costs\confirm_delete.html :: small:76
+- templates\fees_costs\create.html :: small:239
+- templates\fees_costs\document_details.html :: small:215
+- templates\fees_costs\edit.html :: small:202
+- templates\fees_costs\expired_documents.html :: small:135
+- templates\fees_costs\expiring_documents.html :: small:141
+- templates\geofences\index.html :: no eligible block
+- templates\geofences\view.html :: no eligible block
+- templates\geofences\view_new.html :: no eligible block
+- templates\includes\sidebar_integrated.html :: small:164
+- templates\integrated\auto_accounting.html :: no eligible block
+- templates\integrated\auto_accounting_comprehensive.html :: no eligible block
+- templates\integrated\auto_accounting_enhanced.html :: no eligible block
+- templates\integrated\auto_accounting_simple.html :: small:123
+- templates\integrated\comprehensive_report_simple.html :: small:232
+- templates\integrated\dashboard.html :: no eligible block
+- templates\integrated\dashboard_compact.html :: no eligible block
+- templates\integrated\dashboard_fixed.html :: no eligible block
+- templates\integrated\dashboard_simple.html :: no eligible block
+- templates\landing\about.html :: small:51
+- templates\landing\company.html :: small:68
+- templates\landing\cookies.html :: small:41
+- templates\landing\demo_iframe.html :: small:311
+- templates\landing\guide.html :: small:45
+- templates\landing\help.html :: small:50
+- templates\landing\jobs.html :: small:47
+- templates\landing\login.html :: small:263
+- templates\landing\news.html :: small:64
+- templates\landing\privacy.html :: small:43
+- templates\landing\support.html :: small:70
+- templates\landing\terms.html :: small:45
+- templates\landing_admin\contact.html :: small:343
+- templates\landing_admin\content.html :: small:314
+- templates\landing_admin\demo_dashboard.html :: small:341
+- templates\landing_admin\login.html :: small:233
+- templates\landing_admin\pricing.html :: small:324
+- templates\landing_admin\testimonials.html :: small:264
+- templates\leave\employee_view.html :: small:113
+- templates\leave\leave_balances.html :: small:42
+- templates\leave\manager_dashboard.html :: small:151
+- templates\mobile\add_attendance_new.html :: small:281
+- templates\mobile\add_department.html :: small:143
+- templates\mobile\add_document.html :: small:230
+- templates\mobile\add_salary.html :: small:32
+- templates\mobile\add_user_new.html :: small:76
+- templates\mobile\add_vehicle.html :: no eligible block
+- templates\mobile\add_vehicle_document.html :: small:303
+- templates\mobile\add_vehicle_expense.html :: small:298
+- templates\mobile\add_workshop_record.html :: small:239
+- templates\mobile\attendance_export.html :: small:125
+- templates\mobile\backup.html :: small:222
+- templates\mobile\contact.html :: small:286
+- templates\mobile\create_external_authorization.html :: small:148
+- templates\mobile\create_periodic_inspection.html :: small:157
+- templates\mobile\create_safety_check.html :: small:152
+- templates\mobile\dashboard.html :: no eligible block
+- templates\mobile\delete_user_new.html :: small:72
+- templates\mobile\departments.html :: small:241
+- templates\mobile\edit_external_authorization.html :: small:173
+- templates\mobile\edit_handover.html :: no eligible block
+- templates\mobile\edit_maintenance.html :: small:217
+- templates\mobile\edit_user_new.html :: small:75
+- templates\mobile\edit_vehicle.html :: small:276
+- templates\mobile\edit_workshop_record_simple.html :: small:273
+- templates\mobile\fees_new.html :: small:220
+- templates\mobile\forgot_password.html :: small:185
+- templates\mobile\geofence_details.html :: no eligible block
+- templates\mobile\layout.html :: core layout
+- templates\mobile\login.html :: no eligible block
+- templates\mobile\notifications_new.html :: small:84
+- templates\mobile\offline.html :: small:100
+- templates\mobile\privacy.html :: small:148
+- templates\mobile\profile.html :: small:282
+- templates\mobile\reports.html :: small:209
+- templates\mobile\splash.html :: small:312
+- templates\mobile\terms.html :: small:126
+- templates\mobile\tracking.html :: no eligible block
+- templates\mobile\users_new.html :: small:126
+- templates\mobile\user_details_new.html :: small:206
+- templates\mobile\vehicle_documents.html :: small:281
+- templates\mobile\vehicle_expenses.html :: small:280
+- templates\mobile_devices\create.html :: small:333
+- templates\mobile_devices\import.html :: small:204
+- templates\mobile_devices\import_phone_numbers.html :: small:164
+- templates\notifications\detail.html :: small:117
+- templates\notifications\index.html :: small:242
+- templates\operations\accident_reports_list.html :: small:259
+- templates\operations\delete.html :: small:231
+- templates\operations\list.html :: small:290
+- templates\operations\notifications.html :: small:140
+- templates\properties\add_department.html :: small:181
+- templates\properties\add_payment.html :: small:193
+- templates\properties\add_resident.html :: small:305
+- templates\properties\edit_payment.html :: small:193
+- templates\properties\furnishing.html :: small:185
+- templates\properties\furnishing_view.html :: small:296
+- templates\properties\payments_list.html :: small:262
+- templates\reports\attendance.html :: small:214
+- templates\reports\attendance_pdf.html :: small:151
+- templates\reports\documents.html :: small:340
+- templates\reports\documents_pdf.html :: small:165
+- templates\reports\employees.html :: small:149
+- templates\reports\employees_pdf.html :: small:143
+- templates\reports\enhanced.html :: small:305
+- templates\reports\salaries.html :: small:289
+- templates\reports\salaries_pdf.html :: small:148
+- templates\reports\vehicle_workshop.html :: small:188
+- templates\salaries\batch_deduction_notifications.html :: small:70
+- templates\salaries\batch_notifications.html :: small:122
+- templates\salaries\comprehensive_report.html :: small:146
+- templates\salaries\confirm_delete.html :: small:74
+- templates\salaries\create.html :: small:301
+- templates\salaries\edit.html :: small:309
+- templates\salaries\import.html :: small:100
+- templates\salaries\report.html :: small:213
+- templates\settings\google_drive.html :: small:125
+- templates\sim_management\create.html :: small:182
+- templates\sim_management\edit.html :: small:221
+- templates\sim_management\import_excel.html :: small:275
+- templates\users\activity_logs.html :: small:272
+- templates\users\add.html :: small:120
+- templates\users\confirm_delete.html :: small:108
+- templates\users\create.html :: small:200
+- templates\users\edit.html :: small:237
+- templates\users\permissions.html :: small:244
+- templates\users\profile.html :: small:314
+- templates\vehicles\confirm_delete.html :: small:126
+- templates\vehicles\confirm_delete_handovers.html :: small:128
+- templates\vehicles\confirm_delete_inspection.html :: small:82
+- templates\vehicles\confirm_delete_safety_check.html :: small:91
+- templates\vehicles\confirm_delete_single_handover.html :: small:123
+- templates\vehicles\confirm_delete_workshop.html :: small:128
+- templates\vehicles\confirm_delete_workshop_image.html :: small:120
+- templates\vehicles\create_accident.html :: small:233
+- templates\vehicles\dashboard_stats.html :: no eligible block
+- templates\vehicles\delete_accident.html :: small:61
+- templates\vehicles\drive_management.html :: small:216
+- templates\vehicles\edit_accident.html :: small:233
+- templates\vehicles\edit_documents.html :: small:151
+- templates\vehicles\handover_pdf_public.html :: small:161
+- templates\vehicles\handover_report.html :: no eligible block
+- templates\vehicles\handover_report1.html :: no eligible block
+- templates\vehicles\handover_simple_view.html :: small:171
+- templates\vehicles\handover_view_public.html :: small:300
+- templates\vehicles\import_vehicles.html :: small:285
+- templates\vehicles\inspections.html :: small:122
+- templates\vehicles\inspection_confirm_delete.html :: small:56
+- templates\vehicles\inspection_create.html :: small:146
+- templates\vehicles\inspection_edit.html :: small:151
+- templates\vehicles\print_workshop.html :: small:259
+- templates\vehicles\project_create.html :: small:149
+- templates\vehicles\project_edit.html :: small:153
+- templates\vehicles\rental_create.html :: small:145
+- templates\vehicles\rental_edit.html :: small:143
+- templates\vehicles\safety_checks.html :: small:207
+- templates\vehicles\safety_check_confirm_delete.html :: small:55
+- templates\vehicles\safety_check_create.html :: small:202
+- templates\vehicles\safety_check_edit.html :: small:195
+- templates\vehicles\share_workshop.html :: small:99
+- templates\vehicles\update_handover_link.html :: small:190
+- templates\vehicles\valid_documents.html :: small:240
+- templates\vehicles\view_documents.html :: small:82
+- templates\vehicles\view_external_authorization.html :: small:195
+- templates\vehicles\view_simple.html :: small:282
+- templates\vehicles\workshop_create.html :: small:221
+- templates\vehicles\workshop_image_view.html :: small:296
+- templates\voicehub\calls_list.html :: small:150
+- templates\voicehub\call_detail.html :: small:278
+- templates\voicehub\partials\dashboard\_content.html :: already partial
+- templates\vehicles\partials\1view\_content.html :: already partial
+- templates\vehicles\partials\3view\_content.html :: already partial
+- templates\vehicles\partials\4view\_content.html :: already partial
+- templates\vehicles\partials\accident_details\_content.html :: already partial
+- templates\vehicles\partials\accident_details\_extra_css.html :: already partial
+- templates\vehicles\partials\create\_content.html :: already partial
+- templates\vehicles\partials\create\_extra_css.html :: already partial
+- templates\vehicles\partials\create_external_authorization\_content.html :: already partial
+- templates\vehicles\partials\dashboard\_content.html :: already partial
+- templates\vehicles\partials\dashboard\_scripts.html :: already partial
+- templates\vehicles\partials\detailed_list\_content.html :: already partial
+- templates\vehicles\partials\detailed_list\_extra_css.html :: already partial
+- templates\vehicles\partials\drive_files\_content.html :: already partial
+- templates\vehicles\partials\edit\_content.html :: already partial
+- templates\vehicles\partials\edit\_extra_css.html :: already partial
+- templates\vehicles\partials\edit\_scripts.html :: already partial
+- templates\vehicles\partials\edit_external_authorization\_content.html :: already partial
+- templates\vehicles\partials\edit_handover\_content.html :: already partial
+- templates\vehicles\partials\edit_handover\_scripts.html :: already partial
+- templates\vehicles\partials\expired_documents\_content.html :: already partial
+- templates\vehicles\partials\handovers_list\_content.html :: already partial
+- templates\vehicles\partials\handovers_list\_extra_css.html :: already partial
+- templates\vehicles\partials\handover_create\_content.html :: already partial
+- templates\vehicles\partials\handover_create\_scripts.html :: already partial
+- templates\vehicles\partials\handover_form_view\_content.html :: already partial
+- templates\vehicles\partials\handover_view\_content.html :: already partial
+- templates\vehicles\partials\index\_content.html :: already partial
+- templates\vehicles\partials\index\_extra_css.html :: already partial
+- templates\vehicles\partials\license_image\_content.html :: already partial
+- templates\vehicles\partials\license_image\_extra_css.html :: already partial
+- templates\vehicles\partials\reports\_content.html :: already partial
+- templates\vehicles\partials\reports\_scripts.html :: already partial
+- templates\vehicles\partials\view\_content.html :: already partial
+- templates\vehicles\partials\view\_extra_css.html :: already partial
+- templates\vehicles\partials\view\_scripts.html :: already partial
+- templates\vehicles\partials\view_cards\_content.html :: already partial
+- templates\vehicles\partials\view_clean\_content.html :: already partial
+- templates\vehicles\partials\view_modern\_content.html :: already partial
+- templates\vehicles\partials\view_with_sidebar\_content.html :: already partial
+- templates\vehicles\partials\workshop_details\_content.html :: already partial
+- templates\vehicles\partials\workshop_details\_scripts.html :: already partial
+- templates\vehicles\partials\workshop_edit\_content.html :: already partial
+- templates\vehicles\partials\workshop_edit\_scripts.html :: already partial
+- templates\users\partials\activity_log\_content.html :: already partial
+- templates\users\partials\index\_content.html :: already partial
+- templates\users\partials\index\_extra_css.html :: already partial
+- templates\users\partials\view\_content.html :: already partial
+- templates\sim_management\partials\assign\_content.html :: already partial
+- templates\sim_management\partials\details\_content.html :: already partial
+- templates\sim_management\partials\details\_extra_css.html :: already partial
+- templates\sim_management\partials\index\_content.html :: already partial
+- templates\sim_management\partials\index\_extra_css.html :: already partial
+- templates\salaries\partials\index\_content.html :: already partial
+- templates\salaries\partials\index\_extra_css.html :: already partial
+- templates\reports\partials\index\_content.html :: already partial
+- templates\reports\partials\index\_extra_css.html :: already partial
+- templates\properties\partials\create\_content.html :: already partial
+- templates\properties\partials\dashboard\_content.html :: already partial
+- templates\properties\partials\edit\_content.html :: already partial
+- templates\properties\partials\view\_content.html :: already partial
+- templates\powerbi\partials\dashboard\_content.html :: already partial
+- templates\powerbi\partials\dashboard\_extra_css.html :: already partial
+- templates\powerbi\partials\dashboard_enhanced\_content.html :: already partial
+- templates\powerbi\partials\dashboard_enhanced\_extra_css.html :: already partial
+- templates\payroll\partials\configuration\_content.html :: already partial
+- templates\payroll\partials\configuration\_extra_css.html :: already partial
+- templates\payroll\partials\dashboard\_content.html :: already partial
+- templates\payroll\partials\dashboard\_extra_css.html :: already partial
+- templates\payroll\partials\details\_content.html :: already partial
+- templates\payroll\partials\details\_extra_css.html :: already partial
+- templates\payroll\partials\process\_content.html :: already partial
+- templates\payroll\partials\process\_extra_css.html :: already partial
+- templates\payroll\partials\review\_content.html :: already partial
+- templates\payroll\partials\review\_extra_css.html :: already partial
+- templates\partials\about\_content.html :: already partial
+- templates\partials\about\_extra_css.html :: already partial
+- templates\partials\admin_edit_safety_check\_content.html :: already partial
+- templates\partials\admin_external_safety_checks\_content.html :: already partial
+- templates\partials\admin_external_safety_checks\_extra_css.html :: already partial
+- templates\partials\admin_view_safety_check\_content.html :: already partial
+- templates\partials\dashboard\_content.html :: already partial
+- templates\partials\dashboard\_extra_css.html :: already partial
+- templates\partials\employee_stats\_content.html :: already partial
+- templates\partials\employee_stats\_extra_css.html :: already partial
+- templates\partials\external_safety_check_view\_content.html :: already partial
+- templates\partials\external_safety_share_links\_content.html :: already partial
+- templates\partials\external_safety_share_links\_extra_css.html :: already partial
+- templates\partials\vehicle_operations_list\_content.html :: already partial
+- templates\partials\vehicle_operations_list\_extra_css.html :: already partial
+- templates\operations\partials\accident_report_details\_content.html :: already partial
+- templates\operations\partials\dashboard\_content.html :: already partial
+- templates\operations\partials\view\_content.html :: already partial
+- templates\operations\partials\view_workshop\_content.html :: already partial
+- templates\old_layouts\admin_dashboard\layout.html :: core layout
+- templates\old_layouts\landing\layout.html :: core layout
+- templates\old_layouts\landing_admin\layout.html :: core layout
+- templates\old_layouts\templates\layout_simple.html :: small:341
+- templates\mobile_devices\partials\assign\_content.html :: already partial
+- templates\mobile_devices\partials\dashboard\_content.html :: already partial
+- templates\mobile_devices\partials\edit\_content.html :: already partial
+- templates\mobile_devices\partials\index\_content.html :: already partial
+- templates\mobile\partials\add_attendance\_content.html :: already partial
+- templates\mobile\partials\add_attendance\_scripts.html :: already partial
+- templates\mobile\partials\add_employee\_content.html :: already partial
+- templates\mobile\partials\add_fuel_consumption\_content.html :: already partial
+- templates\mobile\partials\add_fuel_consumption\_scripts.html :: already partial
+- templates\mobile\partials\attendance\_content.html :: already partial
+- templates\mobile\partials\attendance_dashboard\_content.html :: already partial
+- templates\mobile\partials\change_password\_content.html :: already partial
+- templates\mobile\partials\change_password\_scripts.html :: already partial
+- templates\mobile\partials\create_handover\_content.html :: already partial
+- templates\mobile\partials\create_handover\_scripts.html :: already partial
+- templates\mobile\partials\dashboard_new\_content.html :: already partial
+- templates\mobile\partials\department_details\_content.html :: already partial
+- templates\mobile\partials\documents\_content.html :: already partial
+- templates\mobile\partials\documents_dashboard\_content.html :: already partial
+- templates\mobile\partials\document_details\_content.html :: already partial
+- templates\mobile\partials\edit_attendance\_content.html :: already partial
+- templates\mobile\partials\edit_employee\_content.html :: already partial
+- templates\mobile\partials\edit_salary\_content.html :: already partial
+- templates\mobile\partials\edit_workshop_record\_content.html :: already partial
+- templates\mobile\partials\employees\_content.html :: already partial
+- templates\mobile\partials\employee_details\_content.html :: already partial
+- templates\mobile\partials\fees\_content.html :: already partial
+- templates\mobile\partials\fee_details\_content.html :: already partial
+- templates\mobile\partials\fuel_consumption_stats\_content.html :: already partial
+- templates\mobile\partials\fuel_consumption_stats\_scripts.html :: already partial
+- templates\mobile\partials\handover_view\_content.html :: already partial
+- templates\mobile\partials\index\_content.html :: already partial
+- templates\mobile\partials\maintenance_details\_content.html :: already partial
+- templates\mobile\partials\notifications\_content.html :: already partial
+- templates\mobile\partials\notifications\_scripts.html :: already partial
+- templates\mobile\partials\operations\_content.html :: already partial
+- templates\mobile\partials\operations_list\_content.html :: already partial
+- templates\mobile\partials\operations_notifications\_content.html :: already partial
+- templates\mobile\partials\operation_details\_content.html :: already partial
+- templates\mobile\partials\report_attendance\_content.html :: already partial
+- templates\mobile\partials\report_documents\_content.html :: already partial
+- templates\mobile\partials\report_employees\_content.html :: already partial
+- templates\mobile\partials\report_employees\_scripts.html :: already partial
+- templates\mobile\partials\report_fees\_content.html :: already partial
+- templates\mobile\partials\report_fees\_scripts.html :: already partial
+- templates\mobile\partials\report_salaries\_content.html :: already partial
+- templates\mobile\partials\report_vehicles\_content.html :: already partial
+- templates\mobile\partials\report_vehicles\_scripts.html :: already partial
+- templates\mobile\partials\salaries\_content.html :: already partial
+- templates\mobile\partials\salaries\_scripts.html :: already partial
+- templates\mobile\partials\salary_details\_content.html :: already partial
+- templates\mobile\partials\salary_details\_scripts.html :: already partial
+- templates\mobile\partials\settings\_content.html :: already partial
+- templates\mobile\partials\vehicles\_content.html :: already partial
+- templates\mobile\partials\vehicle_checklist\_content.html :: already partial
+- templates\mobile\partials\vehicle_checklist\_scripts.html :: already partial
+- templates\mobile\partials\vehicle_checklist1\_content.html :: already partial
+- templates\mobile\partials\vehicle_checklist1\_scripts.html :: already partial
+- templates\mobile\partials\vehicle_checklist2\_content.html :: already partial
+- templates\mobile\partials\vehicle_checklist2\_scripts.html :: already partial
+- templates\mobile\partials\vehicle_checklist3\_content.html :: already partial
+- templates\mobile\partials\vehicle_checklist3\_scripts.html :: already partial
+- templates\mobile\partials\vehicle_checklist_details\_content.html :: already partial
+- templates\mobile\partials\vehicle_checklist_list\_content.html :: already partial
+- templates\mobile\partials\vehicle_details\_content.html :: already partial
+- templates\mobile\partials\vehicle_details_new\_content.html :: already partial
+- templates\mobile\partials\view_external_authorization\_content.html :: already partial
+- templates\mobile\partials\workshop_details\_content.html :: already partial
+- templates\mobile\partials\workshop_details\_scripts.html :: already partial
+- templates\landing_admin\partials\dashboard\_content.html :: already partial
+- templates\landing_admin\partials\features\_content.html :: already partial
+- templates\landing\partials\contact\_content.html :: already partial
+- templates\landing\partials\contact\_extra_css.html :: already partial
+- templates\landing\partials\demo\_content.html :: already partial
+- templates\landing\partials\demo\_extra_css.html :: already partial
+- templates\landing\partials\features\_content.html :: already partial
+- templates\landing\partials\features\_extra_css.html :: already partial
+- templates\landing\partials\index\_content.html :: already partial
+- templates\landing\partials\index\_extra_css.html :: already partial
+- templates\landing\partials\pricing\_content.html :: already partial
+- templates\landing\partials\pricing\_extra_css.html :: already partial
+- templates\integrated\partials\comprehensive_report\_content.html :: already partial
+- templates\integrated\partials\comprehensive_report\_extra_css.html :: already partial
+- templates\integrated\partials\dashboard_improved\_content.html :: already partial
+- templates\insights\partials\dashboard\_content.html :: already partial
+- templates\fees_costs\partials\index\_content.html :: already partial
+- templates\fees_costs\partials\index\_extra_css.html :: already partial
+- templates\employee_requests\partials\view\_content.html :: already partial
+- templates\employee_requests\partials\view\_extra_css.html :: already partial
+- templates\employees\partials\confirm_delete\_content.html :: already partial
+- templates\employees\partials\confirm_delete\_scripts.html :: already partial
+- templates\employees\partials\create\_basic_work.html :: already partial
+- templates\employees\partials\create\_content.html :: already partial
+- templates\employees\partials\create\_custody.html :: already partial
+- templates\employees\partials\create\_documents.html :: already partial
+- templates\employees\partials\create\_employment_fields.html :: already partial
+- templates\employees\partials\create\_housing.html :: already partial
+- templates\employees\partials\create\_scripts.html :: already partial
+- templates\employees\partials\create\_sponsorship.html :: already partial
+- templates\employees\partials\create\_uniform.html :: already partial
+- templates\employees\partials\edit\_content.html :: already partial
+- templates\employees\partials\edit\_scripts.html :: already partial
+- templates\employees\partials\import\_content.html :: already partial
+- templates\employees\partials\index\_content.html :: already partial
+- templates\employees\partials\index\_scripts.html :: already partial
+- templates\employees\partials\index_new\_content.html :: already partial
+- templates\employees\partials\index_new\_scripts.html :: already partial
+- templates\employees\partials\tracking\_content.html :: already partial
+- templates\employees\partials\tracking\_scripts.html :: already partial
+- templates\employees\partials\tracking_dashboard\_content.html :: already partial
+- templates\employees\partials\track_history\_content.html :: already partial
+- templates\employees\partials\track_history\_scripts.html :: already partial
+- templates\employees\partials\view\_additional_cards.html :: already partial
+- templates\employees\partials\view\_extra_js.html :: already partial
+- templates\employees\partials\view\_header_actions.html :: already partial
+- templates\employees\partials\view\_iban_modal.html :: already partial
+- templates\employees\partials\view\_images_uploads.html :: already partial
+- templates\employees\partials\view\_profile_work_section.html :: already partial
+- templates\employees\partials\view\_vehicle_handovers.html :: already partial
+- templates\drive_browser\partials\index\_content.html :: already partial
+- templates\documents\partials\create\_content.html :: already partial
+- templates\documents\partials\dashboard\_content.html :: already partial
+- templates\documents\partials\dashboard\_extra_css.html :: already partial
+- templates\documents\partials\department_bulk_create\_content.html :: already partial
+- templates\documents\partials\excel_dashboard\_content.html :: already partial
+- templates\documents\partials\excel_dashboard\_extra_css.html :: already partial
+- templates\documents\partials\expiring\_content.html :: already partial
+- templates\documents\partials\index\_content.html :: already partial
+- templates\documents\partials\index\_extra_css.html :: already partial
+- templates\device_management\partials\assignment_details\_content.html :: already partial
+- templates\device_management\partials\assignment_details\_extra_css.html :: already partial
+- templates\device_management\partials\assignment_detail_single\_content.html :: already partial
+- templates\device_management\partials\assignment_detail_single\_extra_css.html :: already partial
+- templates\device_management\partials\index\_content.html :: already partial
+- templates\device_management\partials\index\_extra_css.html :: already partial
+- templates\device_assignment\partials\assign_device\_content.html :: already partial
+- templates\device_assignment\partials\department_management\_content.html :: already partial
+- templates\device_assignment\partials\department_management\_extra_css.html :: already partial
+- templates\device_assignment\partials\index\_content.html :: already partial
+
+ERRORS 0

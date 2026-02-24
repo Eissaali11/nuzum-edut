@@ -1,0 +1,184 @@
+<div class="container-fluid">
+    <!-- رأس الصفحة -->
+    <div class="page-header">
+        <h2>
+            <i class="fas fa-link me-3"></i>
+            تفاصيل ربط الأجهزة المحمولة
+        </h2>
+        <p class="text-muted mt-2 mb-0">عرض شامل لجميع عمليات ربط الأجهزة بالموظفين مع إمكانية التصدير</p>
+    </div>
+
+    <!-- الإحصائيات -->
+    <div class="stats-container">
+        <div class="stats-card">
+            <i class="fas fa-link"></i>
+            <h3>{{ stats.total_assignments or 0 }}</h3>
+            <p>إجمالي الربطات</p>
+        </div>
+        <div class="stats-card">
+            <i class="fas fa-mobile-alt"></i>
+            <h3>{{ stats.device_only or 0 }}</h3>
+            <p>أجهزة فقط</p>
+        </div>
+        <div class="stats-card">
+            <i class="fas fa-sim-card"></i>
+            <h3>{{ stats.sim_only or 0 }}</h3>
+            <p>أرقام فقط</p>
+        </div>
+        <div class="stats-card">
+            <i class="fas fa-plus-circle"></i>
+            <h3>{{ stats.device_and_sim or 0 }}</h3>
+            <p>جهاز ورقم</p>
+        </div>
+    </div>
+
+    <!-- أزرار الإجراءات -->
+    <div class="action-buttons">
+        <a href="{{ url_for('device_management.index') }}" class="action-btn btn-info">
+            <i class="fas fa-arrow-right"></i>
+            العودة للأجهزة
+        </a>
+        <a href="{{ url_for('device_management.export_assignment_details') }}" class="action-btn btn-success">
+            <i class="fas fa-file-excel"></i>
+            تصدير إلى Excel
+        </a>
+    </div>
+
+    <!-- الجدول -->
+    <div class="table-container">
+        <div class="table-header">
+            <h5>
+                <i class="fas fa-list me-2"></i>
+                تفاصيل الربط الحالية
+            </h5>
+        </div>
+        <div class="p-0">
+            {% if assignments %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>IMEI</th>
+                            <th>البراند</th>
+                            <th>الموديل</th>
+                            <th>رقم الهاتف</th>
+                            <th>نوع الرقم</th>
+                            <th>الموظف</th>
+                            <th>نوع الربط</th>
+                            <th>تاريخ الربط</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in assignments %}
+                        <tr>
+                            <td>
+                                <div class="imei-text">{{ device.imei }}</div>
+                                {% if device.serial_number %}
+                                <small class="text-muted">S/N: {{ device.serial_number }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set brand_lower = (device.device_brand or '').lower() %}
+                                {% if 'iphone' in brand_lower %}
+                                    <span class="brand-badge brand-iphone">{{ device.device_brand }}</span>
+                                {% elif 'samsung' in brand_lower or 'galaxy' in brand_lower %}
+                                    <span class="brand-badge brand-samsung">{{ device.device_brand }}</span>
+                                {% elif 'huawei' in brand_lower %}
+                                    <span class="brand-badge brand-huawei">{{ device.device_brand }}</span>
+                                {% else %}
+                                    <span class="brand-badge brand-other">{{ device.device_brand or 'غير محدد' }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="fw-bold">{{ device.device_model or 'غير محدد' }}</div>
+                                {% if device.storage %}
+                                <small class="text-muted">{{ device.storage }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if device.phone_number %}
+                                    <div class="phone-number">{{ device.phone_number }}</div>
+                                {% else %}
+                                    <span class="text-muted">بدون رقم</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if device.assigned_sim and device.assigned_sim.phone_number %}
+                                    <span class="badge bg-success">مربوط بـ SIM</span>
+                                {% elif device.phone_number %}
+                                    <span class="badge bg-info">رقم مباشر</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">بدون رقم</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if device.assigned_employee %}
+                                    <div class="employee-info">
+                                        <div class="employee-name">{{ device.assigned_employee.name }}</div>
+                                        <div class="employee-id">{{ device.assigned_employee.employee_id }}</div>
+                                        {% if device.assigned_employee.departments %}
+                                        <small class="text-muted">{{ device.assigned_employee.departments[0].name }}</small>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">غير محدد</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if device.current_assignment and device.current_assignment.assignment_type %}
+                                    {% if device.current_assignment.assignment_type == 'device_only' %}
+                                        <span class="status-badge assignment-type-device-only">
+                                            <i class="fas fa-mobile-alt"></i> جهاز فقط
+                                        </span>
+                                    {% elif device.current_assignment.assignment_type == 'sim_only' %}
+                                        <span class="status-badge assignment-type-sim-only">
+                                            <i class="fas fa-sim-card"></i> رقم فقط
+                                        </span>
+                                    {% elif device.current_assignment.assignment_type == 'device_and_sim' %}
+                                        <span class="status-badge assignment-type-device-and-sim">
+                                            <i class="fas fa-plus-circle"></i> جهاز ورقم
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">غير محدد</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if device.current_assignment and device.current_assignment.assignment_date %}
+                                    <span class="badge bg-secondary">{{ device.current_assignment.assignment_date.strftime('%Y-%m-%d') }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ url_for('device_management.assignment_details_single', device_id=device.id) }}" 
+                                       class="btn btn-info" title="تفاصيل كاملة">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('device_management.edit', device_id=device.id) }}" 
+                                       class="btn btn-primary" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-link text-muted" style="font-size: 3rem;"></i>
+                <h4 class="mt-3 text-muted">لا توجد أجهزة مربوطة</h4>
+                <p class="text-muted">لم يتم العثور على أي أجهزة مربوطة بموظفين حالياً</p>
+                <a href="{{ url_for('device_management.index') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    إدارة الأجهزة
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,300 @@
+<style>
+/* حل احترافي بالحواف الآمنة للجوال */
+:root {
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --nav-height: 80px;
+    --button-spacing: 16px;
+    --total-bottom-space: calc(var(--nav-height) + var(--button-spacing) + var(--safe-area-bottom));
+}
+
+/* تفعيل الحواف الآمنة */
+html {
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+
+/* حجز مساحة سفلية كبيرة للتمرير */
+body {
+    padding-bottom: 200px !important;
+    overflow-y: auto !important;
+    min-height: 100vh !important;
+}
+
+/* إخفاء القائمة السفلية تماماً في هذه الصفحة */
+.mobile-footer {
+    display: none !important;
+}
+
+/* إزالة مساحات زائدة من المحتوى */
+.mobile-content-wrapper,
+.container.py-4,
+form {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* زر العودة المحسن */
+.custom-back-button {
+    position: fixed;
+    top: calc(20px + env(safe-area-inset-top, 0px));
+    right: calc(20px + env(safe-area-inset-right, 0px));
+    z-index: 1001;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #333;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.custom-back-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+}
+
+/* زر الحفظ مع تأثيرات بصرية قوية */
+.fixed-submit-button {
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 20px !important;
+    right: 20px !important;
+    z-index: 9999 !important;
+    background: #28a745 !important;
+    color: white !important;
+    border: 3px solid #1e7e34 !important;
+    border-radius: 12px !important;
+    padding: 18px 20px !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    display: block !important;
+    width: calc(100% - 40px) !important;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6) !important;
+    animation: pulse 2s infinite !important;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6); }
+    50% { box-shadow: 0 8px 35px rgba(40, 167, 69, 0.8); }
+    100% { box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6); }
+}
+
+.fixed-cancel-button {
+    position: fixed !important;
+    bottom: 80px !important;
+    left: 20px !important;
+    right: 20px !important;
+    z-index: 9998 !important;
+    background: #6c757d !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    display: block !important;
+    width: calc(100% - 40px) !important;
+}
+</style>
+<!-- زر عودة ثابت في أعلى الصفحة -->
+<a href="{{ url_for('mobile.vehicle_details', vehicle_id=vehicle.id) }}" class="custom-back-button">
+    <i class="fas fa-arrow-right"></i>
+</a>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-center align-items-center mb-3">
+        <h1 class="fs-4 mb-0 text-center">
+            <i class="fas fa-exchange-alt me-2"></i>
+            إضافة نموذج تسليم/استلام
+        </h1>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">معلومات السيارة: {{ vehicle.plate_number }}</h5>
+        </div>
+        <div class="card-body p-3">
+            <div class="row">
+                <div class="col-6 mb-2">
+                    <strong class="d-block text-muted small">الشركة:</strong>
+                    {{ vehicle.make }}
+                </div>
+                <div class="col-6 mb-2">
+                    <strong class="d-block text-muted small">الموديل:</strong>
+                    {{ vehicle.model }}
+                </div>
+                <div class="col-6 mb-2">
+                    <strong class="d-block text-muted small">سنة الصنع:</strong>
+                    {{ vehicle.year }}
+                </div>
+                <div class="col-6 mb-2">
+                    <strong class="d-block text-muted small">اللون:</strong>
+                    <span class="badge rounded-pill" style="background-color: {{ vehicle.color }}; color: {{ '#000' if vehicle.color in ['white', 'yellow', 'silver'] else '#fff' }};">
+                        {{ vehicle.color }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="handover-form" method="POST" class="needs-validation" novalidate>
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">معلومات النموذج</h5>
+            </div>
+            <div class="card-body p-3">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label class="form-label">نوع النموذج <span class="text-danger">*</span></label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="handover_type" id="delivery" value="delivery" checked required>
+                            <label class="btn btn-outline-success" for="delivery">تسليم</label>
+                            <input type="radio" class="btn-check" name="handover_type" id="return" value="return" required>
+                            <label class="btn btn-outline-info" for="return">استلام</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label for="handover_date" class="form-label">تاريخ التسليم/الاستلام <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="handover_date" name="handover_date" value="{{ now.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="person_name" class="form-label">اسم الشخص <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="person_name" name="person_name" required>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label for="supervisor_name" class="form-label">اسم المشرف</label>
+                        <input type="text" class="form-control" id="supervisor_name" name="supervisor_name" placeholder="أدخل اسم المشرف">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">حالة السيارة</h5>
+            </div>
+            <div class="card-body p-3">
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label for="vehicle_condition" class="form-label">الحالة العامة <span class="text-danger">*</span></label>
+                        <select class="form-select" id="vehicle_condition" name="vehicle_condition" required>
+                            <option value="ممتازة">ممتازة</option>
+                            <option value="جيدة" selected>جيدة</option>
+                            <option value="متوسطة">متوسطة</option>
+                            <option value="سيئة">سيئة</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="fuel_level" class="form-label">مستوى الوقود <span class="text-danger">*</span></label>
+                        <select class="form-select" id="fuel_level" name="fuel_level" required>
+                            <option value="ممتلئ">ممتلئ</option>
+                            <option value="3/4" selected>3/4</option>
+                            <option value="1/2">1/2</option>
+                            <option value="1/4">1/4</option>
+                            <option value="فارغ">فارغ</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-12 mb-3">
+                        <label for="mileage" class="form-label">قراءة العداد (كم) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="mileage" name="mileage" required>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label class="form-label">المعدات المتوفرة</label>
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="1" id="has_spare_tire" name="has_spare_tire" checked>
+                                    <label class="form-check-label" for="has_spare_tire">الإطار الاحتياطي</label>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="1" id="has_fire_extinguisher" name="has_fire_extinguisher" checked>
+                                    <label class="form-check-label" for="has_fire_extinguisher">طفاية الحريق</label>
+                                </div>
+                            </div>
+
+                            <div class="col-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="1" id="has_tools" name="has_tools" checked>
+                                    <label class="form-check-label" for="has_tools">عدة إصلاح</label>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="1" id="has_first_aid_kit" name="has_first_aid_kit" checked>
+                                    <label class="form-check-label" for="has_first_aid_kit">حقيبة إسعافات أولية</label>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="1" id="has_warning_triangle" name="has_warning_triangle" checked>
+                                    <label class="form-check-label" for="has_warning_triangle">مثلث تحذير</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- حقل رابط نموذج خارجي -->
+                <div class="row mb-3">
+                    <div class="col-12 mb-3">
+                        <label for="form_link" class="form-label">
+                            <i class="fas fa-link me-2"></i>
+                            رابط نموذج خارجي (اختياري)
+                        </label>
+                        <input type="url" class="form-control" id="form_link" name="form_link" placeholder="https://example.com/form">
+                        <small class="text-muted d-block mt-1">
+                            <i class="fas fa-info-circle me-1"></i>
+                            يمكن إضافة رابط لنموذج خارجي مثل Google Forms
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-12 mb-3">
+                        <label for="notes" class="form-label">ملاحظات إضافية</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- مساحة كبيرة للتمرير -->
+        <div style="height: 300px; background: transparent; width: 100%;"></div>
+    </form>
+</div>
+
+<!-- مساحة إضافية خارج النموذج لضمان التمرير -->
+<div style="height: 200px; background: transparent; width: 100%;"></div>
+
+<!-- الأزرار الثابتة أسفل الشاشة -->
+<button type="submit" form="handover-form" class="fixed-submit-button">
+    <i class="fas fa-save"></i>
+    حفظ نموذج التسليم/الاستلام
+</button>
+
+<a href="{{ url_for('mobile.vehicle_details', vehicle_id=vehicle.id) }}" class="fixed-cancel-button">
+    <i class="fas fa-times"></i>
+    إلغاء
+</a>

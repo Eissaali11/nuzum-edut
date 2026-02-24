@@ -1,0 +1,56 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // حفظ إعدادات الوضع الداكن
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    
+    // تعيين حالة المفتاح بناءً على الإعدادات المحفوظة
+    darkModeToggle.checked = isDarkMode;
+    
+    // تحديث المظهر عند تغيير الإعداد
+    darkModeToggle.addEventListener('change', function() {
+        localStorage.setItem('darkMode', this.checked);
+        
+        // إرسال إشعار لخدمة العامل لتحديث الإعدادات
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+                type: 'THEME_CHANGE',
+                isDarkMode: this.checked
+            });
+        }
+        
+        // تطبيق التغييرات مباشرة
+        document.documentElement.setAttribute('data-theme', this.checked ? 'dark' : 'light');
+    });
+    
+    // حفظ إعدادات اللغة
+    const languageSelect = document.getElementById('languageSelect');
+    const savedLanguage = localStorage.getItem('language') || 'ar';
+    
+    // تعيين اللغة المحفوظة
+    languageSelect.value = savedLanguage;
+    
+    // تحديث اللغة عند التغيير
+    languageSelect.addEventListener('change', function() {
+        localStorage.setItem('language', this.value);
+        
+        // يمكن هنا إعادة تحميل الصفحة أو تغيير اللغة بدون إعادة التحميل
+        // window.location.reload();
+    });
+    
+    // إعدادات الإشعارات
+    const notificationsToggle = document.getElementById('notificationsToggle');
+    const notificationsEnabled = localStorage.getItem('notifications') !== 'false';
+    
+    notificationsToggle.checked = notificationsEnabled;
+    
+    notificationsToggle.addEventListener('change', function() {
+        localStorage.setItem('notifications', this.checked);
+        
+        // طلب الإذن بالإشعارات إذا تم تفعيلها
+        if (this.checked && 'Notification' in window) {
+            Notification.requestPermission();
+        }
+    });
+});
+</script>

@@ -15,6 +15,7 @@ def list_employees_page_data(
     multi_department_filter: str = "",
     no_department_filter: str = "",
     duplicate_names_filter: str = "",
+    location_filter: str = "",
     assigned_department_id: Optional[int] = None,
 ) -> dict:
     """
@@ -37,6 +38,9 @@ def list_employees_page_data(
 
     if status_filter:
         query = query.filter(Employee.status == status_filter)
+
+    if location_filter:
+        query = query.filter(Employee.location == location_filter)
 
     if duplicate_names_filter == "yes":
         duplicate_subq = (
@@ -115,6 +119,7 @@ def list_employees_page_data(
         "departments": departments,
         "current_department": department_filter,
         "current_status": status_filter,
+        "current_location": location_filter,
         "current_multi_department": multi_department_filter,
         "current_no_department": no_department_filter,
         "current_duplicate_names": duplicate_names_filter,

@@ -1,0 +1,291 @@
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('fuelConsumptionForm');
+    
+    // حساب تكلفة اللتر تلقائياً عند تغيير الكمية أو التكلفة
+    const litersInput = document.querySelector('input[name="liters"]');
+    const costInput = document.querySelector('input[name="cost"]');
+    
+    function updateCostPerLiter() {
+      const liters = parseFloat(litersInput.value) || 0;
+      const cost = parseFloat(costInput.value) || 0;
+      
+      if (liters > 0 && cost > 0) {
+        const costPerLiter = (cost / liters).toFixed(2);
+        console.log('تكلفة اللتر الواحد:', costPerLiter);
+      }
+    }
+    
+    litersInput.addEventListener('input', updateCostPerLiter);
+    costInput.addEventListener('input', updateCostPerLiter);
+    
+    // التعامل مع خيارات التكرار
+    updateRepeatOptions();
+    updatePreview();
+    
+    // تحديث المعاينة عند تغيير أي بيانات
+    form.addEventListener('change', updatePreview);
+    
+    // معالجة النموذج قبل الإرسال
+    form.addEventListener('submit', function(event) {
+      const repeatType = document.getElementById('repeatType').value;
+      
+      // إذا لم يكن هناك تكرار، نرسل النموذج كما هو
+      if (repeatType === 'none') {
+        return true;
+      }
+      
+      // إيقاف الإرسال التلقائي للنموذج
+      event.preventDefault();
+      
+      // الحصول على البيانات المطلوبة
+      const vehicleId = document.querySelector('select[name="vehicle_id"]').value;
+      const liters = document.querySelector('input[name="liters"]').value;
+      const cost = document.querySelector('input[name="cost"]').value;
+      const kilometerReading = document.querySelector('input[name="kilometer_reading"]').value;
+      const driverName = document.querySelector('input[name="driver_name"]').value;
+      const fuelType = document.querySelector('select[name="fuel_type"]').value;
+      const fillingStation = document.querySelector('input[name="filling_station"]').value;
+      const notes = document.querySelector('textarea[name="notes"]').value;
+      
+      // الحصول على تواريخ التكرار
+      const repeatStartDate = new Date(document.getElementById('repeatStartDate').value);
+      const repeatEndDate = new Date(document.getElementById('repeatEndDate').value);
+      
+      // الحصول على الأيام المحددة للتكرار
+      let selectedDays = [];
+      if (repeatType === 'weekly') {
+        document.querySelectorAll('input[name="weekdays"]:checked').forEach(checkbox => {
+          selectedDays.push(parseInt(checkbox.value));
+        });
+      } else if (repeatType === 'monthly') {
+        document.querySelectorAll('input[name="monthdays"]:checked').forEach(checkbox => {
+          selectedDays.push(parseInt(checkbox.value));
+        });
+      }
+      
+      if (selectedDays.length === 0) {
+        alert('يرجى اختيار الأيام للتكرار');
+        return false;
+      }
+      
+      // إنشاء مصفوفة التواريخ
+      const dates = getDatesForRepeat(repeatType, selectedDays, repeatStartDate, repeatEndDate);
+      
+      if (dates.length === 0) {
+        alert('لم يتم العثور على تواريخ تطابق معايير التكرار');
+        return false;
+      }
+      
+      // إرسال البيانات باستخدام AJAX لإنشاء سجلات متعددة
+      const formData = new FormData();
+      formData.append('repeat_type', repeatType);
+      formData.append('vehicle_id', vehicleId);
+      formData.append('liters', liters);
+      formData.append('cost', cost);
+      formData.append('kilometer_reading', kilometerReading);
+      formData.append('driver_name', driverName);
+      formData.append('fuel_type', fuelType);
+      formData.append('filling_station', fillingStation);
+      formData.append('notes', notes);
+      
+      // إضافة التواريخ
+      dates.forEach((date, index) => {
+        formData.append(`dates[${index}]`, date.toISOString().split('T')[0]);
+      });
+      
+      // إرسال البيانات
+      fetch(form.action, {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          window.location.href = data.redirect_url || '{{ url_for('mobile.vehicle_expenses') }}';
+        } else {
+          alert(data.message || 'حدث خطأ أثناء إضافة السجلات');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('حدث خطأ أثناء إرسال البيانات');
+      });
+    });
+  });
+  
+  // وظيفة لإظهار/إخفاء خيارات التكرار
+  function toggleRepeatOptions() {
+    const repeatOptionsSection = document.getElementById('repeatOptionsSection');
+    const repeatToggleIcon = document.getElementById('repeat-toggle-icon');
+    
+    if (repeatOptionsSection.style.display === 'none') {
+      repeatOptionsSection.style.display = 'block';
+      repeatToggleIcon.className = 'fas fa-chevron-up';
+    } else {
+      repeatOptionsSection.style.display = 'none';
+      repeatToggleIcon.className = 'fas fa-chevron-down';
+    }
+    
+    updateRepeatOptions();
+  }
+  
+  // وظيفة لتحديث خيارات التكرار حسب النوع المحدد
+  function updateRepeatOptions() {
+    const repeatType = document.getElementById('repeatType').value;
+    const weeklyOptions = document.getElementById('weeklyOptions');
+    const monthlyOptions = document.getElementById('monthlyOptions');
+    const repeatDurationSection = document.getElementById('repeatDurationSection');
+    const singleDateSection = document.getElementById('singleDateSection');
+    const previewSection = document.getElementById('previewSection');
+    
+    // إخفاء جميع الخيارات أولاً
+    weeklyOptions.style.display = 'none';
+    monthlyOptions.style.display = 'none';
+    repeatDurationSection.style.display = 'none';
+    previewSection.style.display = 'none';
+    
+    // إظهار الخيارات المناسبة حسب النوع
+    if (repeatType === 'weekly') {
+      weeklyOptions.style.display = 'block';
+      repeatDurationSection.style.display = 'block';
+      singleDateSection.style.display = 'none';
+      previewSection.style.display = 'block';
+    } else if (repeatType === 'monthly') {
+      monthlyOptions.style.display = 'block';
+      repeatDurationSection.style.display = 'block';
+      singleDateSection.style.display = 'none';
+      previewSection.style.display = 'block';
+    } else {
+      singleDateSection.style.display = 'block';
+    }
+    
+    updatePreview();
+  }
+  
+  // وظيفة لتحديث معاينة السجلات
+  function updatePreview() {
+    const repeatType = document.getElementById('repeatType').value;
+    
+    if (repeatType === 'none') {
+      return;
+    }
+    
+    // الحصول على التواريخ
+    const repeatStartDate = new Date(document.getElementById('repeatStartDate').value || new Date());
+    const repeatEndDate = new Date(document.getElementById('repeatEndDate').value || (new Date().setDate(new Date().getDate() + 30)));
+    
+    // الحصول على الأيام المحددة
+    let selectedDays = [];
+    if (repeatType === 'weekly') {
+      document.querySelectorAll('input[name="weekdays"]:checked').forEach(checkbox => {
+        selectedDays.push(parseInt(checkbox.value));
+      });
+    } else if (repeatType === 'monthly') {
+      document.querySelectorAll('input[name="monthdays"]:checked').forEach(checkbox => {
+        selectedDays.push(parseInt(checkbox.value));
+      });
+    }
+    
+    // توليد التواريخ
+    const dates = getDatesForRepeat(repeatType, selectedDays, repeatStartDate, repeatEndDate);
+    
+    // عرض المعاينة
+    const previewRecords = document.getElementById('previewRecords');
+    const recordsCount = document.getElementById('recordsCount');
+    
+    previewRecords.innerHTML = '';
+    recordsCount.textContent = dates.length;
+    
+    // الحد الأقصى للسجلات المعروضة
+    const maxPreviewItems = 10;
+    const displayDates = dates.slice(0, maxPreviewItems);
+    
+    // عرض التواريخ
+    displayDates.forEach(date => {
+      const dateItem = document.createElement('div');
+      dateItem.className = 'mobile-preview-item';
+      
+      const monthNames = ['يناير', 'فبراير', 'مارس', 'إبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+      const dayNames = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+      
+      dateItem.innerHTML = `
+        <div class="mobile-preview-date">
+          <div class="mobile-preview-date-day">${date.getDate()}</div>
+          <div class="mobile-preview-date-month">${monthNames[date.getMonth()].substring(0, 3)}</div>
+        </div>
+        <div class="mobile-preview-details">
+          <div class="mobile-preview-title">${dayNames[date.getDay()]}</div>
+          <div class="mobile-preview-subtitle">${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}</div>
+        </div>
+      `;
+      
+      previewRecords.appendChild(dateItem);
+    });
+    
+    // إذا كان هناك المزيد من التواريخ
+    if (dates.length > maxPreviewItems) {
+      const moreItem = document.createElement('div');
+      moreItem.className = 'mobile-preview-item';
+      moreItem.innerHTML = `
+        <div class="mobile-preview-details" style="text-align: center;">
+          <div class="mobile-preview-title">... و ${dates.length - maxPreviewItems} تواريخ أخرى</div>
+        </div>
+      `;
+      previewRecords.appendChild(moreItem);
+    }
+  }
+  
+  // وظيفة للحصول على التواريخ المطابقة للتكرار
+  function getDatesForRepeat(repeatType, selectedDays, startDate, endDate) {
+    const dates = [];
+    
+    // التأكد من صحة التواريخ
+    if (!startDate || isNaN(startDate.getTime())) {
+      startDate = new Date();
+    }
+    
+    if (!endDate || isNaN(endDate.getTime())) {
+      // تاريخ افتراضي بعد 30 يوم
+      endDate = new Date();
+      endDate.setDate(endDate.getDate() + 30);
+    }
+    
+    // نسخ التواريخ لتجنب تعديل الأصلية
+    const currentDate = new Date(startDate);
+    const lastDate = new Date(endDate);
+    
+    // ضبط التاريخ الحالي لبداية اليوم
+    currentDate.setHours(0, 0, 0, 0);
+    lastDate.setHours(23, 59, 59, 999);
+    
+    // التكرار الأسبوعي
+    if (repeatType === 'weekly') {
+      while (currentDate <= lastDate) {
+        const dayOfWeek = currentDate.getDay(); // 0 للأحد، 1 للاثنين، إلخ
+        
+        if (selectedDays.includes(dayOfWeek)) {
+          dates.push(new Date(currentDate));
+        }
+        
+        // الانتقال إلى اليوم التالي
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    }
+    // التكرار الشهري
+    else if (repeatType === 'monthly') {
+      while (currentDate <= lastDate) {
+        const dayOfMonth = currentDate.getDate(); // من 1 إلى 31
+        
+        if (selectedDays.includes(dayOfMonth)) {
+          dates.push(new Date(currentDate));
+        }
+        
+        // الانتقال إلى اليوم التالي
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    }
+    
+    return dates;
+  }
+</script>

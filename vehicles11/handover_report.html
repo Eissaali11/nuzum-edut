@@ -391,7 +391,7 @@
 <!-- ✅ الحاوية الرئيسية التي توزع الأقسام -->
 <div style="
   display: grid;
-  grid-template-columns: 45% 1fr; /* تم توسيع عرض الصورة إلى 45% */
+  grid-template-columns: 52% 1fr; /* تكبير مساحة الصورة مع الحفاظ على الترتيب */
   gap: 30px;
   align-items: start;
 ">
@@ -437,7 +437,7 @@
   </div>
 
     <!-- ✅ صورة الهيكل -->
-<div style="width: 100%; height: 170px;">
+<div style="width: 100%; height: 220px;">
   <img src="{% if handover.damage_diagram_path %}uploads/{{ handover.damage_diagram_path }}{% else %}images/vehicle_diagram_new.png{% endif %}"
     alt="Vehicle Diagram"
     style="

@@ -1,0 +1,153 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تبديل عرض كلمة المرور
+    const toggleButtons = document.querySelectorAll('.password-toggle-btn');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const passwordInput = document.getElementById(targetId);
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                passwordInput.type = 'password';
+                this.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        });
+    });
+    
+    // التحقق من قوة كلمة المرور
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const strengthBar = document.querySelector('.strength-bar');
+    const strengthText = document.getElementById('strength-text');
+    const passwordMatchText = document.getElementById('password-match-text');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // متطلبات كلمة المرور
+    const reqLength = document.getElementById('req-length');
+    const reqUppercase = document.getElementById('req-uppercase');
+    const reqLowercase = document.getElementById('req-lowercase');
+    const reqNumber = document.getElementById('req-number');
+    const reqSpecial = document.getElementById('req-special');
+    
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        let feedback = 'ضعيفة';
+        
+        // التحقق من طول كلمة المرور
+        if (password.length >= 8) {
+            strength += 1;
+            reqLength.classList.add('valid');
+        } else {
+            reqLength.classList.remove('valid');
+        }
+        
+        // التحقق من وجود حرف كبير
+        if (/[A-Z]/.test(password)) {
+            strength += 1;
+            reqUppercase.classList.add('valid');
+        } else {
+            reqUppercase.classList.remove('valid');
+        }
+        
+        // التحقق من وجود حرف صغير
+        if (/[a-z]/.test(password)) {
+            strength += 1;
+            reqLowercase.classList.add('valid');
+        } else {
+            reqLowercase.classList.remove('valid');
+        }
+        
+        // التحقق من وجود رقم
+        if (/[0-9]/.test(password)) {
+            strength += 1;
+            reqNumber.classList.add('valid');
+        } else {
+            reqNumber.classList.remove('valid');
+        }
+        
+        // التحقق من وجود حرف خاص
+        if (/[^A-Za-z0-9]/.test(password)) {
+            strength += 1;
+            reqSpecial.classList.add('valid');
+        } else {
+            reqSpecial.classList.remove('valid');
+        }
+        
+        // تعيين النص ولون شريط القوة
+        if (strength === 0) {
+            strengthBar.style.width = '0%';
+            strengthBar.style.backgroundColor = '#dc3545';
+            feedback = 'ضعيفة جداً';
+        } else if (strength === 1) {
+            strengthBar.style.width = '20%';
+            strengthBar.style.backgroundColor = '#dc3545';
+            feedback = 'ضعيفة';
+        } else if (strength === 2) {
+            strengthBar.style.width = '40%';
+            strengthBar.style.backgroundColor = '#ffc107';
+            feedback = 'متوسطة';
+        } else if (strength === 3) {
+            strengthBar.style.width = '60%';
+            strengthBar.style.backgroundColor = '#ffc107';
+            feedback = 'جيدة';
+        } else if (strength === 4) {
+            strengthBar.style.width = '80%';
+            strengthBar.style.backgroundColor = '#28a745';
+            feedback = 'قوية';
+        } else {
+            strengthBar.style.width = '100%';
+            strengthBar.style.backgroundColor = '#28a745';
+            feedback = 'قوية جداً';
+        }
+        
+        strengthText.textContent = feedback;
+        return strength;
+    }
+    
+    function checkPasswordMatch() {
+        if (confirmPassword.value === '') {
+            passwordMatchText.textContent = '';
+            return false;
+        }
+        
+        if (newPassword.value === confirmPassword.value) {
+            passwordMatchText.textContent = 'كلمات المرور متطابقة';
+            passwordMatchText.style.color = '#28a745';
+            return true;
+        } else {
+            passwordMatchText.textContent = 'كلمات المرور غير متطابقة';
+            passwordMatchText.style.color = '#dc3545';
+            return false;
+        }
+    }
+    
+    function validateForm() {
+        const currentPassword = document.getElementById('current_password').value;
+        const strength = checkPasswordStrength(newPassword.value);
+        const passwordsMatch = checkPasswordMatch();
+        
+        if (currentPassword && strength >= 3 && passwordsMatch) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+    
+    newPassword.addEventListener('input', function() {
+        checkPasswordStrength(this.value);
+        checkPasswordMatch();
+        validateForm();
+    });
+    
+    confirmPassword.addEventListener('input', function() {
+        checkPasswordMatch();
+        validateForm();
+    });
+    
+    document.getElementById('current_password').addEventListener('input', validateForm);
+});
+</script>

@@ -1,0 +1,77 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تلوين دائرة نسبة الإنجاز
+    const progressCircle = document.querySelector('.progress-circle');
+    const percentage = progressCircle.getAttribute('data-percentage');
+    
+    // تعيين النسبة المئوية
+    progressCircle.style.setProperty('--percentage', percentage + '%');
+    
+    // تعيين اللون حسب النسبة
+    if (percentage < 30) {
+        progressCircle.style.setProperty('--progress-color', '#dc3545'); // أحمر
+    } else if (percentage < 70) {
+        progressCircle.style.setProperty('--progress-color', '#ffc107'); // أصفر
+    } else {
+        progressCircle.style.setProperty('--progress-color', '#28a745'); // أخضر
+    }
+});
+
+// دالة لعرض الصورة بالحجم الكامل
+function showFullImage(imageSrc) {
+    // إنشاء طبقة تظليل للخلفية
+    const overlay = document.createElement('div');
+    overlay.className = 'image-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+    overlay.style.zIndex = '9999';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    
+    // إنشاء الصورة بالحجم الكامل
+    const fullImage = document.createElement('img');
+    fullImage.src = imageSrc;
+    fullImage.style.maxWidth = '90%';
+    fullImage.style.maxHeight = '90%';
+    fullImage.style.objectFit = 'contain';
+    
+    // إضافة زر الإغلاق
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '&times;';
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '20px';
+    closeButton.style.right = '20px';
+    closeButton.style.color = 'white';
+    closeButton.style.fontSize = '30px';
+    closeButton.style.backgroundColor = 'transparent';
+    closeButton.style.border = 'none';
+    closeButton.style.cursor = 'pointer';
+    
+    // إضافة المكونات إلى الطبقة
+    overlay.appendChild(fullImage);
+    overlay.appendChild(closeButton);
+    
+    // إضافة الطبقة إلى الصفحة
+    document.body.appendChild(overlay);
+    
+    // إضافة حدث النقر لإغلاق الصورة
+    overlay.addEventListener('click', function() {
+        document.body.removeChild(overlay);
+    });
+    
+    // منع انتشار الحدث عند النقر على الصورة نفسها
+    fullImage.addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
+    
+    // إضافة حدث النقر لزر الإغلاق
+    closeButton.addEventListener('click', function() {
+        document.body.removeChild(overlay);
+    });
+}
+</script>

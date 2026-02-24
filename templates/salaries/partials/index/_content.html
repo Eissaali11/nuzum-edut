@@ -1,0 +1,357 @@
+<div class="container-fluid py-4">
+    <!-- Enhanced Header -->
+    <div class="salary-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>إدارة الرواتب</h1>
+                <p class="text-muted mb-0">نظام متكامل لإدارة رواتب الموظفين</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('salaries.create') }}" class="btn-enhanced btn-success-enhanced">
+                    <i class="fas fa-plus me-1"></i> إضافة راتب
+                </a>
+                <a href="{{ url_for('salaries.import_excel') }}" class="btn-enhanced btn-primary-enhanced">
+                    <i class="fas fa-file-import me-1"></i> استيراد
+                </a>
+                <div class="dropdown">
+                    <button class="btn-enhanced btn-secondary-enhanced dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-file-export me-1"></i> تصدير
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('salaries.export_excel', month=selected_month, year=selected_year, department_id=selected_department, employee_id=selected_employee) }}">
+                                <i class="fas fa-file-excel text-success me-1"></i> تصدير الرواتب (Excel)
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('salaries.export_simple_employees_salary', month=selected_month, year=selected_year, department_id=selected_department) }}">
+                                <i class="fas fa-users text-primary me-1"></i> تصدير بيانات الموظفين مع الرواتب
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('salaries.export_excel') }}">
+                                <i class="fas fa-database text-info me-1"></i> تصدير جميع البيانات
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Filter Card -->
+    <div class="filter-card">
+        <div class="card-header">
+            <h5 class="card-title mb-0 text-primary"><i class="fas fa-filter me-2"></i> خيارات البحث</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{{ url_for('salaries.index') }}" class="row g-3">
+                <div class="col-md-3">
+                    <label for="month" class="form-label">الشهر</label>
+                    <select class="form-select" id="month" name="month">
+                        <option value="">جميع الشهور</option>
+                        {% for month_tuple in available_months %}
+                        <option value="{{ month_tuple[0] }}" {% if selected_month == month_tuple[0]|string %}selected{% endif %}>
+                            {% set arabic_months = {
+                                1: "يناير", 2: "فبراير", 3: "مارس", 4: "أبريل", 
+                                5: "مايو", 6: "يونيو", 7: "يوليو", 8: "أغسطس",
+                                9: "سبتمبر", 10: "أكتوبر", 11: "نوفمبر", 12: "ديسمبر"
+                            } %}
+                            {{ arabic_months[month_tuple[0]] }} ({{ month_tuple[0] }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="year" class="form-label">السنة</label>
+                    <select class="form-select" id="year" name="year">
+                        <option value="">جميع السنوات</option>
+                        {% for year_tuple in available_years %}
+                        <option value="{{ year_tuple[0] }}" {% if selected_year == year_tuple[0]|string %}selected{% endif %}>
+                            {{ year_tuple[0] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="department_id" class="form-label">القسم</label>
+                    <select class="form-select" id="department_id" name="department_id">
+                        <option value="">جميع الأقسام</option>
+                        {% for department in departments %}
+                        <option value="{{ department.id }}" {% if selected_department == department.id|string %}selected{% endif %}>
+                            {{ department.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="employee_id" class="form-label">الموظف</label>
+                    <select class="form-select" id="employee_id" name="employee_id">
+                        <option value="">جميع الموظفين</option>
+                        {% for employee in employees %}
+                        <option value="{{ employee.id }}" {% if selected_employee == employee.id|string %}selected{% endif %}>
+                            {{ employee.name }} ({{ employee.employee_id }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-12 text-center mt-3">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-search me-1"></i> بحث
+                    </button>
+                    <a href="{{ url_for('salaries.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo me-1"></i> إعادة تعيين
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enhanced Summary Card -->
+    <div class="summary-card">
+        <div class="card-header">
+            <h5 class="card-title mb-0"><i class="fas fa-chart-pie me-2"></i> ملخص الرواتب</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-2">
+                    <div class="summary-item">
+                        <h6>إجمالي الرواتب الأساسية</h6>
+                        <h4>{{ total_basic|round(2) }}</h4>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="summary-item">
+                        <h6>إجمالي البدلات</h6>
+                        <h4>{{ total_allowances|round(2) }}</h4>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="summary-item">
+                        <h6>إجمالي الخصومات</h6>
+                        <h4>{{ total_deductions|round(2) }}</h4>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="summary-item">
+                        <h6>إجمالي المكافآت</h6>
+                        <h4>{{ total_bonus|round(2) }}</h4>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="summary-item net-salary">
+                        <h6>إجمالي صافي الرواتب</h6>
+                        <h4>{{ total_net|round(2) }}</h4>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <div class="row justify-content-center mb-3">
+                    <div class="col-md-4">
+                        <label for="workingDaysInput" class="form-label">
+                            <i class="fas fa-briefcase text-warning me-1"></i>
+                            <strong>عدد أيام العمل المطلوبة للحصول على الحافز</strong>
+                        </label>
+                        <input type="number" class="form-control" id="workingDaysInput" 
+                               value="26" min="1" max="31" placeholder="26">
+                        <small class="text-muted">الحد الأدنى للحضور الكامل (افتراضي: 26 يوم)</small>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <button id="bulkCalculateBtn" class="btn btn-primary">
+                        <i class="fas fa-calculator me-1"></i> حساب رواتب الشهر تلقائياً
+                    </button>
+                    <a href="{{ url_for('salaries.report', month=selected_month, year=selected_year) }}" class="btn btn-info">
+                        <i class="fas fa-file-alt me-1"></i> عرض تقرير مفصل
+                    </a>
+                    <a href="{{ url_for('salaries.report_pdf', month=selected_month, year=selected_year, department_id=selected_department) }}" class="btn btn-danger">
+                        <i class="fas fa-file-pdf me-1"></i> تصدير PDF
+                    </a>
+                    <a href="{{ url_for('salaries.batch_salary_notifications') }}" class="btn btn-success">
+                        <i class="fas fa-envelope me-1"></i> إشعارات الرواتب
+                    </a>
+                    <a href="{{ url_for('salaries.batch_deduction_notifications') }}" class="btn btn-warning">
+                        <i class="fab fa-whatsapp me-1"></i> إشعارات الخصومات
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Save Alert -->
+    {% if not has_salary_data and salaries %}
+    <div class="alert smart-save-alert alert-dismissible fade show mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-lightbulb me-3 fa-2x text-info"></i>
+            <div>
+                <h5 class="alert-heading mb-1">نظام الحفظ الذكي</h5>
+                <p class="mb-0">يمكنك إدخال البيانات في الحقول المطلوبة فقط. الحقول الفارغة ستبقى فارغة ولن يتم حفظ قيم افتراضية لها.</p>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Enhanced Table Card -->
+    <div class="table-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0 text-primary"><i class="fas fa-clipboard-list me-2"></i> سجلات الرواتب</h5>
+            <div>
+                <button class="btn btn-outline-primary" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i> طباعة
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if salaries %}
+            <div class="table-responsive">
+                <table class="table table-enhanced">
+                    <thead>
+                        <tr>
+                            <th>الموظف</th>
+                            <th>الرقم الوظيفي</th>
+                            <th>الشهر/السنة</th>
+                            <th>الراتب الأساسي</th>
+                            <th class="bg-success bg-opacity-10"><i class="fas fa-award me-1"></i>حافز الدوام</th>
+                            <th>البدلات</th>
+                            <th>الخصومات</th>
+                            <th>المكافآت</th>
+                            <th class="bg-info bg-opacity-10"><i class="fas fa-calendar-check me-1"></i>الحضور</th>
+                            <th class="bg-danger bg-opacity-10"><i class="fas fa-calendar-times me-1"></i>الغياب</th>
+                            <th>صافي الراتب</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for salary in salaries %}
+                        <tr>
+                            <td>
+                                <div class="employee-info">
+                                    <span class="employee-avatar">{{ salary.employee.name[0] }}</span>
+                                    <span>{{ salary.employee.name }}</span>
+                                </div>
+                            </td>
+                            <td>{{ salary.employee.employee_id }}</td>
+                            <td>{{ salary.month }}/{{ salary.year }}</td>
+                            {% if has_salary_data and salary.id %}
+                            <td class="salary-value">{{ salary.basic_salary|round(2)|float }}</td>
+                            <td class="salary-value {% if salary.attendance_bonus > 0 %}text-success fw-bold{% else %}text-danger{% endif %}">
+                                {% if salary.attendance_bonus > 0 %}
+                                ✓ {{ salary.attendance_bonus|round(2)|float }}
+                                {% else %}
+                                ✗ 0
+                                {% endif %}
+                            </td>
+                            <td class="salary-value">{{ salary.allowances|round(2)|float }}</td>
+                            <td class="salary-value">{{ salary.deductions|round(2)|float }}</td>
+                            <td class="salary-value">{{ salary.bonus|round(2)|float }}</td>
+                            <td class="text-center">
+                                {% if salary.attendance_calculated %}
+                                <span class="badge bg-success" title="أيام الحضور">
+                                    <i class="fas fa-check me-1"></i>{{ salary.present_days }}
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary" title="لم يتم الحساب">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if salary.attendance_calculated %}
+                                <span class="badge bg-danger" title="أيام الغياب | الخصم: {{ salary.attendance_deduction }} ر.س">
+                                    <i class="fas fa-times me-1"></i>{{ salary.absent_days }}
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary" title="لم يتم الحساب">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="net-salary-value">{{ salary.net_salary|round(2)|float }}</td>
+                            {% else %}
+                            <td>
+                                <input type="number" class="form-control form-control-sm salary-input" data-field="basic_salary" data-employee="{{ salary.employee.id }}" placeholder="الراتب الأساسي" required>
+                            </td>
+                            <td class="text-muted">
+                                <small><i class="fas fa-info-circle me-1"></i>يحسب تلقائياً</small>
+                            </td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm salary-input" data-field="allowances" data-employee="{{ salary.employee.id }}" placeholder="البدلات">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm salary-input" data-field="deductions" data-employee="{{ salary.employee.id }}" placeholder="الخصومات">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm salary-input" data-field="bonus" data-employee="{{ salary.employee.id }}" placeholder="المكافآت">
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary">-</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary">-</span>
+                            </td>
+                            <td class="net-salary-value">
+                                <span class="net-salary-display" data-employee="{{ salary.employee.id }}">0</span>
+                            </td>
+                            {% endif %}
+                            <td>
+                                {% if has_salary_data and salary.id %}
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('salaries.edit', id=salary.id) }}" class="btn-action btn-info" title="تعديل الراتب">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('salaries.salary_notification_pdf', id=salary.id) }}" class="btn-action btn-primary" title="طباعة الراتب">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <a href="{{ url_for('salaries.share_salary_via_whatsapp', id=salary.id) }}" class="btn-action btn-success" title="مشاركة عبر الواتساب">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </a>
+                                    {% if salary.deductions > 0 %}
+                                    <a href="{{ url_for('salaries.share_deduction_via_whatsapp', id=salary.id) }}" class="btn-action btn-danger" title="مشاركة إشعار الخصم">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <button class="btn-action btn-success save-salary-btn" data-employee="{{ salary.employee.id }}" data-month="{{ salary.month }}" data-year="{{ salary.year }}" title="حفظ الراتب">
+                                    <i class="fas fa-save"></i> حفظ
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <!-- Finish and Save All Button -->
+                {% if not has_salary_data and salaries %}
+                <div class="mt-4 text-center">
+                    <button class="btn btn-lg btn-primary finish-and-save-all" id="finishAndSaveAll">
+                        <i class="fas fa-check-double me-2"></i> إنهاء وحفظ جميع البيانات المُدخلة
+                    </button>
+                    <p class="text-muted mt-2">سيتم حفظ جميع الرواتب التي تم إدخال بياناتها</p>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <h5>لا توجد سجلات رواتب للفترة المحددة</h5>
+                <p class="text-muted">يمكنك البدء بإضافة رواتب جديدة أو استيرادها من ملف Excel</p>
+                <div class="empty-state-actions">
+                    <a href="{{ url_for('salaries.create') }}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i> إضافة راتب
+                    </a>
+                    <a href="{{ url_for('salaries.import_excel') }}" class="btn btn-primary">
+                        <i class="fas fa-file-import me-1"></i> استيراد من Excel
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

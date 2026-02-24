@@ -1,0 +1,456 @@
+<!-- نموذج اختيار السيارة والتاريخ -->
+<div class="mobile-card">
+    <div class="mobile-card-title">
+        <i class="fas fa-car"></i> اختيار السيارة
+    </div>
+    
+    <div class="mobile-card-content">
+        <form id="vehicle-select-form" class="mobile-form">
+            <div class="mobile-form-group">
+                <label>السيارة</label>
+                <!-- استخدام قائمة منسدلة مباشرة بدلاً من آلية البحث المخصصة -->
+                <select id="vehicle-select" class="mobile-form-select" required>
+                    <option value="">اختر السيارة</option>
+                    {% for vehicle in vehicles %}
+                    <option value="{{ vehicle.id }}">{{ vehicle.make }} {{ vehicle.model }} - {{ vehicle.plate_number }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mobile-form-group">
+                <label>تاريخ الفحص</label>
+                <input type="date" id="inspection-date" class="mobile-form-control" value="{{ now.strftime('%Y-%m-%d') if now else '' }}" required>
+            </div>
+            
+            <div class="mobile-form-group">
+                <label>القائم بالفحص</label>
+                <input type="text" id="inspector-name" class="mobile-form-control" placeholder="اسم الفاحص" required>
+            </div>
+            
+            <div class="mobile-form-group">
+                <label>نوع الفحص</label>
+                <select id="inspection-type" class="mobile-form-select" required>
+                    <option value="daily">فحص يومي</option>
+                    <option value="weekly">فحص أسبوعي</option>
+                    <option value="monthly">فحص شهري</option>
+                    <option value="quarterly">فحص ربع سنوي</option>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- شريط ثابت للحفظ في أعلى الصفحة بعد التمرير للأسفل -->
+<div class="mobile-card my-2 sticky-top" style="top: 60px; z-index: 99;">
+    <div class="mobile-card-content p-2">
+        <button type="button" id="save-checklist-top" class="btn btn-primary btn-lg w-100">
+            <i class="fas fa-save"></i> حفظ الفحص
+        </button>
+    </div>
+</div>
+
+<!-- شريط التقدم -->
+<div class="mobile-card">
+    <div class="mobile-card-title">
+        <i class="fas fa-tasks"></i> تقدم الفحص
+        <span id="progress-percentage" class="progress-text">0%</span>
+    </div>
+    
+    <div class="mobile-card-content">
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        
+        <div class="section-nav">
+            <h5>الأقسام</h5>
+            <div class="section-nav-items">
+                <a href="#engine-section" class="section-nav-item">
+                    <i class="fas fa-oil-can"></i> المحرك
+                </a>
+                <a href="#tires-section" class="section-nav-item">
+                    <i class="fas fa-tire"></i> الإطارات
+                </a>
+                <a href="#lights-section" class="section-nav-item">
+                    <i class="fas fa-lightbulb"></i> الإضاءة
+                </a>
+                <a href="#components-section" class="section-nav-item">
+                    <i class="fas fa-car-side"></i> المكونات
+                </a>
+                <a href="#safety-section" class="section-nav-item">
+                    <i class="fas fa-shield-alt"></i> السلامة
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- قائمة الفحص -->
+<div class="mobile-card">
+    <div class="mobile-card-title">
+        <i class="fas fa-clipboard-check"></i> قائمة الفحص
+    </div>
+    
+    <div class="mobile-card-content p-0">
+        <!-- قسم المحرك -->
+        <div id="engine-section" class="checklist-section">
+            <h4 class="section-title">
+                <i class="fas fa-oil-can"></i> المحرك
+            </h4>
+            
+            <div class="checklist-items">
+                <div class="checklist-item">
+                    <div class="item-header">
+                        <label class="form-check-label">مستوى زيت المحرك</label>
+                        <div class="item-status">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="engine_oil_level" id="engine_oil_good" value="good">
+                                <label class="form-check-label" for="engine_oil_good">جيد</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="engine_oil_level" id="engine_oil_bad" value="bad">
+                                <label class="form-check-label" for="engine_oil_bad">سيء</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-notes mt-2">
+                        <input type="text" class="mobile-form-control" placeholder="ملاحظات (اختياري)">
+                    </div>
+                </div>
+                
+                <div class="checklist-item">
+                    <div class="item-header">
+                        <label class="form-check-label">مستوى سائل التبريد</label>
+                        <div class="item-status">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="coolant_level" id="coolant_good" value="good">
+                                <label class="form-check-label" for="coolant_good">جيد</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="coolant_level" id="coolant_bad" value="bad">
+                                <label class="form-check-label" for="coolant_bad">سيء</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-notes mt-2">
+                        <input type="text" class="mobile-form-control" placeholder="ملاحظات (اختياري)">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- قسم الإطارات -->
+        <div id="tires-section" class="checklist-section">
+            <h4 class="section-title">
+                <i class="fas fa-tire"></i> الإطارات
+            </h4>
+            
+            <div class="checklist-items">
+                <div class="checklist-item">
+                    <div class="item-header">
+                        <label class="form-check-label">ضغط الإطارات</label>
+                        <div class="item-status">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="tire_pressure" id="tire_pressure_good" value="good">
+                                <label class="form-check-label" for="tire_pressure_good">جيد</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="tire_pressure" id="tire_pressure_bad" value="bad">
+                                <label class="form-check-label" for="tire_pressure_bad">سيء</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-notes mt-2">
+                        <input type="text" class="mobile-form-control" placeholder="ملاحظات (اختياري)">
+                    </div>
+                </div>
+                
+                <div class="checklist-item">
+                    <div class="item-header">
+                        <label class="form-check-label">حالة الإطارات</label>
+                        <div class="item-status">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="tire_condition" id="tire_condition_good" value="good">
+                                <label class="form-check-label" for="tire_condition_good">جيد</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="tire_condition" id="tire_condition_bad" value="bad">
+                                <label class="form-check-label" for="tire_condition_bad">سيء</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-notes mt-2">
+                        <input type="text" class="mobile-form-control" placeholder="ملاحظات (اختياري)">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- قسم الإضاءة -->
+        <div id="lights-section" class="checklist-section">
+            <h4 class="section-title">
+                <i class="fas fa-lightbulb"></i> الإضاءة
+            </h4>
+            
+            <div class="checklist-items">
+                <div class="checklist-item">
+                    <div class="item-header">
+                        <label class="form-check-label">المصابيح الأمامية</label>
+                        <div class="item-status">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="headlights" id="headlights_good" value="good">
+                                <label class="form-check-label" for="headlights_good">جيد</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="headlights" id="headlights_bad" value="bad">
+                                <label class="form-check-label" for="headlights_bad">سيء</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-notes mt-2">
+                        <input type="text" class="mobile-form-control" placeholder="ملاحظات (اختياري)">
+                    </div>
+                </div>
+                
+                <div class="checklist-item">
+                    <div class="item-header">
+                        <label class="form-check-label">المصابيح الخلفية</label>
+                        <div class="item-status">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="taillights" id="taillights_good" value="good">
+                                <label class="form-check-label" for="taillights_good">جيد</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="taillights" id="taillights_bad" value="bad">
+                                <label class="form-check-label" for="taillights_bad">سيء</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-notes mt-2">
+                        <input type="text" class="mobile-form-control" placeholder="ملاحظات (اختياري)">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- قسم المكونات -->
+        <div id="components-section" class="checklist-section">
+            <h4 class="section-title">
+                <i class="fas fa-car-side"></i> المكونات
+            </h4>
+            
+            <div class="checklist-items">
+                <div class="checklist-item">
+                    <div class="item-header">
+                        <label class="form-check-label">نظام المكابح</label>
+                        <div class="item-status">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="brakes" id="brakes_good" value="good">
+                                <label class="form-check-label" for="brakes_good">جيد</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="brakes" id="brakes_bad" value="bad">
+                                <label class="form-check-label" for="brakes_bad">سيء</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-notes mt-2">
+                        <input type="text" class="mobile-form-control" placeholder="ملاحظات (اختياري)">
+                    </div>
+                </div>
+                
+                <div class="checklist-item">
+                    <div class="item-header">
+                        <label class="form-check-label">نظام التعليق</label>
+                        <div class="item-status">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="suspension" id="suspension_good" value="good">
+                                <label class="form-check-label" for="suspension_good">جيد</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="suspension" id="suspension_bad" value="bad">
+                                <label class="form-check-label" for="suspension_bad">سيء</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-notes mt-2">
+                        <input type="text" class="mobile-form-control" placeholder="ملاحظات (اختياري)">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- قسم السلامة -->
+        <div id="safety-section" class="checklist-section">
+            <h4 class="section-title">
+                <i class="fas fa-shield-alt"></i> السلامة
+            </h4>
+            
+            <div class="checklist-items">
+                <div class="checklist-item">
+                    <div class="item-header">
+                        <label class="form-check-label">حزام الأمان</label>
+                        <div class="item-status">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="seatbelt" id="seatbelt_good" value="good">
+                                <label class="form-check-label" for="seatbelt_good">جيد</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="seatbelt" id="seatbelt_bad" value="bad">
+                                <label class="form-check-label" for="seatbelt_bad">سيء</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-notes mt-2">
+                        <input type="text" class="mobile-form-control" placeholder="ملاحظات (اختياري)">
+                    </div>
+                </div>
+                
+                <div class="checklist-item">
+                    <div class="item-header">
+                        <label class="form-check-label">طفاية الحريق</label>
+                        <div class="item-status">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="fire_extinguisher" id="fire_extinguisher_good" value="good">
+                                <label class="form-check-label" for="fire_extinguisher_good">جيد</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="fire_extinguisher" id="fire_extinguisher_bad" value="bad">
+                                <label class="form-check-label" for="fire_extinguisher_bad">سيء</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-notes mt-2">
+                        <input type="text" class="mobile-form-control" placeholder="ملاحظات (اختياري)">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- قسم ملاحظات التلف -->
+        <div id="damage-section" class="checklist-section">
+            <h4 class="section-title">
+                <i class="fas fa-car-crash"></i> ملاحظات التلف
+            </h4>
+            
+            <div class="checklist-items">
+                <div class="checklist-item full-width">
+                    <label class="form-check-label">قم بتحديد مواقع التلفيات على مخطط السيارة</label>
+                    <div class="vehicle-damage-editor my-3">
+                        <div class="vehicle-diagram-container position-relative">
+                            <!-- رسم مخطط الشاحنة باستخدام HTML/CSS -->
+                            <div class="van-diagram" style="position: relative; width: 100%; height: 300px; background-color: #fff; border: 1px solid #ccc; overflow: hidden;">
+                                <!-- الإطار الخارجي للشاحنة -->
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; height: 60%; border: 2px solid #333; background-color: #f8f9fa; border-radius: 10px;"></div>
+                                
+                                <!-- المقدمة -->
+                                <div style="position: absolute; top: 50%; left: 20%; transform: translate(0%, -50%); width: 20%; height: 60%; border: 2px solid #333; background-color: #f8f9fa; border-top-left-radius: 15px; border-bottom-left-radius: 15px;"></div>
+                                
+                                <!-- الزجاج الأمامي -->
+                                <div style="position: absolute; top: 40%; left: 25%; transform: translate(0%, -50%); width: 15%; height: 25%; border: 2px solid #333; background-color: #e6f0ff;"></div>
+                                
+                                <!-- العجلات -->
+                                <div style="position: absolute; top: 80%; left: 25%; width: 12%; height: 15%; border: 2px solid #333; background-color: #333; border-radius: 50%;"></div>
+                                <div style="position: absolute; top: 80%; left: 75%; width: 12%; height: 15%; border: 2px solid #333; background-color: #333; border-radius: 50%;"></div>
+                                
+                                <!-- الأبواب -->
+                                <div style="position: absolute; top: 50%; left: 70%; transform: translate(0%, -50%); height: 60%; border-left: 2px solid #333;"></div>
+                                <div style="position: absolute; top: 50%; left: 40%; transform: translate(0%, -50%); height: 60%; border-left: 2px solid #333;"></div>
+                                
+                                <!-- مقابض الأبواب -->
+                                <div style="position: absolute; top: 50%; left: 42%; width: 3%; height: 1%; background-color: #333;"></div>
+                                <div style="position: absolute; top: 50%; left: 72%; width: 3%; height: 1%; background-color: #333;"></div>
+                            </div>
+                            <div id="vehicle-markers-container" class="position-absolute top-0 start-0 w-100 h-100"></div>
+                        </div>
+                        
+                        <div class="control-buttons mt-3">
+                            <div class="row gx-2">
+                                <div class="col-4">
+                                    <button type="button" id="add-damage-marker" class="btn btn-danger btn-sm w-100">
+                                        <i class="fas fa-plus-circle"></i> تلف
+                                    </button>
+                                </div>
+                                <div class="col-4">
+                                    <button type="button" id="add-scratch-marker" class="btn btn-warning btn-sm w-100">
+                                        <i class="fas fa-paint-brush"></i> خدش
+                                    </button>
+                                </div>
+                                <div class="col-4">
+                                    <button type="button" id="clear-markers" class="btn btn-secondary btn-sm w-100">
+                                        <i class="fas fa-trash"></i> مسح
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="marker-note-container" class="mt-3" style="display: none;">
+                                <input type="text" id="marker-note" class="mobile-form-control" placeholder="أدخل ملاحظة حول التلف">
+                                <div class="d-flex justify-content-between mt-2">
+                                    <button type="button" id="save-marker-note" class="btn btn-primary btn-sm">حفظ</button>
+                                    <button type="button" id="cancel-marker-note" class="btn btn-secondary btn-sm">إلغاء</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- صور الفحص -->
+        <div class="checklist-section">
+            <h4 class="section-title">
+                <i class="fas fa-camera"></i> صور الفحص
+            </h4>
+            
+            <div class="checklist-items">
+                <div class="checklist-item full-width">
+                    <label class="form-check-label">إضافة صور للفحص</label>
+                    <div class="row gx-2 mb-3">
+                        <div class="col-6">
+                            <button type="button" id="camera-btn" class="btn btn-outline-primary w-100" onclick="document.getElementById('image-capture-input').click()">
+                                <i class="fas fa-camera"></i> التقاط صورة
+                            </button>
+                            <input type="file" id="image-capture-input" accept="image/*" capture="environment" style="display:none;">
+                        </div>
+                        <div class="col-6">
+                            <button type="button" id="gallery-btn" class="btn btn-outline-secondary w-100" onclick="document.getElementById('image-file-input').click()">
+                                <i class="fas fa-image"></i> من الاستوديو
+                            </button>
+                            <input type="file" id="image-file-input" accept="image/*" multiple style="display:none;">
+                        </div>
+                    </div>
+                    
+                    <!-- عرض الصور المختارة -->
+                    <div class="selected-images-container">
+                        <h6 class="text-muted mb-2">الصور المضافة: <span id="images-count">0</span></h6>
+                        <div id="image-preview-container" class="row g-2">
+                            <!-- سيتم إضافة الصور هنا بواسطة JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- تم إزالة المساحة المكررة -->
+
+<div class="submit-section" style="position: fixed; bottom: 0; left: 0; right: 0; background-color: white; padding: 10px 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000;">
+    <button type="button" id="save-checklist" class="btn btn-primary btn-lg w-100">
+        <i class="fas fa-save"></i> حفظ الفحص
+    </button>
+</div>
+<!-- مساحة إضافية لمنع تداخل الزر الثابت مع المحتوى -->
+<div style="height: 70px;"></div>
+
+<!-- إشعارات النظام -->
+<div id="notification-container"></div>
+
+<!-- معاينة الصور -->
+<div id="image-preview-modal" class="image-preview-modal">
+    <div class="preview-content">
+        <img id="preview-image" class="preview-image" src="" alt="معاينة الصورة">
+        <button id="close-preview" class="close-preview">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</div>

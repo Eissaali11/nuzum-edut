@@ -1,0 +1,231 @@
+<div class="dashboard-page-container">
+    <div class="dashboard-header">
+        <h1>
+            <i class="fas fa-chart-line"></i>
+            لوحة تحكم التتبع المباشر
+        </h1>
+        <div class="dashboard-header-actions">
+            <a href="/employees/tracking" class="dashboard-btn">
+                <i class="fas fa-map"></i>
+                عرض الخريطة
+            </a>
+            <a href="/employees" class="dashboard-btn dashboard-btn-secondary">
+                <i class="fas fa-arrow-right"></i>
+                العودة
+            </a>
+        </div>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-header">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ stats.total_employees }}</div>
+            <div class="stat-label">إجمالي الموظفين</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-header">
+                <div class="stat-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ stats.active_employees }}</div>
+            <div class="stat-label">لديهم مواقع نشطة</div>
+        </div>
+        
+        <div class="stat-card danger">
+            <div class="stat-header">
+                <div class="stat-icon">
+                    <i class="fas fa-user-slash"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ stats.inactive_employees }}</div>
+            <div class="stat-label">بدون مواقع</div>
+        </div>
+        
+        <div class="stat-card info">
+            <div class="stat-header">
+                <div class="stat-icon">
+                    <i class="fas fa-circle-notch"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ stats.inside_geofences_count }}</div>
+            <div class="stat-label">داخل الدوائر</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-header">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ stats.outside_geofences_count }}</div>
+            <div class="stat-label">خارج الدوائر</div>
+        </div>
+        
+        <div class="stat-card purple">
+            <div class="stat-header">
+                <div class="stat-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ stats.on_vehicles_count }}</div>
+            <div class="stat-label">على سيارات</div>
+        </div>
+    </div>
+
+    {% if employees_active %}
+    <div class="section-card">
+        <div class="section-header">
+            <i class="fas fa-users-cog"></i>
+            <h2>الموظفون النشطون (لديهم مواقع)</h2>
+            <span class="dash-badge">{{ stats.active_employees }} موظف</span>
+        </div>
+        <div class="employee-grid">
+            {% for emp_data in employees_active %}
+            <div class="employee-card">
+                {% if emp_data.employee.profile_image %}
+                <img src="{{ url_for('static', filename=emp_data.employee.profile_image.replace('static/', '')) }}" alt="{{ emp_data.employee.name }}" class="employee-avatar">
+                {% else %}
+                <div class="employee-avatar-placeholder" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    {{ emp_data.employee.name[0] }}
+                </div>
+                {% endif %}
+                <div class="employee-info">
+                    <div class="employee-name">{{ emp_data.employee.name }}</div>
+                    <div class="employee-meta">
+                        <span class="meta-badge time">
+                            <i class="fas fa-clock"></i>
+                            {{ emp_data.location.recorded_at.strftime('%H:%M') }}
+                        </span>
+                        {% if emp_data.geofence %}
+                        <span class="meta-badge department">
+                            <i class="fas fa-circle-notch"></i>
+                            {{ emp_data.geofence.name }}
+                        </span>
+                        {% endif %}
+                        {% if emp_data.vehicle %}
+                        <span class="meta-badge vehicle">
+                            <i class="fas fa-car"></i>
+                            {{ emp_data.vehicle.plate_number }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if employees_inactive %}
+    <div class="section-card">
+        <div class="section-header">
+            <i class="fas fa-user-times"></i>
+            <h2>الموظفون غير النشطين (بدون مواقع)</h2>
+            <span class="dash-badge">{{ stats.inactive_employees }} موظف</span>
+        </div>
+        <div class="employee-grid">
+            {% for employee in employees_inactive %}
+            <div class="employee-card">
+                {% if employee.profile_image %}
+                <img src="{{ url_for('static', filename=employee.profile_image.replace('static/', '')) }}" alt="{{ employee.name }}" class="employee-avatar">
+                {% else %}
+                <div class="employee-avatar-placeholder" style="background: linear-gradient(135deg, #6b7280, #9ca3af);">
+                    {{ employee.name[0] }}
+                </div>
+                {% endif %}
+                <div class="employee-info">
+                    <div class="employee-name">{{ employee.name }}</div>
+                    <div class="employee-meta">
+                        <span class="meta-badge time" style="background: rgba(107, 114, 128, 0.2); color: #d1d5db; border: 1px solid rgba(107, 114, 128, 0.3);">
+                            <i class="fas fa-times-circle"></i>
+                            لا يوجد موقع
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if employees_by_geofence %}
+    <div class="section-card">
+        <div class="section-header">
+            <i class="fas fa-circle-notch"></i>
+            <h2>الموظفون حسب الدوائر الجغرافية</h2>
+            <span class="dash-badge">{{ employees_by_geofence|length }} دائرة</span>
+        </div>
+        
+        <div>
+            {% for geofence_data in employees_by_geofence %}
+            <div class="geofence-card">
+                <div class="geofence-header">
+                    <div class="geofence-name">
+                        <i class="fas fa-circle-notch"></i>
+                        {{ geofence_data.geofence.name }}
+                    </div>
+                    <div class="geofence-count">
+                        <i class="fas fa-users"></i>
+                        {{ geofence_data.employees|length }}
+                    </div>
+                </div>
+                
+                {% if geofence_data.employees %}
+                <div class="simple-employee-list">
+                    {% for emp_data in geofence_data.employees %}
+                    <div class="simple-employee-item">
+                        <i class="fas fa-user"></i>
+                        {{ emp_data.employee.name }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>لا يوجد موظفين داخل هذه الدائرة</h3>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if employees_outside_geofences %}
+    <div class="section-card">
+        <div class="section-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h2>الموظفون خارج الدوائر</h2>
+            <span class="dash-badge">{{ stats.outside_geofences_count }} موظف</span>
+        </div>
+        <div class="employee-grid">
+            {% for item in employees_outside_geofences %}
+            <div class="employee-card">
+                {% if item.employee.profile_image %}
+                <img src="{{ url_for('static', filename=item.employee.profile_image.replace('static/', '')) }}" alt="{{ item.employee.name }}" class="employee-avatar">
+                {% else %}
+                <div class="employee-avatar-placeholder" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                    {{ item.employee.name[0] }}
+                </div>
+                {% endif %}
+                <div class="employee-info">
+                    <div class="employee-name">{{ item.employee.name }}</div>
+                    <div class="employee-meta">
+                        <span class="meta-badge time">
+                            <i class="fas fa-clock"></i>
+                            {{ item.location.recorded_at.strftime('%H:%M') }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>

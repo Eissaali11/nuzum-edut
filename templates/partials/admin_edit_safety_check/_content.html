@@ -1,0 +1,699 @@
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-edit ml-2"></i>
+                        تعديل طلب فحص السلامة #{{ safety_check.id }}
+                    </h3>
+                </div>
+                
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('external_safety.edit_safety_check', check_id=safety_check.id) }}" enctype="multipart/form-data">
+                        <div class="row">
+                            <!-- معلومات السيارة -->
+                            <div class="col-md-6">
+                                <div class="card border-info mb-3">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">معلومات السيارة</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label>رقم اللوحة:</label>
+                                            <input type="text" class="form-control" name="vehicle_plate_number" 
+                                                   value="{{ safety_check.vehicle_plate_number }}" readonly>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>نوع السيارة:</label>
+                                            <input type="text" class="form-control" name="vehicle_make_model" 
+                                                   value="{{ safety_check.vehicle_make_model }}" readonly>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>المفوض الحالي:</label>
+                                            <input type="text" class="form-control" name="current_delegate" 
+                                                   value="{{ safety_check.current_delegate or '' }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>تاريخ الفحص:</label>
+                                            <input type="datetime-local" class="form-control" name="inspection_date" 
+                                                   value="{{ safety_check.inspection_date.strftime('%Y-%m-%dT%H:%M') }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- معلومات السائق -->
+                            <div class="col-md-6">
+                                <div class="card border-success mb-3">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0">معلومات السائق</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label>اسم السائق:</label>
+                                            <input type="text" class="form-control" name="driver_name" 
+                                                   value="{{ safety_check.driver_name }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>رقم الهوية:</label>
+                                            <input type="text" class="form-control" name="driver_national_id" 
+                                                   value="{{ safety_check.driver_national_id }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>القسم:</label>
+                                            <input type="text" class="form-control" name="driver_department" 
+                                                   value="{{ safety_check.driver_department }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>المدينة:</label>
+                                            <input type="text" class="form-control" name="driver_city" 
+                                                   value="{{ safety_check.driver_city }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- الصور المحفوظة مسبقاً -->
+                        {% if safety_check.safety_images %}
+                        <div class="card border-primary mb-3">
+                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-images"></i> الصور المحفوظة ({{ safety_check.safety_images|length }} صورة)
+                                </h5>
+                                <div>
+                                    <div class="custom-control custom-checkbox d-inline-block">
+                                        <input type="checkbox" class="custom-control-input" id="selectAllImages" onclick="toggleAllImages(this)">
+                                        <label class="custom-control-label text-white" for="selectAllImages">
+                                            <i class="fas fa-check-double"></i> تحديد الكل
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn-danger btn-sm mr-2" onclick="deleteSelectedImages()" id="deleteImagesBtn">
+                                        <i class="fas fa-trash"></i> حذف المحدد
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% for image in safety_check.safety_images %}
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card border-light">
+                                            <div class="card-body text-center">
+                                                <!-- Checkbox لتحديد الصورة -->
+                                                <div class="custom-control custom-checkbox mb-2 text-left">
+                                                    <input type="checkbox" class="custom-control-input image-checkbox" id="image_{{ image.id }}" value="{{ image.id }}">
+                                                    <label class="custom-control-label" for="image_{{ image.id }}">
+                                                        حذف هذه الصورة
+                                                    </label>
+                                                </div>
+                                                <!-- عرض الصورة -->
+                                                <div class="mb-3">
+                                                    {% if image.image_path %}
+                                                        {% if image.image_path.startswith('static/') %}
+                                                            {% set image_url = url_for('static', filename=image.image_path.replace('static/', '')) %}
+                                                        {% else %}
+                                                            {% set image_url = '/' + image.image_path %}
+                                                        {% endif %}
+                                                        <img src="{{ image_url }}" 
+                                                             alt="صورة فحص السلامة" 
+                                                             class="img-fluid rounded" 
+                                                             style="max-height: 200px; cursor: pointer; border: 2px solid #007bff;"
+                                                             onclick="showImageModal('{{ image_url }}')"
+                                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                                        <div class="alert alert-warning" style="display: none;">
+                                                            <i class="fas fa-exclamation-triangle"></i> لم يتم العثور على الصورة
+                                                        </div>
+                                                        
+                                                        <!-- أزرار عرض الصورة -->
+                                                        <div class="btn-group btn-group-sm w-100 mt-2 mb-2">
+                                                            <button type="button" class="btn btn-primary btn-sm" 
+                                                                    onclick="showImageModal('{{ image_url }}')">
+                                                                <i class="fas fa-search-plus"></i> عرض
+                                                            </button>
+                                                            <a href="{{ image_url }}" target="_blank" class="btn btn-secondary btn-sm">
+                                                                <i class="fas fa-external-link-alt"></i> تبويب جديد
+                                                            </a>
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="alert alert-warning">
+                                                            <i class="fas fa-exclamation-triangle"></i> لم يتم العثور على الصورة
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <!-- حقل تعديل الوصف -->
+                                                <div class="form-group">
+                                                    <label class="font-weight-bold">وصف الصورة:</label>
+                                                    <textarea class="form-control" 
+                                                              name="image_description_{{ image.id }}" 
+                                                              rows="3" 
+                                                              placeholder="أدخل وصف للصورة..."
+                                                              style="resize: vertical;">{{ image.image_description or '' }}</textarea>
+                                                </div>
+                                                
+                                                <!-- معلومات الصورة -->
+                                                <div class="text-muted small">
+                                                    <i class="fas fa-info-circle"></i> 
+                                                    الصورة #{{ loop.index }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- تنبيه للمستخدم -->
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    يمكنك تعديل أوصاف الصور أعلاه. سيتم حفظ التغييرات عند الضغط على زر "حفظ التغييرات".
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- رفع صور جديدة -->
+                        <div class="card border-success mb-3">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-camera"></i> رفع صور جديدة
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="new_images">
+                                        <i class="fas fa-upload"></i> اختر صور جديدة:
+                                    </label>
+                                    <input type="file" 
+                                           class="form-control" 
+                                           id="new_images" 
+                                           name="new_images" 
+                                           accept="image/*,.heic,.heif" 
+                                           multiple>
+                                    <small class="form-text text-muted">
+                                        يمكنك رفع عدة صور في نفس الوقت (JPG, PNG, HEIC). يتم تحويل صور HEIC من iPhone/iPad تلقائياً.
+                                    </small>
+                                </div>
+                                
+                                <!-- معاينة الصور قبل الرفع -->
+                                <div id="newImagesPreview" class="row mt-3" style="display: none;">
+                                    <div class="col-12 mb-2">
+                                        <h6><i class="fas fa-eye"></i> معاينة الصور الجديدة:</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- رفع ملف PDF -->
+                        <div class="card border-danger mb-3">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-file-pdf"></i> ملف PDF المرفق
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if safety_check.pdf_file_path %}
+                                <div class="alert alert-success mb-3">
+                                    <i class="fas fa-check-circle"></i>
+                                    يوجد ملف PDF مرفق حالياً
+                                    <div class="mt-2">
+                                        {% if safety_check.pdf_file_path.startswith('static/') %}
+                                            {% set pdf_url = '/' + safety_check.pdf_file_path %}
+                                        {% else %}
+                                            {% set pdf_url = '/uploads/safety_checks_pdfs/' + safety_check.pdf_file_path %}
+                                        {% endif %}
+                                        <a href="{{ pdf_url }}" target="_blank" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> عرض الملف الحالي
+                                        </a>
+                                        <a href="{{ pdf_url }}" download class="btn btn-sm btn-success">
+                                            <i class="fas fa-download"></i> تحميل الملف
+                                        </a>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-warning mb-3">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    لا يوجد ملف PDF مرفق حالياً
+                                </div>
+                                {% endif %}
+                                
+                                <div class="form-group">
+                                    <label for="pdf_file">
+                                        <i class="fas fa-upload"></i> رفع ملف PDF جديد:
+                                    </label>
+                                    <input type="file" 
+                                           class="form-control" 
+                                           id="pdf_file" 
+                                           name="pdf_file" 
+                                           accept=".pdf,application/pdf">
+                                    <small class="form-text text-muted">
+                                        يمكنك رفع ملف PDF (الحد الأقصى: 10 ميجابايت). سيتم استبدال الملف القديم إذا كان موجوداً.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- رابط خارجي (Google Drive, Dropbox) -->
+                        <div class="card border-info mb-3">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-link"></i> رابط خارجي
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if safety_check.drive_pdf_link %}
+                                <div class="alert alert-success mb-3">
+                                    <i class="fas fa-check-circle"></i>
+                                    يوجد رابط خارجي مسجل حالياً
+                                    <div class="mt-2">
+                                        <a href="{{ safety_check.drive_pdf_link }}" target="_blank" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-external-link-alt"></i> فتح الرابط
+                                        </a>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-warning mb-3">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    لا يوجد رابط خارجي مسجل حالياً
+                                </div>
+                                {% endif %}
+                                
+                                <div class="form-group">
+                                    <label for="drive_pdf_link">
+                                        <i class="fas fa-link"></i> رابط خارجي (Google Drive, Dropbox, إلخ):
+                                    </label>
+                                    <input type="url" 
+                                           class="form-control" 
+                                           id="drive_pdf_link" 
+                                           name="drive_pdf_link" 
+                                           value="{{ safety_check.drive_pdf_link or '' }}"
+                                           placeholder="https://drive.google.com/..."
+                                           dir="ltr">
+                                    <small class="form-text text-muted">
+                                        يمكنك إضافة رابط لملف PDF في Google Drive أو Dropbox أو أي خدمة سحابية أخرى.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- الملاحظات -->
+                        <div class="card border-secondary mb-3">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">الملاحظات</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>ملاحظات إضافية:</label>
+                                    <textarea class="form-control" name="notes" rows="4">{{ safety_check.notes or '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- أزرار الحفظ -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save"></i> حفظ التغييرات
+                            </button>
+                            <a href="{{ url_for('external_safety.admin_view_safety_check', check_id=safety_check.id) }}" 
+                               class="btn btn-secondary btn-lg ml-2">
+                                <i class="fas fa-arrow-left"></i> العودة
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal عرض الصور مع تكبير/تصغير -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">عرض الصورة</h5>
+                <div class="ml-auto">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="zoomImage(-0.2)">
+                        <i class="fas fa-search-minus"></i> تصغير
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="zoomImage(0.2)">
+                        <i class="fas fa-search-plus"></i> تكبير
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetZoom()">
+                        <i class="fas fa-expand-arrows-alt"></i> إعادة تعيين
+                    </button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeImageModal()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body text-center" style="max-height: 70vh; overflow: auto;">
+                <div id="imageContainer" style="position: relative; display: inline-block;">
+                    <img id="modalImage" 
+                         src="" 
+                         alt="صورة" 
+                         style="max-width: 100%; height: auto; cursor: grab; transition: transform 0.2s;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .img-fluid {
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .img-fluid:hover {
+        border-color: #007bff;
+        box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+        transform: scale(1.02);
+    }
+</style>
+
+<script>
+    let currentZoom = 1;
+    let isDragging = false;
+    let startX, startY, initialX, initialY;
+    
+    function showImageModal(imageSrc, description) {
+        console.log('showImageModal called with:', imageSrc, description);
+        
+        // تحقق من وجود العناصر المطلوبة
+        const modalImageElement = document.getElementById('modalImage');
+        const modalElement = document.getElementById('imageModal');
+        
+        console.log('Modal elements found:', {
+            modalImage: !!modalImageElement,
+            modal: !!modalElement
+        });
+        
+        if (!modalImageElement || !modalElement) {
+            console.error('Modal elements not found, opening in new tab');
+            window.open(imageSrc, '_blank');
+            return;
+        }
+        
+        modalImageElement.src = imageSrc;
+        resetZoom();
+        
+        // عرض النافذة المنبثقة
+        try {
+            // استخدام Bootstrap 5 مباشرة
+            console.log('Attempting to show modal with Bootstrap 5');
+            const modal = new bootstrap.Modal(modalElement, {
+                keyboard: true,
+                backdrop: true,
+                focus: true
+            });
+            modal.show();
+            console.log('Modal shown successfully');
+            
+        } catch (error) {
+            console.error('Error showing modal with Bootstrap:', error);
+            
+            // طريقة بديلة باستخدام jQuery إذا كان متوفراً
+            try {
+                if (typeof $ !== 'undefined') {
+                    console.log('Fallback: Using jQuery modal');
+                    $('#imageModal').modal('show');
+                } else {
+                    console.log('Fallback: Manual modal display');
+                    modalElement.style.display = 'block';
+                    modalElement.classList.add('show');
+                    document.body.classList.add('modal-open');
+                    
+                    // إضافة backdrop يدوياً
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    backdrop.id = 'imageModalBackdrop';
+                    document.body.appendChild(backdrop);
+                    
+                    backdrop.addEventListener('click', function() {
+                        closeImageModal();
+                    });
+                }
+            } catch (fallbackError) {
+                console.error('All modal methods failed, opening in new tab:', fallbackError);
+                window.open(imageSrc, '_blank');
+            }
+        }
+    }
+    
+    function closeImageModal() {
+        const modalElement = document.getElementById('imageModal');
+        
+        try {
+            // استخدام Bootstrap 5 لإغلاق Modal
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            } else {
+                // إذا لم يكن هناك instance، أنشئ واحد واغلقه
+                const newModal = new bootstrap.Modal(modalElement);
+                newModal.hide();
+            }
+        } catch (error) {
+            console.error('Error closing modal with Bootstrap:', error);
+            
+            // طريقة بديلة
+            try {
+                if (typeof $ !== 'undefined') {
+                    $('#imageModal').modal('hide');
+                } else {
+                    // إغلاق يدوي
+                    const backdrop = document.getElementById('imageModalBackdrop');
+                    
+                    if (modalElement) {
+                        modalElement.style.display = 'none';
+                        modalElement.classList.remove('show');
+                    }
+                    
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                    
+                    document.body.classList.remove('modal-open');
+                }
+            } catch (fallbackError) {
+                console.error('All close methods failed:', fallbackError);
+            }
+        }
+    }
+    
+    function zoomImage(deltaZoom) {
+        currentZoom += deltaZoom;
+        if (currentZoom < 0.5) currentZoom = 0.5;
+        if (currentZoom > 3) currentZoom = 3;
+        
+        const img = document.getElementById('modalImage');
+        img.style.transform = `scale(${currentZoom})`;
+        img.style.cursor = currentZoom > 1 ? 'grab' : 'grab';
+    }
+    
+    function resetZoom() {
+        currentZoom = 1;
+        const img = document.getElementById('modalImage');
+        img.style.transform = 'scale(1)';
+        img.style.cursor = 'grab';
+    }
+    
+    function openImageInNewTab() {
+        const img = document.getElementById('modalImage');
+        if (img && img.src) {
+            window.open(img.src, '_blank');
+        }
+    }
+    
+    // تحديد/إلغاء تحديد جميع الصور
+    function toggleAllImages(checkbox) {
+        const imageCheckboxes = document.querySelectorAll('.image-checkbox');
+        imageCheckboxes.forEach(cb => {
+            cb.checked = checkbox.checked;
+        });
+    }
+    
+    // حذف الصور المحددة
+    function deleteSelectedImages() {
+        const selectedImages = [];
+        document.querySelectorAll('.image-checkbox:checked').forEach(checkbox => {
+            selectedImages.push(checkbox.value);
+        });
+        
+        if (selectedImages.length === 0) {
+            alert('يرجى تحديد صورة واحدة على الأقل للحذف');
+            return;
+        }
+        
+        if (!confirm(`هل أنت متأكد من حذف ${selectedImages.length} صورة؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+            return;
+        }
+        
+        // إرسال طلب حذف إلى الخادم
+        fetch('{{ url_for("external_safety.delete_safety_check_images", check_id=safety_check.id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                image_ids: selectedImages
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message || 'تم حذف الصور بنجاح');
+                window.location.reload();
+            } else {
+                alert('حدث خطأ: ' + (data.message || 'فشل حذف الصور'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ في الاتصال بالخادم');
+        });
+    }
+    
+    // معاينة الصور الجديدة قبل الرفع
+    document.getElementById('new_images').addEventListener('change', function(e) {
+        const files = e.target.files;
+        const previewContainer = document.getElementById('newImagesPreview');
+        
+        // مسح المعاينة السابقة
+        const existingPreviews = previewContainer.querySelectorAll('.col-md-3');
+        existingPreviews.forEach(preview => preview.remove());
+        
+        if (files.length > 0) {
+            previewContainer.style.display = 'flex';
+            
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-3 mb-3';
+                    
+                    col.innerHTML = `
+                        <div class="card border-success">
+                            <img src="${event.target.result}" 
+                                 class="card-img-top" 
+                                 alt="معاينة صورة ${index + 1}"
+                                 style="max-height: 150px; object-fit: cover;">
+                            <div class="card-body text-center p-2">
+                                <small class="text-muted">${file.name}</small>
+                            </div>
+                        </div>
+                    `;
+                    
+                    previewContainer.appendChild(col);
+                };
+                
+                reader.readAsDataURL(file);
+            });
+        } else {
+            previewContainer.style.display = 'none';
+        }
+    });
+    
+    // إضافة دعم السحب والإفلات للصور المكبرة
+    document.addEventListener('DOMContentLoaded', function() {
+        const modalImage = document.getElementById('modalImage');
+        
+        modalImage.addEventListener('mousedown', function(e) {
+            if (currentZoom > 1) {
+                isDragging = true;
+                startX = e.clientX - initialX;
+                startY = e.clientY - initialY;
+                modalImage.style.cursor = 'grabbing';
+            }
+        });
+        
+        modalImage.addEventListener('mousemove', function(e) {
+            if (isDragging && currentZoom > 1) {
+                e.preventDefault();
+                initialX = e.clientX - startX;
+                initialY = e.clientY - startY;
+                modalImage.style.transform = `scale(${currentZoom}) translate(${initialX}px, ${initialY}px)`;
+            }
+        });
+        
+        modalImage.addEventListener('mouseup', function() {
+            isDragging = false;
+            modalImage.style.cursor = currentZoom > 1 ? 'grab' : 'grab';
+        });
+        
+        modalImage.addEventListener('mouseleave', function() {
+            isDragging = false;
+            modalImage.style.cursor = currentZoom > 1 ? 'grab' : 'grab';
+        });
+        
+        // دعم التكبير/التصغير بالماوس
+        modalImage.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            zoomImage(delta);
+        });
+        
+        // دعم اللمس للأجهزة المحمولة
+        let touchDistance = 0;
+        let touchStartDistance = 0;
+        
+        modalImage.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 2) {
+                touchStartDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                touchDistance = touchStartDistance;
+            }
+        });
+        
+        modalImage.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                
+                const delta = (currentDistance - touchDistance) / 100;
+                zoomImage(delta);
+                touchDistance = currentDistance;
+            }
+        });
+        
+        // إعادة تعيين الموضع عند إغلاق النافذة
+        const modalElement = document.getElementById('imageModal');
+        if (modalElement) {
+            modalElement.addEventListener('hidden.bs.modal', function () {
+                resetZoom();
+                initialX = 0;
+                initialY = 0;
+            });
+        }
+        
+        // دعم jQuery إذا كان متوفراً
+        if (typeof $ !== 'undefined') {
+            $('#imageModal').on('hidden.bs.modal', function () {
+                resetZoom();
+                initialX = 0;
+                initialY = 0;
+            });
+        }
+    });
+</script>

@@ -1,0 +1,231 @@
+<div class="page-container">
+    <!-- Header -->
+    <div class="header-section">
+        <div class="header-content">
+            <h1>🏢 الأقسام والعمل</h1>
+            <p>إدارة شاملة لجميع أقسام الشركة والموظفين</p>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value" id="totalDepts">{{ departments|length }}</div>
+            <div class="stat-label">إجمالي الأقسام</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" id="totalEmps">{{ total_employees }}</div>
+            <div class="stat-label">إجمالي الموظفين</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">👨‍💼</div>
+            <div class="stat-value" id="avgEmps">{{ (total_employees / (departments|length) if departments|length > 0 else 0)|int }}</div>
+            <div class="stat-label">متوسط الموظفين لكل قسم</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="activeEmps">{{ active_employees }}</div>
+            <div class="stat-label">موظفين نشطين</div>
+        </div>
+    </div>
+
+    <!-- Department Cards -->
+    <div class="departments-grid">
+        {% for department in departments %}
+        <div class="department-card">
+            <div class="dept-header">
+                <h3>{{ department.name }}</h3>
+                <div class="dept-code">القسم #{{ department.id }}</div>
+            </div>
+
+            <div class="dept-body">
+                <!-- Employees Count -->
+                <div class="dept-stat">
+                    <div class="dept-stat-icon">👥</div>
+                    <div class="dept-stat-content">
+                        <div class="dept-stat-value">{{ department.employee_count or 0 }}</div>
+                        <div class="dept-stat-label">عدد الموظفين</div>
+                    </div>
+                </div>
+
+                <!-- Manager -->
+                {% if department.manager %}
+                <div class="dept-stat">
+                    <div class="dept-stat-icon">👨‍💼</div>
+                    <div class="dept-stat-content">
+                        <div class="dept-stat-value" style="font-size: 1.1rem;">{{ department.manager.name }}</div>
+                        <div class="dept-stat-label">مدير القسم</div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="dept-stat">
+                    <div class="dept-stat-icon">❌</div>
+                    <div class="dept-stat-content">
+                        <div class="dept-stat-label">لا يوجد مدير معين</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Description -->
+                {% if department.description %}
+                <div class="dept-stat">
+                    <div class="dept-stat-icon">📝</div>
+                    <div class="dept-stat-content">
+                        <div class="dept-stat-value" style="font-size: 0.95rem;">{{ department.description }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="dept-footer">
+                <div class="dept-actions">
+                    <a href="{{ url_for('departments.view', id=department.id) }}" class="btn-action btn-view">
+                        👁️ عرض التفاصيل
+                    </a>
+                    <a href="{{ url_for('departments.edit', id=department.id) }}" class="btn-action btn-edit">
+                        ✏️ تعديل
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    {% if not departments %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <h3>لا توجد أقسام</h3>
+        <p>ابدأ بإنشاء قسم جديد لإدارة أقسام الشركة</p>
+        <a href="{{ url_for('departments.create') }}" class="btn btn-primary mt-3">
+            ➕ إنشاء قسم جديد
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Charts Section -->
+    {% if departments %}
+    <div class="charts-section">
+        <h2 style="margin-bottom: 1.5rem; color: var(--gold-accent);">📈 تحليلات الأقسام</h2>
+        <div class="charts-grid">
+            <!-- Department Distribution Chart -->
+            <div class="chart-container">
+                <h4 style="text-align: center; margin-bottom: 1.5rem; color: #e0e0e0;">توزيع الموظفين حسب القسم</h4>
+                <canvas id="departmentChart"></canvas>
+            </div>
+
+            <!-- Department Status Chart -->
+            <div class="chart-container">
+                <h4 style="text-align: center; margin-bottom: 1.5rem; color: #e0e0e0;">حالات الموظفين</h4>
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Prepare chart data
+    const departmentNames = [
+        {% for dept in departments %}'{{ dept.name }}'{% if not loop.last %},{% endif %}{% endfor %}
+    ];
+    
+    const employeeCounts = [
+        {% for dept in departments %}{{ dept.employee_count or 0 }}{% if not loop.last %},{% endif %}{% endfor %}
+    ];
+
+    // Initialize Department Distribution Chart
+    if (departmentNames.length > 0) {
+        const ctx1 = document.getElementById('departmentChart');
+        if (ctx1) {
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: departmentNames,
+                    datasets: [{
+                        label: 'عدد الموظفين',
+                        data: employeeCounts,
+                        backgroundColor: [
+                            '#38EF7D',
+                            '#667EEA',
+                            '#FFA500',
+                            '#F2C811',
+                            '#0d6efd',
+                            '#11998e',
+                            '#EF4444',
+                            '#1d4ed8'
+                        ],
+                        borderColor: 'rgba(242, 200, 17, 0.5)',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: '#a8aac5',
+                                font: { size: 12 }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#a8aac5' },
+                            grid: { color: 'rgba(13, 110, 253, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#a8aac5' },
+                            grid: { color: 'rgba(13, 110, 253, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize Status Distribution Chart
+        const ctx2 = document.getElementById('statusChart');
+        if (ctx2) {
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['نشطين', 'في الإجازة', 'غير نشطين'],
+                    datasets: [{
+                        data: [{{ active_employees }}, {{ on_leave_employees }}, {{ inactive_employees }}],
+                        backgroundColor: [
+                            '#38EF7D',
+                            '#FFA500',
+                            '#EF4444'
+                        ],
+                        borderColor: '#1E1E2E',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: '#a8aac5',
+                                font: { size: 12 },
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+</script>

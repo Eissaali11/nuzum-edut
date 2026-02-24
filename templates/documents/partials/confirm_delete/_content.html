@@ -1,0 +1,102 @@
+<div class="container-fluid">
+    <div class="delete-confirmation-card">
+        <div class="delete-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h2>تأكيد حذف الوثيقة</h2>
+            <p class="mb-0">هذا الإجراء لا يمكن التراجع عنه</p>
+        </div>
+        
+        <div class="delete-body">
+            <div class="document-info">
+                <h5 class="text-center mb-3 text-danger fw-bold">معلومات الوثيقة المراد حذفها</h5>
+                
+                <div class="info-row">
+                    <div class="info-label">
+                        <i class="fas fa-file-alt text-primary"></i>
+                        نوع الوثيقة
+                    </div>
+                    <div class="info-value">
+                        <strong>{{ document.document_type_display or document.document_type }}</strong>
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">
+                        <i class="fas fa-user text-success"></i>
+                        اسم الموظف
+                    </div>
+                    <div class="info-value">
+                        <strong>{{ document.employee.name }}</strong>
+                    </div>
+                </div>
+                
+                {% if document.employee.employee_id %}
+                <div class="info-row">
+                    <div class="info-label">
+                        <i class="fas fa-id-badge text-info"></i>
+                        رقم الموظف
+                    </div>
+                    <div class="info-value">{{ document.employee.employee_id }}</div>
+                </div>
+                {% endif %}
+                
+                {% if document.issue_date %}
+                <div class="info-row">
+                    <div class="info-label">
+                        <i class="fas fa-calendar text-warning"></i>
+                        تاريخ الإصدار
+                    </div>
+                    <div class="info-value">{{ document.issue_date.strftime('%Y-%m-%d') }}</div>
+                </div>
+                {% endif %}
+                
+                {% if document.expiry_date %}
+                <div class="info-row">
+                    <div class="info-label">
+                        <i class="fas fa-calendar-times text-danger"></i>
+                        تاريخ الانتهاء
+                    </div>
+                    <div class="info-value">{{ document.expiry_date.strftime('%Y-%m-%d') }}</div>
+                </div>
+                {% endif %}
+                
+                {% if document.file_path %}
+                <div class="info-row">
+                    <div class="info-label">
+                        <i class="fas fa-paperclip text-secondary"></i>
+                        الملف المرفق
+                    </div>
+                    <div class="info-value">
+                        <a href="{{ url_for('static', filename=document.file_path) }}" 
+                           target="_blank" class="text-primary">
+                            <i class="fas fa-external-link-alt"></i> عرض الملف
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="warning-box">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="warning-text">
+                    تحذير: سيتم حذف هذه الوثيقة نهائياً من النظام<br>
+                    ولا يمكن استرجاعها مرة أخرى بعد الحذف
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <form method="POST" style="display: inline;">
+                    <button type="submit" class="btn-enhanced btn-danger-enhanced">
+                        <i class="fas fa-trash"></i>
+                        تأكيد الحذف
+                    </button>
+                </form>
+                
+                <a href="{{ url_for('documents.index') }}" class="btn-enhanced btn-secondary-enhanced">
+                    <i class="fas fa-arrow-left"></i>
+                    إلغاء والعودة
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

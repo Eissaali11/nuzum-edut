@@ -1,0 +1,142 @@
+<div class="container-fluid py-4">
+    <!-- Enhanced Header -->
+    <div class="stats-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>إحصائيات الموظفين</h1>
+                <p class="text-muted mb-0">نظرة عامة على إحصائيات الموظفين حسب الأقسام والوضع الوظيفي</p>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-enhanced mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">الرئيسية</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">إحصائيات الموظفين</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Statistics Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="stats-card total-employees-enhanced h-100">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-users fa-3x mb-3" style="opacity: 0.8;"></i>
+                    <h5 class="card-title mb-3">إجمالي الموظفين</h5>
+                    <p class="stats-count mb-1">{{ detailed_stats|map(attribute='total')|sum }}</p>
+                    <p class="stats-percentage mb-0">
+                        <i class="fas fa-chart-line me-1"></i>
+                        نظرة شاملة على القوى العاملة
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% for stat in status_stats %}
+        <div class="col-md-4 mb-3">
+            <div class="stats-card {% if stat.status == 'نشط' %}active-card-enhanced{% elif stat.status == 'في إجازة' %}on-leave-card-enhanced{% else %}inactive-card-enhanced{% endif %} h-100">
+                <div class="card-body text-center py-4">
+                    <i class="fas {% if stat.status == 'نشط' %}fa-user-check{% elif stat.status == 'في إجازة' %}fa-umbrella-beach{% else %}fa-user-slash{% endif %} fa-3x mb-3" style="opacity: 0.8;"></i>
+                    <h5 class="card-title mb-3">{{ stat.status }}</h5>
+                    <p class="stats-count mb-1">{{ stat.count }}</p>
+                    <p class="stats-percentage mb-0">
+                        <i class="fas fa-percentage me-1"></i>
+                        {% set total = detailed_stats|sum(attribute='total') %}
+                        {{ "%.1f"|format(stat.count / total * 100) if total > 0 else "0.0" }}% من الموظفين
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row">
+        <!-- Department Distribution Chart -->
+        <div class="col-md-5 mb-4">
+            <div class="stats-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        توزيع الموظفين حسب القسم
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="chart-wrapper-enhanced">
+                        <div class="chart-container-enhanced">
+                            <canvas id="departmentChart"></canvas>
+                        </div>
+                        <div class="chart-info-enhanced text-center" id="chartInfo">
+                            <div class="total-count">
+                                <span id="totalEmployees">0</span>
+                                <span class="info-label">إجمالي الموظفين</span>
+                            </div>
+                            <div class="departments-count">
+                                <span id="departmentsCount">0</span>
+                                <span class="info-label">عدد الأقسام</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Details Table -->
+        <div class="col-md-7 mb-4">
+            <div class="stats-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-table me-2"></i>
+                        تفاصيل الأقسام
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table department-table-enhanced">
+                            <thead>
+                                <tr>
+                                    <th>القسم</th>
+                                    <th>نشط</th>
+                                    <th>غير نشط</th>
+                                    <th>في إجازة</th>
+                                    <th>متوقف عن العمل</th>
+                                    <th>المجموع</th>
+                                    <th>النسبة النشطة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dept in detailed_stats %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('departments.view', id=dept.department_id) }}" class="department-link">
+                                            <i class="fas fa-building me-1"></i>
+                                            {{ dept.department_name }}
+                                        </a>
+                                    </td>
+                                    <td class="text-success fw-bold">{{ dept.active }}</td>
+                                    <td class="text-danger fw-bold">{{ dept.inactive }}</td>
+                                    <td class="text-warning fw-bold">{{ dept.on_leave }}</td>
+                                    <td class="text-secondary fw-bold">{{ dept.terminated }}</td>
+                                    <td class="fw-bold">{{ dept.total }}</td>
+                                    <td class="fw-bold">
+                                        {% set active_total = detailed_stats|sum(attribute='active') %}
+                                        {{ "%.1f"|format(dept.active / active_total * 100) if active_total > 0 else "0.0" }}%
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>المجموع</th>
+                                    <th>{{ detailed_stats|sum(attribute='active') }}</th>
+                                    <th>{{ detailed_stats|sum(attribute='inactive') }}</th>
+                                    <th>{{ detailed_stats|sum(attribute='on_leave') }}</th>
+                                    <th>{{ detailed_stats|sum(attribute='terminated') }}</th>
+                                    <th>{{ detailed_stats|sum(attribute='total') }}</th>
+                                    <th>100%</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,8 +1,10 @@
 """Employees web routes (module)."""
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
+from sqlalchemy.exc import IntegrityError
 
 from models import Module, Permission, Department, Nationality, Employee
+from core.extensions import db
 from utils.permissions_service import can_edit, can_delete
 from utils.user_helpers import require_module_access
 from modules.employees.application.core import (
@@ -13,6 +15,39 @@ from modules.employees.application.core import (
 )
 
 employees_bp = Blueprint("employees", __name__, url_prefix="/employees")
+
+
+DEFAULT_NATIONALITIES = [
+    ("سعودي", "Saudi Arabian", "SAU"),
+    ("مصري", "Egyptian", "EGY"),
+    ("يمني", "Yemeni", "YEM"),
+    ("سوداني", "Sudanese", "SDN"),
+    ("سوري", "Syrian", "SYR"),
+    ("أردني", "Jordanian", "JOR"),
+    ("فلبيني", "Philippine", "PHL"),
+    ("باكستاني", "Pakistani", "PAK"),
+    ("هندي", "Indian", "IND"),
+    ("بنغلاديشي", "Bangladeshi", "BGD"),
+    ("نيبالي", "Nepalese", "NPL"),
+]
+
+
+def _get_nationalities_with_fallback():
+    nationalities = Nationality.query.order_by(Nationality.name_ar).all()
+    if nationalities:
+        return nationalities
+
+    for name_ar, name_en, country_code in DEFAULT_NATIONALITIES:
+        db.session.add(
+            Nationality(name_ar=name_ar, name_en=name_en, country_code=country_code)
+        )
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+
+    return Nationality.query.order_by(Nationality.name_ar).all()
 
 
 def _service_message(result):
@@ -58,7 +93,7 @@ def _service_message(result):
 
 def _load_create_form_data():
     departments = Department.query.all()
-    nationalities = Nationality.query.order_by(Nationality.name_ar).all()
+    nationalities = _get_nationalities_with_fallback()
     from models import ImportedPhoneNumber
     available_phone_numbers = ImportedPhoneNumber.query.filter(
         ImportedPhoneNumber.employee_id.is_(None)
@@ -79,7 +114,7 @@ def _load_create_form_data():
 
 def _load_edit_form_data(employee):
     all_departments = Department.query.order_by(Department.name).all()
-    all_nationalities = Nationality.query.order_by(Nationality.name_ar).all()
+    all_nationalities = _get_nationalities_with_fallback()
 
     from models import ImportedPhoneNumber
     available_phone_numbers = ImportedPhoneNumber.query.filter(
@@ -129,6 +164,7 @@ def index():
         multi_department_filter=request.args.get("multi_department", ""),
         no_department_filter=request.args.get("no_department", ""),
         duplicate_names_filter=request.args.get("duplicate_names", ""),
+        location_filter=request.args.get("location", ""),
         assigned_department_id=assigned_id,
     )
     return render_template(
@@ -137,6 +173,7 @@ def index():
         departments=data["departments"],
         current_department=data["current_department"],
         current_status=data["current_status"],
+        current_location=data.get("current_location", ""),
         current_multi_department=data["current_multi_department"],
         current_no_department=data["current_no_department"],
         current_duplicate_names=data["current_duplicate_names"],

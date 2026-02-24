@@ -1,0 +1,146 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ألوان للمخططات البيانية
+        const colors = {
+            available: 'rgba(40, 167, 69, 0.7)',
+            rented: 'rgba(0, 123, 255, 0.7)',
+            in_project: 'rgba(23, 162, 184, 0.7)',
+            in_workshop: 'rgba(255, 193, 7, 0.7)',
+            accident: 'rgba(220, 53, 69, 0.7)'
+        };
+        
+        // مخطط حالة السيارات
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['متاحة', 'مؤجرة', 'في المشروع', 'في الورشة', 'حادث'],
+                datasets: [{
+                    data: [
+                        {{ stats.status_counts.available|default(0) }},
+                        {{ stats.status_counts.rented|default(0) }},
+                        {{ stats.status_counts.in_project|default(0) }},
+                        {{ stats.status_counts.in_workshop|default(0) }},
+                        {{ stats.status_counts.accident|default(0) }}
+                    ],
+                    backgroundColor: [
+                        colors.available,
+                        colors.rented,
+                        colors.in_project,
+                        colors.in_workshop,
+                        colors.accident
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+        
+        // مخطط تكاليف الإيجار
+        const rentalCtx = document.getElementById('rentalCostChart').getContext('2d');
+        new Chart(rentalCtx, {
+            type: 'line',
+            data: {
+                labels: [
+                    {% for month in rental_cost_data.labels %}
+                        '{{ month }}',
+                    {% endfor %}
+                ],
+                datasets: [{
+                    label: 'تكاليف الإيجار (ريال)',
+                    data: [
+                        {% for value in rental_cost_data.data_values %}
+                            {{ value }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('ar-SA');
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toLocaleString('ar-SA') + ' ريال';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // مخطط تكاليف الصيانة
+        const maintenanceCtx = document.getElementById('maintenanceCostChart').getContext('2d');
+        new Chart(maintenanceCtx, {
+            type: 'line',
+            data: {
+                labels: [
+                    {% for month in maintenance_cost_data.labels %}
+                        '{{ month }}',
+                    {% endfor %}
+                ],
+                datasets: [{
+                    label: 'تكاليف الصيانة (ريال)',
+                    data: [
+                        {% for value in maintenance_cost_data.data_values %}
+                            {{ value }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                    borderColor: 'rgba(255, 193, 7, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('ar-SA');
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toLocaleString('ar-SA') + ' ريال';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>

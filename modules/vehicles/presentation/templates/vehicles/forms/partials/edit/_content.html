@@ -1,0 +1,227 @@
+<div class="container mt-4">
+    <div class="card card-enhanced mb-4">
+        <div class="card-header card-header-enhanced d-flex justify-content-between align-items-center">
+            <h3 class="card-title-enhanced mb-0">
+                <i class="fas fa-edit ms-2"></i>
+                تعديل السيارة: {{ vehicle.plate_number }}
+            </h3>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('vehicles.view', id=vehicle.id) }}" class="btn btn-enhanced btn-outline-primary-enhanced">
+                    <i class="fas fa-eye me-1"></i>
+                    عرض التفاصيل
+                </a>
+                <a href="{{ url_for('vehicles.index') }}" class="btn btn-enhanced btn-secondary-enhanced">
+                    <i class="fas fa-arrow-right me-1"></i>
+                    العودة للقائمة
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('vehicles.edit', id=vehicle.id) }}" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="plate_number" class="form-label-enhanced required">رقم اللوحة</label>
+                        <input type="text" class="form-control form-control-enhanced" id="plate_number" name="plate_number" value="{{ vehicle.plate_number }}" required>
+                        <div class="form-text-enhanced">أدخل رقم لوحة السيارة بالكامل</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="make" class="form-label-enhanced required">الشركة المصنعة</label>
+                        <input type="text" class="form-control form-control-enhanced" id="make" name="make" value="{{ vehicle.make }}" required>
+                        <div class="form-text-enhanced">مثال: تويوتا، هيونداي، نيسان</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="model" class="form-label-enhanced required">الموديل</label>
+                        <input type="text" class="form-control form-control-enhanced" id="model" name="model" value="{{ vehicle.model }}" required>
+                        <div class="form-text-enhanced">مثال: كامري، كورولا، إلنترا</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="type_of_car" class="form-label-enhanced required">نوع السيارة</label>
+                        <select class="form-select form-select-enhanced" id="type_of_car" name="type_of_car" required>
+                            <option value="" disabled>اختر نوع السيارة</option>
+                            <option value="سيدان" {% if vehicle.type_of_car == 'سيدان' %}selected{% endif %}>سيدان</option>
+                            <option value="قاطرة" {% if vehicle.type_of_car == 'قاطرة' %}selected{% endif %}>قاطرة</option>
+                            <option value="باص" {% if vehicle.type_of_car == 'باص' %}selected{% endif %}>باص</option>
+                            <option value="مقطورة" {% if vehicle.type_of_car == 'مقطورة' %}selected{% endif %}>مقطورة</option>
+                            <option value="شاحنة" {% if vehicle.type_of_car == 'شاحنة' %}selected{% endif %}>شاحنة</option>
+                            <option value="دباب" {% if vehicle.type_of_car == 'دباب' %}selected{% endif %}>دباب</option>
+                            <option value="كرين" {% if vehicle.type_of_car == 'كرين' %}selected{% endif %}>كرين</option>
+                            <option value="حفار" {% if vehicle.type_of_car == 'حفار' %}selected{% endif %}>حفار</option>
+                        </select>
+                        <div class="form-text-enhanced">نوع المركبة (سيدان، قاطرة، باص، إلخ)</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="year" class="form-label-enhanced required">سنة الصنع</label>
+                        <input type="number" class="form-control form-control-enhanced" id="year" name="year" min="1990" max="{{ 2030 }}" value="{{ vehicle.year }}" required>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="color" class="form-label-enhanced required">اللون</label>
+                        <input type="text" class="form-control form-control-enhanced" id="color" name="color" value="{{ vehicle.color }}" required>
+                        <div class="form-text-enhanced">مثال: أبيض، أسود، فضي</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="driver_name" class="form-label-enhanced">اسم السائق</label>
+                        <input type="text" class="form-control form-control-enhanced" id="driver_name" name="driver_name" value="{{ vehicle.driver_name or '' }}">
+                        <div class="form-text-enhanced">اختياري - اسم السائق المعين لهذه السيارة</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="status" class="form-label-enhanced required">الحالة</label>
+                        <select class="form-select form-select-enhanced status-select" id="status" name="status" required>
+                            {% for status in statuses %}
+                            <option value="{{ status }}" {% if status == vehicle.status %}selected{% endif %} 
+                                    data-color="{% if status == 'available' %}success
+                                               {% elif status == 'rented' %}info
+                                               {% elif status == 'in_project' %}info
+                                               {% elif status == 'in_workshop' %}warning
+                                               {% elif status == 'accident' %}danger
+                                               {% elif status == 'out_of_service' %}secondary
+                                               {% else %}secondary{% endif %}">
+                                {% if status == 'available' %}✅ متاحة
+                                {% elif status == 'rented' %}🚗 مؤجرة
+                                {% elif status == 'in_project' %}🚗 نشطة مع سائق
+                                {% elif status == 'in_workshop' %}🔧 في الورشة صيانة
+                                {% elif status == 'accident' %}⚠️ في الورشة حادث
+                                {% elif status == 'out_of_service' %}🔴 خارج الخدمة
+                                {% else %}{{ status }}{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="project" class="form-label-enhanced">المشروع</label>
+                        <select class="form-select form-select-enhanced" id="project" name="project">
+                            <option value="">اختر المشروع</option>
+                            {% for department in departments %}
+                            <option value="{{ department.name }}" {% if department.name == vehicle.project %}selected{% endif %}>
+                                {{ department.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text-enhanced">اختياري - المشروع المرتبط بهذه السيارة</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="owned_by" class="form-label-enhanced">الشركة المالكة</label>
+                        <input type="text" class="form-control form-control-enhanced" id="owned_by" name="owned_by" value="{{ vehicle.owned_by or '' }}">
+                        <div class="form-text-enhanced">اختياري - اسم الشركة المالكة للمركبة</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="region" class="form-label-enhanced">المنطقة</label>
+                        <input type="text" class="form-control form-control-enhanced" id="region" name="region" value="{{ vehicle.region or '' }}" placeholder="مثال: الرياض، جدة، الدمام">
+                        <div class="form-text-enhanced">اختياري - المنطقة التي تعمل بها المركبة</div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="notes" class="form-label-enhanced">ملاحظات</label>
+                    <textarea class="form-control form-control-enhanced" id="notes" name="notes" rows="3">{{ vehicle.notes }}</textarea>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-enhanced btn-primary-enhanced px-5">
+                        <i class="fas fa-save me-1"></i>
+                        حفظ التغييرات
+                    </button>
+                    <a href="{{ url_for('vehicles.view', id=vehicle.id) }}" class="btn btn-enhanced btn-secondary-enhanced ms-2">
+                        <i class="fas fa-times me-1"></i>
+                        إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+
+    <!-- قسم إدارة وصول المستخدمين -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-white">
+            <h4 class="mb-0">
+                <i class="fas fa-users ms-2"></i>
+                إدارة وصول المستخدمين
+            </h4>
+            <small class="text-muted">يمكن للمديرين رؤية جميع المركبات - هذا القسم للمستخدمين العاديين فقط</small>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('vehicles.manage_user_access', id=vehicle.id) }}">
+                <div class="row">
+                    <div class="col-md-8">
+                        <label class="form-label">المستخدمون المخولون للوصول لهذه المركبة:</label>
+                        {% for user in all_users %}
+                            {% if user.role.name != 'ADMIN' %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       name="authorized_users" value="{{ user.id }}" 
+                                       id="user_{{ user.id }}"
+                                       {% if user in vehicle.authorized_users %}checked{% endif %}>
+                                <label class="form-check-label" for="user_{{ user.id }}">
+                                    {{ user.name or user.username or user.email }}
+                                    <small class="text-muted">({{ user.email }})</small>
+                                    {% if user.employee %}
+                                        <span class="badge bg-info">{{ user.employee.name }}</span>
+                                    {% endif %}
+                                </label>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> معلومات مهمة:</h6>
+                            <ul class="small mb-0">
+                                <li>المديرون يمكنهم رؤية جميع المركبات دائماً</li>
+                                <li>المستخدمون المحددون هنا فقط يمكنهم رؤية هذه المركبة</li>
+                                <li>إذا لم يتم تحديد أي مستخدم، فلن يتمكن أحد من رؤية المركبة عدا المديرين</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save ms-1"></i>
+                        حفظ إعدادات الوصول
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- قسم خاص بإجراءات الحذف -->
+                <div class="card danger-zone-card">
+                    <div class="danger-zone-header">
+                        <h4 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+
+                منطقة الخطر
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-danger border-0">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <div>
+                        <h5 class="alert-heading">تحذير!</h5>
+                        <p class="mb-0">حذف هذه السيارة سيؤدي إلى حذف جميع البيانات المرتبطة بها بما في ذلك سجلات الإيجار والورشة والمشاريع وسجلات التسليم والاستلام. هذا الإجراء نهائي ولا يمكن التراجع عنه.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center">
+                <a href="{{ url_for('vehicles.confirm_delete', id=vehicle.id) }}" class="btn btn-enhanced btn-outline-danger-enhanced">
+                    <i class="fas fa-trash me-1"></i>
+                    حذف السيارة
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

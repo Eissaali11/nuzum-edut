@@ -1,9 +1,13 @@
 import os
 import sys
+import json
 import logging
 import sqlite3
+import traceback
+import shutil
+import importlib.util
 from jinja2 import ChoiceLoader, FileSystemLoader
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import Flask, session, redirect, url_for, render_template, request, g, current_app
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -21,15 +25,44 @@ load_dotenv()  # تحميل المتغيرات البيئية من ملف .env
 # السطر التالي يضمن أن اسم الموديول `app` يشير إلى نفس الكائن لتفادي
 # مشكلة الاستيراد الدائري الجزئي (partially initialized module).
 if __name__ == "__main__":
-    sys.modules.setdefault("app", sys.modules[__name__])
+    app_pkg_spec = importlib.util.find_spec("app")
+    if app_pkg_spec is None:
+        sys.modules.setdefault("app", sys.modules[__name__])
 
 
 # app.py
 from whatsapp_client import WhatsAppWrapper
+from core.api_v2_security import init_rate_limiter, register_api_v2_guard
 # ... استيراد مكتبات أخرى ...
 
-# Set up logging (يجب أن يكون قبل استخدام logger)
-logging.basicConfig(level=logging.DEBUG)
+# Set up structured logging (JSON)
+class JsonLogFormatter(logging.Formatter):
+    def format(self, record):
+        payload = {
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        if hasattr(record, "pathname"):
+            payload["module"] = record.pathname
+        if hasattr(record, "lineno"):
+            payload["line"] = record.lineno
+        if record.exc_info:
+            payload["exception"] = self.formatException(record.exc_info)
+        return json.dumps(payload, ensure_ascii=False)
+
+
+def configure_structured_logging():
+    log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
+    root_logger = logging.getLogger()
+    root_logger.setLevel(log_level)
+    handler = logging.StreamHandler()
+    handler.setFormatter(JsonLogFormatter())
+    root_logger.handlers = [handler]
+
+
+configure_structured_logging()
 logger = logging.getLogger(__name__)
 
 # إنشاء كائن واتساب واحد عند بدء تشغيل التطبيق
@@ -83,6 +116,15 @@ csrf = CSRFProtect()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "employee_management_secret")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
+init_rate_limiter(app)
+register_api_v2_guard(app)
+
+
+@app.errorhandler(500)
+def handle_internal_error(error):
+    logger.error("Internal server error on %s", request.path)
+    traceback.print_exc()
+    return str(error), 500
 
 # Prefer module templates over global templates
 vehicles_templates_path = os.path.join(
@@ -147,6 +189,26 @@ def _build_sqlite_uri(file_path):
     return f"sqlite:///{absolute_path.replace(os.sep, '/')}"
 
 
+def _try_repair_sqlite(target_db_path, source_db_path):
+    """نسخ قاعدة SQLite صالحة إلى المسار المستهدف عند الحاجة."""
+    try:
+        if not target_db_path or not source_db_path:
+            return False
+
+        if not os.path.exists(source_db_path):
+            return False
+
+        target_dir = os.path.dirname(target_db_path)
+        if target_dir:
+            os.makedirs(target_dir, exist_ok=True)
+
+        shutil.copy2(source_db_path, target_db_path)
+        return True
+    except Exception as copy_error:
+        logger.warning(f"SQLite repair copy failed: {copy_error}")
+        return False
+
+
 
 # If no DATABASE_URL is provided, use SQLite as fallback
 if not database_url:
@@ -184,6 +246,21 @@ else:
         configured_sqlite_path = _sqlite_uri_to_path(database_url)
 
         if configured_sqlite_path and not _sqlite_has_tables(configured_sqlite_path, required_tables):
+            instance_db_path = os.path.join('instance', 'nuzum_local.db')
+            if _sqlite_has_tables(instance_db_path, required_tables):
+                if _try_repair_sqlite(configured_sqlite_path, instance_db_path):
+                    database_url = _build_sqlite_uri(configured_sqlite_path)
+                    logger.warning(
+                        f"Configured SQLite database '{configured_sqlite_path}' missing required tables; "
+                        f"synced from '{instance_db_path}'"
+                    )
+                    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+                else:
+                    logger.warning(
+                        f"Configured SQLite database '{configured_sqlite_path}' missing required tables; "
+                        "sync attempt failed"
+                    )
+
             fallback_candidates = [
                 configured_sqlite_path,
                 os.path.join('instance', 'nuzum_local.db'),
@@ -716,6 +793,10 @@ with app.app_context():
     # Power BI Dashboard
     from routes.powerbi_dashboard import powerbi_bp
     app.register_blueprint(powerbi_bp)
+
+    # Auto-register any remaining blueprints from the 12-category structure
+    from routes import register_routes
+    register_routes(app)
     
 
     @app.route('/uploads/<path:filename>')
@@ -861,6 +942,11 @@ def before_request():
     g.arabic_config = ARABIC_CONFIG
 
 
+@app.after_request
+def after_request(response):
+    return response
+
+
 
 
 
@@ -950,6 +1036,7 @@ def contact():
     """صفحة اتصل بنا - معلومات الشركة"""
     return render_template('contact.html')
 
+
 # ================== نهاية صفحات المعلومات الثابتة ==================
 
 # وظيفة حذف البيانات القديمة (أقدم من 14 ساعة)
@@ -957,10 +1044,10 @@ def cleanup_old_location_data():
     """حذف مواقع الموظفين الأقدم من 14 ساعة"""
     with app.app_context():
         from models import EmployeeLocation
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
         
         try:
-            cutoff_time = datetime.utcnow() - timedelta(hours=14)
+            cutoff_time = datetime.now(timezone.utc) - timedelta(hours=14)
             old_locations = EmployeeLocation.query.filter(
                 EmployeeLocation.recorded_at < cutoff_time
             ).delete()
@@ -981,11 +1068,11 @@ def cleanup_old_geofence_events():
     """حذف جلسات وأحداث الدوائر الجغرافية الأقدم من 24 ساعة"""
     with app.app_context():
         from models import GeofenceEvent, GeofenceSession
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
         from sqlalchemy import update
         
         try:
-            cutoff_time = datetime.utcnow() - timedelta(hours=24)
+            cutoff_time = datetime.now(timezone.utc) - timedelta(hours=24)
             
             # أولاً: فصل الـ FK constraints - تعيين entry_event_id و exit_event_id إلى NULL
             db.session.execute(
@@ -1038,5 +1125,6 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=run_port,
-        debug=os.environ.get("FLASK_DEBUG", "False").lower() == "true"
+        debug=os.environ.get("FLASK_DEBUG", "False").lower() == "true",
+        threaded=os.environ.get("APP_THREADED", "true").lower() == "true",
     )

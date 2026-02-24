@@ -1,0 +1,61 @@
+                    <!-- قسم معلومات السكن -->
+                    <div class="col-12">
+                        <div class="card border-info">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="fas fa-home me-2"></i>معلومات السكن</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="residence_details" class="form-label">تفاصيل السكن</label>
+                                            <textarea class="form-control" id="residence_details" name="residence_details" 
+                                                      rows="3" placeholder="العنوان أو وصف موقع السكن (اختياري)"></textarea>
+                                            <div class="form-text text-muted">
+                                                <i class="fas fa-info-circle"></i>
+                                                يمكنك إدخال عنوان السكن أو أي تفاصيل توضيحية
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="residence_location_url" class="form-label">رابط الموقع (Google Maps)</label>
+                                            <input type="url" class="form-control" id="residence_location_url" name="residence_location_url" 
+                                                   placeholder="https://maps.google.com/..." 
+                                                   title="الصق رابط موقع السكن من خرائط Google (اختياري)">
+                                            <div class="form-text text-muted">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                الصق رابط موقع السكن من خرائط Google لسهولة الوصول إليه
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- صور توضيحية للسكن -->
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="housing_images" class="form-label">صور توضيحية للسكن</label>
+                                            <input type="file" class="form-control" id="housing_images" name="housing_images" 
+                                                   accept="image/*,.heic" multiple>
+                                            <div class="form-text text-muted">
+                                                <i class="fas fa-images"></i>
+                                                يمكنك رفع عدة صور توضيحية للسكن (اختياري)
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- روابط Google Drive -->
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="housing_drive_links" class="form-label">روابط Google Drive للسكن</label>
+                                            <textarea class="form-control" id="housing_drive_links" name="housing_drive_links" 
+                                                      rows="3" placeholder="https://drive.google.com/...&#10;https://drive.google.com/..."></textarea>
+                                            <div class="form-text text-muted">
+                                                <i class="fab fa-google-drive"></i>
+                                                يمكنك إضافة روابط Google Drive للملفات والصور (كل رابط في سطر منفصل)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>

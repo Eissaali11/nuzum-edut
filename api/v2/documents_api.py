@@ -2,16 +2,17 @@ from flask import Blueprint, request, jsonify, send_file
 from datetime import datetime
 
 from services.document_service import DocumentService
+from core.api_v2_security import validate_request_token, rate_limit
 
 
 documents_api_v2_bp = Blueprint('documents_api_v2', __name__, url_prefix='/api/v2/documents')
 
 
-def _require_api_key():
-    api_key = request.headers.get('X-API-Key', '')
-    if len(api_key) < 10:
-        return False
-    return True
+def _require_api_key(required_scopes=None):
+    if required_scopes is None:
+        required_scopes = ['api:v2:write', 'documents:write']
+    _, error = validate_request_token(required_scopes=required_scopes, optional=False)
+    return error is None
 
 
 @documents_api_v2_bp.route('/health', methods=['GET'])
@@ -20,6 +21,7 @@ def health():
 
 
 @documents_api_v2_bp.route('/documents/<int:document_id>/upload-image', methods=['POST'])
+@rate_limit("30 per minute")
 def upload_image(document_id):
     if not _require_api_key():
         return jsonify({'success': False, 'message': 'مفتاح API غير صالح', 'error': 'INVALID_API_KEY'}), 401
@@ -35,6 +37,7 @@ def upload_image(document_id):
 
 
 @documents_api_v2_bp.route('/documents/<int:document_id>/upload-file', methods=['POST'])
+@rate_limit("30 per minute")
 def upload_file(document_id):
     if not _require_api_key():
         return jsonify({'success': False, 'message': 'مفتاح API غير صالح', 'error': 'INVALID_API_KEY'}), 401
@@ -51,7 +54,7 @@ def upload_file(document_id):
 
 @documents_api_v2_bp.route('/documents/<int:document_id>/download', methods=['GET'])
 def download_file(document_id):
-    if not _require_api_key():
+    if not _require_api_key(required_scopes=['api:v2:read', 'documents:read']):
         return jsonify({'success': False, 'message': 'مفتاح API غير صالح', 'error': 'INVALID_API_KEY'}), 401
 
     success, message, data = DocumentService.get_document_download_info(document_id)

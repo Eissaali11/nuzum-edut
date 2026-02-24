@@ -1,0 +1,366 @@
+<div class="container-fluid p-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('employee_requests.index') }}">طلبات الموظفين</a></li>
+                    <li class="breadcrumb-item active">تفاصيل الطلب #{{ emp_request.id }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- معلومات الطلب الأساسية -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-header text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        معلومات الطلب
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 info-section">
+                            <span class="info-label">رقم الطلب:</span>
+                            <p class="info-value">#{{ emp_request.id }}</p>
+                        </div>
+                        <div class="col-md-6 info-section">
+                            <span class="info-label">اسم الموظف:</span>
+                            <p class="info-value">{{ emp_request.employee.name if emp_request.employee else 'غير محدد' }}</p>
+                        </div>
+                        <div class="col-md-6 info-section">
+                            <span class="info-label">نوع الطلب:</span>
+                            <p class="info-value">
+                                {% if emp_request.request_type == RequestType.INVOICE %}
+                                    <span class="badge bg-info">فاتورة</span>
+                                {% elif emp_request.request_type == RequestType.CAR_WASH %}
+                                    <span class="badge bg-primary">غسيل سيارة</span>
+                                {% elif emp_request.request_type == RequestType.CAR_INSPECTION %}
+                                    <span class="badge bg-warning">فحص وتوثيق</span>
+                                {% elif emp_request.request_type == RequestType.ADVANCE_PAYMENT %}
+                                    <span class="badge bg-success">سلفة مالية</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 info-section">
+                            <span class="info-label">الحالة:</span>
+                            <p class="info-value">
+                                {% if emp_request.status == RequestStatus.PENDING %}
+                                    <span class="badge bg-warning">قيد الانتظار</span>
+                                {% elif emp_request.status == RequestStatus.APPROVED %}
+                                    <span class="badge bg-success">موافق عليها</span>
+                                {% elif emp_request.status == RequestStatus.REJECTED %}
+                                    <span class="badge bg-danger">مرفوضة</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 info-section">
+                            <span class="info-label">تاريخ الإنشاء:</span>
+                            <p class="info-value">{{ emp_request.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                        {% if emp_request.approved_at %}
+                        <div class="col-md-6 info-section">
+                            <span class="info-label">تاريخ المعالجة:</span>
+                            <p class="info-value">{{ emp_request.approved_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                        {% endif %}
+                        {% if emp_request.employee_notes %}
+                        <div class="col-12 info-section">
+                            <span class="info-label">ملاحظات الموظف:</span>
+                            <p class="info-value">{{ emp_request.employee_notes }}</p>
+                        </div>
+                        {% endif %}
+                        {% if emp_request.admin_notes %}
+                        <div class="col-12 info-section">
+                            <span class="info-label">ملاحظات الإدارة:</span>
+                            <p class="info-value">{{ emp_request.admin_notes }}</p>
+                        </div>
+                        {% endif %}
+                        {% if emp_request.rejection_reason %}
+                        <div class="col-12">
+                            <div class="alert alert-danger">
+                                <strong>سبب الرفض:</strong>
+                                <p class="mb-0">{{ emp_request.rejection_reason }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- تفاصيل خاصة بنوع الطلب مع معرض الصور الاحترافي -->
+            {% if specific_request %}
+            <div class="card shadow-lg">
+                <div class="card-header text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-invoice me-2"></i>
+                        تفاصيل إضافية
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if emp_request.request_type == RequestType.INVOICE %}
+                        <div class="row">
+                            <div class="col-md-6 info-section">
+                                <span class="info-label">المبلغ:</span>
+                                <p class="info-value">{{ specific_request.amount if specific_request.amount else emp_request.amount }} ريال</p>
+                            </div>
+                            <div class="col-md-6 info-section">
+                                <span class="info-label">اسم المحل:</span>
+                                <p class="info-value">{{ specific_request.vendor_name or 'غير محدد' }}</p>
+                            </div>
+                        </div>
+                    {% elif emp_request.request_type == RequestType.CAR_WASH %}
+                        <div class="row">
+                            <div class="col-md-6 info-section">
+                                <span class="info-label">رقم لوحة السيارة:</span>
+                                <p class="info-value">{{ specific_request.vehicle.plate_number if specific_request.vehicle else 'غير محدد' }}</p>
+                            </div>
+                            <div class="col-md-6 info-section">
+                                <span class="info-label">نوع الخدمة:</span>
+                                <p class="info-value">
+                                    {% if specific_request.service_type == 'normal' %}
+                                        <span class="badge bg-info">غسيل عادي</span>
+                                    {% elif specific_request.service_type == 'polish' %}
+                                        <span class="badge bg-primary">تلميع</span>
+                                    {% elif specific_request.service_type == 'full_clean' %}
+                                        <span class="badge bg-success">تنظيف شامل</span>
+                                    {% else %}
+                                        {{ specific_request.service_type }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            {% if specific_request.scheduled_date %}
+                            <div class="col-md-6 info-section">
+                                <span class="info-label">التاريخ المطلوب:</span>
+                                <p class="info-value">{{ specific_request.scheduled_date.strftime('%Y-%m-%d') }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- معرض الصور الاحترافي -->
+                        {% if specific_request.media_files %}
+                        <div class="image-gallery-container">
+                            <div class="gallery-header">
+                                <i class="fas fa-images"></i>
+                                <h4>معرض الصور <span style="color: #999; font-size: 0.9em;">({{ specific_request.media_files|length }} صورة)</span></h4>
+                            </div>
+                            <div class="image-grid">
+                                {% for media in specific_request.media_files %}
+                                <div class="image-card" data-bs-toggle="modal" data-bs-target="#imageModal{{ loop.index }}">
+                                    <div class="image-wrapper">
+                                        <img src="{{ media.drive_view_url or url_for('static', filename=media.local_path) }}" 
+                                             alt="{{ media.media_type.value }}"
+                                             onerror="this.parentElement.style.backgroundColor='#f0f0f0';">
+                                        <div class="image-view-btn">
+                                            <i class="fas fa-search-plus"></i>
+                                        </div>
+                                    </div>
+                                    <div class="image-badge">
+                                        {% if media.media_type.value == 'PLATE' %}
+                                            <i class="fas fa-car"></i> اللوحة
+                                        {% elif media.media_type.value == 'FRONT' %}
+                                            <i class="fas fa-arrow-up"></i> أمامي
+                                        {% elif media.media_type.value == 'BACK' %}
+                                            <i class="fas fa-arrow-down"></i> خلفي
+                                        {% elif media.media_type.value == 'RIGHT' %}
+                                            <i class="fas fa-arrow-right"></i> يمين
+                                        {% elif media.media_type.value == 'LEFT' %}
+                                            <i class="fas fa-arrow-left"></i> يسار
+                                        {% else %}
+                                            <i class="fas fa-image"></i> صورة
+                                        {% endif %}
+                                    </div>
+                                    <div class="image-overlay">
+                                        <p class="image-filename">{{ media.media_type.value }}</p>
+                                        {% if media.uploaded_at %}
+                                        <p class="image-size">{{ media.uploaded_at.strftime('%d/%m/%Y') }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- موديل الصورة -->
+                                <div class="modal fade" id="imageModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">
+                                                    {% if media.media_type.value == 'PLATE' %}اللوحة
+                                                    {% elif media.media_type.value == 'FRONT' %}أمامي
+                                                    {% elif media.media_type.value == 'BACK' %}خلفي
+                                                    {% elif media.media_type.value == 'RIGHT' %}يمين
+                                                    {% elif media.media_type.value == 'LEFT' %}يسار
+                                                    {% else %}صورة
+                                                    {% endif %}
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body text-center">
+                                                <img src="{{ media.drive_view_url or url_for('static', filename=media.local_path) }}" 
+                                                     class="img-fluid" 
+                                                     alt="{{ media.media_type.value }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="no-images-alert">
+                            <i class="fas fa-image"></i>
+                            <p>لم يتم رفع صور لهذا الطلب</p>
+                        </div>
+                        {% endif %}
+
+                    {% elif emp_request.request_type == RequestType.CAR_INSPECTION %}
+                        <div class="row">
+                            <div class="col-md-6 info-section">
+                                <span class="info-label">رقم لوحة السيارة:</span>
+                                <p class="info-value">{{ specific_request.vehicle.plate_number if specific_request.vehicle else 'غير محدد' }}</p>
+                            </div>
+                            <div class="col-md-6 info-section">
+                                <span class="info-label">نوع الفحص:</span>
+                                <p class="info-value">{{ specific_request.inspection_type }}</p>
+                            </div>
+                            <div class="col-md-6 info-section">
+                                <span class="info-label">تاريخ الفحص:</span>
+                                <p class="info-value">{{ specific_request.inspection_date.strftime('%Y-%m-%d') if specific_request.inspection_date else 'غير محدد' }}</p>
+                            </div>
+                        </div>
+
+                        <!-- معرض الصور الاحترافي -->
+                        {% if specific_request.media_files %}
+                        <div class="image-gallery-container">
+                            <div class="gallery-header">
+                                <i class="fas fa-images"></i>
+                                <h4>معرض الصور والملفات <span style="color: #999; font-size: 0.9em;">({{ specific_request.media_files|length }} ملف)</span></h4>
+                            </div>
+                            <div class="image-grid">
+                                {% for media in specific_request.media_files %}
+                                {% if media.file_type.value == 'IMAGE' %}
+                                <div class="image-card" data-bs-toggle="modal" data-bs-target="#inspectionImageModal{{ loop.index }}">
+                                    <div class="image-wrapper">
+                                        {% if media.drive_view_url %}
+                                            {% set image_url = media.drive_view_url %}
+                                        {% elif media.local_path %}
+                                            {% if media.local_path.startswith('static/') %}
+                                                {% set image_url = url_for('static', filename=media.local_path.replace('static/', '')) %}
+                                            {% elif media.local_path.startswith('uploads/') %}
+                                                {% set image_url = url_for('static', filename=media.local_path) %}
+                                            {% else %}
+                                                {% set image_url = url_for('static', filename=media.local_path) %}
+                                            {% endif %}
+                                        {% else %}
+                                            {% set image_url = url_for('static', filename='images/no-image.png') %}
+                                        {% endif %}
+                                        <img src="{{ image_url }}" 
+                                             alt="{{ media.original_filename }}"
+                                             onerror="this.parentElement.style.backgroundColor='#f0f0f0';">
+                                        <div class="image-view-btn">
+                                            <i class="fas fa-search-plus"></i>
+                                        </div>
+                                    </div>
+                                    <div class="image-badge">
+                                        <i class="fas fa-image"></i> صورة {{ loop.index }}
+                                    </div>
+                                    <div class="image-overlay">
+                                        <p class="image-filename">{{ media.original_filename }}</p>
+                                        {% if media.file_size %}
+                                        <p class="image-size">{{ (media.file_size / 1024 / 1024)|round(2) }} MB</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- موديل الصورة -->
+                                <div class="modal fade" id="inspectionImageModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">{{ media.original_filename }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body text-center">
+                                                <img src="{{ image_url }}" class="img-fluid" alt="{{ media.original_filename }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="no-images-alert">
+                            <i class="fas fa-image"></i>
+                            <p>لم يتم رفع صور لهذا الطلب</p>
+                        </div>
+                        {% endif %}
+
+                    {% elif emp_request.request_type == RequestType.ADVANCE_PAYMENT %}
+                        <div class="row">
+                            <div class="col-md-6 info-section">
+                                <span class="info-label">المبلغ المطلوب:</span>
+                                <p class="info-value">{{ specific_request.amount }} ريال</p>
+                            </div>
+                            <div class="col-md-6 info-section">
+                                <span class="info-label">السبب:</span>
+                                <p class="info-value">{{ specific_request.reason or 'غير محدد' }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- الشريط الجانبي -->
+        <div class="col-md-4">
+            <div class="card shadow-lg">
+                <div class="card-header text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        الملخص
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-section">
+                        <span class="info-label">حالة الطلب:</span>
+                        <p class="info-value">
+                            {% if emp_request.status == RequestStatus.PENDING %}
+                                <span class="badge bg-warning w-100">قيد الانتظار</span>
+                            {% elif emp_request.status == RequestStatus.APPROVED %}
+                                <span class="badge bg-success w-100">موافق عليها</span>
+                            {% elif emp_request.status == RequestStatus.REJECTED %}
+                                <span class="badge bg-danger w-100">مرفوضة</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="info-section">
+                        <span class="info-label">الموظف المسؤول:</span>
+                        <p class="info-value">{{ emp_request.employee.name if emp_request.employee else 'غير محدد' }}</p>
+                    </div>
+                    <div class="info-section">
+                        <span class="info-label">نوع الطلب:</span>
+                        <p class="info-value">
+                            {% if emp_request.request_type == RequestType.INVOICE %}
+                                فاتورة
+                            {% elif emp_request.request_type == RequestType.CAR_WASH %}
+                                غسيل سيارة
+                            {% elif emp_request.request_type == RequestType.CAR_INSPECTION %}
+                                فحص وتوثيق
+                            {% elif emp_request.request_type == RequestType.ADVANCE_PAYMENT %}
+                                سلفة مالية
+                            {% endif %}
+                        </p>
+                    </div>
+                    <hr>
+                    <a href="{{ url_for('employee_requests.index') }}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-arrow-left me-2"></i>العودة للقائمة
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

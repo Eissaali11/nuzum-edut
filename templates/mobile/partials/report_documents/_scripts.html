@@ -1,0 +1,64 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل قائمة التصدير المنسدلة
+    const dropdownToggle = document.getElementById('exportDropdown');
+    const dropdownMenu = dropdownToggle.nextElementSibling;
+    
+    dropdownToggle.addEventListener('click', function() {
+        dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            dropdownMenu.style.display = 'none';
+        }
+    });
+    
+    {% if documents %}
+    // إنشاء رسم بياني للوثائق
+    const ctx = document.getElementById('documentsChart').getContext('2d');
+    const documentsChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['سارية المفعول', 'على وشك الانتهاء', 'منتهية الصلاحية'],
+            datasets: [{
+                data: [
+                    {{ documents|selectattr('days_remaining')|selectattr('days_remaining', 'gt', 60)|list|length }},
+                    {{ documents|selectattr('days_remaining')|selectattr('days_remaining', 'ge', 0)|selectattr('days_remaining', 'le', 60)|list|length }},
+                    {{ documents|selectattr('days_remaining')|selectattr('days_remaining', 'lt', 0)|list|length }}
+                ],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.7)',
+                    'rgba(255, 193, 7, 0.7)',
+                    'rgba(220, 53, 69, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            family: 'Tajawal, Arial'
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'توزيع حالة الوثائق',
+                    font: {
+                        family: 'Tajawal, Arial',
+                        size: 14
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>

@@ -32,7 +32,9 @@ def list_employees_page_data(
     multi_department_filter: str = "",
     no_department_filter: str = "",
     duplicate_names_filter: str = "",
+    location_filter: str = "",
     assigned_department_id: Optional[int] = None,
+    limit: Optional[int] = None,
 ) -> dict:
     """Build list data and stats for the employees index page."""
     query = Employee.query.options(
@@ -51,6 +53,9 @@ def list_employees_page_data(
 
     if status_filter:
         query = query.filter(Employee.status == status_filter)
+
+    if location_filter:
+        query = query.filter(Employee.location == location_filter)
 
     if duplicate_names_filter == "yes":
         duplicate_subq = (
@@ -90,6 +95,9 @@ def list_employees_page_data(
             or_(subq.c.employee_id.is_(None), subq.c.dept_count <= 1)
         )
 
+    if limit and limit > 0:
+        query = query.limit(limit)
+
     employees: List[Any] = query.all()
 
     if assigned_department_id:
@@ -97,33 +105,37 @@ def list_employees_page_data(
     else:
         departments = Department.query.all()
 
-    multi_dept_count = (
-        db.session.query(Employee.id)
-        .join(employee_departments)
-        .group_by(Employee.id)
-        .having(func.count(employee_departments.c.department_id) > 1)
-        .count()
-    )
-    no_dept_count = (
-        db.session.query(Employee.id)
-        .outerjoin(employee_departments)
-        .filter(employee_departments.c.employee_id.is_(None))
-        .count()
-    )
-    duplicate_names_list = (
-        db.session.query(Employee.name)
-        .group_by(Employee.name)
-        .having(func.count(Employee.name) > 1)
-        .all()
-    )
-    duplicate_names_count = 0
-    duplicate_names_set: Set[str] = set()
-    for (name,) in duplicate_names_list:
-        duplicate_names_count += db.session.query(Employee).filter(Employee.name == name).count()
-        duplicate_names_set.add(name)
+    if limit and limit > 0:
+        multi_dept_count = 0
+        no_dept_count = 0
+        duplicate_names_count = 0
+        duplicate_names_set: Set[str] = set()
+        single_dept_count = 0
+    else:
+        multi_dept_count = (
+            db.session.query(Employee.id)
+            .join(employee_departments)
+            .group_by(Employee.id)
+            .having(func.count(employee_departments.c.department_id) > 1)
+            .count()
+        )
+        no_dept_count = (
+            db.session.query(Employee.id)
+            .outerjoin(employee_departments)
+            .filter(employee_departments.c.employee_id.is_(None))
+            .count()
+        )
+        duplicate_names_rows = (
+            db.session.query(Employee.name, func.count(Employee.id).label("name_count"))
+            .group_by(Employee.name)
+            .having(func.count(Employee.id) > 1)
+            .all()
+        )
+        duplicate_names_set = {name for name, _ in duplicate_names_rows}
+        duplicate_names_count = sum(name_count for _, name_count in duplicate_names_rows)
 
-    total = db.session.query(Employee).count()
-    single_dept_count = total - multi_dept_count - no_dept_count
+        total = db.session.query(Employee).count()
+        single_dept_count = total - multi_dept_count - no_dept_count
 
     return {
         "employees": employees,
@@ -133,6 +145,7 @@ def list_employees_page_data(
         "current_multi_department": multi_department_filter,
         "current_no_department": no_department_filter,
         "current_duplicate_names": duplicate_names_filter,
+        "current_location": location_filter,
         "multi_dept_count": multi_dept_count,
         "single_dept_count": single_dept_count,
         "no_dept_count": no_dept_count,
@@ -891,18 +904,30 @@ def get_employee_view_context(employee_id: int) -> Optional[dict]:
     today = datetime.now().date()
     
     for doc in documents:
-        days_to_expiry = (doc.expiry_date - today).days
-        if days_to_expiry < 0:
-            doc.status_class = "danger"
-            doc.status_text = "منتهية"
-        elif days_to_expiry < 30:
-            doc.status_class = "warning"
-            doc.status_text = f"تنتهي خلال {days_to_expiry} يوم"
+        expiry_date = getattr(doc, 'expiry_date', None)
+
+        if not expiry_date:
+            doc.status_class = "secondary"
+            doc.status_text = "تاريخ الانتهاء غير محدد"
         else:
-            doc.status_class = "success"
-            doc.status_text = "سارية"
-        
-        documents_by_type[doc.document_type] = doc
+            try:
+                normalized_expiry = expiry_date.date() if hasattr(expiry_date, 'date') else expiry_date
+                days_to_expiry = (normalized_expiry - today).days
+                if days_to_expiry < 0:
+                    doc.status_class = "danger"
+                    doc.status_text = "منتهية"
+                elif days_to_expiry < 30:
+                    doc.status_class = "warning"
+                    doc.status_text = f"تنتهي خلال {days_to_expiry} يوم"
+                else:
+                    doc.status_class = "success"
+                    doc.status_text = "سارية"
+            except Exception:
+                doc.status_class = "secondary"
+                doc.status_text = "تاريخ الانتهاء غير صالح"
+
+        doc_type_key = doc.document_type if doc.document_type in documents_by_type else 'other'
+        documents_by_type[doc_type_key] = doc
     
     attendances = Attendance.query.filter_by(employee_id=employee_id).order_by(
         Attendance.date.desc()

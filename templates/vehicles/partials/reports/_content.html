@@ -1,0 +1,225 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 fw-bold text-primary">
+            <i class="fas fa-chart-pie ms-2"></i>
+            تقارير وإحصائيات السيارات
+        </h2>
+        <div>
+            <a href="{{ url_for('vehicles.export_vehicles_excel') }}" class="btn btn-success">
+                <i class="fas fa-file-excel ms-1"></i>
+                تصدير Excel
+            </a>
+            <a href="{{ url_for('vehicles.dashboard') }}" class="btn btn-info me-2">
+                <i class="fas fa-tachometer-alt ms-1"></i>
+                لوحة المعلومات
+            </a>
+            <a href="{{ url_for('vehicles.index') }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-right ms-1"></i>
+                العودة للقائمة
+            </a>
+        </div>
+    </div>
+
+    <!-- الإحصائيات حسب الشركة المصنعة -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header ">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="fas fa-car ms-2"></i>
+                        توزيع السيارات حسب الشركة المصنعة
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="makeChart"></canvas>
+                    </div>
+                    {% if make_stats %}
+                        <div class="table-responsive mt-3">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>الشركة المصنعة</th>
+                                        <th>عدد السيارات</th>
+                                        <th>النسبة المئوية</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set total = make_stats|sum(attribute='1') %}
+                                    {% for make, count in make_stats %}
+                                        <tr>
+                                            <td>{{ make }}</td>
+                                            <td>{{ count }}</td>
+                                            <td>{{ "{:.1f}%".format(count / total * 100) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle ms-2"></i>
+                            لا توجد بيانات متاحة للعرض
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- الإحصائيات حسب سنة الصنع -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header  ">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="fas fa-calendar-alt ms-2"></i>
+                        توزيع السيارات حسب سنة الصنع
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="yearChart"></canvas>
+                    </div>
+                    {% if year_stats %}
+                        <div class="table-responsive mt-3">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>سنة الصنع</th>
+                                        <th>عدد السيارات</th>
+                                        <th>النسبة المئوية</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set total = year_stats|sum(attribute='1') %}
+                                    {% for year, count in year_stats %}
+                                        <tr>
+                                            <td>{{ year }}</td>
+                                            <td>{{ count }}</td>
+                                            <td>{{ "{:.1f}%".format(count / total * 100) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle ms-2"></i>
+                            لا توجد بيانات متاحة للعرض
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- إحصائيات الورشة والتكاليف -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header  ">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="fas fa-tools ms-2"></i>
+                        توزيع سجلات الورشة حسب السبب
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="workshopReasonChart"></canvas>
+                    </div>
+                    {% if workshop_reason_stats %}
+                        <div class="table-responsive mt-3">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>سبب الدخول</th>
+                                        <th>عدد المرات</th>
+                                        <th>النسبة المئوية</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set total = workshop_reason_stats|sum(attribute='1') %}
+                                    {% for reason, count in workshop_reason_stats %}
+                                        <tr>
+                                            <td>
+                                                {% if reason == 'maintenance' %}
+                                                    صيانة دورية
+                                                {% elif reason == 'breakdown' %}
+                                                    عطل
+                                                {% elif reason == 'accident' %}
+                                                    حادث
+                                                {% else %}
+                                                    {{ reason }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ count }}</td>
+                                            <td>{{ "{:.1f}%".format(count / total * 100) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle ms-2"></i>
+                            لا توجد بيانات متاحة للعرض
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- السيارات الأعلى تكلفة في الصيانة -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header  ">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="fas fa-money-bill-wave ms-2"></i>
+                        أعلى 10 سيارات من حيث تكاليف الصيانة
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if top_maintenance_costs %}
+                        <div class="chart-container">
+                            <canvas id="maintenanceCostChart"></canvas>
+                        </div>
+                        <div class="table-responsive mt-3">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>رقم اللوحة</th>
+                                        <th>نوع السيارة</th>
+                                        <th>إجمالي التكاليف</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in top_maintenance_costs %}
+                                        <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>{{ item.plate_number }}</td>
+                                            <td>{{ item.make }} {{ item.model }}</td>
+                                            <td>{{ "{:,.2f}".format(item.total_cost) }} ريال</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle ms-2"></i>
+                            لا توجد بيانات متاحة للعرض
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- زر التصدير إلى Excel -->
+    <div class="text-center mt-2 mb-5">
+        <a href="{{ url_for('vehicles.export_vehicles_excel') }}" class="btn btn-success btn-lg">
+            <i class="fas fa-file-excel ms-2"></i>
+            تصدير بيانات السيارات إلى Excel
+        </a>
+    </div>
+</div>

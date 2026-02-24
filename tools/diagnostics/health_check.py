@@ -11,7 +11,7 @@ from pathlib import Path
 
 class SystemHealthCheck:
     def __init__(self):
-        self.base_dir = Path(__file__).resolve().parent
+        self.base_dir = Path(__file__).resolve().parents[2]
         self.passed = 0
         self.failed = 0
         self.warnings = 0

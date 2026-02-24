@@ -46,6 +46,7 @@ def list_page():
         multi_department_filter=request.args.get("multi_department", ""),
         no_department_filter=request.args.get("no_department", ""),
         duplicate_names_filter=request.args.get("duplicate_names", ""),
+        location_filter=request.args.get("location", ""),
         assigned_department_id=assigned_id,
     )
     return render_template(
@@ -54,6 +55,7 @@ def list_page():
         departments=data["departments"],
         current_department=data["current_department"],
         current_status=data["current_status"],
+        current_location=data.get("current_location", ""),
         current_multi_department=data["current_multi_department"],
         current_no_department=data["current_no_department"],
         current_duplicate_names=data["current_duplicate_names"],

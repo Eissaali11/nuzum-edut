@@ -1,0 +1,127 @@
+<style>
+    /* ألوان حالة السيارة */
+    .status-select.status-available {
+        background-color: #d1f2eb !important;
+        color: #0f5132 !important;
+        border-color: #0f5132 !important;
+    }
+    
+    .status-select.status-rented {
+        background-color: #cff4fc !important;
+        color: #055160 !important;
+        border-color: #055160 !important;
+    }
+    
+    .status-select.status-in_project {
+        background-color: #cfe2ff !important;
+        color: #084298 !important;
+        border-color: #084298 !important;
+    }
+    
+    .status-select.status-in_workshop {
+        background-color: #fff3cd !important;
+        color: #664d03 !important;
+        border-color: #664d03 !important;
+    }
+    
+    .status-select.status-accident {
+        background-color: #f8d7da !important;
+        color: #842029 !important;
+        border-color: #842029 !important;
+    }
+    
+    .status-select.status-out_of_service {
+        background-color: #d3d3d4 !important;
+        color: #141619 !important;
+        border-color: #141619 !important;
+    }
+    
+    .status-select.status-out_of_work_area,
+    .status-select.status-out_of_qassim_management {
+        background-color: #e2e3e5 !important;
+        color: #41464b !important;
+        border-color: #41464b !important;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    if (typeof bootstrap !== 'undefined') {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+    
+    // Add confirmation for delete button
+    const deleteBtn = document.querySelector('.btn-outline-danger-enhanced');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function(e) {
+            if (!confirm('هل أنت متأكد أنك تريد حذف هذه السيارة؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+                e.preventDefault();
+            }
+        });
+    }
+    
+    // تلوين حقل الحالة بناءً على القيمة المحددة
+    const statusSelect = document.getElementById('status');
+    
+    function updateStatusColor() {
+        if (!statusSelect) return;
+        
+        // إزالة جميع الكلاسات السابقة
+        statusSelect.classList.remove(
+            'status-available', 'status-rented', 'status-in_project', 
+            'status-in_workshop', 'status-accident', 'status-out_of_service',
+            'status-out_of_work_area', 'status-out_of_qassim_management'
+        );
+        
+        // إضافة الكلاس المناسب بناءً على القيمة المحددة
+        const selectedValue = statusSelect.value;
+        if (selectedValue) {
+            statusSelect.classList.add('status-' + selectedValue);
+        }
+    }
+    
+    // تحديث اللون عند التحميل
+    updateStatusColor();
+    
+    // تحديث اللون عند تغيير القيمة
+    if (statusSelect) {
+        statusSelect.addEventListener('change', updateStatusColor);
+    }
+    
+    // ملء المنطقة تلقائياً عند تغيير اسم السائق
+    const driverNameInput = document.getElementById('driver_name');
+    const regionInput = document.getElementById('region');
+    
+    if (driverNameInput && regionInput) {
+        driverNameInput.addEventListener('blur', function() {
+            const driverName = this.value.trim();
+            
+            if (driverName) {
+                // جلب معلومات الموظف من API
+                fetch(`/vehicles/api/get_employee_info/${encodeURIComponent(driverName)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.location) {
+                            // ملء حقل المنطقة تلقائياً
+                            regionInput.value = data.location;
+                            // إضافة تأثير بصري للإشارة إلى التحديث
+                            regionInput.classList.add('border-success');
+                            setTimeout(() => {
+                                regionInput.classList.remove('border-success');
+                            }, 2000);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('خطأ في جلب معلومات الموظف:', error);
+                    });
+            }
+        });
+    }
+    
+    console.log('تم تحميل صفحة تعديل السيارة بنجاح');
+});
+</script>

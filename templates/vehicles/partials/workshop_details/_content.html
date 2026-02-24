@@ -1,0 +1,334 @@
+<div class="workshop-details-container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-tools"></i>
+                تفاصيل سجل الورشة
+            </h1>
+            <p class="hero-subtitle">
+                عرض شامل ومفصل لسجل دخول السيارة 
+                <span class="vehicle-plate">{{ vehicle.plate_number }}</span>
+                للورشة
+            </p>
+        </div>
+    </section>
+
+    <!-- Content Wrapper -->
+    <section class="content-wrapper">
+        <div class="container">
+            <!-- معلومات السيارة -->
+            <div class="modern-card">
+                <div class="card-header-modern">
+                    <h5>
+                        <span class="icon">
+                            <i class="fas fa-car"></i>
+                        </span>
+                        معلومات السيارة
+                    </h5>
+                </div>
+                <div class="info-grid-modern">
+                    <div class="info-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-hashtag"></i>
+                            رقم اللوحة
+                        </div>
+                        <div class="info-value-modern">{{ vehicle.plate_number }}</div>
+                    </div>
+                    <div class="info-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-industry"></i>
+                            الماركة
+                        </div>
+                        <div class="info-value-modern">{{ vehicle.make }}</div>
+                    </div>
+                    <div class="info-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-cog"></i>
+                            الموديل
+                        </div>
+                        <div class="info-value-modern">{{ vehicle.model }}</div>
+                    </div>
+                    <div class="info-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-calendar"></i>
+                            السنة
+                        </div>
+                        <div class="info-value-modern">{{ vehicle.year }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- معلومات الورشة -->
+            <div class="modern-card">
+                <div class="card-header-modern">
+                    <h5>
+                        <span class="icon">
+                            <i class="fas fa-wrench"></i>
+                        </span>
+                        معلومات الورشة
+                    </h5>
+                </div>
+                <div class="info-grid-modern">
+                    <div class="info-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-store"></i>
+                            اسم الورشة
+                        </div>
+                        <div class="info-value-modern">{{ record.workshop_name or 'غير محدد' }}</div>
+                    </div>
+                    <div class="info-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-sign-in-alt"></i>
+                            تاريخ الدخول
+                        </div>
+                        <div class="info-value-modern">{{ record.formatted_entry_date or 'غير محدد' }}</div>
+                    </div>
+                    {% if record.exit_date %}
+                    <div class="info-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-sign-out-alt"></i>
+                            تاريخ الخروج
+                        </div>
+                        <div class="info-value-modern">{{ record.formatted_exit_date }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="info-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-user-cog"></i>
+                            الفني المسؤول
+                        </div>
+                        <div class="info-value-modern">{{ record.technician_name or 'غير محدد' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تفاصيل الإصلاح -->
+            <div class="modern-card">
+                <div class="card-header-modern">
+                    <h5>
+                        <span class="icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </span>
+                        تفاصيل الإصلاح
+                    </h5>
+                </div>
+                <div class="info-grid-modern">
+                    <div class="info-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-question-circle"></i>
+                            سبب الدخول
+                        </div>
+                        <div class="info-value-modern">
+                            {% if record.reason == 'maintenance' %}
+                                <span class="status-badge-modern status-progress">
+                                    <i class="fas fa-tools"></i>
+                                    صيانة دورية
+                                </span>
+                            {% elif record.reason == 'breakdown' %}
+                                <span class="status-badge-modern status-pending">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    عطل
+                                </span>
+                            {% elif record.reason == 'accident' %}
+                                <span class="status-badge-modern" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                                    <i class="fas fa-car-crash"></i>
+                                    حادث
+                                </span>
+                            {% else %}
+                                {{ record.reason or 'غير محدد' }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-tasks"></i>
+                            حالة الإصلاح
+                        </div>
+                        <div class="info-value-modern">
+                            {% if record.repair_status == 'completed' %}
+                                <span class="status-badge-modern status-completed">
+                                    <i class="fas fa-check-circle"></i>
+                                    تم الإصلاح
+                                </span>
+                            {% elif record.repair_status == 'in_progress' %}
+                                <span class="status-badge-modern status-progress">
+                                    <i class="fas fa-spinner"></i>
+                                    قيد التنفيذ
+                                </span>
+                            {% elif record.repair_status == 'pending_approval' %}
+                                <span class="status-badge-modern status-pending">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    بانتظار الموافقة
+                                </span>
+                            {% else %}
+                                {{ record.repair_status or 'غير محدد' }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if record.cost and record.cost > 0 %}
+                    <div class="info-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-money-bill-wave"></i>
+                            التكلفة
+                        </div>
+                        <div class="info-value-modern">{{ '{:,.2f}'.format(record.cost) }} ريال سعودي</div>
+                    </div>
+                    {% endif %}
+                    {% if record.description %}
+                    <div class="info-item-modern" style="grid-column: 1 / -1;">
+                        <div class="info-label-modern">
+                            <i class="fas fa-file-alt"></i>
+                            وصف المشكلة
+                        </div>
+                        <div class="info-value-modern">{{ record.description }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- الروابط الخارجية -->
+            {% if record.delivery_link or record.reception_link %}
+            <div class="modern-card">
+                <div class="card-header-modern">
+                    <h5>
+                        <span class="icon">
+                            <i class="fas fa-link"></i>
+                        </span>
+                        الروابط الخارجية
+                    </h5>
+                </div>
+                <div class="links-section-modern">
+                    {% if record.delivery_link %}
+                    <div class="link-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-truck"></i>
+                            رابط تسليم الورشة
+                        </div>
+                        <a href="{{ record.delivery_link }}" target="_blank" class="link-btn-modern">
+                            <i class="fas fa-external-link-alt"></i>
+                            فتح رابط التسليم
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if record.reception_link %}
+                    <div class="link-item-modern">
+                        <div class="info-label-modern">
+                            <i class="fas fa-hand-holding"></i>
+                            رابط استلام من الورشة
+                        </div>
+                        <a href="{{ record.reception_link }}" target="_blank" class="link-btn-modern">
+                            <i class="fas fa-external-link-alt"></i>
+                            فتح رابط الاستلام
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- الملاحظات -->
+            {% if record.notes %}
+            <div class="modern-card">
+                <div class="card-header-modern">
+                    <h5>
+                        <span class="icon">
+                            <i class="fas fa-sticky-note"></i>
+                        </span>
+                        الملاحظات الإضافية
+                    </h5>
+                </div>
+                <div style="padding: 30px;">
+                    <div class="info-value-modern">{{ record.notes }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- الصور المرفقة -->
+            <div class="modern-card">
+                <div class="card-header-modern">
+                    <h5>
+                        <span class="icon">
+                            <i class="fas fa-images"></i>
+                        </span>
+                        الصور المرفقة 
+                        <span style="background: rgba(102, 126, 234, 0.1); color: #667eea; padding: 4px 12px; border-radius: 15px; font-size: 0.9rem; margin-right: auto;">
+                            {{ record.images|length if record.images else 0 }} صورة
+                        </span>
+                    </h5>
+                </div>
+                
+                {% if record.images %}
+                <div class="images-section-modern">
+                    <div class="images-grid-modern">
+                        {% for image in record.images %}
+                        <div class="image-card-modern" onclick="window.location.href='{{ url_for('vehicles.view_workshop_image', image_id=image.id) }}'">
+                            <div class="image-wrapper">
+                                <img src="/{{ image.image_path }}" alt="{{ image.notes or 'صورة من الورشة' }}" loading="lazy">
+                                {% if image.image_type %}
+                                <div class="image-type-badge-modern 
+                                    {% if image.image_type == 'before' %}badge-before
+                                    {% elif image.image_type == 'after' %}badge-after
+                                    {% else %}badge-before{% endif %}">
+                                    {% if image.image_type == 'before' %}
+                                        <i class="fas fa-camera"></i> قبل الإصلاح
+                                    {% elif image.image_type == 'after' %}
+                                        <i class="fas fa-check-circle"></i> بعد الإصلاح
+                                    {% else %}
+                                        {{ image.image_type }}
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                <div class="image-overlay">
+                                    <i class="fas fa-search-plus" style="font-size: 1.5rem; margin-bottom: 5px;"></i>
+                                    <p style="margin: 0; font-size: 0.9rem;">انقر للعرض بالحجم الكامل</p>
+                                </div>
+                            </div>
+                            {% if image.notes %}
+                            <div class="image-info-modern">
+                                <h6>{{ image.notes }}</h6>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-images-modern">
+                    <div class="icon-large">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <h5 style="color: #64748b; font-weight: 600;">لا توجد صور مرفقة</h5>
+                    <p style="color: #94a3b8;">لم يتم رفع أي صور لهذا السجل بعد</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- أزرار الإجراءات -->
+            <div class="action-section-modern">
+                <h5 style="margin-bottom: 30px; color: #1e293b; font-weight: 700;">
+                    <i class="fas fa-cogs" style="margin-left: 10px;"></i>
+                    الإجراءات المتاحة
+                </h5>
+                <div class="actions-grid">
+                    <a href="{{ url_for('vehicles.edit_workshop', id=record.id) }}" class="action-btn-modern btn-primary-modern">
+                        <i class="fas fa-edit"></i>
+                        تعديل السجل
+                    </a>
+                    <button type="button" class="action-btn-modern btn-success-modern" onclick="shareWorkshopDetails()">
+                        <i class="fas fa-share-alt"></i>
+                        مشاركة التفاصيل
+                    </button>
+                    <a href="{{ url_for('vehicles.confirm_delete_workshop', id=record.id) }}" class="action-btn-modern btn-danger-modern" onclick="return confirm('هل أنت متأكد من رغبتك في حذف هذا السجل؟')">
+                        <i class="fas fa-trash-alt"></i>
+                        حذف السجل
+                    </a>
+                    <a href="{{ url_for('vehicles.view', id=vehicle.id) }}" class="action-btn-modern btn-secondary-modern">
+                        <i class="fas fa-arrow-left"></i>
+                        العودة للسيارة
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

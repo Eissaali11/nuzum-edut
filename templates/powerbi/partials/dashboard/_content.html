@@ -1,0 +1,349 @@
+<div class="pbi-dashboard">
+    <div class="pbi-header">
+        <div class="header-content">
+            <div class="header-title">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="title-text">
+                    <h1>لوحة التحليلات الاحترافية</h1>
+                    <p>تحليلات شاملة للموظفين والحضور والسيارات</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('powerbi.export_data', date_from=request.args.get('date_from', date_from), date_to=request.args.get('date_to', date_to), department_id=request.args.get('department_id', '')) }}" class="export-btn">
+                    <i class="fas fa-file-excel"></i>
+                    تصدير Excel
+                </a>
+                <button onclick="printDashboard()" class="export-btn print-btn">
+                    <i class="fas fa-print"></i>
+                    طباعة
+                </button>
+                <a href="{{ url_for('powerbi.export_pdf', date_from=request.args.get('date_from', date_from), date_to=request.args.get('date_to', date_to), department_id=request.args.get('department_id', '')) }}" class="export-btn pdf-btn">
+                    <i class="fas fa-file-pdf"></i>
+                    تصدير PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form class="filter-panel" method="GET" action="{{ url_for('powerbi.dashboard') }}">
+        <div class="filter-group">
+            <label class="filter-label"><i class="fas fa-calendar-alt"></i> من تاريخ</label>
+            <input type="date" name="date_from" class="filter-input" value="{{ request.args.get('date_from', date_from) }}">
+        </div>
+        <div class="filter-group">
+            <label class="filter-label"><i class="fas fa-calendar-alt"></i> إلى تاريخ</label>
+            <input type="date" name="date_to" class="filter-input" value="{{ request.args.get('date_to', date_to) }}">
+        </div>
+        <div class="filter-group">
+            <label class="filter-label"><i class="fas fa-building"></i> القسم</label>
+            <select name="department_id" class="filter-input">
+                <option value="">جميع الأقسام</option>
+                {% for dept in departments %}
+                <option value="{{ dept.id }}" {% if request.args.get('department_id')|string == dept.id|string %}selected{% endif %}>{{ dept.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="filter-btn">
+            <i class="fas fa-filter"></i>
+            تطبيق الفلتر
+        </button>
+    </form>
+
+    <div class="kpi-grid">
+        <div class="kpi-card" style="--kpi-color: var(--cyan); --kpi-bg: rgba(0, 212, 255, 0.1); --kpi-glow: rgba(0, 212, 255, 0.2);">
+            <div class="kpi-icon-wrapper"><i class="fas fa-users"></i></div>
+            <div class="kpi-value">{{ total_employees }}</div>
+            <div class="kpi-label">إجمالي الموظفين</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color: var(--teal); --kpi-bg: rgba(0, 245, 212, 0.1); --kpi-glow: rgba(0, 245, 212, 0.2);">
+            <div class="kpi-icon-wrapper"><i class="fas fa-building"></i></div>
+            <div class="kpi-value">{{ departments|length }}</div>
+            <div class="kpi-label">الأقسام</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color: var(--purple); --kpi-bg: rgba(123, 104, 238, 0.1); --kpi-glow: rgba(123, 104, 238, 0.2);">
+            <div class="kpi-icon-wrapper"><i class="fas fa-car"></i></div>
+            <div class="kpi-value">{{ total_vehicles }}</div>
+            <div class="kpi-label">السيارات</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color: var(--gold); --kpi-bg: rgba(255, 215, 0, 0.1); --kpi-glow: rgba(255, 215, 0, 0.2);">
+            <div class="kpi-icon-wrapper"><i class="fas fa-file-alt"></i></div>
+            <div class="kpi-value">{{ total_documents }}</div>
+            <div class="kpi-label">الوثائق</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color: var(--green); --kpi-bg: rgba(0, 255, 136, 0.1); --kpi-glow: rgba(0, 255, 136, 0.2);">
+            <div class="kpi-icon-wrapper"><i class="fas fa-chart-pie"></i></div>
+            <div class="kpi-value">{{ attendance_stats.rate }}%</div>
+            <div class="kpi-label">نسبة الحضور</div>
+            <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> ممتاز</span>
+        </div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-card">
+            <div class="chart-title">
+                <i class="fas fa-chart-pie"></i>
+                <span>نسبة الحضور الإجمالية</span>
+            </div>
+            <div style="display: flex; justify-content: center; align-items: center; height: 200px;">
+                <div class="progress-circle">
+                    <svg width="120" height="120">
+                        <circle class="bg" cx="60" cy="60" r="52"></circle>
+                        <circle class="progress" cx="60" cy="60" r="52" 
+                                stroke-dasharray="326.73" 
+                                stroke-dashoffset="{{ 326.73 - (326.73 * attendance_stats.rate / 100) }}"></circle>
+                    </svg>
+                    <div class="progress-value">
+                        <div class="value">{{ attendance_stats.rate }}%</div>
+                        <div class="label">نسبة الحضور</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">
+                <i class="fas fa-clipboard-check"></i>
+                <span>تفاصيل الحضور</span>
+            </div>
+            <div class="stats-list">
+                <div class="stat-item">
+                    <span class="label"><i class="fas fa-check-circle"></i> حاضرين</span>
+                    <span class="value green">{{ attendance_stats.present }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label"><i class="fas fa-times-circle"></i> غائبين</span>
+                    <span class="value red">{{ attendance_stats.absent }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label"><i class="fas fa-plane"></i> إجازة</span>
+                    <span class="value orange">{{ attendance_stats.leave }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label"><i class="fas fa-hospital"></i> مرضى</span>
+                    <span class="value purple">{{ attendance_stats.sick }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">
+                <i class="fas fa-car-side"></i>
+                <span>حالة السيارات</span>
+            </div>
+            <div class="stats-list">
+                {% for status, count in vehicle_stats.items() %}
+                <div class="stat-item">
+                    <span class="label">
+                        {% if status == 'available' %}<i class="fas fa-check"></i> متاحة
+                        {% elif status == 'in_project' %}<i class="fas fa-briefcase"></i> في المشروع
+                        {% elif status == 'in_workshop' %}<i class="fas fa-wrench"></i> في الورشة
+                        {% elif status == 'out_of_service' %}<i class="fas fa-ban"></i> خارج الخدمة
+                        {% elif status == 'accident' %}<i class="fas fa-car-crash"></i> حادث
+                        {% else %}<i class="fas fa-question"></i> {{ status }}
+                        {% endif %}
+                    </span>
+                    <span class="value {% if status == 'available' or status == 'in_project' %}green{% elif status == 'accident' %}red{% elif status == 'in_workshop' %}orange{% else %}cyan{% endif %}">{{ count }}</span>
+                </div>
+                {% endfor %}
+                {% if not vehicle_stats %}
+                <div class="empty-state">
+                    <i class="fas fa-car"></i>
+                    <p>لا توجد بيانات سيارات</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">
+                <i class="fas fa-file-contract"></i>
+                <span>حالة الوثائق</span>
+            </div>
+            <div class="stats-list">
+                <div class="stat-item">
+                    <span class="label"><i class="fas fa-check-double"></i> سارية</span>
+                    <span class="value green">{{ doc_stats.valid }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label"><i class="fas fa-clock"></i> تنتهي قريباً</span>
+                    <span class="value orange">{{ doc_stats.expiring }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label"><i class="fas fa-exclamation-triangle"></i> منتهية</span>
+                    <span class="value red">{{ doc_stats.expired }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label"><i class="fas fa-folder"></i> الإجمالي</span>
+                    <span class="value cyan">{{ doc_stats.total }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card" style="grid-column: span 2;">
+            <div class="chart-title">
+                <i class="fas fa-chart-bar"></i>
+                <span>توزيع الموظفين حسب القسم</span>
+            </div>
+            <div class="chart-container large">
+                <canvas id="deptChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="section-title">
+        <i class="fas fa-building"></i>
+        الحضور حسب القسم
+    </h2>
+
+    <div class="dept-table-card">
+        <table class="dept-table">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-building"></i> القسم</th>
+                    <th><i class="fas fa-users"></i> الموظفين</th>
+                    <th><i class="fas fa-calendar-check"></i> أيام الحضور</th>
+                    <th><i class="fas fa-check"></i> سجلات الحضور</th>
+                    <th><i class="fas fa-times"></i> الغياب</th>
+                    <th><i class="fas fa-list"></i> الإجمالي</th>
+                    <th><i class="fas fa-percentage"></i> النسبة</th>
+                    <th><i class="fas fa-star"></i> الأداء</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept in dept_attendance %}
+                <tr>
+                    <td><strong>{{ dept.name }}</strong></td>
+                    <td>{{ dept.employee_count }}</td>
+                    <td style="color: var(--purple);">{{ dept.present_days }}</td>
+                    <td style="color: var(--green);">{{ dept.present }}</td>
+                    <td style="color: var(--red);">{{ dept.absent }}</td>
+                    <td>{{ dept.total }}</td>
+                    <td>
+                        <div class="progress-bar-mini">
+                            <div class="fill {% if dept.rate >= 90 %}style="background: var(--green);"{% elif dept.rate >= 75 %}style="background: var(--cyan);"{% elif dept.rate >= 60 %}style="background: var(--orange);"{% else %}style="background: var(--red);"{% endif %}" style="width: {{ dept.rate }}%; background: {% if dept.rate >= 90 %}var(--green){% elif dept.rate >= 75 %}var(--cyan){% elif dept.rate >= 60 %}var(--orange){% else %}var(--red){% endif %};"></div>
+                        </div>
+                        <span style="color: var(--cyan);">{{ dept.rate }}%</span>
+                    </td>
+                    <td>
+                        {% if dept.rate >= 90 %}
+                        <span class="rate-badge excellent"><i class="fas fa-star"></i> ممتاز</span>
+                        {% elif dept.rate >= 75 %}
+                        <span class="rate-badge good"><i class="fas fa-thumbs-up"></i> جيد</span>
+                        {% elif dept.rate >= 60 %}
+                        <span class="rate-badge average"><i class="fas fa-minus"></i> متوسط</span>
+                        {% else %}
+                        <span class="rate-badge poor"><i class="fas fa-arrow-down"></i> ضعيف</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if dept_attendance %}
+                <tr class="total-row">
+                    <td><strong><i class="fas fa-calculator"></i> الإجمالي</strong></td>
+                    <td><strong>{{ dept_attendance|sum(attribute='employee_count') }}</strong></td>
+                    <td style="color: var(--purple);"><strong>{{ dept_attendance|sum(attribute='present_days') }}</strong></td>
+                    <td style="color: var(--green);"><strong>{{ dept_attendance|sum(attribute='present') }}</strong></td>
+                    <td style="color: var(--red);"><strong>{{ dept_attendance|sum(attribute='absent') }}</strong></td>
+                    <td><strong>{{ dept_attendance|sum(attribute='total') }}</strong></td>
+                    <td>
+                        {% set total_present = dept_attendance|sum(attribute='present') %}
+                        {% set total_records = dept_attendance|sum(attribute='total') %}
+                        {% set overall_rate = ((total_present / total_records) * 100)|round(1) if total_records > 0 else 0 %}
+                        <span style="color: var(--cyan); font-weight: bold;">{{ overall_rate }}%</span>
+                    </td>
+                    <td>
+                        {% if overall_rate >= 90 %}
+                        <span class="rate-badge excellent"><i class="fas fa-trophy"></i> ممتاز</span>
+                        {% elif overall_rate >= 75 %}
+                        <span class="rate-badge good"><i class="fas fa-star"></i> جيد</span>
+                        {% elif overall_rate >= 60 %}
+                        <span class="rate-badge average"><i class="fas fa-minus"></i> متوسط</span>
+                        {% else %}
+                        <span class="rate-badge poor"><i class="fas fa-arrow-down"></i> ضعيف</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>لا توجد بيانات حضور للأقسام في الفترة المحددة</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deptNames = [{% for dept in dept_attendance %}'{{ dept.name }}'{% if not loop.last %},{% endif %}{% endfor %}];
+    const deptCounts = [{% for dept in dept_attendance %}{{ dept.employee_count }}{% if not loop.last %},{% endif %}{% endfor %}];
+    
+    if (deptNames.length > 0) {
+        const ctx = document.getElementById('deptChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: deptNames,
+                    datasets: [{
+                        label: 'عدد الموظفين',
+                        data: deptCounts,
+                        backgroundColor: [
+                            'rgba(0, 212, 255, 0.7)',
+                            'rgba(0, 245, 212, 0.7)',
+                            'rgba(123, 104, 238, 0.7)',
+                            'rgba(255, 215, 0, 0.7)',
+                            'rgba(0, 255, 136, 0.7)',
+                            'rgba(255, 140, 0, 0.7)',
+                            'rgba(255, 71, 87, 0.7)',
+                            'rgba(138, 43, 226, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(0, 212, 255, 1)',
+                            'rgba(0, 245, 212, 1)',
+                            'rgba(123, 104, 238, 1)',
+                            'rgba(255, 215, 0, 1)',
+                            'rgba(0, 255, 136, 1)',
+                            'rgba(255, 140, 0, 1)',
+                            'rgba(255, 71, 87, 1)',
+                            'rgba(138, 43, 226, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#8892a0', font: { size: 11 } },
+                            grid: { color: 'rgba(0, 212, 255, 0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#8892a0', font: { size: 10 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+
+function printDashboard() {
+    window.print();
+}
+</script>

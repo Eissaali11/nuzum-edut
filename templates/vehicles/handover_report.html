@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <title>نموذج تسليم واستلام مركبة - {{ handover.vehicle_plate_number }}</title>
     <style>
+      @font-face {
+        font-family: 'beIN-Normal';
+        src: url('/static/fonts/beIN-Normal.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+
         /* ================================================ */
         /* == المرحلة 1: الإعدادات الأساسية والهيكل العام == */
         /* ================================================ */
@@ -36,13 +43,52 @@
             font-size: 9.5pt;
             color: var(--dark-text);
             -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
             direction: rtl;
             line-height: 1.6;
+          margin: 0;
+        }
+
+        .container,
+        .container * {
+          font-family: var(--font-main) !important;
         }
 
         /* --- الحاوية الرئيسية للتقرير --- */
         .container {
             width: 100%;
+          color: var(--dark-text);
+        }
+
+        .container td,
+        .container th,
+        .container p,
+        .container span,
+        .container small,
+        .container div {
+          color: #1f2937;
+        }
+
+        .container [style*="background-color: #077a7a"],
+        .container [style*="background-color: #065c5c"],
+        .container thead {
+          color: #ffffff !important;
+        }
+
+        @media screen {
+          body {
+            background: #e5e7eb;
+            padding: 10px;
+          }
+
+          .container {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: #ffffff;
+            box-sizing: border-box;
+            padding: 10mm;
+          }
         }
 
         /* --- كلاس لعمل فاصل صفحات (سيتم استخدامه لاحقاً) --- */
@@ -137,7 +183,6 @@
 
 
     </style>
-    <link rel="stylesheet" href="static/css/custom.css" type="text/css"/>
 </head>
 <body>
     <!-- الحاوية الرئيسية التي ستضم كل محتوى التقرير -->
@@ -165,8 +210,12 @@
 
             <!-- العمود الأيسر: الشعار (ديناميكي) -->
             <div class="header-left">
-                {% if handover.custom_logo_path %}
-                    <img src="uploads/{{ handover.custom_logo_path }}" alt="Custom Logo" class="logo">
+              {% if custom_logo_b64 %}
+                <img src="{{ custom_logo_b64 }}" alt="Custom Logo" class="logo">
+              {% elif handover.custom_logo_path %}
+                {% set logo_path = handover.custom_logo_path %}
+                {% if logo_path.startswith('static/') %}{% set logo_path = logo_path[7:] %}{% endif %}
+                <img src="{{ logo_path }}" alt="Custom Logo" class="logo">
                 {% else %}
                     <img src="images/logo.png" alt="نُظم Logo" class="logo">
                 {% endif %}
@@ -284,7 +333,7 @@
         <div style="background-color: #077a7a; color: white; font-weight: bold; padding: 4px; font-size: 8pt;">
           نوع السيارة<br><span style="font-weight: normal;">Car Type</span>
         </div>
-        <div style="padding: 6px; font-weight: bold;">{{ handover.vehicle_car_type or 'N/A' }}</div>
+        <div style="padding: 6px; font-weight: bold; color: #1f2937;">{{ handover.vehicle_car_type or 'N/A' }}</div>
       </td>
 
       <!-- خلية: رقم اللوحة -->
@@ -292,7 +341,7 @@
         <div style="background-color: #077a7a; color: white; font-weight: bold; padding: 4px; font-size: 8pt;">
           رقم اللوحة<br><span style="font-weight: normal;">Plate No.</span>
         </div>
-        <div style="padding: 6px; font-weight: bold;">{{ handover.vehicle_plate_number or 'N/A' }}</div>
+        <div style="padding: 6px; font-weight: bold; color: #1f2937;">{{ handover.vehicle_plate_number or 'N/A' }}</div>
       </td>
 
       <!-- خلية: الموديل -->
@@ -300,14 +349,14 @@
         <div style="background-color: #077a7a; color: white; font-weight: bold; padding: 4px; font-size: 8pt;">
           سنة الصنع<br><span style="font-weight: normal;">Model Year</span>
         </div>
-        <div style="padding: 6px; font-weight: bold;">{{ handover.vehicle_model_year or 'N/A' }}</div>
+        <div style="padding: 6px; font-weight: bold; color: #1f2937;">{{ handover.vehicle_model_year or 'N/A' }}</div>
       </td>
             <!-- خلية: سبب التسليم -->
     <td style="border: 1px solid #bbb;">
         <div style="background-color: #077a7a; color: white; font-weight: bold; padding: 4px; font-size: 8pt;">
           مستوى الوقود<br><span style="font-weight: normal;">fuel level</span>
         </div>
-        <div style="padding: 6px; font-weight: bold;">{{ handover.fuel_level or 'N/A' }}</div>
+        <div style="padding: 6px; font-weight: bold; color: #1f2937;">{{ handover.fuel_level or 'N/A' }}</div>
       </td>
 
       <!-- خلية: سبب التسليم -->
@@ -315,7 +364,7 @@
         <div style="background-color: #077a7a; color: white; font-weight: bold; padding: 4px; font-size: 8pt;">
           سبب تغيير السيارة<br><span style="font-weight: normal;">Reason</span>
         </div>
-        <div style="padding: 6px; font-weight: bold;">{{ handover.vehicle_model_year or 'لا يوجد' }}</div>
+        <div style="padding: 6px; font-weight: bold; color: #1f2937;">{{ handover.vehicle_model_year or 'لا يوجد' }}</div>
       </td>
 
 
@@ -328,7 +377,7 @@
         <div style="background-color: #065c5c; color: white; font-weight: bold; padding: 4px; font-size: 8pt;">
           اسم السائق<br><span style="font-weight: normal;">Driver Name</span>
         </div>
-        <div style="padding: 6px; font-weight: bold;">{{ handover.person_name or 'N/A' }}</div>
+        <div style="padding: 6px; font-weight: bold; color: #1f2937;">{{ handover.person_name or 'N/A' }}</div>
       </td>
 
      
@@ -338,7 +387,7 @@
         <div style="background-color: #065c5c; color: white; font-weight: bold; padding: 4px; font-size: 8pt;">
           رقم الإقامة<br><span style="font-weight: normal;">Residency No.</span>
         </div>
-        <div style="padding: 6px; font-weight: bold;">{{ handover.driver_residency_number or 'N/A' }}</div>
+        <div style="padding: 6px; font-weight: bold; color: #1f2937;">{{ handover.driver_residency_number or 'N/A' }}</div>
       </td>
 
       <!-- خلية: رقم الشركة -->
@@ -346,7 +395,7 @@
         <div style="background-color: #065c5c; color: white; font-weight: bold; padding: 4px; font-size: 8pt;">
           رقم الشركة<br><span style="font-weight: normal;">Company No.</span>
         </div>
-        <div style="padding: 6px; font-weight: bold;">{{ handover.driver_company_id or 'N/A' }}</div>
+        <div style="padding: 6px; font-weight: bold; color: #1f2937;">{{ handover.driver_company_id or 'N/A' }}</div>
       </td>
 
       <!-- خلية: رقم الهاتف -->
@@ -354,7 +403,7 @@
         <div style="background-color: #065c5c; color: white; font-weight: bold; padding: 4px; font-size: 8pt;">
           جوال العمل<br><span style="font-weight: normal;">Work Phone</span>
         </div>
-        <div style="padding: 6px; font-weight: bold;">{{ handover.driver_work_phone or 'N/A' }}</div>
+        <div style="padding: 6px; font-weight: bold; color: #1f2937;">{{ handover.driver_work_phone or 'N/A' }}</div>
       </td>
 
        <!-- خلية: حالة المركبة -->
@@ -362,7 +411,7 @@
         <div style="background-color: #065c5c; color: white; font-weight: bold; padding: 4px; font-size: 8pt;">
           الجوال الشخصي<br><span style="font-weight: normal;">Personal Phone</span>
         </div>
-        <div style="padding: 6px; font-weight: bold;">{{ handover.driver_phone_number or 'N/A' }}</div>
+        <div style="padding: 6px; font-weight: bold; color: #1f2937;">{{ handover.driver_phone_number or 'N/A' }}</div>
       </td>
 
    
@@ -392,10 +441,26 @@
 <!-- ✅ الحاوية الرئيسية التي توزع الأقسام -->
 <div style="
   display: grid;
-  grid-template-columns: 45% 1fr; /* تم توسيع عرض الصورة إلى 45% */
+  grid-template-columns: 52% 1fr; /* تكبير مساحة الصورة مع الحفاظ على الترتيب */
   gap: 30px;
   align-items: start;
+  direction: rtl;
 ">
+
+
+    <!-- ✅ صورة الهيكل -->
+<div style="width: 100%; height: 220px;">
+  <img src="{% if damage_diagram_b64 %}{{ damage_diagram_b64 }}{% else %}images/vehicle_diagram_new.png{% endif %}"
+    alt="Vehicle Diagram"
+    style="
+      width: 100%;
+      height: 100%;
+      object-fit: contain;  /* ✅ هذا يضمن عرض الصورة بالكامل بدون قص */
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #f9f9f9;  /* خلفية رمادية خفيفة في حال وجود فراغات */
+    ">
+</div>
 
 
 
@@ -405,6 +470,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 14px 20px;
     margin: 3px;
+    direction: rtl;
   ">
     {% set checks = {
       'has_oil_leaks': 'تهريب زيوت',
@@ -436,20 +502,6 @@
     </div>
     {% endfor %}
   </div>
-
-    <!-- ✅ صورة الهيكل -->
-<div style="width: 100%; height: 170px;">
-  <img src="{% if damage_diagram_b64 %}{{ damage_diagram_b64 }}{% else %}images/vehicle_diagram_new.png{% endif %}"
-    alt="Vehicle Diagram"
-    style="
-      width: 100%;
-      height: 100%;
-      object-fit: contain;  /* ✅ هذا يضمن عرض الصورة بالكامل بدون قص */
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      background-color: #f9f9f9;  /* خلفية رمادية خفيفة في حال وجود فراغات */
-    ">
-</div>
 </div>
 
 
@@ -736,8 +788,14 @@
         {{ handover.movement_officer_name or ' ' }}
       </p>
 
-      {% if handover.movement_officer_signature_path %}
-        <img src="uploads/{{ handover.movement_officer_signature_path }}"
+      {% if movement_officer_signature_b64 %}
+        <img src="{{ movement_officer_signature_b64 }}"
+             alt="Movement Officer Signature"
+             style="width: 160px; height: 45px; object-fit: contain;">
+      {% elif handover.movement_officer_signature_path %}
+        {% set movement_sig_path = handover.movement_officer_signature_path %}
+        {% if movement_sig_path.startswith('static/') %}{% set movement_sig_path = movement_sig_path[7:] %}{% endif %}
+        <img src="{{ movement_sig_path }}"
              alt="Movement Officer Signature"
              style="width: 160px; height: 45px; object-fit: contain;">
       {% else %}

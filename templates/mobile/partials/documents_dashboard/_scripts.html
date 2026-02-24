@@ -1,0 +1,42 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    // رسم بياني لحالة الوثائق
+    const ctx = document.getElementById('statusChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['سارية', 'قريبة من الانتهاء', 'منتهية'],
+            datasets: [{
+                data: [{{ valid_documents }}, {{ expiring_soon + expiring_later }}, {{ expired_documents }}],
+                backgroundColor: [
+                    'rgba(40, 199, 111, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(245, 87, 108, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(40, 199, 111, 1)',
+                    'rgba(255, 193, 7, 1)',
+                    'rgba(245, 87, 108, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            family: 'Tajawal',
+                            size: 13
+                        },
+                        padding: 15,
+                        usePointStyle: true
+                    }
+                }
+            }
+        }
+    });
+</script>

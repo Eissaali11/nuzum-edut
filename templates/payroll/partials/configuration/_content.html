@@ -1,0 +1,224 @@
+<div class="config-container">
+    <!-- رأس الصفحة -->
+    <div class="page-header">
+        <h1><i class="fas fa-sliders-h"></i> إعدادات نظام الرواتب</h1>
+        <p>إدارة معاملات الحسابات والخصومات</p>
+    </div>
+    
+    <!-- رسالة النجاح -->
+    {% if success_message %}
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> {{ success_message }}
+    </div>
+    {% endif %}
+    
+    <form id="configForm" onsubmit="submitForm(event)">
+        <!-- معاملات الضمان الاجتماعي -->
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-shield-alt"></i> معاملات الضمان الاجتماعي (GOSI)</h2>
+            
+            <div class="section-group">
+                <div class="section-group-title">اشتراكات الضمان الاجتماعي</div>
+                <div class="form-row">
+                    <div class="form-group percentage-input">
+                        <label for="gosi_employee">نسبة الموظف (%):</label>
+                        <input type="number" id="gosi_employee" name="gosi_employee" 
+                               value="{{ config.gosi_employee_percentage or 10 }}" 
+                               min="0" max="100" step="0.01" required>
+                        <p class="form-hint">النسبة المئوية المقتطعة من راتب الموظف</p>
+                    </div>
+                    
+                    <div class="form-group percentage-input">
+                        <label for="gosi_company">نسبة الشركة (%):</label>
+                        <input type="number" id="gosi_company" name="gosi_company" 
+                               value="{{ config.gosi_company_percentage or 13 }}" 
+                               min="0" max="100" step="0.01" required>
+                        <p class="form-hint">النسبة المئوية التي تدفعها الشركة</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h4>معلومات الضمان الاجتماعي</h4>
+                <p>
+                    وفقاً للنظام السعودي للتأمينات الاجتماعية:
+                    - الموظفون السعوديون: يخضعون للضمان الاجتماعي الإجباري
+                    - الموظفون الأجانب: قد يخضعون لأنظمة مختلفة حسب العقد
+                </p>
+            </div>
+        </div>
+        
+        <!-- معدلات الرواتب -->
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-coins"></i> معدلات الرواتب</h2>
+            
+            <div class="form-row">
+                <div class="form-group currency-input">
+                    <label for="minimum_wage">الحد الأدنى للأجور:</label>
+                    <input type="number" id="minimum_wage" name="minimum_wage" 
+                           value="{{ config.minimum_wage or 3000 }}" 
+                           min="0" step="0.01" required>
+                    <p class="form-hint">الحد الأدنى للراتب الشهري</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="working_days_per_month">عدد أيام العمل الشهري:</label>
+                    <input type="number" id="working_days_per_month" name="working_days_per_month" 
+                           value="{{ config.working_days_per_month or 22 }}" 
+                           min="1" max="31" step="1" required>
+                    <p class="form-hint">العدد الافتراضي لأيام العمل في الشهر</p>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group currency-input">
+                    <label for="overtime_rate">معدل التعويض عن الساعات الإضافية (%):</label>
+                    <input type="number" id="overtime_rate" name="overtime_rate" 
+                           value="{{ config.overtime_multiplier or 150 }}" 
+                           min="0" step="0.01" required>
+                    <p class="form-hint">النسبة المئوية لأجر الساعة الإضافية</p>
+                </div>
+                
+                <div class="form-group currency-input">
+                    <label for="late_penalty">غرامة التأخير (بالريال يومياً):</label>
+                    <input type="number" id="late_penalty" name="late_penalty" 
+                           value="{{ config.late_penalty or 0 }}" 
+                           min="0" step="0.01" required>
+                    <p class="form-hint">الخصم اليومي عن كل ساعة تأخير</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- معدلات الضرائب -->
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-percent"></i> معدلات الضرائب</h2>
+            
+            <div class="form-row">
+                <div class="form-group currency-input">
+                    <label for="income_tax_rate">معدل ضريبة الدخل (%):</label>
+                    <input type="number" id="income_tax_rate" name="income_tax_rate" 
+                           value="{{ config.income_tax_rate or 0 }}" 
+                           min="0" max="100" step="0.01" required>
+                    <p class="form-hint">نسبة ضريبة الدخل من الراتب الإجمالي</p>
+                </div>
+                
+                <div class="form-group currency-input">
+                    <label for="tax_exemption_amount">المبلغ المعفى من الضريبة (SR):</label>
+                    <input type="number" id="tax_exemption_amount" name="tax_exemption_amount" 
+                           value="{{ config.tax_exemption_amount or 0 }}" 
+                           min="0" step="0.01" required>
+                    <p class="form-hint">المبلغ الذي لا تُطبق عليه الضريبة</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- المزايا -->
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-gift"></i> المزايا</h2>
+            
+            <div class="form-row">
+                <div class="form-group currency-input">
+                    <label for="default_housing_allowance">مزية السكن (SR):</label>
+                    <input type="number" id="default_housing_allowance" name="default_housing_allowance" 
+                           value="{{ config.default_housing_allowance or 0 }}" 
+                           min="0" step="0.01" required>
+                    <p class="form-hint">المبلغ الافتراضي لمزية السكن</p>
+                </div>
+                
+                <div class="form-group currency-input">
+                    <label for="default_transportation">مزية النقل (SR):</label>
+                    <input type="number" id="default_transportation" name="default_transportation" 
+                           value="{{ config.default_transportation or 0 }}" 
+                           min="0" step="0.01" required>
+                    <p class="form-hint">المبلغ الافتراضي لمزية النقل</p>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group currency-input">
+                    <label for="default_meal_allowance">مزية الطعام (SR):</label>
+                    <input type="number" id="default_meal_allowance" name="default_meal_allowance" 
+                           value="{{ config.default_meal_allowance or 0 }}" 
+                           min="0" step="0.01" required>
+                    <p class="form-hint">المبلغ الافتراضي لمزية الطعام</p>
+                </div>
+                
+                <div class="form-group currency-input">
+                    <label for="performance_bonus_max">الحد الأقصى لمكافأة الأداء (SR):</label>
+                    <input type="number" id="performance_bonus_max" name="performance_bonus_max" 
+                           value="{{ config.performance_bonus_max or 0 }}" 
+                           min="0" step="0.01" required>
+                    <p class="form-hint">الحد الأقصى لمكافأة الأداء الشهرية</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- الإجازات والعطل -->
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-calendar-alt"></i> الإجازات والعطل</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="annual_leave_days">أيام الإجازة السنوية:</label>
+                    <input type="number" id="annual_leave_days" name="annual_leave_days" 
+                           value="{{ config.annual_leave_days or 21 }}" 
+                           min="0" max="365" step="1" required>
+                    <p class="form-hint">عدد أيام الإجازة السنوية</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sick_leave_days">أيام الإجازة المرضية:</label>
+                    <input type="number" id="sick_leave_days" name="sick_leave_days" 
+                           value="{{ config.sick_leave_days or 15 }}" 
+                           min="0" max="365" step="1" required>
+                    <p class="form-hint">عدد أيام الإجازة المرضية السنوية</p>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h4>نول الإجازات</h4>
+                <p>
+                    يتم حساب الإجازات بناءً على معاملات مختلفة:
+                    - الإجازة السنوية: بأجر كامل
+                    - الإجازة المرضية: بأجر كامل أول 30 يوم
+                    - الإجازة بدون راتب: لا تدفع
+                </p>
+            </div>
+        </div>
+        
+        <!-- الأزرار -->
+        <div class="buttons">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> حفظ الإعدادات
+            </button>
+            <a href="{{ url_for('payroll.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> العودة
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function submitForm(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(document.getElementById('configForm'));
+    
+    fetch('{{ url_for("payroll.save_configuration") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('تم حفظ الإعدادات بنجاح');
+            location.reload();
+        } else {
+            alert('خطأ: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('خطأ في الاتصال: ' + error);
+    });
+}
+</script>

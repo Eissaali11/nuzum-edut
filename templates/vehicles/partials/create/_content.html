@@ -1,0 +1,134 @@
+<div class="container mt-4">
+    <div class="card card-enhanced mb-4">
+        <div class="card-header card-header-enhanced d-flex justify-content-between align-items-center">
+            <h3 class="card-title-enhanced mb-0">
+                <i class="fas fa-plus ms-2"></i>
+                إضافة سيارة جديدة
+            </h3>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('vehicles.index') }}" class="btn btn-enhanced btn-secondary-enhanced">
+                    <i class="fas fa-arrow-right me-1"></i>
+                    العودة للقائمة
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('vehicles.create') }}" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="plate_number" class="form-label-enhanced required">رقم اللوحة</label>
+                        <input type="text" class="form-control form-control-enhanced" id="plate_number" name="plate_number" required>
+                        <div class="form-text-enhanced">أدخل رقم لوحة السيارة بالكامل</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="make" class="form-label-enhanced required">الشركة المصنعة</label>
+                        <input type="text" class="form-control form-control-enhanced" id="make" name="make" required>
+                        <div class="form-text-enhanced">مثال: تويوتا، هيونداي، نيسان</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="model" class="form-label-enhanced required">الموديل</label>
+                        <input type="text" class="form-control form-control-enhanced" id="model" name="model" required>
+                        <div class="form-text-enhanced">مثال: كامري، كورولا، إلنترا</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="type_of_car" class="form-label-enhanced required">نوع السيارة</label>
+                        <select class="form-select form-select-enhanced" id="type_of_car" name="type_of_car" required>
+                            <option value="" disabled selected>اختر نوع السيارة</option>
+                            <option value="سيدان">سيدان</option>
+                            <option value="قاطرة">قاطرة</option>
+                            <option value="باص">باص</option>
+                            <option value="نقل خفيف">نقل خفيف</option>
+                            <option value="نقل ثقيل">نقل ثقيل</option>
+                            <option value="شاحنة صغيرة">شاحنة صغيرة</option>
+                            <option value="شاحنة كبيرة">شاحنة كبيرة</option>
+                            <option value="معدات ثقيلة">معدات ثقيلة</option>
+                            <option value="مقطورة">مقطورة</option>
+                            <option value="دباب">دباب</option>
+                            <option value="كرين">كرين</option>
+                            <option value="حفار">حفار</option>
+                        </select>
+                        <div class="form-text-enhanced">نوع المركبة (سيدان، قاطرة، باص، إلخ)</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="year" class="form-label-enhanced required">سنة الصنع</label>
+                        <input type="number" class="form-control form-control-enhanced" id="year" name="year" min="1990" max="{{ 2030 }}" required>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="color" class="form-label-enhanced required">اللون</label>
+                        <input type="text" class="form-control form-control-enhanced" id="color" name="color" required>
+                        <div class="form-text-enhanced">مثال: أبيض، أسود، فضي</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="driver_name" class="form-label-enhanced">اسم السائق</label>
+                        <input type="text" class="form-control form-control-enhanced" id="driver_name" name="driver_name">
+                        <div class="form-text-enhanced">اختياري - اسم السائق المعين لهذه السيارة</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="status" class="form-label-enhanced required">الحالة</label>
+                        <select class="form-select form-select-enhanced" id="status" name="status" required>
+                            <option value="available">✅ متاحة</option>
+                            <option value="active_with_driver">🚗 نشطة مع سائق</option>
+                            <option value="in_workshop_maintenance">🔧 في الورشة صيانة</option>
+                            <option value="in_workshop_accident">⚠️ في الورشة حادث</option>
+                            <option value="out_of_service">🚫 خارج الخدمة</option>
+                            <option value="out_of_region_management">📍 خارج إدارة المنطقة</option>
+                            <option value="stopped_inspection_expired">⏸️ متوقفة انتهاء الفحص</option>
+                            <option value="stopped_contract_expired">⏸️ متوقفة انتهاء العقد</option>
+                            <option value="stopped_registration_expired">⏸️ متوقفة انتهاء الاستمارة</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="project" class="form-label-enhanced">المشروع</label>
+                        <select class="form-select form-select-enhanced" id="project" name="project">
+                            <option value="">اختر المشروع</option>
+                            {% for department in departments %}
+                            <option value="{{ department.name }}">{{ department.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text-enhanced">اختياري - المشروع المرتبط بهذه السيارة</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="owned_by" class="form-label-enhanced">الشركة المالكة</label>
+                        <input type="text" class="form-control form-control-enhanced" id="owned_by" name="owned_by" placeholder="مثال: الشركة السعودية للنقل">
+                        <div class="form-text-enhanced">اختياري - اسم الشركة المالكة للمركبة</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="region" class="form-label-enhanced">المنطقة</label>
+                        <input type="text" class="form-control form-control-enhanced" id="region" name="region" placeholder="مثال: الرياض، جدة، الدمام">
+                        <div class="form-text-enhanced">اختياري - المنطقة التي تعمل بها المركبة</div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="notes" class="form-label-enhanced">ملاحظات</label>
+                    <textarea class="form-control form-control-enhanced" id="notes" name="notes" rows="3" placeholder="أدخل أي ملاحظات إضافية عن السيارة"></textarea>
+                    <div class="form-text-enhanced">اختياري - أي ملاحظات أو تفاصيل إضافية</div>
+                </div>
+                
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('vehicles.index') }}" class="btn btn-enhanced btn-outline-primary-enhanced">
+                        <i class="fas fa-times me-1"></i>
+                        إلغاء
+                    </a>
+                    <button type="submit" class="btn btn-enhanced btn-success-enhanced">
+                        <i class="fas fa-save me-1"></i>
+                        حفظ السيارة
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

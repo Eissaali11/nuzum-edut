@@ -35,7 +35,7 @@ shared/               # Utils, Responses, Validators
 **PowerShell (Windows):**
 ```powershell
 # الطريقة الأسهل: سكريبت واحد (ينشئ venv ويثبت المتطلبات إن لزم)
-.\run.ps1
+.\ops\launchers\run.ps1
 ```
 أو يدوياً:
 ```powershell

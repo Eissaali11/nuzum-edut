@@ -1,0 +1,104 @@
+<div class="container-fluid">
+    <!-- Enhanced Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>إدارة الأقسام</h1>
+                <p class="text-muted mb-0">إدارة شاملة لأقسام المؤسسة والموظفين</p>
+            </div>
+            <div>
+                <a href="{{ url_for('departments.create') }}" class="btn-enhanced btn-success-enhanced">
+                    <i class="fas fa-plus"></i>
+                    إضافة قسم
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Enhanced Search Card -->
+    <div class="card search-card">
+        <div class="card-body">
+            <form onsubmit="return false;">
+                <div class="search-input-group input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="departmentSearchInput" class="form-control" 
+                           placeholder="ابحث باسم القسم..." autofocus autocomplete="off">
+                    <button class="btn" type="button" id="clearSearchBtn" title="مسح البحث">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enhanced Departments Grid -->
+    <div class="row">
+        {% for department in departments %}
+        <div class="col-md-4 mb-4 department-item" data-department-id="{{ department.id }}" data-department-name="{{ department.name }}">
+            <div class="department-card card">
+                <div class="department-header">
+                    <h4><i class="fas fa-building me-2"></i>{{ department.name }}</h4>
+                </div>
+                <div class="department-body">
+                    {% if department.manager %}
+                    <div class="department-manager">
+                        <i class="fas fa-user-tie me-2 text-primary"></i>
+                        <strong>المدير:</strong> {{ department.manager.name }}
+                    </div>
+                    {% else %}
+                    <div class="department-manager text-muted">
+                        <i class="fas fa-user-tie me-2"></i>
+                        <span>لا يوجد مدير محدد</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="my-3 d-flex align-items-center">
+                        <i class="fas fa-users me-2 text-primary"></i>
+                        <span class="me-2">عدد الموظفين:</span>
+                        <span class="badge badge-enhanced badge-primary-enhanced">{{ department.employee_count }}</span>
+                    </div>
+                    
+                    {% if department.description %}
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            {{ department.description }}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a href="{{ url_for('departments.view', id=department.id) }}" 
+                           class="btn btn-sm btn-info-enhanced"
+                           title="عرض التفاصيل">
+                            <i class="fas fa-eye me-1"></i>
+                            عرض التفاصيل
+                        </a>
+                        <div class="btn-group btn-group-enhanced">
+                            <a href="{{ url_for('departments.edit', id=department.id) }}" 
+                               class="btn btn-sm btn-primary-enhanced"
+                               title="تعديل القسم">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('departments.delete', id=department.id) }}" 
+                               class="btn btn-sm btn-danger-enhanced"
+                               title="حذف القسم">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info alert-enhanced text-center">
+                <i class="fas fa-info-circle me-2"></i>
+                لا توجد أقسام مسجلة، يمكنك إضافة قسم جديد من خلال زر "إضافة قسم"
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

@@ -1,0 +1,167 @@
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>تسجيل حضور لجميع الأقسام</h1>
+        <a href="{{ url_for('attendance.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة للقائمة
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        تسجيل حضور لجميع الأقسام لعدة أيام دفعة واحدة
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('attendance.all_departments_attendance') }}" method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="start_date" class="form-label required-field">تاريخ البداية</label>
+                                <input type="date" class="form-control date-picker" id="start_date" name="start_date" 
+                                       value="{{ today.strftime('%Y-%m-%d') }}" required onchange="updateDateRange()">
+                                <div class="mt-1">
+                                    <span class="gregorian-date" id="start-gregorian-date">{{ gregorian_date }}</span>
+                                    <span class="hijri-date" id="start-hijri-date" style="display: none;">{{ hijri_date }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="end_date" class="form-label required-field">تاريخ النهاية</label>
+                                <input type="date" class="form-control date-picker" id="end_date" name="end_date" 
+                                       value="{{ today.strftime('%Y-%m-%d') }}" required onchange="updateDateRange()">
+                                <div class="mt-1">
+                                    <span class="gregorian-date" id="end-gregorian-date">{{ gregorian_date }}</span>
+                                    <span class="hijri-date" id="end-hijri-date" style="display: none;">{{ hijri_date }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label required-field">حالة الحضور للأقسام</label>
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                <button type="button" class="btn btn-success btn-lg attendance-status-btn m-1 active" data-status="present" onclick="setAttendanceStatus('present')">
+                                    <i class="fas fa-check-circle me-1"></i> حاضر
+                                    <span id="badge-present" class="badge bg-white text-success ms-1">0</span>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-lg attendance-status-btn m-1" data-status="absent" onclick="setAttendanceStatus('absent')">
+                                    <i class="fas fa-times-circle me-1"></i> غائب
+                                    <span id="badge-absent" class="badge bg-white text-danger ms-1">0</span>
+                                </button>
+                                <button type="button" class="btn btn-warning btn-lg attendance-status-btn m-1" data-status="leave" onclick="setAttendanceStatus('leave')">
+                                    <i class="fas fa-calendar-minus me-1"></i> إجازة
+                                    <span id="badge-leave" class="badge bg-white text-warning ms-1">0</span>
+                                </button>
+                                <button type="button" class="btn btn-info btn-lg attendance-status-btn m-1" data-status="sick" onclick="setAttendanceStatus('sick')">
+                                    <i class="fas fa-procedures me-1"></i> مرضي
+                                    <span id="badge-sick" class="badge bg-white text-info ms-1">0</span>
+                                </button>
+                            </div>
+                            <!-- حقل مخفي لتخزين القيمة المختارة -->
+                            <input type="hidden" id="status" name="status" value="present">
+                            
+                            <!-- توضيح حول عدد الموظفين المتأثرين -->
+                            <div class="mt-2 text-muted small">
+                                <i class="fas fa-info-circle me-1"></i>
+                                الأرقام تمثل عدد الموظفين الذين سيتم تسجيلهم بالحالة المحددة
+                            </div>
+                        </div>
+                        
+                        <!-- عرض ملخص الفترة المحددة -->
+                        <div id="date-range-summary" class="alert alert-primary mt-4 mb-4">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                ملخص الفترة الزمنية
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>الفترة:</strong> <span id="date-range-text">يوم واحد</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>عدد الأيام:</strong> <span id="days-count">1</span></p>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <p class="mb-0">
+                                    <strong>ملاحظة:</strong> 
+                                    سيتم تطبيق حالة الحضور المحددة على جميع موظفي الأقسام المحددة لجميع أيام الفترة.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- اختيار الأقسام -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">
+                                <i class="fas fa-building me-2"></i>
+                                اختر الأقسام المطلوبة
+                            </h5>
+                            
+                            <div class="select-all-container mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input department-checkbox" type="checkbox" id="select-all-departments" onchange="toggleAllDepartments()">
+                                    <label class="form-check-label fw-bold" for="select-all-departments">
+                                        تحديد/إلغاء تحديد جميع الأقسام
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="departments-grid">
+                                {% for department in departments %}
+                                <div class="department-card card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ department.name }}</h6>
+                                        <div class="form-check">
+                                            <input class="form-check-input department-checkbox" type="checkbox" name="department_ids" value="{{ department.id }}" id="department-{{ department.id }}">
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-1"><strong>عدد الموظفين:</strong> {{ department.employees|selectattr('status', 'equalto', 'active')|list|length }}</p>
+                                        <p class="mb-0 text-muted small">سيتم تسجيل الحضور لجميع الموظفين النشطين في هذا القسم</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- عداد الموظفين المحددين -->
+                        <div class="alert alert-success mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-users me-1"></i>
+                                    <strong>إجمالي الموظفين المحددين:</strong> 
+                                    <span id="selected-employees-count" class="badge bg-primary fw-bold" style="font-size: 1.1rem;">0</span>
+                                </div>
+                                <div>
+                                    <strong>الأقسام المحددة:</strong>
+                                    <span id="selected-departments-count" class="badge bg-info fw-bold" style="font-size: 1.1rem;">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <strong>ملاحظة:</strong> 
+                            هذه العملية ستؤثر على جميع موظفي الأقسام المحددة خلال الفترة الزمنية المحددة. سيتم تعيين حالة الحضور المختارة لجميع الموظفين النشطين.
+                        </div>
+                        
+                        <div id="form-validation-alert" class="alert alert-warning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            <strong>تنبيه:</strong> <span id="validation-message"></span>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button id="submit-btn" type="submit" class="btn btn-primary btn-lg" disabled>
+                                <i class="fas fa-save me-1"></i> تسجيل الحضور للأقسام المحددة
+                            </button>
+                            <button type="reset" class="btn btn-secondary" onclick="resetForm()">
+                                <i class="fas fa-undo me-1"></i> إعادة تعيين
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

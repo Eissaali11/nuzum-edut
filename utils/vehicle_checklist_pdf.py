@@ -15,16 +15,100 @@ from reportlab.pdfbase.ttfonts import TTFont
 import arabic_reshaper
 from bidi.algorithm import get_display
 
+
+def _resolve_image_path(path):
+    if not path:
+        return None
+    candidates = [
+        path,
+        os.path.join(os.path.dirname(__file__), '..', path),
+        os.path.join(os.path.dirname(__file__), '..', 'static', path),
+    ]
+    cleaned = path.replace('\\', '/').replace('static/', '', 1) if isinstance(path, str) else path
+    if cleaned:
+        candidates.extend([
+            os.path.join(os.path.dirname(__file__), '..', cleaned),
+            os.path.join(os.path.dirname(__file__), '..', 'static', cleaned),
+        ])
+
+    for candidate in candidates:
+        real = os.path.normpath(candidate)
+        if os.path.exists(real):
+            return real
+    return None
+
+
+def _draw_attachment_pages(c, handover_data, width, height, primary_color):
+    images = getattr(handover_data, 'images', None) or []
+    prepared = []
+    for image in images:
+        path = None
+        if hasattr(image, 'get_path'):
+            path = image.get_path()
+        path = path or getattr(image, 'file_path', None) or getattr(image, 'image_path', None)
+        description = None
+        if hasattr(image, 'get_description'):
+            description = image.get_description()
+        description = description or getattr(image, 'file_description', None) or getattr(image, 'image_description', None)
+        resolved = _resolve_image_path(path)
+        if resolved:
+            prepared.append((resolved, description or 'بدون وصف'))
+
+    if not prepared:
+        return
+
+    slot_w = (width - 120) / 2
+    slot_h = 220
+    x_slots = [50, 70 + slot_w]
+    y_slots = [height - 320, height - 620]
+
+    for idx, (img_path, desc) in enumerate(prepared):
+        if idx % 4 == 0:
+            c.showPage()
+            c.setStrokeColor(primary_color)
+            c.setLineWidth(2)
+            c.rect(30, 20, width - 60, height - 40)
+            c.setFont('Helvetica-Bold', 16)
+            c.setFillColor(primary_color)
+            c.drawString(50, height - 60, 'Handover Attachments')
+
+        page_pos = idx % 4
+        x = x_slots[page_pos % 2]
+        y = y_slots[page_pos // 2]
+
+        c.setStrokeColor(colors.lightgrey)
+        c.setLineWidth(1)
+        c.rect(x, y, slot_w, slot_h)
+        try:
+            c.drawImage(img_path, x + 6, y + 30, width=slot_w - 12, height=slot_h - 42, preserveAspectRatio=True, anchor='c')
+        except Exception:
+            c.setFont('Helvetica', 10)
+            c.setFillColor(colors.red)
+            c.drawString(x + 10, y + (slot_h / 2), 'Image unavailable')
+
+        c.setFont('Helvetica', 8)
+        c.setFillColor(colors.black)
+        text = str(desc)
+        if len(text) > 65:
+            text = text[:62] + '...'
+        c.drawString(x + 8, y + 12, text)
+
 def setup_arabic_font():
     """إعداد الخط العربي"""
     try:
-        font_path = os.path.join(os.path.dirname(__file__), '..', 'Cairo.ttf')
-        if os.path.exists(font_path):
-            pdfmetrics.registerFont(TTFont('Cairo', font_path))
-            return 'Cairo'
-        else:
-            # استخدام خط احتياطي
-            return 'Helvetica'
+        root_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
+        font_candidates = [
+            ('beIN-Normal', os.path.join(root_dir, 'static', 'fonts', 'beIN-Normal.ttf')),
+            ('Cairo', os.path.join(root_dir, 'Cairo.ttf')),
+            ('Cairo', os.path.join(root_dir, 'static', 'fonts', 'Cairo.ttf')),
+        ]
+        registered = set(pdfmetrics.getRegisteredFontNames())
+        for font_name, font_path in font_candidates:
+            if os.path.exists(font_path):
+                if font_name not in registered:
+                    pdfmetrics.registerFont(TTFont(font_name, font_path))
+                return font_name
+        return 'Helvetica'
     except:
         return 'Helvetica'
 
@@ -261,6 +345,8 @@ def create_vehicle_handover_pdf(handover_data):
         c.setStrokeColor(primary_color)
         c.setLineWidth(2)
         c.rect(30, 20, width - 60, height - 40)
+
+        _draw_attachment_pages(c, handover_data, width, height, primary_color)
         
         c.save()
         buffer.seek(0)

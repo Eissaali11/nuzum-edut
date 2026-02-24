@@ -57,6 +57,10 @@ def verify_files():
 
 def set_environment():
     """تعيين متغيرات البيئة"""
+    debug_flag = "true" if SERVER_CONFIG['DEBUG'] else "false"
+    os.environ.setdefault("FLASK_DEBUG", debug_flag)
+    os.environ.setdefault("FLASK_ENV", "development" if SERVER_CONFIG['DEBUG'] else "production")
+    os.environ.setdefault("APP_THREADED", "false")
     for key, value in SERVER_CONFIG.items():
         if key.startswith('HOST') or key.startswith('PORT'):
             continue

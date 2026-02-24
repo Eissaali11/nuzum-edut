@@ -1,0 +1,61 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // زر الطباعة
+    document.getElementById('printBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.print();
+    });
+    
+    // تقديم نموذج التعديل
+    document.getElementById('submitEditForm').addEventListener('click', function() {
+        document.getElementById('editFeeForm').submit();
+    });
+    
+    // تقديم نموذج تسجيل كمدفوع
+    document.getElementById('submitPaidForm').addEventListener('click', function() {
+        document.getElementById('markAsPaidForm').submit();
+    });
+    
+    // عرض/إخفاء حقل تاريخ السداد بناءً على حالة الدفع المحددة
+    const paymentStatusSelect = document.getElementById('payment_status');
+    const paymentDateGroup = document.getElementById('payment_date_group');
+    
+    if (paymentStatusSelect) {
+        paymentStatusSelect.addEventListener('change', function() {
+            if (this.value === 'paid') {
+                // إنشاء حقل تاريخ السداد إذا لم يكن موجودًا
+                if (!document.getElementById('payment_date_group')) {
+                    const formGroup = document.createElement('div');
+                    formGroup.className = 'mb-3';
+                    formGroup.id = 'payment_date_group';
+                    
+                    const label = document.createElement('label');
+                    label.className = 'form-label';
+                    label.htmlFor = 'payment_date';
+                    label.textContent = 'تاريخ السداد';
+                    
+                    const input = document.createElement('input');
+                    input.type = 'date';
+                    input.className = 'form-control';
+                    input.id = 'payment_date';
+                    input.name = 'payment_date';
+                    input.value = new Date().toISOString().split('T')[0];
+                    input.required = true;
+                    
+                    formGroup.appendChild(label);
+                    formGroup.appendChild(input);
+                    
+                    // إدراج الحقل بعد حقل حالة الدفع
+                    this.parentNode.after(formGroup);
+                }
+            } else {
+                // إزالة حقل تاريخ السداد إذا كان موجودًا
+                const paymentDateGroup = document.getElementById('payment_date_group');
+                if (paymentDateGroup) {
+                    paymentDateGroup.remove();
+                }
+            }
+        });
+    }
+});
+</script>

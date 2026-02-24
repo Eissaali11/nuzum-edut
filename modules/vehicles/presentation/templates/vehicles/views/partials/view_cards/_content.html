@@ -1,0 +1,380 @@
+<div class="page-container" style="background: white !important;">
+    <div class="container" style="color: #000 !important;">
+        <!-- بطاقة رأس السيارة -->
+        <div class="vehicle-header-card">
+            <h1>🚗 {{ vehicle.plate_number }}</h1>
+            <p>{{ vehicle.make }} {{ vehicle.model }} - {{ vehicle.year }}</p>
+        </div>
+
+        <!-- بطاقة نظرة عامة -->
+        <div class="section-card">
+            <div class="section-header">
+                <span class="icon"><i class="fas fa-tachometer-alt"></i></span>
+                <h3>نظرة عامة</h3>
+                <span class="badge">إحصائيات سريعة</span>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-icon text-primary">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="stat-number">
+                        {% if current_employee %}
+                            {{ current_employee.name[:15] }}
+                        {% else %}
+                            غير محدد
+                        {% endif %}
+                    </div>
+                    <div class="stat-label">السائق الحالي</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon text-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number">{{ vehicle.status }}</div>
+                    <div class="stat-label">حالة السيارة</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon text-warning">
+                        <i class="fas fa-wrench"></i>
+                    </div>
+                    <div class="stat-number">{{ workshop_records|length }}</div>
+                    <div class="stat-label">سجلات الصيانة</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon text-info">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-number">{{ attachments|length }}</div>
+                    <div class="stat-label">الوثائق</div>
+                </div>
+            </div>
+            
+            <div class="actions-container">
+                <a href="{{ url_for('vehicles.vehicle_license_image', vehicle_id=vehicle.id) }}" class="btn-custom btn-primary-custom">
+                    <i class="fas fa-id-card"></i>
+                    إدارة صورة الرخصة
+                </a>
+                <a href="{{ url_for('vehicles.vehicle_drive_files', vehicle_id=vehicle.id) }}" class="btn-custom btn-success-custom">
+                    <i class="fab fa-google-drive"></i>
+                    إدارة ملفات Drive
+                </a>
+            </div>
+        </div>
+
+        <!-- بطاقة المعلومات الأساسية -->
+        <div class="section-card">
+            <div class="section-header">
+                <span class="icon"><i class="fas fa-info-circle"></i></span>
+                <h3>المعلومات الأساسية</h3>
+                <span class="badge">بيانات السيارة</span>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label" style="color: #000 !important;">رقم اللوحة:</span>
+                    <span class="info-value" style="color: #333 !important;">{{ vehicle.plate_number }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" style="color: #000 !important;">الماركة:</span>
+                    <span class="info-value" style="color: #333 !important;">{{ vehicle.make }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" style="color: #000 !important;">الموديل:</span>
+                    <span class="info-value" style="color: #333 !important;">{{ vehicle.model }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" style="color: #000 !important;">سنة الصنع:</span>
+                    <span class="info-value" style="color: #333 !important;">{{ vehicle.year }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" style="color: #000 !important;">اللون:</span>
+                    <span class="info-value" style="color: #333 !important;">{{ vehicle.color }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label" style="color: #000 !important;">الحالة:</span>
+                    <span class="info-value">
+                        <span class="badge-custom badge-success">{{ vehicle.status }}</span>
+                    </span>
+                </div>
+                {% if vehicle.mileage %}
+                <div class="info-item">
+                    <span class="info-label">عداد المسافة:</span>
+                    <span class="info-value">{{ "{:,}".format(vehicle.mileage) }} كم</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if vehicle.notes %}
+            <div class="mt-3">
+                <strong class="info-label">ملاحظات:</strong>
+                <div class="alert alert-light mt-2">{{ vehicle.notes }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- بطاقة التسليم والاستلام -->
+        <div class="section-card">
+            <div class="section-header">
+                <span class="icon"><i class="fas fa-exchange-alt"></i></span>
+                <h3>سجل التسليم والاستلام</h3>
+                <span class="badge">{{ handovers|length }} عملية</span>
+            </div>
+            
+            {% if handovers %}
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>النوع</th>
+                            <th>اسم الشخص</th>
+                            <th>رقم الهاتف</th>
+                            <th>عداد المسافة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for handover in handovers %}
+                        <tr>
+                            <td>{{ handover.formatted_date }}</td>
+                            <td>
+                                {% if handover.handover_type == 'delivery' %}
+                                <span class="badge-custom badge-success">تسليم</span>
+                                {% else %}
+                                <span class="badge-custom badge-primary">استلام</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ handover.person_name }}</td>
+                            <td>{{ handover.person_mobile or 'غير محدد' }}</td>
+                            <td>{{ "{:,}".format(handover.mileage) if handover.mileage else 'غير محدد' }}</td>
+                            <td>
+                                <a href="{{ url_for('vehicles.view_handover', id=handover.id) }}" class="btn-custom btn-primary-custom btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('vehicles.edit_handover', id=handover.id) }}" class="btn-custom btn-warning-custom btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h5>لا توجد سجلات تسليم واستلام</h5>
+                <p>لم يتم تسجيل أي عمليات تسليم أو استلام لهذه السيارة بعد</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- بطاقة سجلات الورشة -->
+        <div class="section-card">
+            <div class="section-header">
+                <span class="icon"><i class="fas fa-tools"></i></span>
+                <h3>سجلات الورشة والصيانة</h3>
+                <span class="badge">{{ workshop_records|length }} سجل</span>
+            </div>
+            
+            {% if workshop_records %}
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>تاريخ الدخول</th>
+                            <th>المشكلة</th>
+                            <th>اسم الورشة</th>
+                            <th>التكلفة</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in workshop_records %}
+                        <tr>
+                            <td>{{ record.formatted_entry_date }}</td>
+                            <td>{{ record.description[:50] }}{% if record.description|length > 50 %}...{% endif %}</td>
+                            <td>{{ record.workshop_name or 'غير محدد' }}</td>
+                            <td>{{ "{:,.2f}".format(record.cost) if record.cost else 'غير محدد' }} ريال</td>
+                            <td>
+                                {% if record.repair_status == 'completed' %}
+                                <span class="badge-custom badge-success">مكتمل</span>
+                                {% elif record.repair_status == 'in_progress' %}
+                                <span class="badge-custom badge-warning">قيد التنفيذ</span>
+                                {% else %}
+                                <span class="badge-custom badge-primary">{{ record.repair_status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('vehicles.workshop_details', workshop_id=record.id) }}" class="btn-custom btn-primary-custom btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('vehicles.edit_workshop', id=record.id) }}" class="btn-custom btn-warning-custom btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- إحصائيات الصيانة -->
+            <div class="info-grid mt-4">
+                <div class="info-item">
+                    <span class="info-label">إجمالي التكلفة:</span>
+                    <span class="info-value text-danger">
+                        {% set total_cost = workshop_records|sum(attribute='cost') %}
+                        {{ "{:,.2f}".format(total_cost) }} ريال
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">عدد العمليات:</span>
+                    <span class="info-value text-info">{{ workshop_records|length }} عملية</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">متوسط التكلفة:</span>
+                    <span class="info-value text-warning">
+                        {% if workshop_records|length > 0 %}
+                            {{ "{:,.2f}".format(total_cost / workshop_records|length) }} ريال
+                        {% else %}
+                            لا توجد بيانات
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <h5>لا توجد سجلات صيانة</h5>
+                <p>لم يتم تسجيل أي عمليات صيانة لهذه السيارة بعد</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- بطاقة الوثائق -->
+        <div class="section-card">
+            <div class="section-header">
+                <span class="icon"><i class="fas fa-file-alt"></i></span>
+                <h3>الوثائق والمرفقات</h3>
+                <span class="badge">{{ attachments|length }} ملف</span>
+            </div>
+            
+            {% if attachments %}
+            <div class="row">
+                {% for attachment in attachments %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="section-card p-3">
+                        <h6>{{ attachment.title or 'وثيقة' }}</h6>
+                        <p class="text-muted small">{{ attachment.description or 'لا يوجد وصف' }}</p>
+                        <a href="{{ url_for('static', filename='uploads/vehicles/' + attachment.file_path) }}" target="_blank" class="btn-custom btn-primary-custom w-100">
+                            <i class="fas fa-download"></i>
+                            عرض الملف
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h5>لا توجد وثائق</h5>
+                <p>لم يتم رفع أي وثائق لهذه السيارة بعد</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- بطاقة صورة الرخصة -->
+        <div class="section-card">
+            <div class="section-header">
+                <span class="icon"><i class="fas fa-id-card"></i></span>
+                <h3>صورة رخصة السيارة</h3>
+                <span class="badge">{% if vehicle.license_image %}موجودة{% else %}غير موجودة{% endif %}</span>
+            </div>
+            
+            {% if vehicle.license_image %}
+            <div class="text-center">
+                <img src="{{ url_for('static', filename='uploads/licenses/' + vehicle.license_image) }}" class="img-fluid rounded shadow" style="max-height: 400px;" alt="صورة الرخصة">
+                <div class="mt-3">
+                    <a href="{{ url_for('vehicles.vehicle_license_image', vehicle_id=vehicle.id) }}" class="btn-custom btn-warning-custom">
+                        <i class="fas fa-edit"></i>
+                        تحديث الصورة
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <h5>لا توجد صورة رخصة</h5>
+                <p>لم يتم رفع صورة رخصة لهذه السيارة بعد</p>
+                <a href="{{ url_for('vehicles.vehicle_license_image', vehicle_id=vehicle.id) }}" class="btn-custom btn-primary-custom">
+                    <i class="fas fa-upload"></i>
+                    رفع صورة الرخصة
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- بطاقة ملفات Google Drive -->
+        <div class="section-card">
+            <div class="section-header">
+                <span class="icon"><i class="fab fa-google-drive"></i></span>
+                <h3>ملفات Google Drive</h3>
+                <span class="badge">{% if vehicle.drive_folder_link %}مرتبط{% else %}غير مرتبط{% endif %}</span>
+            </div>
+            
+            {% if vehicle.drive_folder_link %}
+            <div class="info-item">
+                <span class="info-label">الحالة:</span>
+                <span class="info-value">
+                    <span class="badge-custom badge-success">تم ربط هذه السيارة بمجلد Google Drive</span>
+                </span>
+            </div>
+            <div class="actions-container">
+                <a href="{{ vehicle.drive_folder_link }}" target="_blank" class="btn-custom btn-success-custom">
+                    <i class="fab fa-google-drive"></i>
+                    فتح المجلد
+                </a>
+                <a href="{{ url_for('vehicles.vehicle_drive_files', vehicle_id=vehicle.id) }}" class="btn-custom btn-primary-custom">
+                    <i class="fas fa-edit"></i>
+                    إدارة الرابط
+                </a>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">
+                    <i class="fab fa-google-drive"></i>
+                </div>
+                <h5>غير مرتبط بـ Google Drive</h5>
+                <p>لم يتم ربط هذه السيارة بمجلد Google Drive بعد</p>
+                <a href="{{ url_for('vehicles.vehicle_drive_files', vehicle_id=vehicle.id) }}" class="btn-custom btn-success-custom">
+                    <i class="fas fa-link"></i>
+                    ربط مجلد Drive
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- زر العودة -->
+        <div class="back-button-container">
+            <a href="{{ url_for('vehicles.index') }}" class="btn-custom btn-primary-custom btn-lg">
+                <i class="fas fa-arrow-right"></i>
+                العودة إلى قائمة السيارات
+            </a>
+        </div>
+    </div>
+</div>

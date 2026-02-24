@@ -11,22 +11,5 @@
 {% endblock %}
 
 {% block content %}
-<div class="card mt-3">
-    <div class="card-header">
-        <h5 class="card-title">إضافة راتب جديد</h5>
-    </div>
-    <div class="card-content">
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            هذه الصفحة قيد التطوير. سيتم إضافة وظيفة إضافة الراتب قريباً.
-        </div>
-        
-        <div class="text-center mt-4">
-            <a href="{{ url_for('mobile.salaries') }}" class="btn btn-primary">
-                <i class="fas fa-list me-2"></i>
-                العودة لقائمة الرواتب
-            </a>
-        </div>
-    </div>
-</div>
+{% include 'mobile/partials/add_salary/_content.html' %}
 {% endblock %}

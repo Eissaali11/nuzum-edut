@@ -1,0 +1,17 @@
+    /* ... أي ستايلات أخرى ... */
+    .department-pills-container {
+        display: flex; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .department-pill {
+        display: inline-flex; align-items: center; padding: 0.5em 0.9em;
+        font-size: 0.9rem; cursor: pointer; border-radius: 50rem;
+        transition: all 0.2s ease-in-out;
+        /* ستايل السمة الداكنة الافتراضي */
+        background-color: #495057; color: #ced4da; border: 1px solid #495057;
+    }
+    .department-pill .fa-check-circle { display: none; }
+    .department-pill.active {
+        background-color: #0d6efd; color: white; border-color: #0a58ca; font-weight: 500;
+    }
+    .department-pill.active .fa-check-circle { display: inline-block; }
+    .department-pill:not(.active):hover { background-color: #6c757d; }

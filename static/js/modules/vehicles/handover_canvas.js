@@ -4,6 +4,20 @@
  */
 
 let damageCanvas = null;
+let damageCanvasAspectRatio = 0.6;
+
+function getDamageCanvasContainer() {
+    return document.getElementById('damage-canvas-wrapper') || document.getElementById('damage-canvas')?.parentElement || null;
+}
+
+function getDamageCanvasDimensions(aspectRatio = damageCanvasAspectRatio) {
+    const container = getDamageCanvasContainer();
+    const containerWidth = container?.clientWidth || 720;
+    const safeAspectRatio = aspectRatio > 0 ? aspectRatio : 0.6;
+    const width = Math.max(320, Math.floor(containerWidth));
+    const height = Math.max(220, Math.round(width * safeAspectRatio));
+    return { width, height };
+}
 
 /**
  * Initialize damage canvas for drawing
@@ -13,22 +27,30 @@ function initializeDamageCanvas() {
     if (!canvasEl || damageCanvas) return;
 
     try {
+        const initialDimensions = getDamageCanvasDimensions();
         damageCanvas = new fabric.Canvas('damage-canvas', {
             isDrawingMode: true,
             backgroundColor: '#f8f9fa',
-            width: canvasEl.offsetWidth,
-            height: 400
+            width: initialDimensions.width,
+            height: initialDimensions.height
         });
 
         // Set default brush settings
         damageCanvas.freeDrawingBrush.color = '#FF0000';
         damageCanvas.freeDrawingBrush.width = 3;
 
-        // Load vehicle diagram background
-        const diagramPath = '/static/images/vehicle_diagram.png';
+        // Load vehicle diagram background (dynamic by vehicle type)
+        const diagramPath = document.getElementById('damage-diagram-image-url')?.value || '/static/images/vehicle_diagram.png';
         fabric.util.loadImage(diagramPath, function(img) {
             if (img) {
                 if (img.width > 0 && img.height > 0) {
+                    damageCanvasAspectRatio = img.height / img.width;
+                    const fittedDimensions = getDamageCanvasDimensions(damageCanvasAspectRatio);
+                    damageCanvas.setDimensions({
+                        width: fittedDimensions.width,
+                        height: fittedDimensions.height
+                    });
+
                     const fabricImage = new fabric.Image(img, {
                         left: 0,
                         top: 0,
@@ -129,7 +151,9 @@ function setupDamageCanvasControls() {
  * Save damage diagram to hidden input
  */
 function saveDamageCanvas() {
-    const input = document.getElementById('damage_diagram_data');
+    const input = document.getElementById('damage-diagram-data')
+        || document.getElementById('damage_diagram_data')
+        || document.querySelector('input[name="damage_diagram_data"]');
     if (damageCanvas && input) {
         input.value = damageCanvas.toDataURL('image/png');
         return true;
@@ -143,14 +167,37 @@ function saveDamageCanvas() {
 function resizeDamageCanvas() {
     if (!damageCanvas) return;
 
-    const container = damageCanvas.getElement().parentElement;
-    const newWidth = container.offsetWidth - 20; // Account for padding
+    const oldWidth = damageCanvas.getWidth();
+    const oldHeight = damageCanvas.getHeight();
+    const nextDimensions = getDamageCanvasDimensions(damageCanvasAspectRatio);
+    const newWidth = nextDimensions.width;
+    const newHeight = nextDimensions.height;
 
-    if (newWidth !== damageCanvas.width) {
+    if (newWidth !== oldWidth || newHeight !== oldHeight) {
+        const widthScale = newWidth / oldWidth;
+        const heightScale = newHeight / oldHeight;
+
         damageCanvas.setDimensions({
             width: newWidth,
-            height: 400
+            height: newHeight
         });
+
+        damageCanvas.getObjects().forEach(function(obj) {
+            obj.scaleX *= widthScale;
+            obj.scaleY *= heightScale;
+            obj.left *= widthScale;
+            obj.top *= heightScale;
+            obj.setCoords();
+        });
+
+        const backgroundImage = damageCanvas.backgroundImage;
+        if (backgroundImage && backgroundImage.width && backgroundImage.height) {
+            backgroundImage.set({
+                scaleX: newWidth / backgroundImage.width,
+                scaleY: newHeight / backgroundImage.height
+            });
+        }
+
         damageCanvas.renderAll();
     }
 }

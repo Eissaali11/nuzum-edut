@@ -1,0 +1,22 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCheck = document.getElementById('confirmCheck');
+    const deleteBtn = document.getElementById('deleteBtn');
+    
+    confirmCheck.addEventListener('change', function() {
+        deleteBtn.disabled = !this.checked;
+        if (this.checked) {
+            deleteBtn.classList.remove('btn-secondary');
+            deleteBtn.classList.add('btn-danger');
+        } else {
+            deleteBtn.classList.remove('btn-danger');
+            deleteBtn.classList.add('btn-secondary');
+        }
+    });
+    
+    // تأكيد إضافي عند النقر على زر الحذف
+    deleteBtn.addEventListener('click', function(e) {
+        if (!confirm('هل أنت متأكد 100% من حذف هذا الموظف؟ لا يمكن التراجع عن هذا الإجراء!')) {
+            e.preventDefault();
+        }
+    });
+});

@@ -1,0 +1,314 @@
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // إعداد الرسم البياني
+    initializeChart();
+    
+    // إعداد وظائف الفلترة
+    setupFilterFunctions();
+  });
+  
+  let currentChart = null;
+  
+  function initializeChart() {
+    const ctx = document.getElementById('consumptionChart').getContext('2d');
+    
+    // البيانات المجمعة حسب نوع الوقود
+    const fuelTypeData = {
+      labels: {{ chart_labels|tojson }},
+      datasets: [
+        {% for fuel_type, data in fuel_type_chart_data.items() %}
+        {
+          label: "{{ fuel_type }}",
+          data: {{ data.costs|tojson }},
+          borderColor: getFuelTypeColor("{{ fuel_type }}"),
+          backgroundColor: getFuelTypeColor("{{ fuel_type }}", 0.1),
+          tension: 0.3,
+          fill: true
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
+    };
+    
+    // البيانات الإجمالية
+    const totalData = {
+      labels: {{ chart_labels|tojson }},
+      datasets: [
+        {
+          label: 'كمية الوقود (لتر)',
+          data: {{ chart_liters|tojson }},
+          borderColor: '#4f91f4',
+          backgroundColor: 'rgba(79, 145, 244, 0.1)',
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'التكلفة (ر.س)',
+          data: {{ chart_costs|tojson }},
+          borderColor: '#f67280',
+          backgroundColor: 'rgba(246, 114, 128, 0.1)',
+          tension: 0.3,
+          fill: true,
+          yAxisID: 'y1'
+        }
+      ]
+    };
+    
+    // بيانات المخطط الدائري
+    const pieData = {
+      labels: Object.keys({{ fuel_types_stats|tojson }}),
+      datasets: [{
+        data: Object.values({{ fuel_types_stats|tojson }}).map(item => item.cost),
+        backgroundColor: Object.keys({{ fuel_types_stats|tojson }}).map(getFuelTypeColor),
+        hoverOffset: 4
+      }]
+    };
+    
+    // إنشاء الرسم البياني
+    createLineChart(ctx, totalData);
+  }
+  
+  function createLineChart(ctx, data) {
+    if (currentChart) {
+      currentChart.destroy();
+    }
+    
+    currentChart = new Chart(ctx, {
+      type: 'line',
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 15
+            }
+          },
+          tooltip: {
+            rtl: true
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'كمية الوقود (لتر)'
+            }
+          },
+          y1: {
+            beginAtZero: true,
+            position: 'right',
+            title: {
+              display: true,
+              text: 'التكلفة (ر.س)'
+            },
+            grid: {
+              drawOnChartArea: false
+            }
+          },
+          x: {
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45
+            }
+          }
+        }
+      },
+    });
+  }
+  
+  function createBarChart(ctx, data) {
+    if (currentChart) {
+      currentChart.destroy();
+    }
+    
+    currentChart = new Chart(ctx, {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            rtl: true
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+  
+  function createPieChart(ctx, data) {
+    if (currentChart) {
+      currentChart.destroy();
+    }
+    
+    currentChart = new Chart(ctx, {
+      type: 'pie',
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            rtl: true
+          }
+        }
+      }
+    });
+  }
+  
+  function switchChartType(type) {
+    const ctx = document.getElementById('consumptionChart').getContext('2d');
+    const tabs = document.querySelectorAll('.mobile-tab');
+    
+    // تحديث الأزرار النشطة
+    tabs.forEach(tab => {
+      if (tab.dataset.chartType === type) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+    
+    // تحديث نوع الرسم البياني
+    if (type === 'line') {
+      // البيانات الإجمالية
+      const totalData = {
+        labels: {{ chart_labels|tojson }},
+        datasets: [
+          {
+            label: 'كمية الوقود (لتر)',
+            data: {{ chart_liters|tojson }},
+            borderColor: '#4f91f4',
+            backgroundColor: 'rgba(79, 145, 244, 0.1)',
+            tension: 0.3,
+            fill: true
+          },
+          {
+            label: 'التكلفة (ر.س)',
+            data: {{ chart_costs|tojson }},
+            borderColor: '#f67280',
+            backgroundColor: 'rgba(246, 114, 128, 0.1)',
+            tension: 0.3,
+            fill: true,
+            yAxisID: 'y1'
+          }
+        ]
+      };
+      createLineChart(ctx, totalData);
+    } else if (type === 'bar') {
+      // البيانات المجمعة حسب نوع الوقود
+      const fuelTypeData = {
+        labels: {{ chart_labels|tojson }},
+        datasets: [
+          {% for fuel_type, data in fuel_type_chart_data.items() %}
+          {
+            label: "{{ fuel_type }}",
+            data: {{ data.liters|tojson }},
+            backgroundColor: getFuelTypeColor("{{ fuel_type }}"),
+            borderColor: getFuelTypeColor("{{ fuel_type }}"),
+            borderWidth: 1
+          }{% if not loop.last %},{% endif %}
+          {% endfor %}
+        ]
+      };
+      createBarChart(ctx, fuelTypeData);
+    } else if (type === 'pie') {
+      // بيانات المخطط الدائري
+      const pieData = {
+        labels: Object.keys({{ fuel_types_stats|tojson }}),
+        datasets: [{
+          data: Object.values({{ fuel_types_stats|tojson }}).map(item => item.cost),
+          backgroundColor: Object.keys({{ fuel_types_stats|tojson }}).map(getFuelTypeColor),
+          hoverOffset: 4
+        }]
+      };
+      createPieChart(ctx, pieData);
+    }
+  }
+  
+  function getFuelTypeColor(fuelType, alpha = 1) {
+    const colors = {
+      'بنزين 91': `rgba(76, 175, 80, ${alpha})`,
+      'بنزين 95': `rgba(33, 150, 243, ${alpha})`,
+      'ديزل': `rgba(255, 152, 0, ${alpha})`,
+      'غاز': `rgba(156, 39, 176, ${alpha})`,
+      'آخر': `rgba(96, 125, 139, ${alpha})`
+    };
+    
+    return colors[fuelType] || `rgba(79, 145, 244, ${alpha})`;
+  }
+  
+  function setupFilterFunctions() {
+    // وظيفة لعرض/إخفاء خيارات الفلترة
+    document.querySelector('.filter-toggle').addEventListener('click', function() {
+      const filterIcon = document.getElementById('filter-toggle-icon');
+      const filterSection = document.getElementById('filterOptionsSection');
+      
+      if (filterSection.style.display === 'none') {
+        filterSection.style.display = 'block';
+        filterIcon.className = 'fas fa-chevron-up';
+      } else {
+        filterSection.style.display = 'none';
+        filterIcon.className = 'fas fa-chevron-down';
+      }
+    });
+    
+    // تحديث حقول التاريخ حسب الفترة المحددة
+    document.getElementById('periodSelect').addEventListener('change', updateDateFilters);
+  }
+  
+  function toggleDaysFilter() {
+    const daysSection = document.getElementById('daysFilterSection');
+    const daysToggleIcon = document.getElementById('days-toggle-icon');
+    
+    if (daysSection.style.display === 'none') {
+      daysSection.style.display = 'block';
+      daysToggleIcon.className = 'fas fa-chevron-up';
+    } else {
+      daysSection.style.display = 'none';
+      daysToggleIcon.className = 'fas fa-chevron-down';
+    }
+  }
+  
+  function updateDateFilters() {
+    const periodSelect = document.getElementById('periodSelect');
+    const customDateSection = document.getElementById('customDateSection');
+    
+    if (periodSelect.value === 'custom') {
+      customDateSection.style.display = 'block';
+    } else {
+      customDateSection.style.display = 'none';
+    }
+  }
+  
+  function selectAllDays() {
+    document.querySelectorAll('input[name="weekdays"]').forEach(checkbox => {
+      checkbox.checked = true;
+    });
+  }
+  
+  function clearAllDays() {
+    document.querySelectorAll('input[name="weekdays"]').forEach(checkbox => {
+      checkbox.checked = false;
+    });
+  }
+</script>

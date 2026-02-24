@@ -395,6 +395,29 @@
 
 <div id="file-previews" class="row g-3 mt-2">
     <!-- المعاينات تظهر هنا -->
+
+{% set images_list = images if images is defined else (handover.images if handover and handover.images else None) %}
+{% if images_list %}
+    <div class="row g-3 mt-2">
+        {% for image in images_list %}
+            <div class="col-md-4 preview-item">
+                <div class="card shadow-sm h-100">
+                    <img src="{{ url_for('static', filename=image.file_path) }}" alt="صورة توثيقية" class="card-img-top preview-image" style="height:120px; object-fit: cover;">
+                    <div class="card-body p-2">
+                        <input type="text" class="form-control form-control-sm file-description" name="image_note_{{ image.id }}" value="{{ image.file_description or '' }}" placeholder="ملاحظة (اختياري)">
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <form method="post" action="{{ url_for('vehicles.delete_image', id=image.id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذه الصورة؟')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt ms-1"></i> حذف</button>
+                        </form>
+                        <a href="{{ url_for('static', filename=image.file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">عرض</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 </div>
 
 <!-- قوالب المعاينة المخفية (ضرورية) -->

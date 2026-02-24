@@ -1,0 +1,45 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // بيانات الرسوم
+    const feesData = {
+        labels: ['رسوم مدفوعة', 'رسوم مستحقة'],
+        datasets: [{
+            data: [
+                {{ fees_summary.paid_fees or 0 }},
+                {{ fees_summary.pending_fees or 0 }}
+            ],
+            backgroundColor: [
+                'rgba(40, 167, 69, 0.7)',  // رسوم مدفوعة
+                'rgba(255, 193, 7, 0.7)'   // رسوم مستحقة
+            ],
+            borderColor: [
+                'rgba(40, 167, 69, 1)',
+                'rgba(255, 193, 7, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    // إنشاء رسم بياني للرسوم
+    const ctx = document.getElementById('feesChart').getContext('2d');
+    const feesChart = new Chart(ctx, {
+        type: 'pie',
+        data: feesData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            family: 'Tajawal, Arial'
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>

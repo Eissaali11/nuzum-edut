@@ -1,0 +1,279 @@
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --card-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        --hover-transform: translateY(-3px);
+        --border-radius: 20px;
+    }
+    
+    body {
+        background: var(--primary-gradient);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .container-fluid {
+        background: transparent;
+        padding: 30px;
+    }
+    
+    .page-header {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        border-radius: var(--border-radius);
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+    }
+    
+    .page-header h2 {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        margin: 0;
+        font-size: 2.2rem;
+    }
+    
+    .detail-card {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        border-radius: var(--border-radius);
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .detail-card:hover {
+        transform: var(--hover-transform);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .card-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 20px 25px;
+        margin: -25px -25px 25px -25px;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    
+    .info-item {
+        padding: 15px;
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 12px;
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .info-item:hover {
+        background: rgba(102, 126, 234, 0.1);
+        transform: translateX(5px);
+    }
+    
+    .info-label {
+        color: #7f8c8d;
+        font-size: 0.9em;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .info-value {
+        color: #2c3e50;
+        font-size: 1.1em;
+        font-weight: 700;
+    }
+    
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-width: 100px;
+        justify-content: center;
+    }
+    
+    .status-active {
+        background: linear-gradient(135deg, #00c851 0%, #007e33 100%);
+        color: white;
+    }
+    
+    .status-inactive {
+        background: linear-gradient(135deg, #ffbb33 0%, #ff8800 100%);
+        color: white;
+    }
+    
+    .assignment-type-device-only {
+        background: linear-gradient(135deg, #ffbb33 0%, #ff8800 100%);
+        color: white;
+    }
+    
+    .assignment-type-sim-only {
+        background: linear-gradient(135deg, #33b5e5 0%, #0099cc 100%);
+        color: white;
+    }
+    
+    .assignment-type-device-and-sim {
+        background: linear-gradient(135deg, #00c851 0%, #007e33 100%);
+        color: white;
+    }
+    
+    .brand-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 600;
+        text-align: center;
+        display: inline-block;
+        min-width: 80px;
+    }
+    
+    .brand-iphone {
+        background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+        color: white;
+    }
+    
+    .brand-samsung {
+        background: linear-gradient(135deg, #1428a0 0%, #0056b3 100%);
+        color: white;
+    }
+    
+    .brand-galaxy {
+        background: linear-gradient(135deg, #1428a0 0%, #0056b3 100%);
+        color: white;
+    }
+    
+    .brand-huawei {
+        background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+        color: white;
+    }
+    
+    .brand-other {
+        background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+        color: white;
+    }
+    
+    .btn {
+        border-radius: 15px;
+        padding: 12px 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn:hover {
+        transform: var(--hover-transform);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #00c851 0%, #007e33 100%);
+        color: white;
+    }
+    
+    .btn-info {
+        background: linear-gradient(135deg, #33b5e5 0%, #0099cc 100%);
+        color: white;
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #ffbb33 0%, #ff8800 100%);
+        color: white;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+        color: white;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .imei-text {
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: #667eea;
+        font-size: 1.1em;
+        background: rgba(102, 126, 234, 0.1);
+        padding: 8px 12px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+    
+    .phone-number {
+        font-weight: 700;
+        color: #667eea;
+        direction: ltr;
+        unicode-bidi: bidi-override;
+        font-family: 'Courier New', monospace;
+        font-size: 1.1em;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #7f8c8d;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        color: #bdc3c7;
+    }
+    
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .btn {
+            justify-content: center;
+        }
+        
+        .page-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .container-fluid {
+            padding: 15px;
+        }
+    }
+</style>

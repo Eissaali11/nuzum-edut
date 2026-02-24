@@ -7,59 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    {% include 'vehicles/partials/views/_4view_header.html' %}
-
-    <div class="row mb-4">
-        {% include 'vehicles/partials/views/_4view_main_info.html' %}
-        {% include 'vehicles/partials/views/_4view_rental.html' %}
-    </div>
-
-    <div class="row mb-4">
-        {% include 'vehicles/partials/views/_4view_periodic_inspections.html' %}
-        {% include 'vehicles/partials/views/_4view_safety_checks.html' %}
-    </div>
-
-    {% include 'vehicles/partials/views/_4view_documents.html' %}
-
-    <div class="row mb-4">
-        {% include 'vehicles/partials/views/_4view_workshop.html' %}
-        {% include 'vehicles/partials/views/_4view_projects.html' %}
-    </div>
-
-    <div class="row mb-4">
-        {% include 'vehicles/partials/views/_4view_current_driver.html' %}
-        {% include 'vehicles/partials/views/_4view_previous_drivers.html' %}
-    </div>
-
-    {% include 'vehicles/partials/views/_4view_handovers.html' %}
-    {% include 'vehicles/partials/views/_4view_accidents.html' %}
-</div>
-
-<script type="application/json" id="vehicle-config">
-{{ {
-    "vehicleId": vehicle.id,
-    "plateNumber": vehicle.plate_number,
-    "status": vehicle.status,
-    "color": vehicle.color,
-    "colorText": "#000" if vehicle.color in ['white', 'yellow', 'silver'] else "#fff",
-    "statusColors": {
-        "available": "#198754",
-        "rented": "#0d6efd",
-        "in_project": "#0dcaf0",
-        "in_workshop": "#ffc107",
-        "accident": "#dc3545"
-    },
-    "urls": {
-        "edit": url_for('vehicles.edit', id=vehicle.id),
-        "documents": url_for('vehicles.view_documents', id=vehicle.id),
-        "delete": url_for('vehicles.confirm_delete', id=vehicle.id),
-        "report": url_for('vehicles.generate_vehicle_report', id=vehicle.id),
-        "index": url_for('vehicles.index'),
-        "handoverDelete": url_for('vehicles.confirm_delete_handovers', vehicle_id=vehicle.id)
-    }
-} | tojson }}
-</script>
+{% include 'vehicles/views/partials/4view/_content.html' %}
 {% endblock %}
 
 {% block scripts %}

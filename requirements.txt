@@ -24,6 +24,7 @@ Flask-CORS==5.0.0
 Flask-Migrate==4.1.0
 Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.1
+Flask-Limiter==3.8.0
 fonttools==4.58.4
 fpdf2==2.8.3
 frozenlist==1.7.0
@@ -63,6 +64,7 @@ typing_extensions==4.14.0
 tzdata==2025.2
 urllib3==2.4.0
 weasyprint==65.1
+xhtml2pdf==0.2.17
 webencodings==0.5.1
 Werkzeug==3.0.1
 WTForms==3.1.1

@@ -1,0 +1,352 @@
+    {{ super() }} <!-- يحافظ على السكربتات الأساسية -->
+    <!-- تحميل مكتبات Select2 و Fabric.js -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Select2 يتطلب jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script>
+// ابدأ بكود الـ JavaScript هنا
+
+document.addEventListener('DOMContentLoaded', function () {
+    
+    // --- 1. التهيئة العامة والمتغيرات الرئيسية ---
+    const mainForm = document.getElementById('main-handover-form');
+    if (!mainForm) {
+        console.error("النموذج الرئيسي غير موجود.");
+        return;
+    }
+
+    // ضبط التاريخ الافتراضي ليكون تاريخ اليوم
+    const dateInput = document.getElementById('handover_date');
+    if (dateInput) {
+        const today = new Date();
+        today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+        dateInput.value = today.toISOString().slice(0, 10);
+    }
+    
+    console.log("النموذج جاهز والسكربتات بدأت بالعمل.");
+
+    // تهيئة Select2 لقائمة اختيار المركبة
+    const vehicleSelect = $('#vehicle_id');
+    const formContainer = $('#handover-form-container');
+
+    vehicleSelect.select2({
+        theme: 'bootstrap-5',
+        placeholder: "ابحث برقم اللوحة أو النوع...",
+        dir: "rtl",
+        language: "ar"
+    });
+
+    // --- 2. المنطق الرئيسي عند اختيار مركبة ---
+    vehicleSelect.on('select2:select', function (e) {
+        const selectedOption = $(e.params.data.element);
+        const vehicleStatus = selectedOption.data('status');
+        const plateNumber = selectedOption.data('plate');
+        
+        // أ. إظهار بقية النموذج
+        formContainer.removeClass('d-none');
+        // يمكنك إضافة تأثير ظهور لطيف
+        formContainer.hide().fadeIn(500);
+
+        // ب. تحديث عنوان الصفحة
+        $('#form-main-title').html(
+            `<i class="fas fa-file-alt me-2 text-primary"></i> نموذج لمركبة: <span class="fw-bold">${plateNumber}</span>`
+        );
+
+        // ج. ضبط نوع العملية الافتراضي بذكاء
+
+        // الكود الجديد والمصحح
+        const handoverTypeSelect = document.getElementById('handover_type');
+        if (handoverTypeSelect) {
+            if (vehicleStatus === 'available') {
+                // إذا كانت السيارة متاحة، العملية التالية المنطقية هي "تسليم"
+                handoverTypeSelect.value = 'delivery';
+            } else if (['in_project', 'in_workshop', 'accident'].includes(vehicleStatus)) {
+                // إذا كانت السيارة مع شخص أو في الورشة، فالعملية التالية هي "استلام"
+                handoverTypeSelect.value = 'return';
+            } else {
+                // إذا كانت الحالة غير معروفة، أعده إلى الوضع الافتراضي لإجبار المستخدم على الاختيار
+                handoverTypeSelect.value = ""; 
+            }
+        }
+        
+        
+        
+        // د. تفعيل الأجزاء التفاعلية الآن بعد أن أصبحت مرئية
+        // هذه هي أهم خطوة لضمان عمل لوحات الرسم
+        initializeDamageCanvas();
+        initializeAllSignaturePads();
+    });
+
+
+
+    // --- 2. منطق البحث عن الموظفين (نسخة نهائية ومصححة للأكورديون) ---
+            // في ملف HTML
+            const employeeData = {{ employeeData | tojson }};
+            const personNameInput = document.getElementById('person_name');
+            const employeeIdInput = document.getElementById('employee_id');
+            const departmentSelect = document.getElementById('departmentSelect');
+            const employeeSearchInput = document.getElementById('employeeSearchInput');
+            const employeesListContainer = document.getElementById('employeesListContainer');
+            const noResultsAlert = document.getElementById('noResultsAlert');
+            
+            function renderEmployeeList(employees) {
+                employeesListContainer.innerHTML = ''; // مسح القائمة الحالية
+                
+                if (employees.length === 0) {
+                    noResultsAlert.classList.remove('d-none');
+                    return;
+                }
+                
+                noResultsAlert.classList.add('d-none');
+                
+                const fragment = document.createDocumentFragment();
+                employees.forEach(employee => {
+                    const anchor = document.createElement('a');
+                    anchor.href = '#';
+                    anchor.className = 'list-group-item list-group-item-action select-employee-btn';
+                    anchor.dataset.id = employee.id;
+                    anchor.dataset.name = employee.name;
+
+                    anchor.innerHTML = `
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">${employee.name}</h6>
+                            <small class="text-muted">${employee.employee_id || ''}</small>
+                        </div>
+                        <small class="text-muted">${employee.department ? employee.department.name : 'غير محدد'}</small>
+                    `;
+                    fragment.appendChild(anchor);
+                });
+                employeesListContainer.appendChild(fragment);
+            }
+
+            function filterAndRender() {
+                const searchTerm = employeeSearchInput.value.toLowerCase().trim();
+                const departmentId = departmentSelect.value;
+                
+                const filteredEmployees = employeeData.filter(emp => {
+                    const departmentMatch = !departmentId || String(emp.department_id) === departmentId;
+                    const nameMatch = (emp.name || '').toLowerCase().includes(searchTerm);
+                    const empIdMatch = (emp.employee_id || '').toLowerCase().includes(searchTerm);
+                    
+                    return departmentMatch && (nameMatch || empIdMatch);
+                });
+
+                renderEmployeeList(filteredEmployees);
+            }
+            
+            // ربط الأحداث
+            employeeSearchInput.addEventListener('input', filterAndRender);
+            departmentSelect.addEventListener('change', filterAndRender);
+
+            // استخدام تفويض الأحداث لاختيار الموظف
+            employeesListContainer.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = e.target.closest('.select-employee-btn');
+                if (target) {
+                    personNameInput.value = target.dataset.name;
+                    employeeIdInput.value = target.dataset.id;
+                    
+                    const driverNameDisplay = document.getElementById('driver-name-display');
+                    if (driverNameDisplay) {
+                        driverNameDisplay.textContent = target.dataset.name;
+                    }
+                    
+                    // إغلاق الأكورديون
+                    const collapseEl = document.getElementById('collapseEmployeeSearch');
+                    new bootstrap.Collapse(collapseEl).hide();
+                }
+            });
+
+            // عرض كل الموظفين عند التحميل الأولي
+            renderEmployeeList(employeeData);
+           
+
+
+    // --- 3. منطق الرسم على مخطط الضرر ---
+    let damageCanvas; // تعريف المتغير في النطاق الأعلى
+
+    function initializeDamageCanvas() {
+        if (damageCanvas) { // إذا تم تهيئتها من قبل، لا تفعل شيئاً
+            return;
+        }
+
+        const damageCanvasEl = document.getElementById('damage-canvas');
+        if (!damageCanvasEl) return;
+
+        const damageCanvasContainer = damageCanvasEl.parentElement;
+        damageCanvas = new fabric.Canvas(damageCanvasEl, {
+            isDrawingMode: true,
+            backgroundColor: '#fff',
+        });
+        damageCanvas.freeDrawingBrush.color = "#E53935"; // أحمر
+        damageCanvas.freeDrawingBrush.width = 4;
+
+        const imageUrl = "{{ url_for('static', filename='images/vehicle_diagram.png') }}";
+        fabric.Image.fromURL(imageUrl, (img) => {
+            const containerWidth = damageCanvasContainer.offsetWidth;
+            const scale = (containerWidth > 0 ? containerWidth : 350) / img.width; // قيمة افتراضية في حالة كان العرض صفراً
+            const canvasHeight = img.height * scale;
+
+            damageCanvas.setWidth(containerWidth || 350);
+            damageCanvas.setHeight(canvasHeight);
+            damageCanvas.setBackgroundImage(img, damageCanvas.renderAll.bind(damageCanvas), { scaleX: scale, scaleY: scale });
+        }, { crossOrigin: 'anonymous' });
+        
+        // ربط أدوات التحكم (يجب أن يتم مرة واحدة فقط)
+        document.getElementById('draw-mode-btn').onclick = () => { damageCanvas.isDrawingMode = true; };
+        document.getElementById('select-mode-btn').onclick = () => { damageCanvas.isDrawingMode = false; };
+        document.getElementById('draw-color-picker').oninput = (e) => { damageCanvas.freeDrawingBrush.color = e.target.value; };
+        document.getElementById('draw-line-width').oninput = (e) => { damageCanvas.freeDrawingBrush.width = parseInt(e.target.value, 10) || 1; };
+        document.getElementById('clear-canvas-btn').onclick = () => {
+             if (confirm("هل أنت متأكد؟")) {
+                 damageCanvas.remove(...damageCanvas.getObjects());
+             }
+        };
+    }
+
+                // --- 4. منطق التواقيع (الرسم والرفع) ---
+            const signaturePads = {}; // تعريف الكائن في نطاق أعلى
+            let arePadsInitialized = false; // لمنع إعادة ربط الأحداث
+
+            function initializeAllSignaturePads() {
+                if (arePadsInitialized) return; // نفّذ مرة واحدة فقط
+
+                initializeSinglePad('supervisor-signature-canvas');
+                initializeSinglePad('driver-signature-canvas');
+                
+                // ربط الأحداث التي يجب أن تتم مرة واحدة فقط
+                setupSignatureEventListeners(); 
+
+                arePadsInitialized = true;
+            }
+
+            function initializeSinglePad(canvasId) {
+                const canvasEl = document.getElementById(canvasId);
+                if (!canvasEl) return;
+                
+                const container = canvasEl.parentElement;
+                let pad = signaturePads[canvasId];
+                
+                if (pad) { // إذا كان موجوداً، فقط حدث الأبعاد
+                    pad.setWidth(container.offsetWidth - 2);
+                    pad.setHeight(container.offsetHeight - 2);
+                    pad.renderAll();
+                } else { // وإلا، قم بإنشائه
+                    pad = new fabric.Canvas(canvasEl, { isDrawingMode: true, backgroundColor: 'rgba(0,0,0,0)' });
+                    pad.freeDrawingBrush.color = "#000000";
+                    pad.freeDrawingBrush.width = 2;
+                    pad.setWidth(container.offsetWidth - 2);
+                    pad.setHeight(container.offsetHeight - 2);
+                    signaturePads[canvasId] = pad;
+                }
+            }
+            
+            function setupSignatureEventListeners() {
+                // مسح التوقيع المرسوم
+                document.querySelectorAll('.clear-signature').forEach(button => {
+                    button.onclick = function() {
+                        const pad = signaturePads[this.dataset.canvasId];
+                        if (pad) {
+                            pad.clear();
+                            document.getElementById(this.dataset.canvasId.replace('-canvas', '-data')).value = '';
+                        }
+                    };
+                });
+
+                // رفع صورة توقيع
+                document.querySelectorAll('.signature-upload').forEach(input => {
+                    input.onchange = function(event) {
+                        const file = event.target.files[0];
+                        const previewEl = this.parentElement.querySelector('.signature-preview');
+                        const targetInputId = this.dataset.targetInputId;
+                        if (file && previewEl) {
+                            const reader = new FileReader();
+                            reader.onload = e => {
+                                previewEl.src = e.target.result;
+                                previewEl.classList.remove('d-none');
+                                document.getElementById(targetInputId).value = e.target.result;
+                                const pad = signaturePads[targetInputId.replace('-data', '-canvas')];
+                                if (pad) pad.clear();
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    };
+                });
+
+                // تبديل التبويبات (رسم / رفع)
+                document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+                    tab.addEventListener('shown.bs.tab', function(event) {
+                        const targetPaneId = this.getAttribute('data-bs-target');
+                        if (targetPaneId && targetPaneId.includes('-draw-tab')) {
+                            initializeSinglePad(targetPaneId.replace('#', '').replace('-draw-tab', '-signature-canvas'));
+                        }
+                    });
+                });
+            }
+
+            // --- 5. منطق رفع الملفات المتعددة للتوثيق ---
+            const filesInput = document.getElementById('files');
+            const filePreviewsContainer = document.getElementById('file-previews');
+            const finalFilesList = new DataTransfer();
+
+            if (filesInput && filePreviewsContainer) {
+                filesInput.addEventListener('change', function(event) {
+                    Array.from(this.files).forEach(file => {
+                        let alreadyExists = Array.from(finalFilesList.files).some(f => f.name === file.name && f.size === file.size);
+                        if (!alreadyExists) {
+                            finalFilesList.items.add(file);
+                            createFilePreview(file);
+                        }
+                    });
+                    this.files = finalFilesList.files; // تحديث حقل الإدخال الأصلي
+                });
+            }
+
+            function createFilePreview(file) {
+                // ... (كود هذه الدالة يبقى كما هو من الإجابة السابقة الخاصة بالملفات)
+                // يفضل نسخه من هناك لضمان أنه كامل...
+                const col = document.createElement('div'); col.className = 'col-6 col-sm-4'; const card = document.createElement('div'); card.className = 'card h-100 position-relative';
+                const removeBtn = document.createElement('button'); removeBtn.type = 'button'; removeBtn.className = 'btn-close position-absolute top-0 end-0 m-1 bg-white p-1 rounded-circle';
+                removeBtn.onclick = () => { /* ... منطق الحذف ... */ };
+                if (file.type === 'application/pdf') { card.innerHTML = `<div class="card-body text-center p-2"><i class="fas fa-file-pdf fa-2x text-danger"></i><p class="small text-truncate mb-0 mt-1">${file.name}</p></div>`;} 
+                else { const reader = new FileReader(); reader.onload = e => {card.innerHTML = `<img src="${e.target.result}" style="height: 80px; object-fit: cover;">`; card.appendChild(removeBtn); }; reader.readAsDataURL(file);}
+                if (file.type === 'application/pdf') card.appendChild(removeBtn);
+                col.appendChild(card); filePreviewsContainer.appendChild(col);
+            }
+            
+
+            // --- 6. المنطق المجمع عند إرسال النموذج ---
+            mainForm.addEventListener('submit', function (event) {
+                // أ. حفظ مخطط الضرر
+                if (damageCanvas && damageCanvas.getObjects().length > 0) {
+                    document.getElementById('damage-diagram-data').value = damageCanvas.toDataURL({format: 'png', quality: 0.8});
+                }
+
+                // ب. حفظ التواقيع
+                for (const canvasId in signaturePads) {
+                    const targetInputId = canvasId.replace('-canvas', '-data');
+                    const targetInput = document.getElementById(targetInputId);
+                    if (targetInput && !targetInput.value.startsWith('data:image/')) {
+                        if (signaturePads[canvasId].getObjects().length > 0) {
+                            targetInput.value = signaturePads[canvasId].toDataURL({ format: 'png' });
+                        }
+                    }
+                }
+                
+                // ج. لا حاجة لعمل شيء بخصوص الملفات المتعددة، لأنها موجودة بالفعل في <input id="files">
+                
+                console.log("البيانات جاهزة للإرسال.");
+                // لا تحتاج لـ e.preventDefault()، سيتم إرسال النموذج بشكل طبيعي
+            });
+
+    //
+    // --- سيتم إضافة بقية الدوال والمراحل هنا ---
+    //
+
+}); // نهاية document.addEventListener
+
+
+</script>

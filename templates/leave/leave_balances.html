@@ -11,31 +11,5 @@
 {% endblock %}
 
 {% block content %}
-<div class="balances-container">
-    <h1><i class="fas fa-layer-group"></i> أرصدة الإجازات - {{ year }}</h1>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>الموظف</th>
-                <th>النوع</th>
-                <th>المستحق</th>
-                <th>المستخدم</th>
-                <th>المتبقي</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for b in balances %}
-            <tr>
-                <td>{{ b.employee.name if b.employee else b.employee_id }}</td>
-                <td>{{ b.leave_type }}</td>
-                <td>{{ "%.2f"|format(b.total_accrued) }}</td>
-                <td>{{ "%.2f"|format(b.used) }}</td>
-                <td>{{ "%.2f"|format(b.remaining) }}</td>
-            </tr>
-            {% else %}
-            <tr><td colspan="5">لا توجد بيانات أرصدة.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+{% include 'leave/partials/leave_balances/_content.html' %}
 {% endblock %}

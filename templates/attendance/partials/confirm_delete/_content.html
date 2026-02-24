@@ -1,0 +1,55 @@
+<div class="confirm-card">
+    <i class="fas fa-exclamation-triangle warning-icon"></i>
+    <h2 class="confirm-title">تأكيد حذف سجل الحضور</h2>
+    
+    <div class="warning-message">
+        <i class="fas fa-info-circle me-2"></i>
+        هل أنت متأكد من حذف سجل الحضور هذا؟ هذا الإجراء لا يمكن التراجع عنه.
+    </div>
+
+    <div class="attendance-info">
+        <div class="info-row">
+            <span class="info-label">اسم الموظف:</span>
+            <span class="info-value">{{ attendance.employee.name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">الرقم الوظيفي:</span>
+            <span class="info-value">{{ attendance.employee.employee_id }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">التاريخ:</span>
+            <span class="info-value">{{ attendance.date.strftime('%Y-%m-%d') }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">الحالة:</span>
+            <span class="info-value">
+                {% if attendance.status == 'present' %}
+                <span class="status-badge status-present">حاضر</span>
+                {% elif attendance.status == 'absent' %}
+                <span class="status-badge status-absent">غائب</span>
+                {% elif attendance.status == 'leave' %}
+                <span class="status-badge status-leave">إجازة</span>
+                {% elif attendance.status == 'sick' %}
+                <span class="status-badge status-sick">مرضي</span>
+                {% endif %}
+            </span>
+        </div>
+        {% if attendance.notes %}
+        <div class="info-row">
+            <span class="info-label">ملاحظات:</span>
+            <span class="info-value">{{ attendance.notes }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="btn-group">
+        <form method="POST" action="{{ url_for('attendance.delete_attendance', id=attendance.id) }}" style="margin: 0;">
+            <button type="submit" class="btn-delete">
+                <i class="fas fa-trash me-2"></i>نعم، احذف السجل
+            </button>
+        </form>
+        <a href="{{ url_for('attendance.dashboard') }}" class="btn-cancel">
+            <i class="fas fa-times me-2"></i>إلغاء
+        </a>
+    </div>
+</div>

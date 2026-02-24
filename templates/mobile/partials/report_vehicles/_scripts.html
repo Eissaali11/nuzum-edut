@@ -1,0 +1,100 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if vehicles %}
+    // إنشاء رسم بياني محسن للمركبات
+    const ctx = document.getElementById('vehiclesChart').getContext('2d');
+    
+    // تحضير البيانات للرسم البياني
+    const vehicleTypes = [{% for type in vehicle_types %}'{{ type }}',{% endfor %}];
+    const vehicleCounts = [{% for type in vehicle_types %}{{ vehicles|selectattr('make', 'equalto', type)|list|length }},{% endfor %}];
+    
+    // ألوان متدرجة احترافية
+    const gradients = vehicleTypes.map((_, index) => {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        const colors = [
+            ['#667eea', '#764ba2'],
+            ['#4facfe', '#00f2fe'],
+            ['#f093fb', '#f5576c'],
+            ['#43e97b', '#38f9d7'],
+            ['#fa709a', '#fee140'],
+            ['#a8edea', '#fed6e3'],
+            ['#d299c2', '#fef9d7'],
+            ['#89f7fe', '#66a6ff']
+        ];
+        const colorPair = colors[index % colors.length];
+        gradient.addColorStop(0, colorPair[0]);
+        gradient.addColorStop(1, colorPair[1]);
+        return gradient;
+    });
+    
+    const vehiclesChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: vehicleTypes,
+            datasets: [{
+                data: vehicleCounts,
+                backgroundColor: gradients,
+                borderWidth: 3,
+                borderColor: '#ffffff',
+                hoverBorderWidth: 5,
+                hoverBorderColor: '#667eea'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            family: 'Tajawal, Arial, sans-serif',
+                            size: 12,
+                            weight: '500'
+                        },
+                        color: '#333',
+                        padding: 15,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'توزيع المركبات حسب الشركة المصنعة',
+                    font: {
+                        family: 'Tajawal, Arial, sans-serif',
+                        size: 16,
+                        weight: '600'
+                    },
+                    color: '#333',
+                    padding: 20
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    cornerRadius: 8,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed * 100) / total).toFixed(1);
+                            return `${context.label}: ${context.parsed} مركبة (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            cutout: '60%',
+            animation: {
+                animateRotate: true,
+                duration: 2000
+            },
+            hover: {
+                animationDuration: 300
+            }
+        }
+    });
+    {% endif %}
+});
+</script>

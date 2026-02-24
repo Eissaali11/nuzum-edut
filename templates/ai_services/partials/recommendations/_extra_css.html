@@ -1,0 +1,111 @@
+<style>
+    :root {
+        --ai-primary: #1e3a5c;
+        --ai-secondary: #2d5a87;
+        --ai-accent: #00d4aa;
+        --ai-gradient: linear-gradient(135deg, var(--ai-primary) 0%, var(--ai-secondary) 100%);
+        --ai-card-bg: rgba(255, 255, 255, 0.05);
+        --ai-border: rgba(0, 212, 170, 0.2);
+    }
+
+    body {
+        background: linear-gradient(135deg, var(--ai-primary) 0%, #1a1a1a 50%, var(--ai-secondary) 100%);
+    }
+
+    .recommendation-card {
+        background: var(--ai-card-bg);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--ai-border);
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .recommendation-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--ai-accent), var(--ai-secondary));
+    }
+
+    .recommendation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 212, 170, 0.3);
+    }
+
+    .recommendation-header {
+        background: var(--ai-gradient);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 15px 15px 0 0;
+    }
+
+    .recommendation-item {
+        background: rgba(0, 212, 170, 0.1);
+        border: 1px solid var(--ai-border);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .recommendation-item:hover {
+        background: rgba(0, 212, 170, 0.2);
+        transform: translateX(5px);
+    }
+
+    .priority-high {
+        border-left: 4px solid #dc3545;
+    }
+
+    .priority-medium {
+        border-left: 4px solid #ffc107;
+    }
+
+    .priority-low {
+        border-left: 4px solid #198754;
+    }
+
+    .ai-analysis-box {
+        background: linear-gradient(45deg, rgba(0, 212, 170, 0.1), rgba(0, 153, 204, 0.1));
+        border: 1px solid var(--ai-border);
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 2rem 0;
+        position: relative;
+    }
+
+    .ai-analysis-box::before {
+        content: '🤖';
+        position: absolute;
+        top: -10px;
+        left: 20px;
+        background: var(--ai-gradient);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 1.2rem;
+    }
+
+    .impact-meter {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        height: 8px;
+        margin: 0.5rem 0;
+        overflow: hidden;
+    }
+
+    .impact-fill {
+        height: 100%;
+        border-radius: 20px;
+        transition: width 0.5s ease;
+    }
+
+    .impact-high { background: linear-gradient(90deg, #dc3545, #fd7e14); }
+    .impact-medium { background: linear-gradient(90deg, #ffc107, #ffca2c); }
+    .impact-low { background: linear-gradient(90deg, #198754, #20c997); }
+</style>

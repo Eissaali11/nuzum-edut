@@ -1,0 +1,429 @@
+<style>
+    :root {
+        /* ألوان النظام المعاصرة */
+        --primary-color: #1e3a5c;
+        --primary-light: #2d5a87;
+        --primary-dark: #0f1f2f;
+        --secondary-color: #1a1a1a;
+        --accent-blue: #0d6efd;
+        --accent-gold: #ffc107;
+        --accent-green: #198754;
+        --accent-red: #dc3545;
+        --accent-purple: #6f42c1;
+        --text-light: #ffffff;
+        --text-muted: #6c757d;
+        --text-dark: #212529;
+        
+        /* خلفيات وتأثيرات */
+        --glass-bg: rgba(30, 58, 92, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --card-border: rgba(255, 255, 255, 0.1);
+        --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.25);
+        
+        /* تدرجات لونية */
+        --primary-gradient: linear-gradient(135deg, #1e3a5c 0%, #2d5a87 100%);
+        --success-gradient: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        --danger-gradient: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        --warning-gradient: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%);
+        --info-gradient: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%);
+        --secondary-gradient: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
+    }
+
+    body {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 50%, var(--secondary-color) 100%);
+        font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        direction: rtl;
+        min-height: 100vh;
+        color: var(--text-light);
+        position: relative;
+    }
+
+    /* خلفية متحركة بسيطة */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 20% 80%, rgba(30, 58, 92, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(13, 110, 253, 0.08) 0%, transparent 50%);
+        z-index: -1;
+    }
+
+    /* رأس الصفحة المحسن */
+    .page-header {
+        background: var(--card-bg);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary-gradient);
+    }
+
+    .page-header h2 {
+        color: var(--text-light);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.75rem;
+    }
+
+    .page-header .text-muted {
+        color: var(--text-muted) !important;
+        opacity: 0.8;
+    }
+
+    /* أزرار محسنة */
+    .btn-enhanced {
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: var(--card-shadow);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 120px;
+        justify-content: center;
+    }
+
+    .btn-enhanced:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+        text-decoration: none;
+    }
+
+    .btn-success-enhanced {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .btn-primary-enhanced {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .btn-info-enhanced {
+        background: var(--info-gradient);
+        color: white;
+    }
+
+    .btn-warning-enhanced {
+        background: var(--warning-gradient);
+        color: white;
+    }
+
+    .btn-danger-enhanced {
+        background: var(--danger-gradient);
+        color: white;
+    }
+
+    .btn-secondary-enhanced {
+        background: var(--secondary-gradient);
+        color: white;
+    }
+
+    /* قسم الفلاتر المحسن */
+    .filters-section {
+        background: var(--card-bg);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-toggle-btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background: var(--secondary-gradient);
+        border: none;
+        color: white;
+    }
+
+    .filter-toggle-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    /* جدول محسن */
+    .table-container {
+        position: relative;
+        background: var(--card-bg);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+    }
+
+    .vehicle-table {
+        margin-bottom: 0;
+        color: var(--text-light);
+    }
+
+    .vehicle-table th {
+        white-space: nowrap;
+        background: var(--primary-gradient);
+        border-bottom: 2px solid var(--primary-light);
+        font-weight: 700;
+        padding: 1rem;
+        color: white;
+    }
+
+    .vehicle-table td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .vehicle-table tr:hover td {
+        background: rgba(30, 58, 92, 0.2);
+    }
+
+    .scroll-indicator {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--accent-blue);
+        color: white;
+        padding: 10px;
+        border-radius: 50%;
+        box-shadow: var(--card-shadow);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+    }
+
+    .scroll-indicator:hover {
+        background: var(--primary-color);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    /* Enhanced Status Indicators */
+    .vehicle-status {
+        width: 12px;
+        height: 12px;
+        display: inline-block;
+        border-radius: 50%;
+        margin-left: 5px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .status-available { background: var(--success-gradient); }
+    .status-rented { background: var(--primary-gradient); }
+    .status-in_project { background: var(--info-gradient); }
+    .status-in_workshop { background: var(--warning-gradient); }
+    .status-accident { background: var(--danger-gradient); }
+
+    /* Enhanced Badges */
+    .badge-enhanced {
+        padding: 0.5rem 0.75rem;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .badge-enhanced:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .badge-plate {
+        font-size: 1em;
+        font-weight: bold;
+        letter-spacing: 1px;
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .badge-location {
+        background: var(--info-gradient);
+        color: white;
+    }
+
+    .badge-project {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    /* تنسيق محسن للصفحات */
+    .pagination-enhanced .page-item {
+        margin: 0 3px;
+    }
+
+    .pagination-enhanced .page-link {
+        border-radius: 8px;
+        border: 1px solid var(--card-border);
+        background: var(--card-bg);
+        color: var(--text-light);
+        font-weight: 600;
+        min-width: 40px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .pagination-enhanced .page-link:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .pagination-enhanced .page-item.active .page-link {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .pagination-enhanced .page-item.disabled .page-link {
+        opacity: 0.5;
+        background: var(--card-bg);
+        color: var(--text-muted);
+    }
+
+    /* حالة فارغة محسنة */
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        background: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        color: var(--text-light);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--accent-blue);
+    }
+
+    .empty-state h5 {
+        color: var(--text-light);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    /* تحسينات إضافية للنماذج */
+    .form-control,
+    .form-select {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--card-border);
+        color: var(--text-light);
+        border-radius: 6px;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        color: var(--text-light);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-muted);
+    }
+
+    .form-label {
+        color: var(--text-light);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .input-group-text {
+        background: var(--primary-gradient);
+        border-color: var(--accent-blue);
+        color: white;
+    }
+
+    /* تصميم متجاوب */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+        
+        .page-header h2 {
+            font-size: 1.5rem;
+        }
+        
+        .btn-enhanced {
+            padding: 0.5rem 1rem;
+            min-width: auto;
+            font-size: 0.9rem;
+        }
+        
+        .filters-section {
+            padding: 1rem;
+        }
+        
+        .vehicle-table th,
+        .vehicle-table td {
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .empty-state {
+            padding: 2rem 1rem;
+        }
+        
+        .badge-enhanced {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+    }
+
+    /* تحسينات إضافية للتجاوب */
+    @media (max-width: 576px) {
+        .container-fluid {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        .page-header {
+            padding: 1rem;
+        }
+        
+        .page-header .d-flex {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .vehicle-table {
+            font-size: 0.8rem;
+        }
+    }
+</style>

@@ -1,0 +1,49 @@
+{% if employee.bank_iban_image %}
+<div class="modal fade" id="ibanImageModal" tabindex="-1" aria-labelledby="ibanImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" style="border: none; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e3a5c 0%, #3182ce 100%); color: white; border: none; padding: 20px;">
+                <div class="d-flex align-items-center">
+                    <div class="me-3" style="background: rgba(255,255,255,0.2); border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-credit-card fa-lg"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="ibanImageModalLabel" style="font-weight: 600;">صورة الإيبان البنكي</h5>
+                        <small style="opacity: 0.9;">{{ employee.name }}</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center" style="padding: 40px; background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);">
+                <div class="mb-3">
+                    <span class="badge bg-success rounded-pill px-3 py-2">
+                        <i class="fas fa-check me-1"></i>صورة الإيبان البنكي
+                    </span>
+                </div>
+                <div class="d-inline-block position-relative">
+                    <img src="{{ url_for('static', filename=employee.bank_iban_image) }}"
+                         alt="صورة الإيبان البنكي"
+                         class="img-fluid rounded shadow-lg"
+                         style="max-height: 70vh; width: auto; border: 3px solid #3b82f6;">
+                    <div class="position-absolute bottom-0 start-0 m-2">
+                        <span class="badge bg-dark bg-opacity-75 rounded-pill">
+                            <i class="fas fa-expand-alt me-1"></i>انقر للتكبير
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="background: white; border: none; padding: 20px; justify-content: center;">
+                <button type="button" class="btn btn-secondary rounded-pill px-4 me-2" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>إغلاق
+                </button>
+                <a href="{{ url_for('static', filename=employee.bank_iban_image) }}"
+                   target="_blank"
+                   class="btn rounded-pill px-4"
+                   style="background: linear-gradient(135deg, #1e3a5c 0%, #3182ce 100%); border: none; color: white;">
+                   <i class="fas fa-external-link-alt me-1"></i>فتح في تبويب جديد
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

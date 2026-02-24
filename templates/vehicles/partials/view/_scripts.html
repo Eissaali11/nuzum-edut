@@ -1,0 +1,317 @@
+{{ super() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // حفظ التبويب النشط عند التحديث
+    const activeTab = localStorage.getItem("activeVehicleTab");
+    if (activeTab) {
+        const tabTrigger = new bootstrap.Tab(document.querySelector(activeTab));
+        tabTrigger.show();
+    }
+
+    // تحديث التبويب النشط عند التغيير
+    const tabLinks = document.querySelectorAll('[data-bs-toggle="tab"]');
+    tabLinks.forEach((tabLink) => {
+        tabLink.addEventListener("shown.bs.tab", (event) => {
+            localStorage.setItem(
+                "activeVehicleTab",
+                event.target.getAttribute("data-bs-target")
+            );
+        });
+    });
+
+    // تحديد العناصر
+    const selectAllCheckbox = document.getElementById("select-all");
+    const handoverCheckboxes = document.querySelectorAll(".handover-checkbox");
+    const deleteSelectedBtn = document.getElementById("delete-selected-btn");
+    const handoverDeleteForm = document.getElementById("handover-delete-form");
+
+    if (selectAllCheckbox && handoverCheckboxes.length > 0 && deleteSelectedBtn) {
+        // تحديث زر الحذف بناءً على الخانات المحددة
+        function updateDeleteButtonState() {
+            const checkedCount = document.querySelectorAll(".handover-checkbox:checked").length;
+            deleteSelectedBtn.disabled = checkedCount === 0;
+
+            // تحديث نص الزر ليعكس عدد العناصر المحددة
+            if (checkedCount > 0) {
+                deleteSelectedBtn.innerHTML = `<i class="fas fa-trash-alt ms-1"></i> حذف المحدد (${checkedCount})`;
+            } else {
+                deleteSelectedBtn.innerHTML = `<i class="fas fa-trash-alt ms-1"></i> حذف المحدد`;
+            }
+        }
+
+        // تحديد/إلغاء تحديد الكل
+        selectAllCheckbox.addEventListener("change", function () {
+            handoverCheckboxes.forEach((checkbox) => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            updateDeleteButtonState();
+        });
+
+        // تحديث زر الحذف عند تغيير حالة أي خانة
+        handoverCheckboxes.forEach((checkbox) => {
+            checkbox.addEventListener("change", function () {
+                // تحديث حالة خانة تحديد الكل
+                const allChecked = document.querySelectorAll(".handover-checkbox:checked").length === handoverCheckboxes.length;
+                selectAllCheckbox.checked = allChecked;
+
+                // تحديث زر الحذف
+                updateDeleteButtonState();
+            });
+        });
+
+        // تحديث حالة الزر في البداية
+        updateDeleteButtonState();
+    }
+
+    // تأكيد الحذف قبل الإرسال
+    if (handoverDeleteForm) {
+        handoverDeleteForm.addEventListener("submit", function (e) {
+            const checkedBoxes = document.querySelectorAll(".handover-checkbox:checked");
+            if (checkedBoxes.length === 0) {
+                e.preventDefault();
+                alert("يرجى تحديد السجلات المراد حذفها");
+                return false;
+            }
+
+            const confirmMessage = `هل أنت متأكد من حذف ${checkedBoxes.length} سجل من سجلات التسليم والاستلام؟\n\nهذا الإجراء لا يمكن التراجع عنه.`;
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+
+    // دالة مشاركة رابط نموذج فحص السلامة الخارجي
+    function shareSafetyCheckForm(vehicleId, plateNumber) {
+        // إنشاء رابط باستخدام النطاق الحالي
+        const formUrl = window.location.origin + "/external-safety/external-safety-check/" + vehicleId;
+
+        const shareData = {
+            title: "نموذج فحص السلامة الخارجي - نُظم",
+            text: `مرحباً 👋
+
+يرجى تعبئة نموذج فحص السلامة الخارجي للمركبة التالية:
+
+🚗 رقم اللوحة: ${plateNumber}
+📋 نوع النموذج: فحص السلامة الخارجي
+🏢 نظام نُظم لإدارة المركبات
+
+يرجى الضغط على الرابط أدناه لتعبئة النموذج:
+${formUrl}
+
+⚠️ ملاحظة: يرجى تعبئة النموذج بعناية وإرفاق جميع الصور المطلوبة للفحص.
+
+شكراً لتعاونكم`,
+            url: formUrl,
+        };
+
+        // استخدام Web Share API إذا كان متاحاً
+        if (navigator.share) {
+            navigator.share(shareData)
+                .then(() => {
+                    showToast("تم مشاركة الرابط بنجاح!", "success");
+                })
+                .catch((error) => {
+                    console.error("خطأ في المشاركة:", error);
+                    fallbackShare(shareData);
+                });
+        } else {
+            // استخدام النسخ للحافظة كبديل
+            fallbackShare(shareData);
+        }
+    }
+
+    // دالة بديلة للمشاركة
+    function fallbackShare(shareData) {
+        const textToCopy = shareData.text;
+
+        // محاولة نسخ النص للحافظة
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    showToast("تم نسخ رابط الفحص للحافظة!", "success");
+                })
+                .catch(() => {
+                    showShareModal(shareData);
+                });
+        } else {
+            showShareModal(shareData);
+        }
+    }
+
+    // عرض نافذة منبثقة للمشاركة
+    function showShareModal(shareData) {
+        const modal = document.createElement("div");
+        modal.className = "modal fade";
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">مشاركة رابط فحص السلامة</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">انسخ الرابط والرسالة التالية لمشاركتها:</p>
+                        <textarea class="form-control" rows="8" readonly>${shareData.text}</textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="copyToClipboard(this, '${shareData.text}')">
+                            <i class="fas fa-copy ms-1"></i>
+                            نسخ النص
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+
+        // إزالة النافذة عند الإغلاق
+        modal.addEventListener("hidden.bs.modal", () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    // دالة نسخ النص للحافظة
+    function copyToClipboard(button, text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+
+        // تغيير نص الزر مؤقتاً
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check ms-1"></i> تم النسخ!';
+        button.className = "btn btn-success";
+
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.className = "btn btn-primary";
+        }, 2000);
+    }
+
+    // دالة عرض رسائل Toast
+    function showToast(message, type = "info") {
+        const toast = document.createElement("div");
+        toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = "top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px;";
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(toast);
+
+        // إزالة الرسالة تلقائياً بعد 5 ثوانٍ
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 5000);
+    }
+});
+</script>
+
+<!-- نافذة إدارة Google Drive -->
+<div class="modal fade" id="driveModal" tabindex="-1" aria-labelledby="driveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="driveModalLabel">
+                    <i class="fab fa-google-drive me-2"></i>
+                    إدارة ملفات Google Drive
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{{ url_for('vehicles.update_drive_link', vehicle_id=vehicle.id) }}" id="driveForm">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="driveLink" class="form-label">
+                                    <i class="fas fa-link me-1"></i>
+                                    رابط مجلد Google Drive
+                                </label>
+                                <input type="url" 
+                                       class="form-control" 
+                                       id="driveLink" 
+                                       name="drive_link" 
+                                       value="{{ vehicle.drive_folder_link or '' }}" 
+                                       placeholder="https://drive.google.com/drive/folders/..." 
+                                       dir="ltr">
+                                <div class="form-text">
+                                    قم بإنشاء مجلد في Google Drive وانسخ رابط المشاركة هنا
+                                </div>
+                            </div>
+
+                            <div id="previewContainer" style="display: none" class="alert">
+                                <!-- سيتم ملؤها بواسطة JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6>
+                            <i class="fas fa-info-circle me-1"></i> كيفية إنشاء رابط Google Drive:
+                        </h6>
+                        <ol class="mb-0">
+                            <li>
+                                انتقل إلى
+                                <a href="https://drive.google.com" target="_blank">Google Drive</a>
+                            </li>
+                            <li>انقر بزر الماوس الأيمن واختر "مجلد جديد"</li>
+                            <li>
+                                اسم المجلد باسم السيارة: "{{ vehicle.plate_number }} - {{ vehicle.make }} {{ vehicle.model }}"
+                            </li>
+                            <li>
+                                انقر بزر الماوس الأيمن على المجلد واختر "مشاركة"
+                            </li>
+                            <li>
+                                غير الإذن إلى "أي شخص لديه الرابط يمكنه العرض"
+                            </li>
+                            <li>انسخ الرابط والصقه هنا</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>
+                        إلغاء
+                    </button>
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-save me-1"></i>
+                        حفظ الرابط
+                    </button>
+                    {% if vehicle.drive_folder_link %}
+                    <button type="submit" name="action" value="remove" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>
+                        حذف الرابط
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+<!-- Vehicle Document Sharing JavaScript -->
+<script src="{{ url_for('static', filename='js/vehicle_document_share.js') }}"></script>
+
+<!-- Vehicle data for sharing -->
+<div style="display: none;">
+    <span data-plate-number="{{ vehicle.plate_number }}"></span>
+    <span data-make="{{ vehicle.make }}"></span>
+    <span data-model="{{ vehicle.model }}"></span>
+    <span data-year="{{ vehicle.year }}"></span>
+    <span data-current-driver="{{ current_driver.name if current_driver else 'غير محدد' }}"></span>
+    <span data-driver-phone="{{ current_driver.mobile if current_driver else '' }}"></span>
+    <span data-registration-form="{{ request.url_root }}{{ vehicle.registration_form_image if vehicle.registration_form_image else '' }}"></span>
+    <span data-insurance-file="{{ request.url_root }}{{ vehicle.insurance_file if vehicle.insurance_file else '' }}"></span>
+</div>
+</div>

@@ -1,0 +1,327 @@
+<div class="container-fluid px-2" style="padding-top: 70px !important; padding-bottom: 120px !important;">
+    <!-- رأس الصفحة المحسن -->
+    <div class="workshop-header">
+        <div class="header-gradient">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="header-content">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-tools me-2 text-warning"></i>
+                        <h5 class="mb-0 text-white">تفاصيل سجل الورشة</h5>
+                    </div>
+                    <div class="vehicle-info">
+                        <span class="badge bg-light text-dark me-2">
+                            <i class="fas fa-car me-1"></i>
+                            {{ vehicle.plate_number }}
+                        </span>
+                        <span class="text-white-50">{{ vehicle.make }} {{ vehicle.model }}</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('mobile.vehicle_details', vehicle_id=vehicle.id) }}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- معلومات أساسية محسنة -->
+    <div class="workshop-info-grid">
+        <!-- تواريخ العملية -->
+        <div class="info-card">
+            <div class="info-header">
+                <i class="fas fa-calendar-alt"></i>
+                <span>تواريخ العملية</span>
+            </div>
+            <div class="info-content">
+                <div class="date-item">
+                    <div class="date-label">دخول الورشة</div>
+                    <div class="date-value">{{ workshop_record.entry_date.strftime('%Y-%m-%d') if workshop_record.entry_date else 'غير محدد' }}</div>
+                </div>
+                <div class="date-item">
+                    <div class="date-label">خروج الورشة</div>
+                    <div class="date-value">
+                        {% if workshop_record.exit_date %}
+                        {{ workshop_record.exit_date.strftime('%Y-%m-%d') }}
+                        {% else %}
+                        <span class="status-badge in-progress">لا يزال في الورشة</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- حالة العملية -->
+        <div class="info-card">
+            <div class="info-header">
+                <i class="fas fa-cog"></i>
+                <span>حالة العملية</span>
+            </div>
+            <div class="info-content">
+                <div class="status-item">
+                    <div class="status-label">السبب</div>
+                    <div class="status-value">
+                        {% if workshop_record.reason == 'maintenance' %}
+                        <span class="status-badge maintenance">صيانة دورية</span>
+                        {% elif workshop_record.reason == 'breakdown' %}
+                        <span class="status-badge breakdown">عطل</span>
+                        {% elif workshop_record.reason == 'accident' %}
+                        <span class="status-badge accident">حادث</span>
+                        {% else %}
+                        <span class="status-badge other">{{ workshop_record.reason }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">حالة الإصلاح</div>
+                    <div class="status-value">
+                        {% if workshop_record.repair_status == 'in_progress' %}
+                        <span class="status-badge in-progress">قيد التنفيذ</span>
+                        {% elif workshop_record.repair_status == 'completed' %}
+                        <span class="status-badge completed">تم الإصلاح</span>
+                        {% elif workshop_record.repair_status == 'pending_approval' %}
+                        <span class="status-badge pending">بانتظار الموافقة</span>
+                        {% else %}
+                        <span class="status-badge other">{{ workshop_record.repair_status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- وصف المشكلة -->
+    {% if workshop_record.description %}
+    <div class="info-card">
+        <div class="info-header">
+            <i class="fas fa-file-alt"></i>
+            <span>وصف المشكلة</span>
+        </div>
+        <div class="info-content">
+            <div class="description-text">{{ workshop_record.description }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- معلومات الورشة والتكلفة -->
+    {% if workshop_record.workshop_name or workshop_record.technician_name or (workshop_record.cost and workshop_record.cost > 0) %}
+    <div class="info-card">
+        <div class="info-header">
+            <i class="fas fa-wrench"></i>
+            <span>معلومات الورشة</span>
+        </div>
+        <div class="info-content">
+            {% if workshop_record.workshop_name %}
+            <div class="workshop-item">
+                <div class="workshop-label">اسم الورشة</div>
+                <div class="workshop-value">{{ workshop_record.workshop_name }}</div>
+            </div>
+            {% endif %}
+            {% if workshop_record.technician_name %}
+            <div class="workshop-item">
+                <div class="workshop-label">اسم الفني</div>
+                <div class="workshop-value">{{ workshop_record.technician_name }}</div>
+            </div>
+            {% endif %}
+            {% if workshop_record.cost and workshop_record.cost > 0 %}
+            <div class="workshop-item">
+                <div class="workshop-label">التكلفة</div>
+                <div class="workshop-value cost">{{ '{:,.2f}'.format(workshop_record.cost) }} ريال</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ملاحظات إضافية -->
+    {% if workshop_record.notes %}
+    <div class="info-card">
+        <div class="info-header">
+            <i class="fas fa-sticky-note"></i>
+            <span>ملاحظات إضافية</span>
+        </div>
+        <div class="info-content">
+            <div class="notes-text">{{ workshop_record.notes }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- الصور المرفقة - تصميم محسن -->
+    {% if workshop_record.valid_images %}
+    <div class="images-section">
+        <div class="section-header">
+            <i class="fas fa-camera"></i>
+            <span>الصور الموثقة ({{ workshop_record.valid_images|length }})</span>
+        </div>
+        
+        <!-- فصل الصور حسب النوع -->
+        {% set before_images = workshop_record.valid_images|selectattr("image_type", "equalto", "before")|list %}
+        {% set after_images = workshop_record.valid_images|selectattr("image_type", "equalto", "after")|list %}
+        {% set delivery_images = workshop_record.valid_images|selectattr("image_type", "equalto", "delivery")|list %}
+        {% set pickup_images = workshop_record.valid_images|selectattr("image_type", "equalto", "pickup")|list %}
+        {% set notes_images = workshop_record.valid_images|selectattr("image_type", "equalto", "notes")|list %}
+        
+        {% if before_images %}
+        <div class="image-category">
+            <div class="category-title before">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>صور قبل الإصلاح ({{ before_images|length }})</span>
+            </div>
+            <div class="images-grid">
+                {% for image in before_images %}
+                <div class="image-item">
+                    <div class="image-container">
+                        {% set img_path = '/' + image.image_path if not image.image_path.startswith('/') else image.image_path %}
+                        <img src="{{ img_path }}" 
+                             alt="صورة قبل الإصلاح" 
+                             onerror="this.onerror=null; this.src='/static/images/image-not-found.svg';"
+                             onclick="showImageModal('{{ img_path }}', '{{ image.notes or 'صورة قبل الإصلاح' }}')">
+                        <div class="image-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                    {% if image.notes %}
+                    <div class="image-notes">{{ image.notes }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if after_images %}
+        <div class="image-category">
+            <div class="category-title after">
+                <i class="fas fa-check-circle"></i>
+                <span>صور بعد الإصلاح ({{ after_images|length }})</span>
+            </div>
+            <div class="images-grid">
+                {% for image in after_images %}
+                <div class="image-item">
+                    <div class="image-container">
+                        {% set img_path = '/' + image.image_path if not image.image_path.startswith('/') else image.image_path %}
+                        <img src="{{ img_path }}" 
+                             alt="صورة بعد الإصلاح" 
+                             onerror="this.onerror=null; this.src='/static/images/image-not-found.svg';"
+                             onclick="showImageModal('{{ img_path }}', '{{ image.notes or 'صورة بعد الإصلاح' }}')">
+                        <div class="image-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                    {% if image.notes %}
+                    <div class="image-notes">{{ image.notes }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if delivery_images %}
+        <div class="image-category">
+            <div class="category-title" style="background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%); color: #1565c0;">
+                <i class="fas fa-truck-loading"></i>
+                <span>صور إيصال التسليم ({{ delivery_images|length }})</span>
+            </div>
+            <div class="images-grid">
+                {% for image in delivery_images %}
+                <div class="image-item">
+                    <div class="image-container">
+                        {% set img_path = '/' + image.image_path if not image.image_path.startswith('/') else image.image_path %}
+                        <img src="{{ img_path }}" 
+                             alt="صورة إيصال التسليم" 
+                             onerror="this.onerror=null; this.src='/static/images/image-not-found.svg';"
+                             onclick="showImageModal('{{ img_path }}', '{{ image.notes or 'صورة إيصال التسليم' }}')">
+                        <div class="image-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                    {% if image.notes %}
+                    <div class="image-notes">{{ image.notes }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if pickup_images %}
+        <div class="image-category">
+            <div class="category-title after">
+                <i class="fas fa-check-double"></i>
+                <span>صور إيصال الاستلام ({{ pickup_images|length }})</span>
+            </div>
+            <div class="images-grid">
+                {% for image in pickup_images %}
+                <div class="image-item">
+                    <div class="image-container">
+                        {% set img_path = '/' + image.image_path if not image.image_path.startswith('/') else image.image_path %}
+                        <img src="{{ img_path }}" 
+                             alt="صورة إيصال الاستلام" 
+                             onerror="this.onerror=null; this.src='/static/images/image-not-found.svg';"
+                             onclick="showImageModal('{{ img_path }}', '{{ image.notes or 'صورة إيصال الاستلام' }}')">
+                        <div class="image-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                    {% if image.notes %}
+                    <div class="image-notes">{{ image.notes }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if notes_images %}
+        <div class="image-category">
+            <div class="category-title" style="background: linear-gradient(135deg, #f3e5f5 0%, #ce93d8 100%); color: #6a1b9a;">
+                <i class="fas fa-sticky-note"></i>
+                <span>صور الملاحظات ({{ notes_images|length }})</span>
+            </div>
+            <div class="images-grid">
+                {% for image in notes_images %}
+                <div class="image-item">
+                    <div class="image-container">
+                        {% set img_path = '/' + image.image_path if not image.image_path.startswith('/') else image.image_path %}
+                        <img src="{{ img_path }}" 
+                             alt="صورة ملاحظات" 
+                             onerror="this.onerror=null; this.src='/static/images/image-not-found.svg';"
+                             onclick="showImageModal('{{ img_path }}', '{{ image.notes or 'صورة ملاحظات' }}')">
+                        <div class="image-overlay">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                    {% if image.notes %}
+                    <div class="image-notes">{{ image.notes }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="no-images">
+        <i class="fas fa-image"></i>
+        <p>لا توجد صور مرفقة لهذا السجل</p>
+    </div>
+    {% endif %}
+
+    <!-- أزرار العمليات -->
+    <div class="action-buttons-container">
+        <div class="row g-2">
+            <div class="col-6">
+                <a href="{{ url_for('mobile.edit_workshop_mobile', workshop_id=workshop_record.id) }}" 
+                   class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-edit"></i>
+                    تعديل
+                </a>
+            </div>
+            <div class="col-6">
+                <button onclick="shareWorkshopDetails()" class="btn btn-success btn-lg w-100">
+                    <i class="fas fa-share-alt"></i>
+                    مشاركة
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

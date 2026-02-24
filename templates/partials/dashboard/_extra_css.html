@@ -1,0 +1,263 @@
+<style>
+/* Dashboard-specific overrides only - main theme loaded globally */
+.content-wrapper:has(.page-dashboard) {
+    background: transparent; /* Use global gradient background */
+    padding: 1.25rem 1.5rem;
+}
+
+.page-dashboard .welcome-header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    position: relative;
+}
+
+.page-dashboard .welcome-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+}
+
+.page-dashboard .welcome-header .card-body {
+    padding: 1.5rem 1.75rem;
+}
+
+.page-dashboard .welcome-header h1 {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.page-dashboard .welcome-header p.text-muted {
+    color: #6c757d !important;
+}
+
+.page-dashboard .date-display {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+}
+
+/* Stats cards using modern theme */
+.page-dashboard .stat-card {
+    animation: slideUp 0.6s ease-out;
+}
+.page-dashboard .date-display {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+}
+
+/* Stats cards using modern theme */
+.page-dashboard .stat-card {
+    animation: slideUp 0.6s ease-out;
+}
+
+/* Updated dashboard cards to use modern theme */
+.page-dashboard .dashboard-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
+    transition: var(--transition-normal);
+    overflow: hidden;
+    position: relative;
+}
+
+.page-dashboard .dashboard-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.page-dashboard .dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.page-dashboard .dashboard-card:has(.bg-primary)::before {
+    background: var(--primary-gradient);
+}
+
+.page-dashboard .dashboard-card:has(.bg-success)::before {
+    background: var(--success-gradient);
+}
+
+.page-dashboard .dashboard-card:has(.bg-info)::before {
+    background: var(--info-gradient);
+}
+
+.page-dashboard .dashboard-card:has(.bg-warning)::before {
+    background: var(--warning-gradient);
+}
+
+.page-dashboard .dashboard-card:has(.bg-danger)::before {
+    background: var(--danger-gradient);
+}
+.page-dashboard .dashboard-card .card-icon {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    font-size: 1.35rem;
+}
+.page-dashboard .dashboard-card:has(.bg-primary) .card-icon {
+    background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%) !important;
+    color: #fff !important;
+}
+.page-dashboard .dashboard-card:has(.bg-success) .card-icon {
+    background: linear-gradient(135deg, #26a69a 0%, #00897b 100%) !important;
+    color: #fff !important;
+}
+.page-dashboard .dashboard-card:has(.bg-info) .card-icon {
+    background: linear-gradient(135deg, #29b6f6 0%, #0288d1 100%) !important;
+    color: #fff !important;
+}
+.page-dashboard .dashboard-card:has(.bg-warning) .card-icon {
+    background: linear-gradient(135deg, #ffa726 0%, #f57c00 100%) !important;
+    color: #fff !important;
+}
+.page-dashboard .dashboard-card .card-icon-bg {
+    opacity: 0.08;
+}
+.page-dashboard .dashboard-card .card-subtitle {
+    color: #5a6c7d !important;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+.page-dashboard .dashboard-card .counter-value {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+.page-dashboard .dashboard-card:has(.bg-primary) .counter-value { color: #1e88e5 !important; }
+.page-dashboard .dashboard-card:has(.bg-success) .counter-value { color: #26a69a !important; }
+.page-dashboard .dashboard-card:has(.bg-info) .counter-value { color: #0298d1 !important; }
+.page-dashboard .dashboard-card:has(.bg-warning) .counter-value { color: #f57c00 !important; }
+.page-dashboard .dashboard-card .text-muted {
+    color: #6c757d !important;
+    font-size: 0.8rem;
+}
+.page-dashboard .dashboard-card .card-footer {
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    background: rgba(0,0,0,0.02);
+}
+.page-dashboard .dashboard-card .card-footer .btn {
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+.page-dashboard .chart-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: box-shadow 0.25s ease;
+}
+.page-dashboard .chart-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+.page-dashboard .chart-card .card-header {
+    background: linear-gradient(135deg, #0f2d4a 0%, #1a4369 40%, #234a6e 100%);
+    color: #fff;
+    border: none;
+    padding: 1rem 1.25rem;
+    border-radius: 0;
+    border-bottom: 3px solid rgba(255,255,255,0.15);
+}
+.page-dashboard .chart-card .card-title {
+    color: #fff !important;
+    margin: 0;
+    font-weight: 600;
+    font-size: 1rem;
+}
+.page-dashboard .chart-card .card-body {
+    padding: 1.25rem;
+    background: #fafbfc;
+}
+.page-dashboard .table-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: box-shadow 0.25s ease;
+}
+.page-dashboard .table-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+.page-dashboard .table-card .card-header {
+    background: linear-gradient(135deg, #0f2d4a 0%, #1a4369 40%, #234a6e 100%);
+    color: #fff;
+    border: none;
+    padding: 1rem 1.25rem;
+    border-radius: 0;
+    border-bottom: 3px solid rgba(255,255,255,0.15);
+}
+.page-dashboard .table-card .card-header .text-white-50 {
+    color: rgba(255,255,255,0.9) !important;
+}
+.page-dashboard .table-card .card-title {
+    color: #fff !important;
+    margin: 0;
+    font-weight: 600;
+}
+.page-dashboard .table-card .card-body {
+    padding: 0;
+}
+.page-dashboard .table-card .table thead th {
+    background: #f0f4f8 !important;
+    color: #1a4369 !important;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8ee;
+    padding: 0.85rem 1rem;
+}
+.page-dashboard .table-card .table td {
+    color: #333 !important;
+    padding: 0.85rem 1rem;
+    border-color: #eee;
+}
+.page-dashboard .table-card .table-hover tbody tr:hover {
+    background: #f8fafc !important;
+}
+.page-dashboard .btn-outline-primary { border-color: #1e88e5; color: #1e88e5; }
+.page-dashboard .btn-outline-primary:hover { background: #1e88e5; color: #fff; }
+.page-dashboard .btn-outline-success { border-color: #198754; color: #198754; }
+.page-dashboard .btn-outline-success:hover { background: #198754; color: #fff; }
+.page-dashboard .btn-outline-info { border-color: #0dcaf0; color: #0dcaf0; }
+.page-dashboard .btn-outline-info:hover { background: #0dcaf0; color: #fff; }
+.page-dashboard .btn-outline-warning { border-color: #ffc107; color: #856404; }
+.page-dashboard .btn-outline-warning:hover { background: #ffc107; color: #212529; }
+.page-dashboard .btn-primary { background: #1e88e5; border-color: #1e88e5; }
+.page-dashboard .btn-primary:hover { background: #1976d2; border-color: #1976d2; }
+/* شارات البطاقات */
+.page-dashboard .dashboard-card .badge {
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+}
+.page-dashboard .dashboard-card .badge.bg-success { background: linear-gradient(135deg, #26a69a, #00897b) !important; }
+.page-dashboard .dashboard-card .badge.bg-warning { background: linear-gradient(135deg, #ffa726, #f57c00) !important; color: #fff !important; }
+.page-dashboard .dashboard-card .badge.bg-danger { background: linear-gradient(135deg, #ef5350, #c62828) !important; }
+</style>

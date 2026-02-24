@@ -1,0 +1,143 @@
+<div class="mobile-section">
+  <div class="mobile-section-header">
+    <h2 class="mobile-section-title">
+      <i class="fas fa-gas-pump"></i>
+      مصروفات الوقود
+    </h2>
+    <a href="{{ url_for('mobile.vehicles') }}" class="mobile-btn mobile-btn-secondary">
+      <i class="fas fa-arrow-right"></i>
+      عودة
+    </a>
+  </div>
+
+  <!-- إحصائيات سريعة -->
+  <div class="mobile-summary-cards">
+    <div class="mobile-summary-card primary">
+      <div class="mobile-summary-icon">
+        <i class="fas fa-gas-pump"></i>
+      </div>
+      <div class="mobile-summary-value">{{ "{:,.0f}".format(weekly_cost) }}</div>
+      <div class="mobile-summary-label">وقود (أسبوعي)</div>
+    </div>
+    
+    <div class="mobile-summary-card success">
+      <div class="mobile-summary-icon">
+        <i class="fas fa-calendar-week"></i>
+      </div>
+      <div class="mobile-summary-value">{{ "{:,.0f}".format(monthly_cost) }}</div>
+      <div class="mobile-summary-label">وقود (شهري)</div>
+    </div>
+    
+    <div class="mobile-summary-card warning">
+      <div class="mobile-summary-icon">
+        <i class="fas fa-tachometer-alt"></i>
+      </div>
+      <div class="mobile-summary-value">{{ "{:,.1f}".format(weekly_liters) }}</div>
+      <div class="mobile-summary-label">لتر (أسبوعي)</div>
+    </div>
+    
+    <div class="mobile-summary-card danger">
+      <div class="mobile-summary-icon">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="mobile-summary-value">{{ "{:,.1f}".format(monthly_liters) }}</div>
+      <div class="mobile-summary-label">لتر (شهري)</div>
+    </div>
+  </div>
+
+  <!-- الأزرار الرئيسية -->
+  <div class="mobile-action-buttons mb-3">
+    <a href="{{ url_for('mobile.add_fuel_consumption') }}" class="mobile-action-button">
+      <div class="mobile-action-icon">
+        <i class="fas fa-plus-circle"></i>
+      </div>
+      <div class="mobile-action-label">إضافة تعبئة وقود</div>
+    </a>
+    
+    <a href="{{ url_for('mobile.fuel_consumption_stats') }}" class="mobile-action-button">
+      <div class="mobile-action-icon">
+        <i class="fas fa-chart-pie"></i>
+      </div>
+      <div class="mobile-action-label">إحصائيات الاستهلاك</div>
+    </a>
+  </div>
+
+  <!-- قائمة سجلات تعبئة الوقود -->
+  <div class="mobile-card">
+    <div class="mobile-card-header">
+      <div class="mobile-card-title">
+        <i class="fas fa-list"></i>
+        آخر عمليات تعبئة الوقود
+      </div>
+      <div class="mobile-card-actions">
+        <button class="mobile-btn-icon" onclick="toggleFilters()">
+          <i class="fas fa-filter"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- فلاتر البحث (مخفية افتراضياً) -->
+    <div class="mobile-card-body" id="filtersSection" style="display: none;">
+      <form id="filterForm" method="GET" action="{{ url_for('mobile.vehicle_expenses') }}">
+        <div class="mobile-form-group">
+          <label class="mobile-form-label">السيارة</label>
+          <select name="vehicle_id" class="mobile-form-select">
+            <option value="">جميع السيارات</option>
+            {% for vehicle in vehicles %}
+            <option value="{{ vehicle.id }}" {% if selected_vehicle == vehicle.id %}selected{% endif %}>
+              {{ vehicle.make }} {{ vehicle.model }} - {{ vehicle.plate_number }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="mobile-form-group">
+          <label class="mobile-form-label">الفترة الزمنية</label>
+          <select name="period" class="mobile-form-select">
+            <option value="week" {% if period == 'week' %}selected{% endif %}>آخر أسبوع</option>
+            <option value="month" {% if period == 'month' %}selected{% endif %}>آخر شهر</option>
+            <option value="quarter" {% if period == 'quarter' %}selected{% endif %}>آخر ثلاثة أشهر</option>
+            <option value="year" {% if period == 'year' %}selected{% endif %}>السنة الحالية</option>
+          </select>
+        </div>
+        
+        <div class="mobile-form-actions">
+          <button type="submit" class="mobile-btn mobile-btn-primary">
+            <i class="fas fa-search"></i>
+            تطبيق الفلتر
+          </button>
+        </div>
+      </form>
+    </div>
+    
+    <div class="mobile-expenses-list">
+      {% if fuel_records %}
+        {% for record in fuel_records %}
+        <div class="mobile-expense-item">
+          <div class="mobile-expense-icon">
+            <i class="fas fa-gas-pump"></i>
+          </div>
+          <div class="mobile-expense-details">
+            <div class="mobile-expense-title">تعبئة {{ record.fuel_type }} ({{ "{:,.1f}".format(record.liters) }} لتر)</div>
+            <div class="mobile-expense-subtitle">{{ record.vehicle.make }} {{ record.vehicle.model }} - {{ record.vehicle.plate_number }}</div>
+            <div class="mobile-expense-date">{{ record.date.strftime('%Y-%m-%d') }}</div>
+          </div>
+          <div class="mobile-expense-amount">{{ "{:,.2f}".format(record.cost) }} ر.س</div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="mobile-empty-state">
+          <div class="mobile-empty-icon">
+            <i class="fas fa-gas-pump"></i>
+          </div>
+          <p>لا توجد سجلات تعبئة وقود حاليا</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  
+  <!-- زر إضافة تعبئة وقود جديدة -->
+  <button class="mobile-fab" onclick="location.href='{{ url_for('mobile.add_fuel_consumption') }}'">
+    <i class="fas fa-plus"></i>
+  </button>
+</div>

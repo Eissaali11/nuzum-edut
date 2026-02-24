@@ -1,0 +1,317 @@
+    const employees = {{ employees_json|safe }};
+    const employeeLocations = {{ employee_locations_json|safe }};
+    const geofences = {{ geofences_json|safe }};
+    
+    let currentMapView = 'streets';
+    let streetsLayer, satelliteLayer;
+    
+    const map = L.map('map').setView([24.7136, 46.6753], 6);
+    
+    streetsLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles © Esri',
+        maxZoom: 19
+    });
+    
+    function toggleMapView() {
+        if (currentMapView === 'streets') {
+            map.removeLayer(streetsLayer);
+            map.addLayer(satelliteLayer);
+            currentMapView = 'satellite';
+            document.getElementById('mapViewText').textContent = 'الخريطة العادية';
+        } else {
+            map.removeLayer(satelliteLayer);
+            map.addLayer(streetsLayer);
+            currentMapView = 'streets';
+            document.getElementById('mapViewText').textContent = 'صورة القمر الصناعي';
+        }
+    }
+    
+    const geocoder = L.Control.geocoder({
+        defaultMarkGeocode: false,
+        placeholder: 'البحث عن موقع...',
+        errorMessage: 'لم يتم العثور على الموقع',
+        geocoder: L.Control.Geocoder.nominatim()
+    }).on('markgeocode', function(e) {
+        const latlng = e.geocode.center;
+        map.setView(latlng, 13);
+        L.marker(latlng).addTo(map)
+            .bindPopup(e.geocode.name)
+            .openPopup();
+    }).addTo(map);
+    
+    const markers = {};
+    const geofenceCircles = {};
+    
+    geofences.forEach(geofence => {
+        const circle = L.circle([geofence.latitude, geofence.longitude], {
+            color: '#818cf8',
+            fillColor: '#818cf8',
+            fillOpacity: 0.15,
+            radius: geofence.radius,
+            weight: 2
+        }).addTo(map);
+        
+        circle.bindPopup(`
+            <div style="font-family: 'Cairo', sans-serif; text-align: right; direction: rtl; padding: 10px;">
+                <h4 style="margin: 0 0 10px 0; color: #1e1b4b; font-size: 16px; font-weight: 700;">
+                    <i class="fas fa-circle-notch" style="color: #818cf8; margin-left: 8px;"></i>
+                    ${geofence.name}
+                </h4>
+                <p style="margin: 5px 0; color: #64748b; font-size: 13px;">
+                    <i class="fas fa-ruler-combined" style="color: #818cf8; margin-left: 5px;"></i>
+                    نطاق: ${geofence.radius} متر
+                </p>
+            </div>
+        `);
+        
+        geofenceCircles[geofence.id] = circle;
+    });
+    
+    employees.forEach(emp => {
+        const location = employeeLocations[emp.id];
+        if (!location) return;
+        
+        let markerColor;
+        switch(location.color) {
+            case 'green':
+                markerColor = '#10b981';
+                break;
+            case 'orange':
+                markerColor = '#f59e0b';
+                break;
+            case 'red':
+                markerColor = '#ef4444';
+                break;
+            default:
+                markerColor = '#6b7280';
+        }
+        
+        const customIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `
+                <div style="position: relative;">
+                    <div style="
+                        width: 42px;
+                        height: 42px;
+                        border-radius: 50%;
+                        background: ${markerColor};
+                        border: 4px solid white;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">
+                        <i class="fas fa-user" style="color: white; font-size: 18px;"></i>
+                    </div>
+                </div>
+            `,
+            iconSize: [42, 42],
+            iconAnchor: [21, 42],
+            popupAnchor: [0, -42]
+        });
+        
+        const marker = L.marker([location.latitude, location.longitude], {icon: customIcon}).addTo(map);
+        
+        let popupContent = `
+            <div style="font-family: 'Cairo', sans-serif; text-align: right; direction: rtl; min-width: 280px; padding: 5px;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb;">
+                    ${emp.photo_url ? 
+                        `<img src="${emp.photo_url}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid ${markerColor}; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">` :
+                        `<div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border: 3px solid ${markerColor};">
+                            <i class="fas fa-user" style="font-size: 24px; color: white;"></i>
+                        </div>`
+                    }
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0 0 5px 0; color: #1e1b4b; font-size: 18px; font-weight: 700;">${emp.name}</h3>
+                        <p style="margin: 0; color: #64748b; font-size: 13px; font-weight: 600;">${emp.employee_number}</p>
+                    </div>
+                </div>
+                
+                <div style="display: grid; gap: 10px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 8px; color: #475569; font-size: 14px;">
+                        <i class="fas fa-building" style="color: #818cf8; width: 18px;"></i>
+                        <span>${emp.department_name || 'غير محدد'}</span>
+                    </div>
+        `;
+        
+        if (location.geofence_name) {
+            popupContent += `
+                    <div style="display: flex; align-items: center; gap: 8px; color: #475569; font-size: 14px;">
+                        <i class="fas fa-circle-notch" style="color: #818cf8; width: 18px;"></i>
+                        <span>${location.geofence_name}</span>
+                    </div>
+            `;
+        }
+        
+        if (location.vehicle_name) {
+            popupContent += `
+                    <div style="display: flex; align-items: center; gap: 8px; color: #475569; font-size: 14px;">
+                        <i class="fas fa-car" style="color: #818cf8; width: 18px;"></i>
+                        <span>${location.vehicle_name}</span>
+                    </div>
+            `;
+        }
+        
+        popupContent += `
+                    <div style="display: flex; align-items: center; gap: 8px; color: #475569; font-size: 14px;">
+                        <i class="fas fa-clock" style="color: #818cf8; width: 18px;"></i>
+                        <span>${location.status_text}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; color: #475569; font-size: 14px;">
+                        <i class="fas fa-map-marker-alt" style="color: #818cf8; width: 18px;"></i>
+                        <span style="direction: ltr; font-family: monospace; font-size: 12px;">${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}</span>
+                    </div>
+                </div>
+                
+                <button onclick="shareLocation(${location.latitude}, ${location.longitude}, '${emp.name}')" 
+                        style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                    <i class="fas fa-share-alt"></i>
+                    <span>مشاركة الموقع</span>
+                </button>
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        markers[emp.id] = marker;
+    });
+    
+    function focusEmployee(empId, lat, lng) {
+        document.querySelectorAll('.employee-card').forEach(card => {
+            card.classList.remove('active');
+        });
+        
+        const card = document.querySelector(`[data-emp-id="${empId}"]`);
+        if (card) {
+            card.classList.add('active');
+        }
+        
+        if (lat && lng && markers[empId]) {
+            map.setView([lat, lng], 15);
+            markers[empId].openPopup();
+        }
+    }
+    
+    if (employees.length > 0) {
+        const bounds = [];
+        employees.forEach(emp => {
+            const location = employeeLocations[emp.id];
+            if (location) {
+                bounds.push([location.latitude, location.longitude]);
+            }
+        });
+        
+        if (bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+    }
+    
+    function shareLocation(lat, lng, employeeName) {
+        const modal = document.getElementById('shareModal');
+        modal.style.display = 'flex';
+        
+        const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+        const locationText = `موقع ${employeeName}: ${lat}, ${lng}`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(locationText + '\n' + googleMapsUrl)}`;
+        
+        document.getElementById('shareModalContent').innerHTML = `
+            <h3 style="margin: 0 0 20px 0; color: #1e1b4b; font-size: 22px; font-weight: 700;">مشاركة موقع ${employeeName}</h3>
+            
+            <div style="display: grid; gap: 12px;">
+                <button onclick="window.open('${googleMapsUrl}', '_blank')" style="background: linear-gradient(135deg, #ea4335 0%, #d32f2f 100%); color: white; border: none; padding: 14px 20px; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(234, 67, 53, 0.3);">
+                    <i class="fab fa-google" style="font-size: 20px;"></i>
+                    <span>فتح في خرائط Google</span>
+                </button>
+                
+                <button onclick="window.open('${whatsappUrl}', '_blank')" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: white; border: none; padding: 14px 20px; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);">
+                    <i class="fab fa-whatsapp" style="font-size: 20px;"></i>
+                    <span>مشاركة عبر واتساب</span>
+                </button>
+                
+                <button onclick="copyLocation('${lat}', '${lng}', '${employeeName}')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 14px 20px; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                    <i class="fas fa-copy" style="font-size: 18px;"></i>
+                    <span>نسخ الموقع</span>
+                </button>
+                
+                <button onclick="copyCoordinates('${lat}', '${lng}')" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; padding: 14px 20px; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);">
+                    <i class="fas fa-map-marker-alt" style="font-size: 18px;"></i>
+                    <span>نسخ الإحداثيات</span>
+                </button>
+            </div>
+        `;
+    }
+    
+    function copyLocation(lat, lng, employeeName) {
+        const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+        const text = `موقع ${employeeName}: ${googleMapsUrl}`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('تم نسخ الموقع بنجاح!');
+        }).catch(err => {
+            console.error('خطأ في النسخ:', err);
+            showToast('حدث خطأ أثناء النسخ', 'error');
+        });
+    }
+    
+    function copyCoordinates(lat, lng) {
+        const text = `${lat}, ${lng}`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('تم نسخ الإحداثيات بنجاح!');
+        }).catch(err => {
+            console.error('خطأ في النسخ:', err);
+            showToast('حدث خطأ أثناء النسخ', 'error');
+        });
+    }
+    
+    function closeShareModal() {
+        const modal = document.getElementById('shareModal');
+        modal.style.display = 'none';
+    }
+    
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: ${bgColor};
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-family: 'Cairo';
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            z-index: 100000;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        `;
+        
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>${message}`;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+        }, 100);
+        
+        setTimeout(() => {
+            toast.style.transform = 'translateX(-50%) translateY(-100px)';
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 500);
+        }, 2500);
+    }
+    
+    setInterval(() => {
+        window.location.reload();
+    }, 30000);

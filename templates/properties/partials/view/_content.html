@@ -1,0 +1,434 @@
+<div class="main-wrapper">
+    <div class="container">
+        <!-- شريط التنقل -->
+        <div class="page-navigator">
+            <a href="{{ url_for('properties.dashboard') }}">
+                <i class="fas fa-building"></i> العقارات
+            </a>
+            <span class="mx-2">/</span>
+            <span>{{ property.name }}</span>
+        </div>
+
+        <!-- أزرار الإجراءات -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between flex-wrap gap-2">
+                    <div>
+                        <a href="{{ url_for('properties.edit', property_id=property.id) }}" class="btn btn-warning">
+                            <i class="fas fa-edit me-2"></i>تعديل العقار
+                        </a>
+                        <a href="{{ url_for('properties.add_payment', property_id=property.id) }}" class="btn btn-success">
+                            <i class="fas fa-dollar-sign me-2"></i>إضافة دفعة
+                        </a>
+                        <a href="{{ url_for('properties.manage_furnishing', property_id=property.id) }}" class="btn btn-primary">
+                            <i class="fas fa-couch me-2"></i>إدارة التجهيزات
+                        </a>
+                        <a href="{{ url_for('properties.export_excel', property_id=property.id) }}" class="btn btn-info">
+                            <i class="fas fa-file-excel me-2"></i>تصدير Excel
+                        </a>
+                    </div>
+                    <form method="POST" action="{{ url_for('properties.delete', property_id=property.id) }}" style="display: inline;">
+                        {{ csrf_token() }}
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذا العقار؟')">
+                            <i class="fas fa-trash me-2"></i>حذف العقار
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- معلومات العقار -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-home me-2"></i>
+                        معلومات العقار
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <div class="info-label">اسم العقار</div>
+                            <div class="info-value">{{ property.city }}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">نوع العقار</div>
+                            <div class="info-value">
+                                {% if property.owner_id == 'apartment' %}
+                                    شقة
+                                {% elif property.owner_id == 'villa' %}
+                                    فيلا
+                                {% elif property.owner_id == 'building' %}
+                                    عمارة
+                                {% elif property.owner_id == 'full_floor' %}
+                                    دور كامل
+                                {% elif property.owner_id == 'office' %}
+                                    مكتب
+                                {% elif property.owner_id == 'warehouse' %}
+                                    مستودع
+                                {% elif property.owner_id == 'other' %}
+                                    أخرى
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">حالة العقار</div>
+                            <div class="info-value">
+                                {% if property.status == 'active' %}
+                                    نشط
+                                {% elif property.status == 'expired' %}
+                                    منتهي
+                                {% else %}
+                                    ملغي
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">العنوان</div>
+                            <div class="info-value">{{ property.address or '-' }}</div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <div class="info-label">المساحة</div>
+                                    <div class="info-value">{{ property.area or '-' }} م²</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <div class="info-label">عدد الغرف</div>
+                                    <div class="info-value">{{ property.rooms or '-' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if property.notes %}
+                        <div class="info-item">
+                            <div class="info-label">ملاحظات</div>
+                            <div class="info-value">{{ property.notes }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- معلومات العقد -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-file-contract me-2"></i>
+                        معلومات العقد
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <div class="info-label">حالة العقد</div>
+                            <div class="info-value">
+                                {% if property.is_expired %}
+                                    <span class="badge-expired">منتهي</span>
+                                {% elif property.is_expiring_soon %}
+                                    <span class="badge-expiring">ينتهي قريباً</span>
+                                {% else %}
+                                    <span class="badge-active">ساري</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">رقم العقد</div>
+                            <div class="info-value">{{ property.contract_number or '-' }}</div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <div class="info-label">تاريخ البداية</div>
+                                    <div class="info-value">{{ property.contract_start_date.strftime('%Y-%m-%d') if property.contract_start_date else '-' }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <div class="info-label">تاريخ الانتهاء</div>
+                                    <div class="info-value">{{ property.contract_end_date.strftime('%Y-%m-%d') if property.contract_end_date else '-' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">اسم المالك</div>
+                            <div class="info-value">{{ property.owner_name or '-' }}</div>
+                        </div>
+                        
+                        {% if property.contract_file %}
+                        <div class="info-item">
+                            <div class="info-label">ملف العقد</div>
+                            <div class="info-value">
+                                <a href="{{ url_for('static', filename=property.contract_file) }}" target="_blank" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-file-pdf me-1"></i>
+                                    عرض العقد
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if property.location_link %}
+                        <div class="info-item">
+                            <div class="info-label">رابط موقع السكن</div>
+                            <div class="info-value">
+                                <a href="{{ property.location_link }}" target="_blank" class="btn btn-sm btn-success">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    فتح الموقع
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- المعلومات المالية -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-dollar-sign me-2"></i>
+                المعلومات المالية
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <div class="info-label">الإيجار السنوي</div>
+                            <div class="info-value">{{ "{:,.0f}".format(property.annual_rent_amount) }} ريال</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <div class="info-label">مبلغ الدفعة</div>
+                            <div class="info-value">{{ "{:,.2f}".format(property.payment_amount_per_period) }} ريال</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <div class="info-label">طريقة الدفع</div>
+                            <div class="info-value">
+                                {% if property.payment_method == 'monthly' %}
+                                    شهري
+                                {% elif property.payment_method == 'quarterly' %}
+                                    ربع سنوي
+                                {% elif property.payment_method == 'semi_annually' %}
+                                    نصف سنوي
+                                {% else %}
+                                    سنوي
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- صور العقار -->
+        {% if property.images %}
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-images me-2"></i>
+                صور العقار ({{ property.images|length }})
+            </div>
+            <div class="card-body">
+                <div class="images-grid">
+                    {% for image in property.images %}
+                    <img src="{{ url_for('static', filename=image.image_path) }}" 
+                         class="property-image" 
+                         alt="صورة العقار"
+                         onclick="window.open(this.src, '_blank')">
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- الموظفون القاطنون -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-users me-2"></i>
+                    الموظفون القاطنون ({{ property.residents|length }})
+                </span>
+                <div>
+                    <a href="{{ url_for('properties.add_resident_page', property_id=property.id) }}" class="btn btn-sm btn-light">
+                        <i class="fas fa-user-plus me-1"></i>
+                        إضافة موظف
+                    </a>
+                    <a href="{{ url_for('properties.add_department_page', property_id=property.id) }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-building me-1"></i>
+                        إضافة قسم
+                    </a>
+                    {% if property.residents %}
+                    <a href="{{ url_for('properties.export_residents_excel', property_id=property.id) }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-file-excel me-1"></i>
+                        تصدير Excel
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                {% if property.residents %}
+                    <div class="row">
+                        {% for resident in property.residents %}
+                        <div class="col-md-6 mb-3">
+                            <div class="resident-card">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            <a href="{{ url_for('employees.view', id=resident.id) }}" 
+                                               class="text-white text-decoration-none"
+                                               style="transition: color 0.3s;"
+                                               onmouseover="this.style.color='#667eea'" 
+                                               onmouseout="this.style.color='white'">
+                                                {{ resident.name }}
+                                                <i class="fas fa-external-link-alt ms-1" style="font-size: 0.8em;"></i>
+                                            </a>
+                                        </h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-id-card me-1"></i>
+                                            {{ resident.employee_id }}
+                                        </small>
+                                        {% if resident.department_id %}
+                                        <br>
+                                        <small class="text-info">
+                                            <i class="fas fa-building me-1"></i>
+                                            {{ resident.departments[0].name if resident.departments else 'بدون قسم' }}
+                                        </small>
+                                        {% endif %}
+                                        <br>
+                                        <small class="text-warning">
+                                            <i class="fas fa-briefcase me-1"></i>
+                                            {{ resident.job_title }}
+                                        </small>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('properties.remove_resident', property_id=property.id, employee_id=resident.id) }}" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من إزالة هذا الموظف من العقار؟')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center text-muted">لا يوجد موظفون قاطنون في هذا العقار</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- سجل الدفعات -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-money-bill-wave me-2"></i>
+                    سجل الدفعات ({{ property.payments|length }})
+                </span>
+                <a href="{{ url_for('properties.payments_list', property_id=property.id) }}" class="btn btn-sm btn-light">
+                    <i class="fas fa-eye me-1"></i>
+                    عرض الكل
+                </a>
+            </div>
+            <div class="card-body">
+                {% if property.payments %}
+                    {% for payment in property.payments|sort(attribute='payment_date', reverse=True) %}
+                    {% if loop.index <= 3 %}
+                    <div class="payment-item {{ 'payment-paid' if payment.status == 'paid' else 'payment-pending' }}">
+                        <div>
+                            <div class="info-label">{{ payment.payment_date.strftime('%Y-%m-%d') }}</div>
+                            <div class="info-value">{{ "{:,.2f}".format(payment.amount) }} ريال</div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if payment.status == 'paid' %}
+                                <span class="badge bg-success">مدفوع</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">معلق</span>
+                            {% endif %}
+                            <a href="{{ url_for('properties.edit_payment', payment_id=payment.id) }}" class="btn btn-sm btn-warning" title="تعديل">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('properties.delete_payment', payment_id=payment.id) }}" style="display: inline;">
+                                {{ csrf_token() }}
+                                <button type="submit" class="btn btn-sm btn-danger" title="حذف" onclick="return confirm('هل أنت متأكد من حذف هذه الدفعة؟')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% if property.payments|length > 3 %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('properties.payments_list', property_id=property.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-1"></i>
+                            عرض جميع الدفعات ({{ property.payments|length }})
+                        </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-center text-muted">لا توجد دفعات مسجلة</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- التجهيزات -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-couch me-2"></i>
+                    التجهيزات
+                </span>
+                {% if furnishing %}
+                <a href="{{ url_for('properties.furnishing_view', property_id=property.id) }}" class="btn btn-sm btn-light">
+                    <i class="fas fa-eye me-1"></i>
+                    عرض الكل
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if furnishing %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>جرات الغاز:</strong> {{ furnishing.gas_cylinder }}</p>
+                            <p><strong>الطباخات:</strong> {{ furnishing.stoves }}</p>
+                            <p><strong>الأسرّة:</strong> {{ furnishing.beds }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>البطانيات:</strong> {{ furnishing.blankets }}</p>
+                            <p><strong>المخدات:</strong> {{ furnishing.pillows }}</p>
+                        </div>
+                    </div>
+                    {% if furnishing.other_items %}
+                    <div class="mt-3">
+                        <strong>تجهيزات أخرى:</strong>
+                        <p>{{ furnishing.other_items }}</p>
+                    </div>
+                    {% endif %}
+                    {% if furnishing.notes %}
+                    <div class="mt-3">
+                        <strong>ملاحظات:</strong>
+                        <p>{{ furnishing.notes }}</p>
+                    </div>
+                    {% endif %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('properties.furnishing_view', property_id=property.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-couch me-1"></i>
+                            عرض التجهيزات بشكل تفصيلي
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="text-center text-muted">لا توجد تجهيزات مسجلة</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

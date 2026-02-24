@@ -1,0 +1,97 @@
+<div class="dashboard-card card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-images me-2"></i>الصور والوثائق
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="image-upload-card text-center">
+                    <h6 class="text-muted mb-3">الصورة الشخصية</h6>
+                    <div class="image-preview mb-3">
+                        {% if employee.profile_image %}
+                            <img src="/static/{{ employee.profile_image }}" 
+                                 alt="الصورة الشخصية" 
+                                 class="img-fluid rounded" 
+                                 style="max-height: 180px; width: auto;"
+                                 onerror="this.parentElement.innerHTML='<div class=\'text-center text-muted\'><i class=\'fas fa-user fa-3x mb-2\'></i><p>لا توجد صورة شخصية</p></div>'">
+                        {% else %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-user fa-3x mb-2"></i>
+                                <p>لا توجد صورة شخصية</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <form action="{{ url_for('employees.upload_image', id=employee.id) }}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="image_type" value="profile">
+                        <div class="mb-2">
+                            <input type="file" name="image" class="form-control form-control-sm" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn-enhanced btn-primary-enhanced btn-sm w-100">
+                            <i class="fas fa-upload"></i> رفع الصورة الشخصية
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="image-upload-card text-center">
+                    <h6 class="text-muted mb-3">صورة الهوية الوطنية</h6>
+                    <div class="image-preview mb-3">
+                        {% if employee.national_id_image %}
+                            <img src="/static/{{ employee.national_id_image }}" 
+                                 alt="صورة الهوية الوطنية" 
+                                 class="img-fluid rounded" 
+                                 style="max-height: 180px; width: auto;"
+                                 onerror="this.parentElement.innerHTML='<div class=\'text-center text-muted\'><i class=\'fas fa-id-card fa-3x mb-2\'></i><p>لا توجد صورة الهوية</p></div>'">
+                        {% else %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-id-card fa-3x mb-2"></i>
+                                <p>لا توجد صورة الهوية</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <form action="{{ url_for('employees.upload_image', id=employee.id) }}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="image_type" value="national_id">
+                        <div class="mb-2">
+                            <input type="file" name="image" class="form-control form-control-sm" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn-enhanced btn-info-enhanced btn-sm w-100">
+                            <i class="fas fa-upload"></i> رفع صورة الهوية
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="image-upload-card text-center">
+                    <h6 class="text-muted mb-3">صورة رخصة القيادة</h6>
+                    <div class="image-preview mb-3">
+                        {% if employee.license_image %}
+                            <img src="/static/{{ employee.license_image }}" 
+                                 alt="صورة رخصة القيادة" 
+                                 class="img-fluid rounded" 
+                                 style="max-height: 180px; width: auto;"
+                                 onerror="this.parentElement.innerHTML='<div class=\'text-center text-muted\'><i class=\'fas fa-car fa-3x mb-2\'></i><p>لا توجد صورة الرخصة</p></div>'">
+                        {% else %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-car fa-3x mb-2"></i>
+                                <p>لا توجد صورة الرخصة</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <form action="{{ url_for('employees.upload_image', id=employee.id) }}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="image_type" value="license">
+                        <div class="mb-2">
+                            <input type="file" name="image" class="form-control form-control-sm" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn-enhanced btn-success-enhanced btn-sm w-100">
+                            <i class="fas fa-upload"></i> رفع صورة الرخصة
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

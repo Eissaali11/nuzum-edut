@@ -147,9 +147,8 @@ def _build_modular_blueprint_v2():
 	return main_bp
 
 
-# Ensure routes dir is importable
+# Resolve routes directory once (without modifying sys.path)
 parent_dir = Path(__file__).parent.parent
-sys.path.insert(0, str(parent_dir))
 
 # Default behavior: legacy blueprint (safe)
 attendance_bp = _load_legacy_blueprint(parent_dir)

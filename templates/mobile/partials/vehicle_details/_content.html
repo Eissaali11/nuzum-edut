@@ -1,0 +1,3406 @@
+<style>
+/* إصلاح تموضع المحتوى بعيداً عن الهيدر والفوتر */
+body {
+    padding-top: 70px !important; /* مساحة للهيدر */
+    padding-bottom: 120px !important; /* مساحة للقائمة السفلية */
+}
+
+.mobile-content-wrapper {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    margin-top: 0;
+}
+</style>
+
+<div class="mobile-content-wrapper">
+<!-- التحقق من وجود بيانات السيارة -->
+{% if not vehicle %}
+<div class="alert alert-warning mx-3 mt-3">
+    <div class="text-center py-4">
+        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+        <h5>عفواً!</h5>
+        <p>لم يتم العثور على بيانات السيارة المطلوبة.</p>
+        <a href="{{ url_for('mobile.vehicles') }}" class="btn btn-primary mt-2">
+            <i class="fas fa-arrow-right ms-1"></i> العودة لقائمة السيارات
+        </a>
+    </div>
+</div>
+{% else %}
+
+<!-- شريط الإجراءات -->
+<div class="action-bar my-3 mx-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-car ms-2"></i>
+            <span class="vehicle-plate-display">{{ vehicle.plate_number }}</span>
+        </h5>
+        <div>
+            <a href="{{ url_for('mobile.vehicles') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-right ms-1"></i>
+                العودة
+            </a>
+        </div>
+    </div>
+    
+    {% if vehicle.status == 'in_workshop' %}
+    <div class="alert alert-warning mt-2 mb-0 py-2 px-3">
+        <i class="fas fa-exclamation-triangle ms-2"></i>
+        هذه السيارة حالياً في الورشة
+    </div>
+    {% endif %}
+</div>
+
+<!-- بطاقة معلومات السيارة الأساسية -->
+<div class="card mb-3 mx-3">
+    <div class="card-header bg-white">
+        <h6 class="mb-0">
+            <i class="fas fa-info-circle ms-2"></i>
+            معلومات السيارة
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="info-row">
+            <div class="info-label">رقم اللوحة:</div>
+            <div class="info-value">{{ vehicle.plate_number }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">النوع:</div>
+            <div class="info-value">{{ vehicle.make }} {{ vehicle.model }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">سنة الصنع:</div>
+            <div class="info-value">{{ vehicle.year }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">اللون:</div>
+            <div class="info-value">
+                <span class="color-badge" style="background-color: {{ vehicle.color }}; color: {{ '#000' if vehicle.color in ['white', 'yellow', 'silver'] else '#fff' }};">
+                    {{ vehicle.color }}
+                </span>
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">الحالة:</div>
+            <div class="info-value">
+                {% if vehicle.status == 'available' %}
+                    <span class="badge bg-success">✅ متاحة</span>
+                {% elif vehicle.status == 'in_project' %}
+                    <span class="badge bg-info">🚗 نشطة مع سائق</span>
+                {% elif vehicle.status == 'in_workshop' %}
+                    <span class="badge bg-warning text-dark">🔧 في الورشة صيانة</span>
+                {% elif vehicle.status == 'accident' %}
+                    <span class="badge bg-danger">⚠️ في الورشة حادث</span>
+                {% elif vehicle.status == 'out_of_service' %}
+                    <span class="badge bg-dark">🚫 خارج الخدمة</span>
+                {% elif vehicle.status == 'out_of_service' %}
+                    <span class="badge bg-secondary">📍 خارج إدارة المنطقة</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ vehicle.status_arabic }}</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- معلومات السائق الحالي -->
+        <div class="info-row">
+            <div class="info-label">السائق الحالي:</div>
+            <div class="info-value">
+                {% if vehicle.driver_name %}
+                    <span class="text-success fw-bold">{{ vehicle.driver_name }}</span>
+                    {% if current_driver and current_driver.mobile %}
+                    <div class="mt-2">
+                        <button onclick="redirectToWhatsApp('{{ current_driver.mobile }}', '{{ vehicle.driver_name }}', '{{ vehicle.plate_number }}', '{{ current_driver.handover_type_ar }}', '{{ current_driver.formatted_date }}', '{{ url_for('vehicles.handover_pdf_public', id=current_driver.handover_id, _external=True) }}', '{% if vehicle.registration_form_image %}{{ request.url_root }}static/{{ vehicle.registration_form_image }}{% endif %}')"
+                                class="btn btn-sm btn-success w-100 mt-1"
+                                title="إرسال رسالة واتساب محسنة">
+                            <i class="fab fa-whatsapp ms-1"></i>
+                            واتساب محسن مع رسائل السلامة
+                        </button>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted">غير محدد</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if vehicle.notes %}
+        <div class="mt-3">
+            <div class="info-section-title">ملاحظات:</div>
+            <div class="alert alert-light">{{ vehicle.notes }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- قسم الروابط السريعة -->
+<div class="card mb-3 mx-3 modern-card">
+    <div class="card-header bg-gradient bg-primary text-white">
+        <h6 class="mb-0">
+            <i class="fas fa-bolt ms-2"></i>
+            الإجراءات السريعة
+        </h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="row g-0">
+            <!-- تعديل بيانات السيارة -->
+            <div class="col-12">
+                <a href="{{ url_for('mobile.edit_vehicle', vehicle_id=vehicle.id) }}" class="quick-action-btn">
+                    <div class="quick-action-icon bg-warning">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div class="quick-action-text">
+                        <span class="quick-action-title">تعديل</span>
+                        <span class="quick-action-subtitle">بيانات السيارة</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+
+    </div>
+</div>
+
+<!-- سجل الصيانة -->
+<div class="card mb-3 mx-3 modern-card">
+    <div class="card-header gradient-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 text-white">
+            <i class="fas fa-tools ms-2"></i>
+            سجل الصيانة
+            {% if maintenance_records %}
+            <span class="badge bg-light text-dark ms-2">{{ maintenance_records|length }}</span>
+            {% endif %}
+        </h6>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{ url_for('mobile.vehicles') }}">
+                    <i class="fas fa-eye ms-1"></i> عرض الكل
+                </a></li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if maintenance_records %}
+        <!-- إحصائيات سريعة -->
+        <div class="stats-row bg-light">
+            <div class="stat-item">
+                <div class="stat-number text-primary">{{ maintenance_records|length }}</div>
+                <div class="stat-label">عملية</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number text-success">{{ '{:,.0f}'.format(maintenance_records|sum(attribute='cost')) }}</div>
+                <div class="stat-label">ريال</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number text-info">{{ maintenance_records|selectattr('maintenance_type', 'equalto', 'دورية')|list|length }}</div>
+                <div class="stat-label">دورية</div>
+            </div>
+        </div>
+        
+        <!-- قائمة العمليات مع scroll -->
+        <div class="scrollable-list" data-total="{{ maintenance_records|length }}">
+            <div class="list-header">
+                <small class="text-muted">آخر 3 عمليات - اسحب للمزيد</small>
+                <i class="fas fa-chevron-down scroll-indicator"></i>
+            </div>
+            
+            {% for record in (maintenance_records|selectattr('date')|sort(attribute='date', reverse=true)|list) + (maintenance_records|rejectattr('date')|list) %}
+            <div class="timeline-item {% if loop.index > 3 %}hidden-item{% endif %}" data-index="{{ loop.index }}">
+                <div class="timeline-marker 
+                    {% if record.maintenance_type == 'دورية' %}bg-info
+                    {% elif record.maintenance_type == 'طارئة' %}bg-warning
+                    {% elif record.maintenance_type == 'إصلاح' %}bg-danger
+                    {% else %}bg-secondary{% endif %}">
+                    <i class="fas fa-tools fa-xs"></i>
+                </div>
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <div class="timeline-title">{{ record.description[:50] }}{% if record.description|length > 50 %}...{% endif %}</div>
+                        <div class="timeline-date">{{ record.date.strftime('%d/%m/%Y') }}</div>
+                    </div>
+                    <div class="timeline-details">
+                        <span class="badge badge-type 
+                            {% if record.maintenance_type == 'دورية' %}bg-info
+                            {% elif record.maintenance_type == 'طارئة' %}bg-warning
+                            {% elif record.maintenance_type == 'إصلاح' %}bg-danger
+                            {% else %}bg-secondary{% endif %}">
+                            {{ record.maintenance_type }}
+                        </span>
+                        <span class="timeline-cost">{{ '{:,.0f}'.format(record.cost) }} ريال</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            {% if maintenance_records|length > 3 %}
+            <div class="load-more-btn" onclick="toggleItems(this, 'maintenance')">
+                <i class="fas fa-chevron-down"></i>
+                <span>عرض {{ maintenance_records|length - 3 }} عملية أخرى</span>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <h6>لا توجد سجلات صيانة</h6>
+            <p>ابدأ بإضافة أول عملية صيانة</p>
+            <a href="{{ url_for('mobile.vehicle_documents') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-file-alt ms-1"></i> عرض الوثائق
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- سجلات الورشة -->
+<div class="card mb-3 mx-3 modern-card">
+    <div class="card-header gradient-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 text-white">
+            <i class="fas fa-wrench ms-2"></i>
+            سجلات الورشة
+            {% if workshop_records %}
+            <span class="badge bg-light text-dark ms-2">{{ workshop_records|length }}</span>
+            {% endif %}
+        </h6>
+        <a href="{{ url_for('mobile.add_workshop_record', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-success">
+            <i class="fas fa-plus ms-1"></i>
+            إضافة سجل
+        </a>
+    </div>
+    <div class="card-body p-0">
+        {% if workshop_records %}
+        <!-- إحصائيات الورشة -->
+        <div class="stats-row bg-light">
+            <div class="stat-item">
+                <div class="stat-number text-primary">{{ workshop_records|selectattr('repair_status', 'equalto', 'in_progress')|list|length }}</div>
+                <div class="stat-label">قيد التنفيذ</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number text-success">{{ workshop_records|selectattr('repair_status', 'equalto', 'completed')|list|length }}</div>
+                <div class="stat-label">مكتمل</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number text-warning">{{ workshop_records|selectattr('repair_status', 'equalto', 'pending_approval')|list|length }}</div>
+                <div class="stat-label">في الانتظار</div>
+            </div>
+        </div>
+        
+        <!-- قائمة العمليات مع scroll -->
+        <div class="scrollable-list" data-total="{{ workshop_records|length }}">
+            <div class="list-header">
+                <small class="text-muted">آخر 3 عمليات - اسحب للمزيد</small>
+                <i class="fas fa-chevron-down scroll-indicator"></i>
+            </div>
+            
+            {% for record in workshop_records %}
+            <div class="timeline-item {% if loop.index > 3 %}hidden-item{% endif %}" data-index="{{ loop.index }}">
+                <div class="timeline-marker 
+                    {% if record.repair_status == 'in_progress' %}bg-primary
+                    {% elif record.repair_status == 'completed' %}bg-success
+                    {% elif record.repair_status == 'pending_approval' %}bg-warning
+                    {% else %}bg-secondary{% endif %}">
+                    <i class="fas fa-wrench fa-xs"></i>
+                </div>
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <div class="timeline-title">{{ record.description[:50] }}{% if record.description|length > 50 %}...{% endif %}</div>
+                        <div class="timeline-date">{{ record.entry_date.strftime('%d/%m/%Y') if record.entry_date else 'غير محدد' }}</div>
+                    </div>
+                    <div class="timeline-details">
+                        <span class="badge badge-status 
+                            {% if record.repair_status == 'in_progress' %}bg-primary
+                            {% elif record.repair_status == 'completed' %}bg-success
+                            {% elif record.repair_status == 'pending_approval' %}bg-warning
+                            {% else %}bg-secondary{% endif %}">
+                            {% if record.repair_status == 'in_progress' %}قيد التنفيذ
+                            {% elif record.repair_status == 'completed' %}مكتمل
+                            {% elif record.repair_status == 'pending_approval' %}في الانتظار
+                            {% else %}{{ record.repair_status }}{% endif %}
+                        </span>
+                        <div class="workshop-actions">
+                            <a href="{{ url_for('mobile.view_workshop_details', workshop_id=record.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('mobile.edit_workshop_record', workshop_id=record.id) }}" class="btn btn-sm btn-outline-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            {% if workshop_records|length > 3 %}
+            <div class="load-more-btn" onclick="toggleItems(this, 'workshop')">
+                <i class="fas fa-chevron-down"></i>
+                <span>عرض {{ workshop_records|length - 3 }} عملية أخرى</span>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-wrench"></i>
+            </div>
+            <h6>لا توجد سجلات ورشة</h6>
+            <p>ابدأ بإضافة أول سجل ورشة</p>
+            <a href="{{ url_for('mobile.add_workshop_record', vehicle_id=vehicle.id) }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus ms-1"></i> إضافة سجل
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+
+
+
+<!-- إدارة الوثائق -->
+<div class="card mb-3 mx-3 modern-card">
+    <div class="card-header gradient-header-purple d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 text-white">
+            <i class="fas fa-file-alt ms-2"></i>
+            إدارة الوثائق
+        </h6>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#" onclick="toggleDocumentForms()">
+                    <i class="fas fa-upload ms-1"></i> رفع الوثائق
+                </a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="documents-list p-3">
+            <!-- صورة الاستمارة -->
+            <div class="document-card mb-3 p-3 border rounded shadow-sm">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="document-icon-large me-3">
+                        <i class="fas fa-file-alt text-primary fs-3"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="document-title mb-1">صورة الاستمارة</h5>
+                        <p class="document-desc text-muted mb-0">استمارة تسجيل السيارة</p>
+                    </div>
+                </div>
+                <div class="document-status-section">
+                    {% if vehicle.registration_form_image %}
+                    <div class="alert alert-success py-2 mb-2">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>الوثيقة متوفرة ومرفوعة</strong>
+                    </div>
+                    <div class="d-flex gap-2 mb-2">
+                        <button class="btn btn-outline-primary flex-fill" onclick="viewDocument('{{ '/' + vehicle.registration_form_image }}', 'صورة الاستمارة')">
+                            <i class="fas fa-eye me-1"></i>
+                            عرض الوثيقة
+                        </button>
+                        <button class="btn btn-outline-danger flex-fill" onclick="deleteDocument('registration_form', 'صورة الاستمارة')">
+                            <i class="fas fa-trash me-1"></i>
+                            حذف
+                        </button>
+                    </div>
+                    <button class="btn btn-outline-success w-100" onclick="shareDocument('{{ '/' + vehicle.registration_form_image }}', 'صورة الاستمارة', '{{ vehicle.plate_number }}')">
+                        <i class="fas fa-share-alt me-1"></i>
+                        مشاركة الوثيقة
+                    </button>
+                    {% else %}
+                    <div class="alert alert-warning py-2 mb-2">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>الوثيقة غير متوفرة</strong>
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="toggleDocumentForms()">
+                        <i class="fas fa-upload me-1"></i>
+                        رفع الوثيقة
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- صورة اللوحة -->
+            <div class="document-card mb-3 p-3 border rounded shadow-sm">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="document-icon-large me-3">
+                        <i class="fas fa-id-card text-success fs-3"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="document-title mb-1">صورة اللوحة</h5>
+                        <p class="document-desc text-muted mb-0">صورة لوحة السيارة</p>
+                    </div>
+                </div>
+                <div class="document-status-section">
+                    {% if vehicle.plate_image %}
+                    <div class="alert alert-success py-2 mb-2">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>الوثيقة متوفرة ومرفوعة</strong>
+                    </div>
+                    <div class="d-flex gap-2 mb-2">
+                        <button class="btn btn-outline-primary flex-fill" onclick="viewDocument('{{ '/' + vehicle.plate_image }}', 'صورة اللوحة')">
+                            <i class="fas fa-eye me-1"></i>
+                            عرض الوثيقة
+                        </button>
+                        <button class="btn btn-outline-danger flex-fill" onclick="deleteDocument('plate', 'صورة اللوحة')">
+                            <i class="fas fa-trash me-1"></i>
+                            حذف
+                        </button>
+                    </div>
+                    <button class="btn btn-outline-success w-100" onclick="shareDocument('{{ '/' + vehicle.plate_image }}', 'صورة اللوحة', '{{ vehicle.plate_number }}')">
+                        <i class="fas fa-share-alt me-1"></i>
+                        مشاركة الوثيقة
+                    </button>
+                    {% else %}
+                    <div class="alert alert-warning py-2 mb-2">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>الوثيقة غير متوفرة</strong>
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="toggleDocumentForms()">
+                        <i class="fas fa-upload me-1"></i>
+                        رفع الوثيقة
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ملف التأمين -->
+            <div class="document-card mb-3 p-3 border rounded shadow-sm">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="document-icon-large me-3">
+                        <i class="fas fa-shield-alt text-warning fs-3"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="document-title mb-1">ملف التأمين</h5>
+                        <p class="document-desc text-muted mb-0">وثيقة تأمين السيارة</p>
+                    </div>
+                </div>
+                <div class="document-status-section">
+                    {% if vehicle.insurance_file %}
+                    <div class="alert alert-success py-2 mb-2">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>الوثيقة متوفرة ومرفوعة</strong>
+                    </div>
+                    <div class="d-flex gap-2 mb-2">
+                        <a href="{{ '/' + vehicle.insurance_file }}" target="_blank" class="btn btn-outline-primary flex-fill">
+                            <i class="fas fa-eye me-1"></i>
+                            عرض الوثيقة
+                        </a>
+                        <button class="btn btn-outline-danger flex-fill" onclick="deleteDocument('insurance', 'ملف التأمين')">
+                            <i class="fas fa-trash me-1"></i>
+                            حذف
+                        </button>
+                    </div>
+                    <button class="btn btn-outline-success w-100" onclick="shareDocument('{{ '/' + vehicle.insurance_file }}', 'ملف التأمين', '{{ vehicle.plate_number }}')">
+                        <i class="fas fa-share-alt me-1"></i>
+                        مشاركة الوثيقة
+                    </button>
+                    {% else %}
+                    <div class="alert alert-warning py-2 mb-2">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>الوثيقة غير متوفرة</strong>
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="toggleDocumentForms()">
+                        <i class="fas fa-upload me-1"></i>
+                        رفع الوثيقة
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- نماذج رفع الوثائق -->
+        <div id="documentForms" class="document-forms p-3" style="display: none;">
+            <div class="form-divider mb-3">
+                <h5 class="text-primary"><i class="fas fa-upload me-2"></i>رفع الوثائق</h5>
+                <p class="text-muted">اختر نوع الوثيقة وارفع الملف المطلوب</p>
+            </div>
+            
+            <!-- نموذج رفع الاستمارة -->
+            <div class="upload-form-card mb-3 p-3 border rounded shadow-sm">
+                <div class="mb-2">
+                    <h6 class="text-primary"><i class="fas fa-file-alt me-2"></i>صورة الاستمارة</h6>
+                    <small class="text-muted">يقبل ملفات الصور و PDF</small>
+                </div>
+                <form method="POST" action="{{ url_for('vehicles.upload_document', id=vehicle.id) }}" enctype="multipart/form-data" class="upload-form">
+                    <input type="hidden" name="document_type" value="registration_form">
+                    <div class="mb-2">
+                        <input type="file" name="file" class="form-control" accept="image/*,application/pdf" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-upload me-1"></i> رفع صورة الاستمارة
+                    </button>
+                </form>
+            </div>
+
+            <!-- نموذج رفع اللوحة -->
+            <div class="upload-form-card mb-3 p-3 border rounded shadow-sm">
+                <div class="mb-2">
+                    <h6 class="text-success"><i class="fas fa-id-card me-2"></i>صورة اللوحة</h6>
+                    <small class="text-muted">يقبل ملفات الصور و PDF</small>
+                </div>
+                <form method="POST" action="{{ url_for('vehicles.upload_document', id=vehicle.id) }}" enctype="multipart/form-data" class="upload-form">
+                    <input type="hidden" name="document_type" value="plate">
+                    <div class="mb-2">
+                        <input type="file" name="file" class="form-control" accept="image/*,application/pdf" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-upload me-1"></i> رفع صورة اللوحة
+                    </button>
+                </form>
+            </div>
+
+            <!-- نموذج رفع التأمين -->
+            <div class="upload-form-card mb-3 p-3 border rounded shadow-sm">
+                <div class="mb-2">
+                    <h6 class="text-warning"><i class="fas fa-shield-alt me-2"></i>ملف التأمين</h6>
+                    <small class="text-muted">يقبل ملفات الصور، PDF، و Word</small>
+                </div>
+                <form method="POST" action="{{ url_for('vehicles.upload_document', id=vehicle.id) }}" enctype="multipart/form-data" class="upload-form">
+                    <input type="hidden" name="document_type" value="insurance">
+                    <div class="mb-2">
+                        <input type="file" name="file" class="form-control" accept="image/*,application/pdf,.doc,.docx" required>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="fas fa-upload me-1"></i> رفع ملف التأمين
+                    </button>
+                </form>
+            </div>
+            
+            <div class="text-center mt-3">
+                <button type="button" class="btn btn-outline-secondary" onclick="toggleDocumentForms()">
+                    <i class="fas fa-times me-1"></i>
+                    إغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- سجلات التسليم والاستلام -->
+<div class="card mb-3 mx-3 modern-card">
+    <div class="card-header gradient-header-orange d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 text-white">
+            <i class="fas fa-exchange-alt ms-2"></i>
+            سجلات التسليم والاستلام
+            {% if handover_records %}
+            <span class="badge bg-light text-dark ms-2">{{ handover_records|length }}</span>
+            {% endif %}
+        </h6>
+        <a href="{{ url_for('mobile.create_handover_mobile', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-warning">
+            <i class="fas fa-plus ms-1"></i>
+            إضافة تسليم/استلام
+        </a>
+    </div>
+    <div class="card-body p-0">
+        {% if handover_records %}
+        <!-- إحصائيات التسليم والاستلام -->
+        <div class="stats-row bg-light">
+            <div class="stat-item">
+                <div class="stat-number text-success">{{ handover_records|selectattr('handover_type', 'equalto', 'delivery')|list|length }}</div>
+                <div class="stat-label">تسليم</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number text-info">{{ handover_records|selectattr('handover_type', 'equalto', 'return')|list|length }}</div>
+                <div class="stat-label">استلام</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number text-primary">{{ handover_records|length }}</div>
+                <div class="stat-label">إجمالي</div>
+            </div>
+        </div>
+        
+        <!-- الجدول التفصيلي -->
+        <div class="handover-container">
+            <!-- رأس القائمة -->
+            <div class="handover-header-bar">
+                <div class="swipe-indicator">
+                    <i class="fas fa-arrows-alt-h"></i>
+                    <span>اسحب يميناً ويساراً للتفاصيل</span>
+                </div>
+                <div class="count-indicator">
+                    <span class="badge bg-warning">3 من {{ handover_records|length }}</span>
+                </div>
+            </div>
+
+            <!-- الجدول التفصيلي مع Scroll -->
+            <div class="handover-table-wrapper">
+                <div class="handover-table-scroll">
+                    <table class="table table-bordered handover-detailed-table">
+                        <thead class="sticky-header">
+                            <tr>
+                                <th width="120">التاريخ</th>
+                                <th width="80">النوع</th>
+                                <th width="150">الشخص</th>
+                                <th width="120">الهاتف</th>
+                                <th width="120">الهوية</th>
+                                <th width="100">الحالة</th>
+                                <th width="150">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in handover_records[:3] %}
+                            <tr class="handover-row">
+                                <td class="date-cell">
+                                    <div class="date-display">
+                                        <span class="date-main">{{ record.handover_date.strftime('%Y-%m-%d') if record.handover_date else 'غير محدد' }}</span>
+                                        <small class="date-time">{{ record.handover_date.strftime('%H:%M') if record.handover_date else '' }}</small>
+                                    </div>
+                                </td>
+                                <td class="type-cell">
+                                    <span class="type-badge {% if record.handover_type == 'delivery' %}bg-success{% else %}bg-info{% endif %}">
+                                        {% if record.handover_type == 'delivery' %}تسليم{% else %}استلام{% endif %}
+                                    </span>
+                                </td>
+                                <td class="person-cell">
+                                    <div class="person-info">
+                                        <strong>{{ record.person_name or 'غير محدد' }}</strong>
+                                        {% if record.employee_number %}
+                                        <small class="d-block">{{ record.employee_number }}</small>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="phone-cell">
+                                    <span class="phone-number">{{ record.phone or 'غير محدد' }}</span>
+                                </td>
+                                <td class="id-cell">
+                                    <span class="national-id">{{ record.national_id or 'غير محدد' }}</span>
+                                </td>
+                                <td class="status-cell">
+                                    <span class="status-badge bg-success">مكتمل</span>
+                                </td>
+                                <td class="actions-cell">
+                                    <div class="handover-actions-group">
+                                        <a href="{{ url_for('mobile.view_handover', handover_id=record.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="عرض">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('mobile.edit_handover_mobile', handover_id=record.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> 
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-success" 
+                                            data-handover-id="{{ record.id }}"
+                                            data-handover-type="{{ record.handover_type }}"
+                                            data-person-name="{{ record.person_name|e }}"
+                                            data-person-phone="{{ record.driver_phone_number|e }}"
+                                            data-person-national-id="{{ record.driver_residency_number|e }}"
+                                            data-handover-date="{{ record.handover_date.strftime('%Y-%m-%d') if record.handover_date else '' }}"
+                                            data-notes="{{ record.notes|e if record.notes else '' }}"
+                                            data-employee-id="{{ record.driver_employee.employee_id if record.driver_employee else '' }}"
+                                            data-employee-mobile="{{ record.driver_employee.mobile if record.driver_employee else '' }}"
+                                            data-employee-mobile-personal="{{ record.driver_employee.mobilePersonal if record.driver_employee else '' }}"
+                                            data-employee-departments="{{ (record.driver_employee.departments|map(attribute='name')|join(', ')) if record.driver_employee and record.driver_employee.departments else '' }}"
+                                            data-employee-mobile-type="{{ record.driver_employee.mobile_type if record.driver_employee else '' }}"
+                                            data-employee-mobile-imei="{{ record.driver_employee.mobile_imei if record.driver_employee else '' }}"
+                                            data-employee-has-custody="{{ record.driver_employee.has_mobile_custody if record.driver_employee else '' }}"
+                                            data-employee-birth-date="{{ record.driver_employee.birth_date.strftime('%Y-%m-%d') if record.driver_employee and record.driver_employee.birth_date else '' }}"
+                                            data-employee-national-id="{{ record.driver_employee.national_id if record.driver_employee and record.driver_employee.national_id else '' }}"
+                                            onclick="shareHandoverRecord(this)" title="مشاركة">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                        <a href="{{ url_for('vehicles.handover_pdf_public', id=record.id) }}" 
+                                           class="btn btn-sm btn-outline-danger" target="_blank" title="عرض PDF">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- زر عرض جميع السجلات -->
+            {% if handover_records|length > 3 %}
+            <div class="view-all-section">
+                <button class="btn btn-outline-warning w-100" onclick="toggleAllHandovers()">
+                    <i class="fas fa-list-ul ms-1"></i>
+                    <span id="toggle-handover-text">عرض جميع السجلات ({{ handover_records|length }})</span>
+                    <i class="fas fa-chevron-down ms-1" id="toggle-handover-icon"></i>
+                </button>
+                
+                <!-- الجدول الكامل - مخفي افتراضياً -->
+                <div class="all-handover-container d-none" id="all-handovers">
+                    <div class="handover-table-scroll">
+                        <table class="table table-bordered handover-detailed-table">
+                            <thead class="sticky-header">
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>النوع</th>
+                                    <th>الشخص</th>
+                                    <th>الهاتف</th>
+                                    <th>الهوية</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in handover_records %}
+                                <tr class="handover-row">
+                                    <td class="date-cell">
+                                        <div class="date-display">
+                                            <span class="date-main">{{ record.handover_date.strftime('%Y-%m-%d') if record.handover_date else 'غير محدد' }}</span>
+                                            <small class="date-time">{{ record.handover_date.strftime('%H:%M') if record.handover_date else '' }}</small>
+                                        </div>
+                                    </td>
+                                    <td class="type-cell">
+                                        <span class="type-badge {% if record.handover_type == 'delivery' %}bg-success{% else %}bg-info{% endif %}">
+                                            {% if record.handover_type == 'delivery' %}تسليم{% else %}استلام{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="person-cell">
+                                        <div class="person-info">
+                                            <strong>{{ record.person_name or 'غير محدد' }}</strong>
+                                            {% if record.employee_number %}
+                                            <small class="d-block">{{ record.employee_number }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="phone-cell">
+                                        <span class="phone-number">{{ record.phone or 'غير محدد' }}</span>
+                                    </td>
+                                    <td class="id-cell">
+                                        <span class="national-id">{{ record.national_id or 'غير محدد' }}</span>
+                                    </td>
+                                    <td class="status-cell">
+                                        <span class="status-badge bg-success">مكتمل</span>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <div class="handover-actions-group">
+                                            <a href="{{ url_for('mobile.view_handover', handover_id=record.id) }}" 
+                                               class="btn btn-sm btn-outline-primary" title="عرض">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('mobile.edit_handover_mobile', handover_id=record.id) }}" 
+                                               class="btn btn-sm btn-outline-warning" title="تعديل">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-success" 
+                                                data-handover-id="{{ record.id }}"
+                                                data-handover-type="{{ record.handover_type }}"
+                                                data-person-name="{{ record.person_name|e }}"
+                                                data-person-phone="{{ record.driver_phone_number|e }}"
+                                                data-person-national-id="{{ record.driver_residency_number|e }}"
+                                                data-handover-date="{{ record.handover_date.strftime('%Y-%m-%d') if record.handover_date else '' }}"
+                                                data-notes="{{ record.notes|e if record.notes else '' }}"
+                                                data-employee-id="{{ record.driver_employee.employee_id if record.driver_employee else '' }}"
+                                                data-employee-mobile="{{ record.driver_employee.mobile if record.driver_employee else '' }}"
+                                                data-employee-mobile-personal="{{ record.driver_employee.mobilePersonal if record.driver_employee else '' }}"
+                                                data-employee-departments="{{ (record.driver_employee.departments|map(attribute='name')|join(', ')) if record.driver_employee and record.driver_employee.departments else '' }}"
+                                                data-employee-mobile-type="{{ record.driver_employee.mobile_type if record.driver_employee else '' }}"
+                                                data-employee-mobile-imei="{{ record.driver_employee.mobile_imei if record.driver_employee else '' }}"
+                                                data-employee-has-custody="{{ record.driver_employee.has_mobile_custody if record.driver_employee else '' }}"
+                                                onclick="shareHandoverRecord(this)" title="مشاركة">
+                                                <i class="fas fa-share-alt"></i>
+                                            </button>
+                                            <a href="{{ url_for('vehicles.handover_pdf_public', id=record.id) }}" 
+                                               class="btn btn-sm btn-outline-danger" target="_blank" title="عرض PDF">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <div class="mb-3">
+                <i class="fas fa-file-signature fa-3x text-muted"></i>
+            </div>
+            <h6>لا توجد سجلات تسليم واستلام</h6>
+            <p class="text-muted small px-3">يمكنك إضافة سجل تسليم أو استلام جديد من خلال النقر على زر "إضافة تسليم/استلام"</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- التفويضات الخارجية -->
+<div class="card mb-5 mx-3 modern-card">
+    <div class="card-header gradient-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 text-white">
+            <i class="fas fa-file-signature ms-2"></i>
+            التفويضات الخارجية
+            {% if external_authorizations %}
+            <span class="badge bg-light text-dark ms-2">{{ external_authorizations|length }}</span>
+            {% endif %}
+        </h6>
+        <a href="{{ url_for('mobile.create_external_authorization', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-success">
+            <i class="fas fa-plus ms-1"></i>
+            إضافة تفويض
+        </a>
+    </div>
+    <div class="card-body p-0">
+        {% if external_authorizations %}
+        <!-- إحصائيات التفويضات -->
+        <div class="stats-row bg-light">
+            <div class="stat-item">
+                <div class="stat-number text-warning">{{ external_authorizations|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+                <div class="stat-label">في الانتظار</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number text-success">{{ external_authorizations|selectattr('status', 'equalto', 'approved')|list|length }}</div>
+                <div class="stat-label">مُوافق عليه</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number text-danger">{{ external_authorizations|selectattr('status', 'equalto', 'rejected')|list|length }}</div>
+                <div class="stat-label">مرفوض</div>
+            </div>
+        </div>
+        
+        <!-- قائمة التفويضات مع scroll تفصيلي -->
+        <div class="external-auth-container">
+            <!-- رأس القائمة -->
+            <div class="auth-header-bar">
+                <div class="swipe-indicator">
+                    <i class="fas fa-arrows-alt-h"></i>
+                    <span>اسحب يميناً ويساراً للتفاصيل</span>
+                </div>
+                <div class="count-indicator">
+                    <span class="badge bg-primary">{{ [3, external_authorizations|length]|min }} من {{ external_authorizations|length }}</span>
+                </div>
+            </div>
+
+            <!-- الجدول التفصيلي مع Scroll -->
+            <div class="auth-table-wrapper">
+                <div class="auth-table-scroll">
+                    <table class="table table-bordered auth-detailed-table">
+                        <thead class="sticky-header">
+                            <tr>
+                                <th width="120">التاريخ</th>
+                                <th width="80">النوع</th>
+                                <th width="150">الشخص</th>
+                                <th width="100">الحالة</th>
+                                <th width="120">المشروع</th>
+                                <th width="100">المدينة</th>
+                                <th width="150">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for auth in external_authorizations[:3] %}
+                            <tr class="auth-row">
+                                <td class="date-cell">
+                                    <div class="date-display">
+                                        <span class="date-main">{{ auth.created_at.strftime('%Y-%m-%d') if auth.created_at else 'غير محدد' }}</span>
+                                        <small class="date-time">{{ auth.created_at.strftime('%H:%M') if auth.created_at else '' }}</small>
+                                    </div>
+                                </td>
+                                <td class="type-cell">
+                                    <span class="type-badge 
+                                        {% if 'تسليم' in auth.authorization_type %}bg-info
+                                        {% elif 'استلام' in auth.authorization_type %}bg-success
+                                        {% elif 'نقل' in auth.authorization_type %}bg-warning
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ auth.authorization_type[:6] }}...
+                                    </span>
+                                </td>
+                                <td class="person-cell">
+                                    <div class="person-info">
+                                        <strong>{{ auth.employee.name }}</strong>
+                                        {% if auth.employee.phone %}
+                                        <small class="d-block">{{ auth.employee.phone }}</small>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="status-cell">
+                                    <span class="status-badge 
+                                        {% if auth.status == 'pending' %}bg-warning
+                                        {% elif auth.status == 'approved' %}bg-success
+                                        {% elif auth.status == 'rejected' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {% if auth.status == 'pending' %}قيد المراجعة
+                                        {% elif auth.status == 'approved' %}مُوافق
+                                        {% elif auth.status == 'rejected' %}مرفوض
+                                        {% else %}{{ auth.status }}{% endif %}
+                                    </span>
+                                </td>
+                                <td class="project-cell">
+                                    <span class="project-name">{{ auth.project_name[:10] if auth.project_name else 'غير محدد' }}{% if auth.project_name and auth.project_name|length > 10 %}...{% endif %}</span>
+                                </td>
+                                <td class="city-cell">
+                                    <span class="city-name">{{ auth.city if auth.city else 'غير محدد' }}</span>
+                                </td>
+                                <td class="actions-cell">
+                                    <div class="auth-actions-group">
+                                        <a href="{{ url_for('mobile.view_external_authorization', vehicle_id=vehicle.id, auth_id=auth.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="عرض">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('mobile.edit_external_authorization', vehicle_id=vehicle.id, auth_id=auth.id) }}" 
+                                           class="btn btn-sm btn-outline-warning" title="تعديل">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% if auth.file_path %}
+                                        <a href="{{ url_for('static', filename=auth.file_path) }}" 
+                                           class="btn btn-sm btn-outline-info" target="_blank" title="عرض الملف">
+                                            <i class="fas fa-file"></i>
+                                        </a>
+                                        {% endif %}
+                                        {% if auth.external_link %}
+                                        <a href="{{ auth.external_link }}" 
+                                           class="btn btn-sm btn-outline-secondary" target="_blank" title="فتح الرابط">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-outline-success" 
+                                                onclick="shareExternalAuthorization({{ auth.id }}, '{{ auth.employee.name }}', '{{ auth.authorization_type }}', '{{ auth.created_at.strftime('%Y-%m-%d') if auth.created_at else 'غير محدد' }}', '{{ auth.project_name if auth.project_name else 'غير محدد' }}', '{{ auth.city if auth.city else 'غير محدد' }}', {{ vehicle.id }}, '{{ auth.external_link if auth.external_link else '' }}')" 
+                                                title="مشاركة">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- زر عرض جميع التفويضات -->
+            {% if external_authorizations|length > 3 %}
+            <div class="view-all-section">
+                <button class="btn btn-outline-primary w-100 py-2" onclick="toggleAllAuthorizations()">
+                    <i class="fas fa-list-ul ms-1"></i>
+                    <span id="toggle-text">عرض جميع التفويضات ({{ external_authorizations|length }})</span>
+                    <i class="fas fa-chevron-down ms-1" id="toggle-icon" style="transition: transform 0.3s ease;"></i>
+                </button>
+                
+                <!-- الجدول الكامل - مخفي افتراضياً -->
+                <div class="all-auth-container d-none mt-3" id="all-authorizations" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px;">
+                    <div class="auth-table-scroll">
+                        <table class="table table-bordered auth-detailed-table mb-0">
+                            <thead class="sticky-header" style="position: sticky; top: 0; z-index: 10;">
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>النوع</th>
+                                    <th>الشخص</th>
+                                    <th>الحالة</th>
+                                    <th>المشروع</th>
+                                    <th>المدينة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for auth in external_authorizations %}
+                                <tr class="auth-row">
+                                    <td class="date-cell">
+                                        <div class="date-display">
+                                            <span class="date-main">{{ auth.created_at.strftime('%Y-%m-%d') if auth.created_at else 'غير محدد' }}</span>
+                                            <small class="date-time">{{ auth.created_at.strftime('%H:%M') if auth.created_at else '' }}</small>
+                                        </div>
+                                    </td>
+                                    <td class="type-cell">
+                                        <span class="type-badge 
+                                            {% if 'تسليم' in auth.authorization_type %}bg-info
+                                            {% elif 'استلام' in auth.authorization_type %}bg-success
+                                            {% elif 'نقل' in auth.authorization_type %}bg-warning
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ auth.authorization_type }}
+                                        </span>
+                                    </td>
+                                    <td class="person-cell">
+                                        <div class="person-info">
+                                            <strong>{{ auth.employee.name }}</strong>
+                                            {% if auth.employee.phone %}
+                                            <small class="d-block">{{ auth.employee.phone }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="status-cell">
+                                        <span class="status-badge 
+                                            {% if auth.status == 'pending' %}bg-warning
+                                            {% elif auth.status == 'approved' %}bg-success
+                                            {% elif auth.status == 'rejected' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}">
+                                            {% if auth.status == 'pending' %}قيد المراجعة
+                                            {% elif auth.status == 'approved' %}مُوافق عليه
+                                            {% elif auth.status == 'rejected' %}مرفوض
+                                            {% else %}{{ auth.status }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="project-cell">
+                                        <span class="project-name">{{ auth.project_name if auth.project_name else 'غير محدد' }}</span>
+                                    </td>
+                                    <td class="city-cell">
+                                        <span class="city-name">{{ auth.city if auth.city else 'غير محدد' }}</span>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <div class="auth-actions-group">
+                                            <a href="{{ url_for('mobile.view_external_authorization', vehicle_id=vehicle.id, auth_id=auth.id) }}" 
+                                               class="btn btn-sm btn-outline-primary" title="عرض">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('mobile.edit_external_authorization', vehicle_id=vehicle.id, auth_id=auth.id) }}" 
+                                               class="btn btn-sm btn-outline-warning" title="تعديل">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {% if auth.file_path %}
+                                            <a href="{{ url_for('static', filename=auth.file_path) }}" 
+                                               class="btn btn-sm btn-outline-info" target="_blank" title="عرض الملف">
+                                                <i class="fas fa-file"></i>
+                                            </a>
+                                            {% endif %}
+                                            {% if auth.external_link %}
+                                            <a href="{{ auth.external_link }}" 
+                                               class="btn btn-sm btn-outline-secondary" target="_blank" title="فتح الرابط">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                            {% endif %}
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    onclick="shareExternalAuthorization({{ auth.id }}, '{{ auth.employee.name }}', '{{ auth.authorization_type }}', '{{ auth.created_at.strftime('%Y-%m-%d') if auth.created_at else 'غير محدد' }}', '{{ auth.project_name if auth.project_name else 'غير محدد' }}', '{{ auth.city if auth.city else 'غير محدد' }}', {{ vehicle.id }}, '{{ auth.external_link if auth.external_link else '' }}')" 
+                                                    title="مشاركة">
+                                                <i class="fas fa-share-alt"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-file-signature"></i>
+            </div>
+            <h6>لا توجد تفويضات خارجية</h6>
+            <p>ابدأ بإضافة أول تفويض خارجي</p>
+            <a href="{{ url_for('vehicles.create_external_authorization', vehicle_id=vehicle.id) }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus ms-1"></i> إضافة تفويض
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+
+<style>
+/* تنسيقات الروابط السريعة */
+.quick-action-btn {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    text-decoration: none;
+    color: inherit;
+    background: white;
+    border-right: 1px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-action-btn:hover {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    transform: translateY(-2px);
+    color: inherit;
+    text-decoration: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.quick-action-btn:last-child {
+    border-right: none;
+}
+
+.row:last-child .quick-action-btn {
+    border-bottom: none;
+}
+
+.quick-action-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 12px;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+}
+
+.quick-action-icon.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+}
+
+.quick-action-icon.bg-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.quick-action-icon.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+
+.quick-action-icon.bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.quick-action-icon.bg-purple {
+    background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+}
+
+.quick-action-icon.bg-teal {
+    background: linear-gradient(135deg, #20c997 0%, #17a085 100%);
+}
+
+.quick-action-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: right;
+}
+
+.quick-action-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.quick-action-subtitle {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 400;
+}
+
+.quick-action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.quick-action-btn:hover::before {
+    left: 100%;
+}
+
+/* تنسيقات نموذج الحذف */
+.quick-action-btn-form {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.quick-action-btn-form .quick-action-btn {
+    width: 100%;
+    height: 100%;
+    padding: 15px;
+    border: none;
+    background: white;
+    cursor: pointer;
+    text-align: inherit;
+}
+
+.quick-action-btn-form .quick-action-btn:hover {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    transform: translateY(-2px);
+}
+
+/* تجاوب للشاشات الصغيرة */
+@media (max-width: 576px) {
+    .quick-action-btn {
+        padding: 12px 10px;
+    }
+    
+    .quick-action-btn-form .quick-action-btn {
+        padding: 12px 10px;
+    }
+    
+    .quick-action-icon {
+        width: 40px;
+        height: 40px;
+        margin-left: 8px;
+        font-size: 1rem;
+    }
+    
+    .quick-action-title {
+        font-size: 0.85rem;
+    }
+    
+    .quick-action-subtitle {
+        font-size: 0.75rem;
+    }
+}
+
+/* تنسيقات شريط الإجراءات */
+.action-bar {
+    background-color: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.vehicle-plate-display {
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 2px;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* تنسيقات البطاقات الحديثة */
+.modern-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 24px;
+}
+
+.modern-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+}
+
+.gradient-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 16px 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.gradient-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.card-header h6 {
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* إحصائيات سريعة */
+.stats-row {
+    display: flex;
+    justify-content: space-around;
+    padding: 16px 12px;
+    background: linear-gradient(45deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+}
+
+.stat-item {
+    text-align: center;
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* قائمة قابلة للتمرير */
+.scrollable-list {
+    position: relative;
+    max-height: 400px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.list-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.scroll-indicator {
+    margin-left: auto;
+    color: #6c757d;
+    transition: transform 0.3s ease;
+}
+
+/* عناصر الجدول الزمني */
+.timeline-item {
+    display: flex;
+    padding: 16px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    position: relative;
+    transition: all 0.3s ease;
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.timeline-item.hidden-item {
+    display: none;
+}
+
+.timeline-item:hover {
+    background: linear-gradient(45deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+}
+
+.timeline-marker {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 12px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    position: relative;
+}
+
+.timeline-marker i {
+    color: white;
+    font-size: 12px;
+}
+
+.timeline-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.timeline-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #212529;
+    line-height: 1.3;
+    flex: 1;
+    margin-left: 8px;
+}
+
+.timeline-date {
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.timeline-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.timeline-meta {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.badge-type, .badge-status {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.timeline-cost {
+    font-weight: 600;
+    color: #28a745;
+    font-size: 0.85rem;
+}
+
+/* أزرار الإجراءات */
+.workshop-actions, .auth-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.workshop-actions .btn, .auth-actions .btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    transition: all 0.2s ease;
+}
+
+.workshop-actions .btn:hover, .auth-actions .btn:hover {
+    transform: scale(1.1);
+}
+
+/* زر عرض المزيد */
+.load-more-btn {
+    text-align: center;
+    padding: 16px;
+    background: linear-gradient(45deg, #f8f9fa 0%, #e9ecef 100%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-top: 1px solid #dee2e6;
+    color: #495057;
+    font-weight: 500;
+}
+
+.load-more-btn:hover {
+    background: linear-gradient(45deg, #e9ecef 0%, #dee2e6 100%);
+    color: #212529;
+}
+
+.load-more-btn i {
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+}
+
+.load-more-btn.expanded i {
+    transform: rotate(180deg);
+}
+
+/* الحالة الفارغة */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h6 {
+    margin-bottom: 8px;
+    color: #495057;
+    font-weight: 600;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* تحسينات التمرير */
+.scrollable-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.scrollable-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 2px;
+}
+
+.scrollable-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border-radius: 2px;
+}
+
+.scrollable-list::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #5a6fd8, #6a4190);
+}
+
+/* تأثيرات الحركة */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.timeline-item {
+    animation: slideIn 0.4s ease forwards;
+}
+
+/* تجاوب الشاشات الصغيرة */
+@media (max-width: 576px) {
+    .modern-card {
+        margin: 0 8px 16px 8px;
+        border-radius: 12px;
+    }
+    
+    .timeline-item {
+        padding: 12px;
+    }
+    
+    .timeline-marker {
+        width: 28px;
+        height: 28px;
+        margin-left: 8px;
+    }
+    
+    .timeline-title {
+        font-size: 0.85rem;
+    }
+    
+    .stats-row {
+        padding: 12px 8px;
+    }
+    
+    .stat-number {
+        font-size: 1.2rem;
+    }
+    
+    .workshop-actions .btn, .auth-actions .btn {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+    }
+}
+
+/* تنسيقات معلومات السيارة */
+.info-row {
+    display: flex;
+    margin-bottom: 12px;
+    align-items: center;
+}
+
+.info-row:last-child {
+    margin-bottom: 0;
+}
+
+.info-label {
+    width: 110px;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.info-value {
+    flex: 1;
+    font-weight: 500;
+}
+
+.info-section-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+.color-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+}
+
+/* تنسيقات قائمة الوثائق */
+.document-stats {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.doc-stat {
+    text-align: center;
+}
+
+.doc-stat.warning .stat-value {
+    color: #fd7e14;
+}
+
+.doc-stat.danger .stat-value {
+    color: #dc3545;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: #6c757d;
+}
+
+.document-list, .maintenance-list {
+    border-top: 1px solid #f0f0f0;
+}
+
+.document-item, .maintenance-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.document-item:last-child, .maintenance-item:last-child {
+    border-bottom: none;
+}
+
+.document-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+    margin-left: 12px;
+    color: #6c757d;
+}
+
+.document-content {
+    flex: 1;
+}
+
+.document-name {
+    font-weight: 500;
+    margin-bottom: 3px;
+    font-size: 0.9rem;
+}
+
+.document-expiry {
+    font-size: 0.8rem;
+}
+
+/* تنسيقات سجل الصيانة */
+.maintenance-date {
+    width: 80px;
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.maintenance-content {
+    flex: 1;
+    padding: 0 10px;
+}
+
+.maintenance-type {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.7rem;
+}
+
+.maintenance-description {
+    font-size: 0.85rem;
+}
+
+.maintenance-cost {
+    font-weight: 600;
+    color: #0d6efd;
+    font-size: 0.85rem;
+}
+
+/* تنسيقات الأزرار */
+.action-buttons-container {
+    margin-top: 20px;
+}
+
+/* تحسين أزرار الورشة */
+.workshop-actions .btn {
+    border-radius: 6px;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+.workshop-actions .btn i {
+    font-size: 11px;
+}
+
+/* تنسيقات التفويضات الخارجية المحدثة */
+.external-auth-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.auth-header-bar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* تحسينات قسم عرض جميع التفويضات */
+.view-all-section {
+    padding: 15px;
+    background: #ffffff;
+    border-top: 1px solid #e9ecef;
+}
+
+.view-all-section button {
+    border: 2px solid #667eea;
+    color: #667eea;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.view-all-section button:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* تحسينات الجدول الكامل */
+.all-auth-container {
+    animation: slideDown 0.4s ease;
+    background: white;
+    border: 2px solid #667eea;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+}
+
+.all-auth-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.all-auth-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.all-auth-container::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 4px;
+}
+
+.all-auth-container::-webkit-scrollbar-thumb:hover {
+    background: #5a6fd8;
+}
+
+/* تحسين الرأس الثابت */
+.all-auth-container .sticky-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+.all-auth-container .sticky-header th {
+    border: none;
+    padding: 12px 8px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+/* تدرج برتقالي للتسليم والاستلام */
+.gradient-header-orange {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6347 100%) !important;
+}
+
+/* تنسيقات سجلات التسليم والاستلام */
+.handover-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.handover-header-bar {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6347 100%);
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.handover-table-wrapper {
+    position: relative;
+    background: white;
+}
+
+.handover-table-scroll {
+    overflow-x: auto;
+    overflow-y: visible;
+    max-height: 300px;
+    scrollbar-width: thin;
+    scrollbar-color: #ff8c00 #f1f1f1;
+}
+
+.handover-table-scroll::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+
+.handover-table-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.handover-table-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #ff8c00, #ff6347);
+    border-radius: 3px;
+}
+
+.handover-detailed-table {
+    margin: 0;
+    min-width: 800px;
+    font-size: 0.85rem;
+}
+
+.handover-row {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #e9ecef !important;
+}
+
+.handover-row:hover {
+    background: linear-gradient(45deg, #fff8dc 0%, #ffe4b5 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.2);
+}
+
+.handover-actions-group {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.handover-actions-group .btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: all 0.2s ease;
+}
+
+.handover-actions-group .btn:hover {
+    transform: scale(1.1);
+}
+
+.all-handover-container {
+    margin-top: 16px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.all-handover-container .handover-table-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* مؤشر التمرير للجدول */
+.handover-table-wrapper::before {
+    content: '⟵ ⟶';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: rgba(255, 140, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    z-index: 5;
+    opacity: 0.7;
+    animation: pulseHintOrange 3s infinite;
+}
+
+@keyframes pulseHintOrange {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+/* إخفاء مؤشر التمرير عند التفاعل */
+.handover-table-scroll:hover + .handover-table-wrapper::before,
+.handover-table-scroll.scrolled::before {
+    opacity: 0;
+}
+
+.swipe-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.swipe-indicator i {
+    font-size: 1rem;
+    animation: swipeHint 2s infinite;
+}
+
+@keyframes swipeHint {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+}
+
+.count-indicator .badge {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+}
+
+.auth-table-wrapper {
+    position: relative;
+    background: white;
+}
+
+.auth-table-scroll {
+    overflow-x: auto;
+    overflow-y: visible;
+    max-height: 300px;
+    scrollbar-width: thin;
+    scrollbar-color: #667eea #f1f1f1;
+}
+
+.auth-table-scroll::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+
+.auth-table-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.auth-table-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border-radius: 3px;
+}
+
+.auth-detailed-table {
+    margin: 0;
+    min-width: 800px;
+    font-size: 0.85rem;
+}
+
+.sticky-header th {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+    border: none;
+    padding: 12px 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.auth-row {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #e9ecef !important;
+}
+
+.auth-row:hover {
+    background: linear-gradient(45deg, #f8f9fa 0%, #e9ecef 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.date-cell {
+    text-align: center;
+    padding: 12px 8px !important;
+}
+
+.date-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.date-main {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.8rem;
+}
+
+.date-time {
+    color: #6c757d;
+    font-size: 0.7rem;
+    margin-top: 2px;
+}
+
+.type-badge, .status-badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-block;
+    text-align: center;
+    min-width: 60px;
+}
+
+.person-info {
+    text-align: center;
+}
+
+.person-info strong {
+    font-size: 0.8rem;
+    color: #495057;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.person-info small {
+    color: #6c757d;
+    font-size: 0.7rem;
+}
+
+.project-name, .city-name {
+    font-size: 0.8rem;
+    color: #495057;
+    font-weight: 500;
+    text-align: center;
+    display: block;
+}
+
+.auth-actions-group {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.auth-actions-group .btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: all 0.2s ease;
+}
+
+.auth-actions-group .btn:hover {
+    transform: scale(1.1);
+}
+
+.view-all-section {
+    padding: 16px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+}
+
+.all-auth-container {
+    margin-top: 16px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.all-auth-container .auth-table-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* تأثيرات التحميل */
+.auth-row {
+    opacity: 0;
+    animation: fadeInRow 0.5s ease forwards;
+}
+
+.auth-row:nth-child(1) { animation-delay: 0.1s; }
+.auth-row:nth-child(2) { animation-delay: 0.2s; }
+.auth-row:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes fadeInRow {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* تجاوب الشاشات الصغيرة */
+@media (max-width: 576px) {
+    .auth-detailed-table {
+        min-width: 700px;
+        font-size: 0.75rem;
+    }
+    
+    .sticky-header th {
+        padding: 8px 4px;
+        font-size: 0.7rem;
+    }
+    
+    .auth-row td {
+        padding: 8px 4px !important;
+    }
+    
+    .auth-actions-group .btn {
+        width: 24px;
+        height: 24px;
+        font-size: 9px;
+    }
+    
+    .type-badge, .status-badge {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        min-width: 50px;
+    }
+    
+    .swipe-indicator span {
+        font-size: 0.75rem;
+    }
+}
+</style>
+
+<!-- JavaScript للتفاعل مع القوائم -->
+<script>
+// دالة لتبديل عرض العناصر المخفية
+function toggleItems(button, type) {
+    const container = button.closest('.scrollable-list');
+    const hiddenItems = container.querySelectorAll('.hidden-item');
+    const icon = button.querySelector('i');
+    const text = button.querySelector('span');
+    const isExpanded = button.classList.contains('expanded');
+    
+    if (isExpanded) {
+        // إخفاء العناصر الإضافية
+        hiddenItems.forEach(item => {
+            item.style.animation = 'slideOut 0.3s ease forwards';
+            setTimeout(() => {
+                item.classList.add('hidden-item');
+                item.style.display = 'none';
+            }, 300);
+        });
+        
+        icon.style.transform = 'rotate(0deg)';
+        text.textContent = `عرض ${hiddenItems.length} عملية أخرى`;
+        button.classList.remove('expanded');
+        
+        // التمرير إلى أعلى القائمة
+        container.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    } else {
+        // عرض العناصر المخفية
+        hiddenItems.forEach((item, index) => {
+            setTimeout(() => {
+                item.style.display = 'flex';
+                item.classList.remove('hidden-item');
+                item.style.animation = 'slideIn 0.4s ease forwards';
+            }, index * 100);
+        });
+        
+        icon.style.transform = 'rotate(180deg)';
+        text.textContent = 'إخفاء العناصر الإضافية';
+        button.classList.add('expanded');
+    }
+}
+
+// تأثير التمرير للمؤشر
+document.querySelectorAll('.scrollable-list').forEach(list => {
+    const indicator = list.querySelector('.scroll-indicator');
+    
+    list.addEventListener('scroll', () => {
+        const scrollPercentage = (list.scrollTop / (list.scrollHeight - list.clientHeight)) * 100;
+        if (indicator) {
+            indicator.style.transform = `rotate(${scrollPercentage * 1.8}deg)`;
+        }
+    });
+});
+
+// رسوم متحركة عند التحميل
+document.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.modern-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+});
+
+// CSS animations
+const style = document.createElement('style');
+style.textContent = `
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.timeline-item:nth-child(1) { animation-delay: 0.1s; }
+.timeline-item:nth-child(2) { animation-delay: 0.2s; }
+.timeline-item:nth-child(3) { animation-delay: 0.3s; }
+`;
+document.head.appendChild(style);
+
+// دالة تبديل عرض جميع التفويضات
+function toggleAllAuthorizations() {
+    const container = document.getElementById('all-authorizations');
+    const toggleText = document.getElementById('toggle-text');
+    const toggleIcon = document.getElementById('toggle-icon');
+    const isVisible = !container.classList.contains('d-none');
+    
+    if (isVisible) {
+        // إخفاء القائمة الكاملة
+        container.style.animation = 'slideUp 0.4s ease forwards';
+        setTimeout(() => {
+            container.classList.add('d-none');
+        }, 400);
+        
+        toggleText.textContent = 'عرض جميع التفويضات (' + document.querySelectorAll('.auth-row').length + ')';
+        toggleIcon.className = 'fas fa-chevron-down ms-1';
+        toggleIcon.style.transform = 'rotate(0deg)';
+    } else {
+        // عرض القائمة الكاملة
+        container.classList.remove('d-none');
+        container.style.animation = 'slideDown 0.4s ease forwards';
+        
+        toggleText.textContent = 'إخفاء القائمة الكاملة';
+        toggleIcon.className = 'fas fa-chevron-up ms-1';
+        toggleIcon.style.transform = 'rotate(180deg)';
+        
+        // التمرير إلى القائمة الجديدة
+        setTimeout(() => {
+            container.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }, 200);
+    }
+}
+
+// CSS animations للقوائم
+const authStyle = document.createElement('style');
+authStyle.textContent = `
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 500px;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 500px;
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+        max-height: 0;
+    }
+}
+
+.auth-table-scroll {
+    scroll-behavior: smooth;
+}
+
+/* تحسين تأثير hover للجدول */
+.auth-row:hover .auth-actions-group .btn {
+    transform: scale(1.05);
+}
+
+/* مؤشر التمرير للجدول */
+.auth-table-wrapper::before {
+    content: '⟵ ⟶';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: rgba(102, 126, 234, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    z-index: 5;
+    opacity: 0.7;
+    animation: pulseHint 3s infinite;
+}
+
+@keyframes pulseHint {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+/* إخفاء مؤشر التمرير عند التفاعل */
+.auth-table-scroll:hover + .auth-table-wrapper::before,
+.auth-table-scroll.scrolled::before {
+    opacity: 0;
+}
+`;
+document.head.appendChild(authStyle);
+
+// إضافة مستمع للتمرير لإخفاء مؤشر الاتجاه
+document.querySelectorAll('.auth-table-scroll, .handover-table-scroll').forEach(scroll => {
+    scroll.addEventListener('scroll', function() {
+        this.classList.add('scrolled');
+    });
+});
+
+// دالة تبديل عرض جميع سجلات التسليم والاستلام
+function toggleAllHandovers() {
+    const container = document.getElementById('all-handovers');
+    const toggleText = document.getElementById('toggle-handover-text');
+    const toggleIcon = document.getElementById('toggle-handover-icon');
+    const isVisible = !container.classList.contains('d-none');
+    
+    if (isVisible) {
+        // إخفاء القائمة الكاملة
+        container.style.animation = 'slideUp 0.4s ease forwards';
+        setTimeout(() => {
+            container.classList.add('d-none');
+        }, 400);
+        
+        toggleText.textContent = 'عرض جميع السجلات (' + document.querySelectorAll('.handover-row').length + ')';
+        toggleIcon.className = 'fas fa-chevron-down ms-1';
+        toggleIcon.style.transform = 'rotate(0deg)';
+    } else {
+        // عرض القائمة الكاملة
+        container.classList.remove('d-none');
+        container.style.animation = 'slideDown 0.4s ease forwards';
+        
+        toggleText.textContent = 'إخفاء القائمة الكاملة';
+        toggleIcon.className = 'fas fa-chevron-up ms-1';
+        toggleIcon.style.transform = 'rotate(180deg)';
+        
+        // التمرير إلى القائمة الجديدة
+        setTimeout(() => {
+            container.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }, 200);
+    }
+}
+</script>
+
+<!-- JavaScript لتأكيد الحذف -->
+<script>
+function confirmDeleteWorkshop(workshopId, description) {
+    if (confirm('هل أنت متأكد من حذف سجل الورشة: ' + description + '؟\n\nلا يمكن التراجع عن هذه العملية.')) {
+        // إرسال طلب الحذف
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("mobile.delete_workshop_record", workshop_id=0) }}'.replace('0', workshopId);
+        
+        // إضافة CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = '{{ csrf_token() }}';
+        form.appendChild(csrfInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function shareWorkshopSummaryFromData(button) {
+    const workshopId = button.getAttribute('data-workshop-id');
+    const description = button.getAttribute('data-description');
+    const entryDate = button.getAttribute('data-entry-date');
+    const status = button.getAttribute('data-status');
+    const imagesCount = parseInt(button.getAttribute('data-images-count')) || 0;
+    const imagePaths = button.getAttribute('data-image-paths');
+    
+    shareWorkshopSummary(workshopId, description, entryDate, status, imagesCount, imagePaths);
+}
+
+function shareWorkshopSummary(workshopId, description, entryDate, status, imagesCount, imagePaths) {
+    // ترجمة حالة الإصلاح
+    let statusText = status;
+    if (status === 'in_progress') statusText = 'قيد التنفيذ';
+    else if (status === 'completed') statusText = 'تم الإصلاح';
+    else if (status === 'pending_approval') statusText = 'بانتظار الموافقة';
+    
+    const vehicleInfo = "{{ vehicle.plate_number }} - {{ vehicle.make }} {{ vehicle.model }}";
+    const detailsUrl = `${window.location.origin}/mobile/vehicles/workshop/${workshopId}/details`;
+    
+    const currentDate = new Date();
+    const formattedDateTime = currentDate.toLocaleString('ar-SA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+    
+    let shareText = `مرحباً 👋\n\n` +
+                     `إليك ملخص سجل الورشة للسيارة:\n\n` +
+                     `🚙 رقم السيارة: ${vehicleInfo}\n` +
+                     `📅 تاريخ وقت الإرسال: ${formattedDateTime}\n\n` +
+                     `═══════════════════════════\n` +
+                     `🔧 ملخص العملية:\n` +
+                     `═══════════════════════════\n\n` +
+                     `📅 تاريخ دخول الورشة: ${entryDate || 'غير محدد'}\n` +
+                     `🛠️ حالة الإصلاح: ${statusText}\n` +
+                     `📝 وصف العملية: ${description}\n\n`;
+    
+    // إضافة الصور إن وجدت
+    if (imagesCount > 0 && imagePaths) {
+        shareText += `📸 الصور المرفقة (${imagesCount} صورة):\n`;
+        const imageArray = imagePaths.split(',');
+        imageArray.forEach((imagePath, index) => {
+            if (imagePath.trim()) {
+                shareText += `🖼️ صورة ${index + 1}: ${window.location.origin}/static/${imagePath.trim()}\n`;
+            }
+        });
+        shareText += `\n`;
+    }
+    
+    shareText += `🌐 للاطلاع على التفاصيل الكاملة:\n${detailsUrl}\n\n` +
+                     `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                     `📱 نظام نُظم لإدارة المركبات\n` +
+                     `🕐 تم إنشاء الملخص: ${formattedDateTime}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: `سجل ورشة - ${vehicleInfo}`,
+            text: shareText,
+            url: detailsUrl
+        }).catch(() => {
+            fallbackShareSummary(shareText);
+        });
+    } else {
+        fallbackShareSummary(shareText);
+    }
+}
+
+function fallbackShareSummary(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('تم نسخ ملخص السجل إلى الحافظة');
+        }).catch(() => {
+            showShareModal(text);
+        });
+    } else {
+        showShareModal(text);
+    }
+}
+
+function showShareModal(text) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">مشاركة سجل الورشة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea class="form-control" rows="10" readonly style="direction: rtl;">${text}</textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="copyText('${text.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-copy ms-1"></i>
+                        نسخ النص
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(modal);
+    });
+}
+
+function copyText(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    showToast('تم نسخ النص بنجاح!');
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'position-fixed top-0 end-0 p-3';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle ms-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            document.body.removeChild(toast);
+        }
+    }, 4000);
+}
+
+// دالة مشاركة سجل التسليم والاستلام
+function shareHandoverRecord(button) {
+    const handoverId = button.getAttribute('data-handover-id');
+    const handoverType = button.getAttribute('data-handover-type');
+    const personName = button.getAttribute('data-person-name');
+    const personPhone = button.getAttribute('data-person-phone');
+    const personNationalId = button.getAttribute('data-person-national-id');
+    const handoverDate = button.getAttribute('data-handover-date');
+    const notes = button.getAttribute('data-notes');
+    
+    // بيانات الموظف الإضافية
+    const employeeId = button.getAttribute('data-employee-id');
+    const employeeMobile = button.getAttribute('data-employee-mobile');
+    const employeeMobilePersonal = button.getAttribute('data-employee-mobile-personal');
+    const employeeDepartments = button.getAttribute('data-employee-departments');
+    const employeeMobileType = button.getAttribute('data-employee-mobile-type');
+    const employeeMobileImei = button.getAttribute('data-employee-mobile-imei');
+    const employeeHasCustody = button.getAttribute('data-employee-has-custody');
+    const employeeBirthDate = button.getAttribute('data-employee-birth-date');
+    
+    // ترجمة نوع العملية
+    let operationType = handoverType === 'delivery' ? 'تسليم' : 'استلام';
+    
+    const vehicleInfo = "{{ vehicle.plate_number }} - {{ vehicle.make }} {{ vehicle.model }}";
+    const detailsUrl = `${window.location.origin}/vehicles/handover/${handoverId}/pdf/public`;
+    
+    const currentDate = new Date();
+    const formattedDateTime = currentDate.toLocaleString('ar-SA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+    
+    let shareText = `مرحباً 👋\n\n` +
+                   `═══════════════════════════\n` +
+                   `🚙 بيانات المركبة\n` +
+                   `═══════════════════════════\n` +
+                   `• رقم السيارة: ${vehicleInfo}\n` +
+                   `• نوع العملية: ${operationType}\n` +
+                   `• تاريخ العملية: ${handoverDate || 'غير محدد'}\n\n` +
+                   `═══════════════════════════\n` +
+                   `👤 بيانات السائق الكاملة\n` +
+                   `═══════════════════════════\n` +
+                   `• الاسم: ${personName}\n`;
+    
+    if (personNationalId) {
+        shareText += `• رقم الهوية/الإقامة: ${personNationalId}\n`;
+    }
+    
+    if (personPhone) {
+        shareText += `• الرقم الشخصي: ${personPhone}\n`;
+    }
+    
+    // إضافة الرقم الوظيفي (من employee_id الفعلي وليس mobile)
+    if (employeeId && employeeId.trim() !== '' && employeeId !== 'null') {
+        shareText += `• الرقم الوظيفي: ${employeeId}\n`;
+    }
+    
+    // إضافة رقم جوال العمل (من mobile)
+    if (employeeMobile && employeeMobile.trim() !== '' && employeeMobile !== 'null') {
+        shareText += `• رقم جوال العمل: ${employeeMobile}\n`;
+    }
+    
+    // إضافة الرقم الشخصي (من mobilePersonal)
+    if (employeeMobilePersonal && employeeMobilePersonal.trim() !== '' && employeeMobilePersonal !== 'null') {
+        shareText += `• رقم الجوال الشخصي: ${employeeMobilePersonal}\n`;
+    }
+    
+    // إضافة معلومات الأقسام
+    if (employeeDepartments && employeeDepartments.trim() !== '') {
+        shareText += `• الأقسام المرتبطة: ${employeeDepartments}\n`;
+    }
+    
+    // إضافة معلومات عهدة الجوال إذا كانت متوفرة
+    if (employeeHasCustody === 'True' || employeeMobileType || employeeMobileImei) {
+        shareText += `\n═══════════════════════════\n` +
+                    `📱 تفاصيل عهدة الجوال\n` +
+                    `═══════════════════════════\n`;
+        
+        if (employeeMobileType && employeeMobileType.trim() !== '' && employeeMobileType !== 'null') {
+            shareText += `• نوع الجوال: ${employeeMobileType}\n`;
+        }
+        
+        if (employeeMobileImei && employeeMobileImei.trim() !== '' && employeeMobileImei !== 'null') {
+            shareText += `• رقم IMEI: ${employeeMobileImei}\n`;
+        }
+        
+        if (employeeHasCustody === 'True') {
+            shareText += `• حالة العهدة: مُستلمة ✅\n`;
+        } else if (employeeHasCustody === 'False') {
+            shareText += `• حالة العهدة: غير مُستلمة ❌\n`;
+        }
+    }
+    
+    if (notes) {
+        shareText += `\n═══════════════════════════\n` +
+                    `📝 ملاحظات إضافية\n` +
+                    `═══════════════════════════\n` +
+                    `${notes}\n`;
+    }
+    
+    shareText += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                `📱 نظام نُظم لإدارة المركبات\n` +
+                `📅 تاريخ الإرسال: ${formattedDateTime}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: `${operationType} مركبة - ${vehicleInfo}`,
+            text: shareText,
+            url: detailsUrl
+        }).catch(() => {
+            fallbackShareHandover(shareText);
+        });
+    } else {
+        fallbackShareHandover(shareText);
+    }
+}
+
+// دالة محسنة لتنظيف البيانات وإخفاء القيم الفارغة
+function cleanDataValue(value) {
+    if (!value || value === 'None' || value === 'null' || value.trim() === '') {
+        return null;
+    }
+    return value.trim();
+}
+
+// دالة مشاركة محسنة لسجلات التسليم والاستلام
+function shareHandoverRecordImproved(button) {
+    const handoverId = button.getAttribute('data-handover-id');
+    const handoverType = button.getAttribute('data-handover-type');
+    const personName = cleanDataValue(button.getAttribute('data-person-name')) || 'غير محدد';
+    const personPhone = cleanDataValue(button.getAttribute('data-person-phone'));
+    const personNationalId = cleanDataValue(button.getAttribute('data-person-national-id'));
+    const handoverDate = cleanDataValue(button.getAttribute('data-handover-date'));
+    const notes = cleanDataValue(button.getAttribute('data-notes'));
+    
+    // بيانات الموظف الكاملة
+    const employeeId = cleanDataValue(button.getAttribute('data-employee-id'));
+    const employeeMobile = cleanDataValue(button.getAttribute('data-employee-mobile'));
+    const employeeMobilePersonal = cleanDataValue(button.getAttribute('data-employee-mobile-personal'));
+    const employeeDepartments = cleanDataValue(button.getAttribute('data-employee-departments'));
+    const employeeMobileImei = cleanDataValue(button.getAttribute('data-employee-mobile-imei'));
+    const employeeBirthDate = cleanDataValue(button.getAttribute('data-employee-birth-date'));
+    const employeeNationalId = cleanDataValue(button.getAttribute('data-employee-national-id'));
+    const employeeMobileType = cleanDataValue(button.getAttribute('data-employee-mobile-type'));
+    const employeeHasCustody = button.getAttribute('data-employee-has-custody');
+    
+    const operationType = handoverType === 'delivery' ? 'تسليم' : 'استلام';
+    const vehicleInfo = "{{ vehicle.plate_number }} - {{ vehicle.make }} {{ vehicle.model }}";
+    const detailsUrl = `${window.location.origin}/vehicles/handover/${handoverId}/pdf/public`;
+    
+    const currentDate = new Date();
+    const formattedDateTime = currentDate.toLocaleString('ar-SA', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false
+    });
+    
+    let shareText = `مرحباً 👋\n\n` +
+                   `═══════════════════════════\n` +
+                   `🚙 ${operationType} مركبة\n` +
+                   `═══════════════════════════\n` +
+                   `• رقم السيارة: ${vehicleInfo}\n` +
+                   `• نوع العملية: ${operationType}\n` +
+                   `• تاريخ العملية: ${handoverDate || 'غير محدد'}\n\n` +
+                   `═══════════════════════════\n` +
+                   `👤 معلومات السائق الشخصية\n` +
+                   `═══════════════════════════\n` +
+                   `• اسم السائق: ${personName}\n`;
+    
+    if (employeeBirthDate) shareText += `• تاريخ الميلاد: ${employeeBirthDate}\n`;
+    
+    // استخدام البيانات من جدول الموظف أولاً ثم البيانات من سجل التسليم
+    const nationalId = employeeNationalId || personNationalId;
+    if (nationalId) shareText += `• رقم الهوية/الإقامة: ${nationalId}\n`;
+    
+    const personalPhone = employeeMobilePersonal || personPhone;
+    if (personalPhone) shareText += `• رقم الجوال الشخصي: ${personalPhone}\n`;
+    
+    shareText += `\n═══════════════════════════\n` +
+                `💼 معلومات العمل\n` +
+                `═══════════════════════════\n`;
+    
+    if (employeeId) shareText += `• الرقم الوظيفي: ${employeeId}\n`;
+    if (employeeDepartments) shareText += `• القسم: ${employeeDepartments}\n`;
+    
+    shareText += `\n═══════════════════════════\n` +
+                `📱 معلومات الجوال\n` +
+                `═══════════════════════════\n`;
+    
+    if (employeeMobileType) shareText += `• نوع الجوال: ${employeeMobileType}\n`;
+    if (employeeMobile) shareText += `• رقم جوال العمل: ${employeeMobile}\n`;
+    if (employeeMobileImei) shareText += `• IMEI: ${employeeMobileImei}\n`;
+    
+    if (employeeHasCustody === 'True' || employeeHasCustody === 'true' || employeeHasCustody === 't') {
+        shareText += `• حالة عهدة الجوال: مُستلمة ✅\n`;
+    } else if (employeeHasCustody === 'False' || employeeHasCustody === 'false' || employeeHasCustody === 'f') {
+        shareText += `• حالة عهدة الجوال: غير مُستلمة ❌\n`;
+    }
+    
+    if (notes) {
+        shareText += `\n═══════════════════════════\n` +
+                    `📝 ملاحظات إضافية\n` +
+                    `═══════════════════════════\n` +
+                    `${notes}\n`;
+    }
+    
+    shareText += `\n═══════════════════════════\n` +
+                `🔗 رابط النموذج الكامل\n` +
+                `═══════════════════════════\n` +
+                `📄 ${detailsUrl}\n\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                `📱 نظام نُظم لإدارة المركبات\n` +
+                `📅 تاريخ الإرسال: ${formattedDateTime}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: `${operationType} مركبة - ${vehicleInfo}`,
+            text: shareText
+        }).catch(() => fallbackShareHandover(shareText));
+    } else {
+        fallbackShareHandover(shareText);
+    }
+}
+
+// استبدال الدالة القديمة بالمحسنة عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    window.shareHandoverRecord = shareHandoverRecordImproved;
+});
+
+function fallbackShareHandover(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('تم نسخ بيانات التسليم والاستلام إلى الحافظة');
+        }).catch(() => {
+            showHandoverShareModal(text);
+        });
+    } else {
+        showHandoverShareModal(text);
+    }
+}
+
+function showHandoverShareModal(text) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">مشاركة سجل التسليم والاستلام</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea class="form-control" rows="15" readonly>${text}</textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="copyHandoverText('${text.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-copy"></i> نسخ النص
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bootstrapModal = new bootstrap.Modal(modal);
+    bootstrapModal.show();
+    
+    modal.addEventListener('hidden.bs.modal', function () {
+        document.body.removeChild(modal);
+    });
+}
+
+function copyHandoverText(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('تم نسخ النص إلى الحافظة');
+        });
+    }
+}
+</script>
+
+{% endif %}
+
+<!-- Modal للتفويضات الخارجية -->
+<div class="modal fade" id="externalAuthModal" tabindex="-1" aria-labelledby="externalAuthModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background-color: #1a1a1a; color: #fff;">
+            <div class="modal-header" style="border-bottom: 1px solid #333;">
+                <h5 class="modal-title" id="externalAuthModalLabel" style="color: #fff;">
+                    <i class="fas fa-file-signature ms-2"></i>
+                    إضافة تفويض خارجي
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="externalAuthForm" method="POST" action="#" enctype="multipart/form-data">
+                    {{ csrf_token() }}
+                    <input type="hidden" name="vehicle_id" value="{{ vehicle.id }}">
+                    
+                    <!-- اختيار القسم -->
+                    <div class="mb-3">
+                        <label for="department_filter" class="form-label" style="color: #fff;">القسم</label>
+                        <select class="form-select" id="department_filter" name="department_id" style="background-color: #333; color: #fff; border: 1px solid #555;">
+                            <option value="">جميع الأقسام</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}">{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- اختيار الموظف -->
+                    <div class="mb-3">
+                        <label for="employee_id" class="form-label" style="color: #fff;">الموظف</label>
+                        <select class="form-select" id="employee_id" name="employee_id" required style="background-color: #333; color: #fff; border: 1px solid #555;">
+                            <option value="">اختر الموظف</option>
+                            {% for emp in employees %}
+                            <option value="{{ emp.id }}" data-departments="{{ emp.departments|map(attribute='id')|join(',') }}">
+                                {{ emp.name }} - {{ emp.job_title or 'بدون منصب' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- نوع التفويض -->
+                    <div class="mb-3">
+                        <label for="authorization_type" class="form-label" style="color: #fff;">نوع التفويض</label>
+                        <select class="form-select" id="authorization_type" name="authorization_type" required style="background-color: #333; color: #fff; border: 1px solid #555;">
+                            <option value="">اختر نوع التفويض</option>
+                            <option value="تفويض تسليم">تفويض تسليم</option>
+                            <option value="استلام السيارة من مندوب">استلام السيارة من مندوب</option>
+                            <option value="تفويض مؤقت">تفويض مؤقت</option>
+                            <option value="نقل سيارة">نقل سيارة</option>
+                        </select>
+                    </div>
+                    
+                    <!-- اختيار المشروع -->
+                    <div class="mb-3">
+                        <label for="project_id" class="form-label" style="color: #fff;">المشروع</label>
+                        <select class="form-select" id="project_id" name="project_id" style="background-color: #333; color: #fff; border: 1px solid #555;">
+                            <option value="">اختر المشروع</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}">{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- رفع الملف -->
+                    <div class="mb-3">
+                        <label for="authorization_file" class="form-label" style="color: #fff;">رفع ملف التفويض (PDF أو صورة)</label>
+                        <input type="file" class="form-control" id="authorization_file" name="authorization_file" 
+                               accept=".pdf,.jpg,.jpeg,.png" style="background-color: #333; color: #fff; border: 1px solid #555;">
+                    </div>
+                    
+                    <!-- رابط خارجي -->
+                    <div class="mb-3">
+                        <label for="external_link" class="form-label" style="color: #fff;">رابط خارجي (اختياري)</label>
+                        <input type="url" class="form-control" id="external_link" name="external_link" 
+                               placeholder="https://forms.google.com/..." style="background-color: #333; color: #fff; border: 1px solid #555;">
+                    </div>
+                    
+                    <!-- ملاحظات -->
+                    <div class="mb-3">
+                        <label for="notes" class="form-label" style="color: #fff;">ملاحظات</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                  placeholder="أدخل أي ملاحظات إضافية..." style="background-color: #333; color: #fff; border: 1px solid #555;"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #333;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color: #6c757d;">
+                    <i class="fas fa-times ms-2"></i>
+                    إلغاء
+                </button>
+                <button type="submit" form="externalAuthForm" class="btn btn-primary" style="background-color: #0d6efd;">
+                    <i class="fas fa-save ms-2"></i>
+                    حفظ التفويض
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// فلترة الموظفين حسب القسم
+document.getElementById('department_filter').addEventListener('change', function() {
+    const selectedDepartment = this.value;
+    const employeeSelect = document.getElementById('employee_id');
+    const options = employeeSelect.querySelectorAll('option[data-departments]');
+    
+    options.forEach(option => {
+        if (!selectedDepartment || option.dataset.departments.split(',').includes(selectedDepartment)) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+    
+    // إعادة تعيين الموظف المختار
+    employeeSelect.value = '';
+});
+
+// دوال للتعامل مع التفويضات
+function viewAuthDetails(authId) {
+    alert('عرض تفاصيل التفويض رقم: ' + authId);
+}
+
+function editAuthDetails(authId) {
+    alert('تعديل التفويض رقم: ' + authId);
+}
+
+// دالة لعرض/إخفاء السجلات القديمة
+function toggleOlderRecords() {
+    const olderRecords = document.querySelectorAll('.older-record');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const toggleText = document.getElementById('toggleText');
+    
+    if (olderRecords[0] && olderRecords[0].classList.contains('d-none')) {
+        // إظهار السجلات القديمة
+        olderRecords.forEach(record => {
+            record.classList.remove('d-none');
+        });
+        toggleIcon.className = 'fas fa-chevron-up ms-1';
+        toggleText.textContent = 'إخفاء العمليات السابقة';
+    } else {
+        // إخفاء السجلات القديمة
+        olderRecords.forEach(record => {
+            record.classList.add('d-none');
+        });
+        toggleIcon.className = 'fas fa-chevron-down ms-1';
+        toggleText.textContent = 'عرض العمليات السابقة (' + olderRecords.length + ')';
+    }
+}
+
+// دالة مشاركة التفويضات الخارجية
+async function shareExternalAuthorization(authId, employeeName, authType, date, project, city, vehicleId, formLink) {
+    const vehicleInfo = "{{ vehicle.plate_number }} - {{ vehicle.make }} {{ vehicle.model }}";
+    
+    // إنشاء تاريخ ووقت الإنشاء
+    const currentDate = new Date();
+    const formattedDateTime = currentDate.toLocaleString('ar-SA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+    
+    // إنشاء رسالة مشاركة نظيفة
+    let shareText = `مرحباً 👋
+
+إليك تفاصيل التفويض الخارجي:
+
+🚙 رقم السيارة: ${vehicleInfo}
+📅 تاريخ وقت الإرسال: ${formattedDateTime}
+
+═══════════════════════════
+📋 بيانات التفويض:
+═══════════════════════════
+
+👤 الموظف المفوض: ${employeeName}
+📝 نوع التفويض: ${authType}
+📅 تاريخ الإنشاء: ${date}
+🏢 المشروع/القسم: ${project}
+🌍 الموقع/المدينة: ${city}
+
+`;
+
+    // إضافة رابط النموذج الخارجي إذا كان متوفراً
+    if (formLink && formLink.trim() !== '') {
+        shareText += `🔗 رابط النموذج الخارجي:
+${formLink}
+
+`;
+    }
+    
+    shareText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📱 نظام نُظم لإدارة المركبات
+🕐 تم إنشاء التقرير: ${formattedDateTime}`;
+
+    // استخدام Web Share API مع الرابط الخارجي فقط إذا توفر
+    if (navigator.share) {
+        try {
+            const shareData = {
+                title: `تفويض خارجي - ${vehicleInfo}`,
+                text: shareText
+            };
+            
+            // إضافة الرابط الخارجي فقط إذا كان متوفراً
+            if (formLink && formLink.trim() !== '') {
+                shareData.url = formLink;
+            }
+            
+            await navigator.share(shareData);
+        } catch (error) {
+            console.log('مشاركة ملغاة أو خطأ:', error);
+            showFallbackShare(shareText);
+        }
+    } else {
+        showFallbackShare(shareText);
+    }
+}
+
+// عرض نموذج احتياطي للمشاركة
+function showFallbackShare(text) {
+    // نسخ النص إلى الحافظة
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('تم نسخ تفاصيل التفويض إلى الحافظة');
+        }).catch(() => {
+            showTextModal(text);
+        });
+    } else {
+        showTextModal(text);
+    }
+}
+
+function showTextModal(text) {
+    // إنشاء نافذة منبثقة لعرض النص
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 9999;
+        display: flex; align-items: center; justify-content: center;
+    `;
+    
+    const content = document.createElement('div');
+    content.style.cssText = `
+        background: white; padding: 20px; border-radius: 8px;
+        max-width: 90%; max-height: 80%; overflow-y: auto;
+        direction: rtl; text-align: right;
+    `;
+    
+    content.innerHTML = `
+        <h5>تفاصيل التفويض</h5>
+        <textarea readonly style="width: 100%; height: 200px; margin: 10px 0;">${text}</textarea>
+        <button onclick="this.closest('.modal').remove()" class="btn btn-primary">إغلاق</button>
+    `;
+    
+    modal.appendChild(content);
+    modal.className = 'modal';
+    document.body.appendChild(modal);
+}
+
+// وظائف إدارة الوثائق
+function toggleDocumentForms() {
+    const forms = document.getElementById('documentForms');
+    forms.style.display = forms.style.display === 'none' ? 'block' : 'none';
+}
+
+function viewDocument(src, title) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+        z-index: 9999;
+    `;
+    
+    const content = document.createElement('div');
+    content.style.cssText = `
+        background: white; padding: 20px; border-radius: 8px;
+        max-width: 90%; max-height: 80%; overflow-y: auto;
+        direction: rtl; text-align: center;
+    `;
+    
+    content.innerHTML = `
+        <h5>${title}</h5>
+        <img src="${src}" style="width: 100%; max-width: 400px; height: auto; margin: 10px 0;">
+        <br>
+        <button onclick="this.closest('.modal').remove()" class="btn btn-primary">إغلاق</button>
+    `;
+    
+    modal.appendChild(content);
+    modal.className = 'modal';
+    document.body.appendChild(modal);
+}
+
+function deleteDocument(type, title) {
+    if (confirm(`هل أنت متأكد من حذف ${title}؟`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{{ url_for('vehicles.delete_document', id=vehicle.id) }}";
+        
+        const typeInput = document.createElement('input');
+        typeInput.type = 'hidden';
+        typeInput.name = 'document_type';
+        typeInput.value = type;
+        form.appendChild(typeInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+async function shareDocument(fileUrl, documentType, plateNumber) {
+    try {
+        const message = `مرحباً 👋
+
+🚗 *بيانات المركبة*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 رقم اللوحة: ${plateNumber}
+📁 نوع الوثيقة: ${documentType}
+📅 تاريخ المشاركة: ${new Date().toLocaleDateString('ar-SA')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📎 يمكنك الاطلاع على الوثيقة من خلال الرابط المرفق أدناه
+🔗 رابط الوثيقة: ${window.location.origin}${fileUrl}`;
+
+        // Try to use Web Share API if available
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `${documentType} - ${plateNumber}`,
+                    text: message
+                });
+                showToast('تم مشاركة الوثيقة بنجاح');
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    fallbackShareDocument(message);
+                }
+            }
+        } else {
+            fallbackShareDocument(message);
+        }
+    } catch (error) {
+        console.error('خطأ في مشاركة الوثيقة:', error);
+        fallbackShareDocument(message);
+    }
+}
+
+function fallbackShareDocument(text) {
+    // Try to copy to clipboard
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('تم نسخ معلومات الوثيقة للحافظة');
+        }).catch(() => {
+            showDocumentShareModal(text);
+        });
+    } else {
+        showDocumentShareModal(text);
+    }
+}
+
+function showDocumentShareModal(text) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">مشاركة الوثيقة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea class="form-control" rows="10" readonly>${text}</textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="copyDocumentText('${text.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-copy"></i> نسخ النص
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    modal.addEventListener('hidden.bs.modal', function () {
+        document.body.removeChild(modal);
+    });
+}
+
+function copyDocumentText(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    showToast('تم نسخ النص بنجاح');
+}
+</script>
+
+<style>
+/* تنسيقات الوثائق */
+.documents-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 20px;
+}
+
+.document-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.document-item:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.document-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.document-icon i {
+    font-size: 1.5rem;
+}
+
+.document-content {
+    flex: 1;
+    text-align: right;
+}
+
+.document-content h6 {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.document-status {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.document-status i {
+    margin-right: 5px;
+}
+
+.document-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.document-forms {
+    padding: 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+.form-divider {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-divider h6 {
+    color: #495057;
+    font-weight: 600;
+}
+
+.upload-form {
+    margin-bottom: 15px;
+}
+
+.upload-form:last-child {
+    margin-bottom: 0;
+}
+
+.input-group .btn {
+    min-width: 100px;
+}
+
+/* تدرج بنفسجي للوثائق */
+.gradient-header-purple {
+    background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%) !important;
+}
+
+/* تحسين responsive للوثائق */
+@media (min-width: 768px) {
+    .documents-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+</style>
+
+</div> <!-- إغلاق mobile-content-wrapper -->

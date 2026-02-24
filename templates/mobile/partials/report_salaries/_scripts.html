@@ -1,0 +1,62 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل قائمة التصدير المنسدلة
+    const dropdownToggle = document.getElementById('exportDropdown');
+    const dropdownMenu = dropdownToggle.nextElementSibling;
+    
+    dropdownToggle.addEventListener('click', function() {
+        dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            dropdownMenu.style.display = 'none';
+        }
+    });
+    
+    {% if salaries %}
+    // إنشاء رسم بياني للرواتب
+    const ctx = document.getElementById('salariesChart').getContext('2d');
+    const salariesChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['مدفوع', 'غير مدفوع'],
+            datasets: [{
+                data: [
+                    {{ salaries|selectattr('is_paid')|list|length }},
+                    {{ salaries|rejectattr('is_paid')|list|length }}
+                ],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.7)',
+                    'rgba(220, 53, 69, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            family: 'Tajawal, Arial'
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'توزيع حالة دفع الرواتب',
+                    font: {
+                        family: 'Tajawal, Arial',
+                        size: 14
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>

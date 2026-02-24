@@ -1,0 +1,223 @@
+<style>
+    :root {
+        --primary: #667eea;
+        --success: #48bb78;
+        --danger: #f56565;
+        --warning: #ed8936;
+        --light: #f7fafc;
+        --dark: #2d3748;
+    }
+    
+    .config-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .page-header {
+        margin-bottom: 2rem;
+    }
+    
+    .page-header h1 {
+        color: var(--dark);
+        margin: 0 0 0.5rem 0;
+    }
+    
+    .page-header p {
+        color: #718096;
+        margin: 0;
+    }
+    
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-family: inherit;
+    }
+    
+    input:focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-hint {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-top: 0.5rem;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .form-row .form-group {
+        margin-bottom: 0;
+    }
+    
+    .buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--success) 0%, #38a169 100%);
+        color: white;
+        flex: 1;
+    }
+    
+    .btn-primary:hover {
+        box-shadow: 0 8px 16px rgba(72, 187, 120, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: #cbd5e0;
+        color: var(--dark);
+        flex: 1;
+    }
+    
+    .btn-secondary:hover {
+        background: #a0aec0;
+    }
+    
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid;
+    }
+    
+    .alert-info {
+        background: #bee3f8;
+        color: #2c5282;
+        border-left-color: var(--primary);
+    }
+    
+    .alert-success {
+        background: #c6f6d5;
+        color: #22543d;
+        border-left-color: var(--success);
+    }
+    
+    .section-group {
+        background: var(--light);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-group-title {
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary);
+    }
+    
+    .info-box {
+        background: var(--light);
+        padding: 1rem;
+        border-left: 4px solid var(--primary);
+        border-radius: 4px;
+        margin-top: 1.5rem;
+    }
+    
+    .info-box h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--dark);
+    }
+    
+    .info-box p {
+        margin: 0;
+        color: #718096;
+        font-size: 0.9rem;
+    }
+    
+    .currency-input {
+        position: relative;
+    }
+    
+    .currency-input::before {
+        content: 'SR';
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #718096;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .currency-input input {
+        padding-right: 2.5rem;
+    }
+    
+    .percentage-input {
+        position: relative;
+    }
+    
+    .percentage-input::after {
+        content: '%';
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #718096;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .percentage-input input {
+        padding-right: 2rem;
+    }
+</style>

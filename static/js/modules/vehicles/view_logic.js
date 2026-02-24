@@ -5,21 +5,18 @@
 
 document.addEventListener("DOMContentLoaded", function () {
     // ============================================================================
-    // TAB STATE PERSISTENCE
+    // TAB DEFAULT STATE
     // ============================================================================
-    const activeTab = localStorage.getItem("activeVehicleTab");
-    if (activeTab) {
-        const tabTrigger = new bootstrap.Tab(document.querySelector(activeTab));
+    const defaultInfoTab = document.querySelector('#info-tab');
+    if (defaultInfoTab) {
+        const tabTrigger = new bootstrap.Tab(defaultInfoTab);
         tabTrigger.show();
     }
 
     const tabLinks = document.querySelectorAll('[data-bs-toggle="tab"]');
     tabLinks.forEach((tabLink) => {
         tabLink.addEventListener("shown.bs.tab", (event) => {
-            localStorage.setItem(
-                "activeVehicleTab",
-                event.target.getAttribute("data-bs-target")
-            );
+            localStorage.setItem("activeVehicleTab", event.target.getAttribute("data-bs-target"));
         });
     });
 

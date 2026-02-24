@@ -1,0 +1,338 @@
+<div class="payroll-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fas fa-list-check"></i> مراجعة الرواتب</h1>
+            <p class="page-subtitle">مراجعة واعتماد مسيرات الرواتب قبل إجراءات الدفع</p>
+        </div>
+        <div class="period-badge">الفترة: {{ month }}/{{ year }} — الحالة: {{ status }}</div>
+    </div>
+    
+    <!-- ملخص الإحصائيات -->
+    <div class="summary-cards">
+        <div class="summary-card">
+            <h3>عدد الموظفين</h3>
+            <p class="value">{{ payroll_count }}</p>
+        </div>
+        <div class="summary-card success">
+            <h3>الراتب الإجمالي</h3>
+            <p class="value">{{ "{:,.2f}".format(total_gross or 0) }}</p>
+        </div>
+        <div class="summary-card danger">
+            <h3>الخصومات الإجمالية</h3>
+            <p class="value">{{ "{:,.2f}".format(total_deductions or 0) }}</p>
+        </div>
+        <div class="summary-card warning">
+            <h3>الراتب الصافي</h3>
+            <p class="value">{{ "{:,.2f}".format(total_net or 0) }}</p>
+        </div>
+    </div>
+    
+    <!-- الفلاتر -->
+    <div class="filter-section">
+        <div class="filter-group">
+            <label>الشهر:</label>
+            <select id="monthFilter" onchange="applyFilter()">
+                <option value="{{ month }}">{{ month }}</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>السنة:</label>
+            <select id="yearFilter" onchange="applyFilter()">
+                <option value="{{ year }}">{{ year }}</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>الحالة:</label>
+            <select id="statusFilter" onchange="applyFilter()">
+                <option value="pending" {% if status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
+                <option value="approved" {% if status == 'approved' %}selected{% endif %}>معتمدة</option>
+                <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>مرفوضة</option>
+                <option value="paid" {% if status == 'paid' %}selected{% endif %}>مدفوعة</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>القسم:</label>
+            <select id="departmentFilter" onchange="applyFilter()">
+                <option value="">كل الأقسام</option>
+                {% for department in departments %}
+                <option value="{{ department.id }}" {% if selected_department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    
+    <!-- إجراءات جماعية -->
+    {% if status == 'pending' %}
+    <div class="batch-actions">
+        <label>
+            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+            اختر الكل
+        </label>
+        <button class="btn-batch-approve" onclick="batchApprove()">
+            <i class="fas fa-check"></i> الموافقة على المختارة
+        </button>
+    </div>
+    {% endif %}
+    
+    <!-- جدول الرواتب -->
+    <div class="table-wrap">
+    <table class="payroll-table">
+        <thead>
+            <tr>
+                {% if status == 'pending' %}<th class="checkcol"><input type="checkbox" id="selectAllCheck"></th>{% endif %}
+                <th>رقم الموظف</th>
+                <th>اسم الموظف</th>
+                <th>القسم</th>
+                <th>الراتب الأساسي</th>
+                <th>المزايا</th>
+                <th>الراتب الإجمالي</th>
+                <th>الخصومات</th>
+                <th>الراتب الصافي</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payroll in payrolls %}
+            <tr>
+                {% set employee_name = payroll.employee.name if payroll.employee and payroll.employee.name else 'غير متاح' %}
+                {% set employee_initial = employee_name[:1] if employee_name != 'غير متاح' else '؟' %}
+                {% if status == 'pending' %}<td class="checkcol"><input type="checkbox" class="payroll-checkbox" value="{{ payroll.id }}"></td>{% endif %}
+                <td>
+                    <span class="employee-badge">{{ payroll.employee.employee_id }}</span>
+                </td>
+                <td>
+                    <div class="employee-name-cell">
+                        <span class="employee-avatar">{{ employee_initial }}</span>
+                        <div class="employee-main">
+                            <span class="employee-name">{{ employee_name }}</span>
+                            <span class="employee-sub">{{ payroll.employee.employee_id }}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    {% if payroll.employee.department %}
+                        {{ payroll.employee.department.name }}
+                    {% else %}
+                        <span style="color: #999;">-</span>
+                    {% endif %}
+                </td>
+                <td class="salary-value">{{ "{:,.2f}".format(payroll.basic_salary or 0) }}</td>
+                <td class="salary-value">{{ "{:,.2f}".format((payroll.housing_allowance or 0) + (payroll.transportation or 0) + (payroll.meal_allowance or 0)) }}</td>
+                <td class="salary-value" style="color: var(--success);">{{ "{:,.2f}".format(payroll.gross_salary or 0) }}</td>
+                <td class="salary-value" style="color: var(--danger);">{{ "{:,.2f}".format(payroll.total_deductions or 0) }}</td>
+                <td class="salary-value" style="color: var(--primary); font-size: 1.1em;">{{ "{:,.2f}".format(payroll.net_payable or 0) }}</td>
+                <td>
+                    <span class="status-badge status-{{ payroll.payment_status }}">
+                        {% if payroll.payment_status == 'pending' %}
+                            قيد الانتظار
+                        {% elif payroll.payment_status == 'approved' %}
+                            معتمدة
+                        {% elif payroll.payment_status == 'rejected' %}
+                            مرفوضة
+                        {% else %}
+                            مدفوعة
+                        {% endif %}
+                    </span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('payroll.payroll_details', payroll_id=payroll.id) }}" class="btn-small btn-view">
+                            <i class="fas fa-eye"></i> تفاصيل
+                        </a>
+                        {% if status == 'pending' %}
+                        <button class="btn-small btn-approve" onclick="approvePayroll({{ payroll.id }})">
+                            <i class="fas fa-check"></i> موافق
+                        </button>
+                        <button class="btn-small btn-reject" onclick="rejectPayroll({{ payroll.id }})">
+                            <i class="fas fa-times"></i> رفض
+                        </button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td class="empty-state" colspan="{% if status == 'pending' %}11{% else %}10{% endif %}">لا توجد بيانات رواتب في هذه التصفية.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td {% if status == 'pending' %}colspan="2"{% else %}colspan="1"{% endif %}>الإجمالي</td>
+                <td colspan="3"></td>
+                <td>{{ "{:,.2f}".format(total_gross or 0) }}</td>
+                <td>{{ "{:,.2f}".format(total_deductions or 0) }}</td>
+                <td colspan="2">{{ "{:,.2f}".format(total_net or 0) }}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    </table>
+    </div>
+</div>
+
+<!-- موديال الموافقة -->
+<div id="approveModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 2rem;">
+    <div style="background: white; margin: auto; padding: 2rem; border-radius: 12px; max-width: 500px; margin-top: 5rem;">
+        <h2><i class="fas fa-check-circle"></i> تأكيد الموافقة</h2>
+        <p>هل تريد الموافقة على هذا الراتب؟</p>
+        
+        <textarea id="approveNotes" placeholder="ملاحظات إضافية (اختياري)" style="width: 100%; padding: 1rem; border: 1px solid #ccc; border-radius: 6px; margin: 1rem 0;"></textarea>
+        
+        <div style="display: flex; gap: 1rem;">
+            <button onclick="confirmApprove()" style="flex: 1; padding: 0.75rem; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                موافق
+            </button>
+            <button onclick="cancelApprove()" style="flex: 1; padding: 0.75rem; background: #ccc; border: none; border-radius: 6px; cursor: pointer;">
+                إلغاء
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- موديال الرفض -->
+<div id="rejectModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 2rem;">
+    <div style="background: white; margin: auto; padding: 2rem; border-radius: 12px; max-width: 500px; margin-top: 5rem;">
+        <h2><i class="fas fa-times-circle"></i> تأكيد الرفض</h2>
+        <p>حدد السبب برجاء:</p>
+        
+        <textarea id="rejectReason" placeholder="السبب..." style="width: 100%; padding: 1rem; border: 1px solid #ccc; border-radius: 6px; margin: 1rem 0;" required></textarea>
+        
+        <div style="display: flex; gap: 1rem;">
+            <button onclick="confirmReject()" style="flex: 1; padding: 0.75rem; background: var(--danger); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                رفض
+            </button>
+            <button onclick="cancelReject()" style="flex: 1; padding: 0.75rem; background: #ccc; border: none; border-radius: 6px; cursor: pointer;">
+                إلغاء
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentPayrollId = null;
+const approvePayrollUrlTemplate = '{{ url_for("payroll.approve_payroll", payroll_id=0) }}';
+const rejectPayrollUrlTemplate = '{{ url_for("payroll.reject_payroll", payroll_id=0) }}';
+
+function buildPayrollActionUrl(urlTemplate, payrollId, action) {
+    return urlTemplate.replace(new RegExp(`/0/${action}$`), `/${payrollId}/${action}`);
+}
+
+function applyFilter() {
+    const month = document.getElementById('monthFilter').value;
+    const year = document.getElementById('yearFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    const departmentId = document.getElementById('departmentFilter').value;
+
+    const params = new URLSearchParams({ month, year, status });
+    if (departmentId) {
+        params.set('department_id', departmentId);
+    }
+
+    window.location.href = `{{ url_for('payroll.review') }}?${params.toString()}`;
+}
+
+function approvePayroll(payrollId) {
+    currentPayrollId = payrollId;
+    document.getElementById('approveModal').style.display = 'flex';
+}
+
+function cancelApprove() {
+    document.getElementById('approveModal').style.display = 'none';
+    currentPayrollId = null;
+}
+
+function confirmApprove() {
+    const notes = document.getElementById('approveNotes').value;
+    
+    fetch(buildPayrollActionUrl(approvePayrollUrlTemplate, currentPayrollId, 'approve'), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `notes=${encodeURIComponent(notes)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('تمت الموافقة بنجاح');
+            location.reload();
+        } else {
+            alert('خطأ: ' + data.message);
+        }
+    });
+    
+    document.getElementById('approveModal').style.display = 'none';
+}
+
+function rejectPayroll(payrollId) {
+    currentPayrollId = payrollId;
+    document.getElementById('rejectModal').style.display = 'flex';
+}
+
+function cancelReject() {
+    document.getElementById('rejectModal').style.display = 'none';
+    currentPayrollId = null;
+}
+
+function confirmReject() {
+    const reason = document.getElementById('rejectReason').value;
+    
+    if (!reason.trim()) {
+        alert('يجب إدخال سبب الرفض');
+        return;
+    }
+    
+    fetch(buildPayrollActionUrl(rejectPayrollUrlTemplate, currentPayrollId, 'reject'), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `reason=${encodeURIComponent(reason)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('تم الرفض بنجاح');
+            location.reload();
+        } else {
+            alert('خطأ: ' + data.message);
+        }
+    });
+    
+    document.getElementById('rejectModal').style.display = 'none';
+}
+
+function toggleSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.payroll-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+}
+
+function batchApprove() {
+    const selected = Array.from(document.querySelectorAll('.payroll-checkbox:checked')).map(cb => cb.value);
+    
+    if (selected.length === 0) {
+        alert('يجب اختيار رواتب للموافقة عليها');
+        return;
+    }
+    
+    if (confirm(`هل تريد الموافقة على ${selected.length} راتب؟`)) {
+        fetch('{{ url_for("payroll.batch_approve") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ payroll_ids: selected })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('خطأ: ' + data.message);
+            }
+        });
+    }
+}
+</script>

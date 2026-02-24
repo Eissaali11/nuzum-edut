@@ -1,0 +1,361 @@
+<style>
+    :root {
+        --primary: #667eea;
+        --success: #48bb78;
+        --danger: #f56565;
+        --warning: #ed8936;
+        --light: #f7fafc;
+        --dark: #2d3748;
+    }
+    
+    .payroll-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .page-title {
+        margin: 0;
+        color: var(--dark);
+        font-size: 1.7rem;
+    }
+
+    .page-subtitle {
+        margin: 0.35rem 0 0;
+        color: #718096;
+        font-size: 0.95rem;
+    }
+
+    .period-badge {
+        background: var(--light);
+        color: var(--dark);
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        padding: 0.45rem 0.9rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .summary-card {
+        background: linear-gradient(135deg, var(--primary) 0%, #5568d3 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .summary-card.success {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+    }
+
+    .summary-card.danger {
+        background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        box-shadow: 0 4px 12px rgba(245, 101, 101, 0.3);
+    }
+
+    .summary-card.warning {
+        background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+        box-shadow: 0 4px 12px rgba(237, 137, 54, 0.3);
+    }
+    
+    .summary-card h3 {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        margin: 0 0 0.5rem 0;
+        opacity: 0.9;
+    }
+    
+    .summary-card .value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .payroll-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: white;
+    }
+    
+    .payroll-table thead {
+        background: var(--light);
+        border-bottom: 2px solid var(--primary);
+    }
+    
+    .payroll-table th {
+        padding: 1rem;
+        text-align: right;
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    .payroll-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .payroll-table tbody tr:hover {
+        background: var(--light);
+    }
+
+    .payroll-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+    
+    .employee-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: #e6fffa;
+        color: #047856;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+
+    .employee-name-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        min-width: 220px;
+    }
+
+    .employee-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #eef2ff;
+        color: #4453c7;
+        font-weight: 700;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .employee-main {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+    }
+
+    .employee-name {
+        font-weight: 700;
+        color: var(--dark);
+    }
+
+    .employee-sub {
+        font-size: 0.82rem;
+        color: #718096;
+    }
+    
+    .salary-value {
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .status-pending {
+        background: #fed7d7;
+        color: #c53030;
+    }
+    
+    .status-approved {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+    
+    .status-rejected {
+        background: #fbd38d;
+        color: #7c2d12;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-small {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-approve {
+        background: var(--success);
+        color: white;
+    }
+    
+    .btn-approve:hover {
+        background: #38a169;
+    }
+    
+    .btn-reject {
+        background: var(--danger);
+        color: white;
+    }
+    
+    .btn-reject:hover {
+        background: #e53e3e;
+    }
+    
+    .btn-view {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .btn-view:hover {
+        background: #5568d3;
+    }
+    
+    .filter-section {
+        background: var(--light);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(170px, 1fr));
+        gap: 1rem;
+    }
+    
+    .filter-group {
+        min-width: 0;
+    }
+    
+    .filter-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--dark);
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+    
+    .batch-actions {
+        background: #edf2f7;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+    
+    .batch-actions button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    
+    .btn-batch-approve {
+        background: var(--success);
+        color: white;
+    }
+    
+    .btn-batch-approve:hover {
+        background: #38a169;
+    }
+    
+    .checkcol {
+        width: 40px;
+        text-align: center;
+    }
+    
+    .total-row {
+        background: var(--light);
+        font-weight: 700;
+        border-top: 2px solid var(--primary);
+    }
+
+    .empty-state {
+        text-align: center;
+        color: #718096;
+        padding: 2rem 1rem;
+        font-weight: 600;
+    }
+    
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    
+    .alert-info {
+        background: #bee3f8;
+        color: #2c5282;
+        border-left: 4px solid #667eea;
+    }
+
+    @media (max-width: 992px) {
+        .payroll-container {
+            padding: 1rem;
+        }
+
+        .summary-cards {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .filter-section {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-wrap: wrap;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .summary-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .page-title {
+            font-size: 1.3rem;
+        }
+    }
+</style>

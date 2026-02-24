@@ -1,0 +1,155 @@
+<!-- Enhanced Alert Container -->
+<div id="alertContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050"></div>
+
+<script>
+// Enhanced JavaScript with improved functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    initializeTooltips();
+    
+    // Initialize search functionality
+    initializeSearch();
+    
+    // Add loading complete animation
+    setTimeout(() => {
+        document.body.classList.add('loaded');
+    }, 100);
+    
+    console.log('تم تحميل صفحة إدارة الموظفين بنجاح');
+});
+
+function initializeTooltips() {
+    if (typeof bootstrap !== 'undefined') {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+}
+
+function initializeSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const searchResultsInfo = document.getElementById('searchResultsInfo');
+    const employeeCountElement = document.getElementById('employeeCount');
+    const employeeRows = document.querySelectorAll('table#employeesTable tbody tr');
+    
+    if (!searchInput) return;
+    
+    // Real-time search with debouncing
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            performSearch();
+        }, 300);
+    });
+    
+    // Search on Enter key
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            performSearch();
+        }
+    });
+    
+    function performSearch() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        let foundCount = 0;
+        
+        // Show loading indicator
+        searchInput.style.background = 'url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iOCIgc3Ryb2tlPSIjNjY3ZWVhIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiLz4KPHBhdGggZD0iTTE2IDE2bDQgNCIgc3Ryb2tlPSIjNjY3ZWVhIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K") no-repeat right 10px center';
+        
+        setTimeout(() => {
+            // Clear search results if empty
+            if (searchTerm === '') {
+                employeeRows.forEach(row => {
+                    row.style.display = '';
+                    row.classList.remove('table-primary-enhanced');
+                    row.style.animation = '';
+                });
+                searchResultsInfo.style.display = 'none';
+                searchInput.style.background = '';
+                return;
+            }
+            
+            // Perform search
+            employeeRows.forEach((row, index) => {
+                const cells = row.querySelectorAll('td');
+                let rowText = '';
+                
+                cells.forEach(cell => {
+                    if (!cell.querySelector('.btn-group-enhanced')) {
+                        rowText += cell.textContent.trim() + ' ';
+                    }
+                });
+                
+                if (rowText.toLowerCase().includes(searchTerm)) {
+                    row.style.display = '';
+                    row.classList.add('table-primary-enhanced');
+                    row.style.animation = `fadeIn 0.5s ease-in-out ${index * 0.1}s both`;
+                    foundCount++;
+                } else {
+                    row.style.display = 'none';
+                    row.classList.remove('table-primary-enhanced');
+                }
+            });
+            
+            // Update search results info
+            searchResultsInfo.style.display = 'block';
+            if (employeeCountElement) {
+                employeeCountElement.textContent = foundCount;
+            }
+            
+            // Show result alert
+            if (foundCount > 0) {
+                showAlert(`تم العثور على ${foundCount} موظف يطابق البحث`, 'success');
+            } else {
+                showAlert('لم يتم العثور على نتائج مطابقة', 'warning');
+            }
+            
+            // Clear loading indicator
+            searchInput.style.background = '';
+        }, 500);
+    }
+}
+
+function showAlert(message, type) {
+    const alertContainer = document.getElementById('alertContainer');
+    const alertId = `alert-${Date.now()}`;
+    
+    const alertHtml = `
+        <div id="${alertId}" class="alert alert-${type} alert-enhanced alert-dismissible fade show" role="alert">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="إغلاق"></button>
+        </div>
+    `;
+    
+    alertContainer.insertAdjacentHTML('beforeend', alertHtml);
+    
+    // Auto-hide alert after 5 seconds
+    setTimeout(() => {
+        const alertElement = document.getElementById(alertId);
+        if (alertElement) {
+            const bsAlert = new bootstrap.Alert(alertElement);
+            bsAlert.close();
+        }
+    }, 5000);
+}
+
+// Enhanced table interactions
+document.addEventListener('DOMContentLoaded', function() {
+    const tableRows = document.querySelectorAll('#employeesTable tbody tr');
+    
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.01)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>

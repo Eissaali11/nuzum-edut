@@ -1,0 +1,97 @@
+<div class="container-fluid py-4">
+    <!-- رأس الصفحة -->
+    <div class="vehicle-analytics-card">
+        <div class="card-body text-center">
+            <h1 class="text-light mb-3">
+                <i class="fas fa-car me-3" style="color: var(--ai-accent);"></i>
+                تحليل المركبات الذكي
+            </h1>
+            <p class="lead text-light">
+                تحليل متقدم لأسطول المركبات ومعدلات الاستخدام والصيانة
+            </p>
+        </div>
+    </div>
+
+    <!-- إحصائيات المركبات -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="vehicle-stat-card">
+                <span class="stat-number">{{ vehicle_stats.total or 12 }}</span>
+                <span class="stat-label">إجمالي المركبات</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="vehicle-stat-card">
+                <span class="stat-number">{{ vehicle_stats.available or 8 }}</span>
+                <span class="stat-label">مركبات متاحة</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="vehicle-stat-card">
+                <span class="stat-number">{{ vehicle_stats.in_use or 3 }}</span>
+                <span class="stat-label">قيد الاستخدام</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="vehicle-stat-card">
+                <span class="stat-number">{{ vehicle_stats.maintenance or 1 }}</span>
+                <span class="stat-label">في الصيانة</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- تحليل أنواع المركبات -->
+    <div class="vehicle-analytics-card">
+        <div class="card-header">
+            <h4 class="text-light mb-0">
+                <i class="fas fa-chart-pie me-2"></i>
+                توزيع أنواع المركبات
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="vehicle-chart">
+                <canvas id="vehicleTypesChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- معدلات الاستخدام -->
+    <div class="vehicle-analytics-card">
+        <div class="card-header">
+            <h4 class="text-light mb-0">
+                <i class="fas fa-chart-line me-2"></i>
+                معدلات الاستخدام والكفاءة
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="vehicle-chart">
+                        <canvas id="usageChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-light">التوصيات الذكية:</h5>
+                    <ul class="text-light">
+                        <li>تحسين جدولة استخدام المركبات</li>
+                        <li>صيانة دورية للمركبات عالية الاستخدام</li>
+                        <li>مراجعة احتياجات الأسطول</li>
+                        <li>تطبيق نظام تتبع GPS</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- أزرار الإجراءات -->
+    <div class="text-center">
+        <a href="/ai/" class="btn btn-outline-light btn-lg me-3">
+            <i class="fas fa-arrow-left me-2"></i>
+            العودة للذكاء الاصطناعي
+        </a>
+        <button class="btn btn-outline-info btn-lg" onclick="exportVehicleReport()">
+            <i class="fas fa-download me-2"></i>
+            تصدير تقرير المركبات
+        </button>
+    </div>
+</div>

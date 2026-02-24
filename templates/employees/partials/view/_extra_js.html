@@ -1,0 +1,82 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% set present_count = attendances|selectattr('status', 'eq', 'present')|list|length %}
+        {% set absent_count = attendances|selectattr('status', 'eq', 'absent')|list|length %}
+        {% set leave_count = attendances|selectattr('status', 'eq', 'leave')|list|length %}
+        {% set sick_count = attendances|selectattr('status', 'eq', 'sick')|list|length %}
+
+        const attendanceCtx = document.getElementById('attendanceChart');
+        if (attendanceCtx) {
+            new Chart(attendanceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['حاضر', 'غائب', 'إجازة', 'مرضي'],
+                    datasets: [{
+                        data: [{{ present_count }}, {{ absent_count }}, {{ leave_count }}, {{ sick_count }}],
+                        backgroundColor: ['#28a745', '#dc3545', '#ffc107', '#17a2b8'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            rtl: true,
+                            labels: {
+                                font: { family: 'Cairo, sans-serif' }
+                            }
+                        },
+                        tooltip: {
+                            bodyFont: { family: 'Cairo, sans-serif' },
+                            titleFont: { family: 'Cairo, sans-serif' }
+                        }
+                    }
+                }
+            });
+        }
+
+        const showAllDaysBtn = document.getElementById('showAllDaysBtn');
+        if (showAllDaysBtn) {
+            let allDaysShown = false;
+            showAllDaysBtn.addEventListener('click', function() {
+                const extraRows = document.querySelectorAll('.extra-attendance-row');
+                if (!allDaysShown) {
+                    extraRows.forEach(row => row.classList.remove('d-none'));
+                    this.innerHTML = '<i class="fas fa-compress-alt me-1"></i>عرض أقل';
+                    allDaysShown = true;
+                } else {
+                    extraRows.forEach(row => row.classList.add('d-none'));
+                    this.innerHTML = '<i class="fas fa-calendar-alt me-1"></i>عرض كل الأيام';
+                    allDaysShown = false;
+                }
+            });
+        }
+
+        const departmentPills = document.querySelectorAll('.department-pill');
+        departmentPills.forEach(pill => {
+            pill.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const targetCheckboxId = this.dataset.targetId;
+                const targetCheckbox = document.getElementById(targetCheckboxId);
+                if (targetCheckbox) {
+                    targetCheckbox.checked = !targetCheckbox.checked;
+                }
+            });
+        });
+
+        if (typeof bootstrap !== 'undefined') {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
+
+        window.showIbanImageModal = function() {
+            const modal = new bootstrap.Modal(document.getElementById('ibanImageModal'));
+            modal.show();
+        };
+    });
+</script>

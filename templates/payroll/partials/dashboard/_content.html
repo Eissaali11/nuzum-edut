@@ -1,0 +1,160 @@
+{% set pending_count = pending_count|default(0) %}
+{% set approved_count = approved_count|default(0) %}
+{% set rejected_count = rejected_count|default(0) %}
+{% set paid_count = paid_count|default(0) %}
+{% set total_gross_salary = total_gross_salary|default(0) %}
+{% set total_deductions = total_deductions|default(0) %}
+{% set total_net_payable = total_net_payable|default(0) %}
+{% set total_gosi_company = total_gosi_company|default(0) %}
+{% set recent_payrolls = recent_payrolls|default([]) %}
+<div class="dashboard-container">
+    <div class="dashboard-shell">
+    <!-- رأس الصفحة -->
+    <div class="page-header">
+        <div>
+            <h1><i class="fas fa-chart-line"></i> لوحة تحكم الرواتب</h1>
+            <p>ملخص عام لنظام الرواتب والمكافآت</p>
+        </div>
+        <div class="period-badge">الشهر {{ current_month }}/{{ current_year }}</div>
+    </div>
+    
+    <!-- الكاردات الرئيسية -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">إجمالي الموظفين</div>
+            <div class="stat-value">{{ total_employees }}</div>
+            <div class="stat-subtext">النشطين في النظام</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-label">قيد الانتظار</div>
+            <div class="stat-value">{{ pending_count }}</div>
+            <div class="stat-subtext">بانتظار الموافقة</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-label">معتمدة</div>
+            <div class="stat-value">{{ approved_count }}</div>
+            <div class="stat-subtext">معتمدة ومجهزة للدفع</div>
+        </div>
+        
+        <div class="stat-card danger">
+            <div class="stat-label">مرفوضة</div>
+            <div class="stat-value">{{ rejected_count }}</div>
+            <div class="stat-subtext">تحتاج إعادة معالجة</div>
+        </div>
+    </div>
+    
+    <!-- أزرار الإجراءات -->
+    <div class="action-buttons">
+        <a href="{{ url_for('payroll.process') }}" class="btn-action success">
+            <i class="fas fa-cog"></i> معالجة الرواتب
+        </a>
+        <a href="{{ url_for('payroll.review') }}" class="btn-action">
+            <i class="fas fa-list-check"></i> مراجعة الرواتب
+        </a>
+        <a href="{{ url_for('payroll.configuration') }}" class="btn-action warning">
+            <i class="fas fa-sliders-h"></i> إعدادات الرواتب
+        </a>
+    </div>
+    
+    <!-- ملخص الحالة -->
+    <div class="section-card">
+        <h2 class="section-title">توزيع حالات الرواتب</h2>
+        <div class="status-breakdown">
+            <div class="status-item pending">
+                <div class="status-count">{{ pending_count }}</div>
+                <div class="status-label">قيد الانتظار</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ (pending_count / total_employees * 100) if total_employees > 0 else 0 }}%"></div>
+                </div>
+            </div>
+            
+            <div class="status-item approved">
+                <div class="status-count">{{ approved_count }}</div>
+                <div class="status-label">معتمدة</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ (approved_count / total_employees * 100) if total_employees > 0 else 0 }}%; background: var(--success)"></div>
+                </div>
+            </div>
+            
+            <div class="status-item rejected">
+                <div class="status-count">{{ rejected_count }}</div>
+                <div class="status-label">مرفوضة</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ (rejected_count / total_employees * 100) if total_employees > 0 else 0 }}%; background: var(--warning)"></div>
+                </div>
+            </div>
+            
+            <div class="status-item paid">
+                <div class="status-count">{{ paid_count }}</div>
+                <div class="status-label">مدفوعة</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ (paid_count / total_employees * 100) if total_employees > 0 else 0 }}%; background: #4299e1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ملخص المبالغ المالية -->
+    <div class="section-card">
+        <h2 class="section-title">ملخص المبالغ المالية</h2>
+        <div class="quick-stats">
+            <div class="quick-stat">
+                <div class="quick-stat-label">الراتب الإجمالي</div>
+                <div class="quick-stat-value" style="color: var(--success);">{{ "%.2f"|format(total_gross_salary) }}</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-label">الخصومات الإجمالية</div>
+                <div class="quick-stat-value" style="color: var(--danger);">{{ "%.2f"|format(total_deductions) }}</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-label">الراتب الصافي المستحق</div>
+                <div class="quick-stat-value" style="color: var(--primary);">{{ "%.2f"|format(total_net_payable) }}</div>
+            </div>
+            
+            <div class="quick-stat">
+                <div class="quick-stat-label">الضمان الاجتماعي (ش)</div>
+                <div class="quick-stat-value" style="color: var(--dark);">{{ "%.2f"|format(total_gosi_company) }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- المعالجات الأخيرة -->
+    {% if recent_payrolls %}
+    <div class="section-card">
+        <h2 class="section-title">أحدث المعالجات</h2>
+        <div class="timeline">
+            {% for payroll in recent_payrolls[:5] %}
+            {% set employee_name = payroll.employee.name if payroll.employee and payroll.employee.name else 'غير متاح' %}
+            {% set employee_initial = employee_name[:1] if employee_name != 'غير متاح' else '؟' %}
+            <div class="timeline-item">
+                <div class="timeline-date">{{ payroll.calculated_at.strftime('%Y-%m-%d %H:%M') if payroll.calculated_at else 'غير محدد' }}</div>
+                <div class="timeline-text">
+                    <div class="employee-line">
+                        <span class="employee-avatar">{{ employee_initial }}</span>
+                        <span class="employee-name">{{ employee_name }}</span>
+                    </div>
+                    <span style="color: #718096;">— الراتب: {{ "%.2f"|format(payroll.net_payable) }} SR</span>
+                </div>
+                <div style="font-size: 0.85rem; color: #a0aec0;">
+                    الحالة: 
+                    {% if payroll.payment_status == 'pending' %}
+                        <span style="color: #c53030;">قيد الانتظار</span>
+                    {% elif payroll.payment_status == 'approved' %}
+                        <span style="color: #22543d;">معتمدة</span>
+                    {% elif payroll.payment_status == 'rejected' %}
+                        <span style="color: #7c2d12;">مرفوضة</span>
+                    {% else %}
+                        <span style="color: #2c5282;">مدفوعة</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    </div>
+</div>

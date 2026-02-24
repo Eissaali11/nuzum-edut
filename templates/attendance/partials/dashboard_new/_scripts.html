@@ -1,0 +1,375 @@
+<script>
+let currentPeriod = 'weekly';
+let currentProject = '{{ selected_project or "" }}';
+let currentDepartment = '';
+let currentViewType = 'all';
+let allDepartmentsData = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    // إعداد أزرار الفترة
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentPeriod = this.dataset.period;
+            loadDepartmentStats();
+        });
+    });
+    
+    // إعداد فلاتر التصفية
+    document.getElementById('departmentFilter').addEventListener('change', function() {
+        currentDepartment = this.value;
+        filterAndDisplayData();
+    });
+    
+    document.getElementById('projectFilter').addEventListener('change', function() {
+        currentProject = this.value;
+        loadDepartmentStats();
+    });
+    
+    document.querySelectorAll('input[name="viewType"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            currentViewType = this.value;
+            filterAndDisplayData();
+        });
+    });
+    
+    // تحميل البيانات عند بدء الصفحة
+    loadDepartmentStats();
+});
+
+function loadDepartmentStats() {
+    showLoading();
+    
+    const projectParam = currentProject ? `&project=${currentProject}` : '';
+    const url = `/attendance/department-stats?period=${currentPeriod}${projectParam}`;
+    
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('البيانات المستلمة:', data);
+            hideLoading();
+            allDepartmentsData = data.departments;
+            populateDepartmentFilter(data.departments);
+            filterAndDisplayData();
+            updatePeriodInfo(data);
+        })
+        .catch(error => {
+            console.error('خطأ في تحميل إحصائيات الأقسام:', error);
+            hideLoading();
+            showErrorState();
+        });
+}
+
+function populateDepartmentFilter(departments) {
+    const select = document.getElementById('departmentFilter');
+    const currentValue = select.value;
+    
+    console.log('أقسام القائمة المنسدلة:', departments.map(d => d.name));
+    
+    // مسح الخيارات الحالية ما عدا "جميع الأقسام"
+    select.innerHTML = '<option value="">جميع الأقسام</option>';
+    
+    // ترتيب الأقسام أبجدياً
+    const sortedDepartments = departments.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+    
+    // إضافة أقسام جديدة
+    sortedDepartments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.name;
+        option.textContent = dept.name;
+        select.appendChild(option);
+        console.log('تمت إضافة القسم:', dept.name);
+    });
+    
+    // استعادة القيمة المحددة سابقاً
+    select.value = currentValue;
+}
+
+function filterAndDisplayData() {
+    let filteredData = [...allDepartmentsData];
+    
+    // تطبيق فلتر القسم
+    if (currentDepartment) {
+        filteredData = filteredData.filter(dept => dept.name === currentDepartment);
+    }
+    
+    // تطبيق نوع العرض
+    if (currentViewType === 'summary' && filteredData.length > 3) {
+        // عرض أفضل 3 أقسام فقط في وضع الملخص
+        filteredData = filteredData.slice(0, 3);
+    }
+    
+    displayDepartmentStats({departments: filteredData});
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.remove('d-none');
+    document.getElementById('departmentsContent').classList.add('d-none');
+    document.getElementById('errorState').classList.add('d-none');
+    document.getElementById('emptyState').classList.add('d-none');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.add('d-none');
+}
+
+function showErrorState() {
+    document.getElementById('errorState').classList.remove('d-none');
+}
+
+function showEmptyState() {
+    document.getElementById('emptyState').classList.remove('d-none');
+}
+
+function displayDepartmentStats(data) {
+    if (!data.departments || data.departments.length === 0) {
+        showEmptyState();
+        return;
+    }
+    
+    const container = document.getElementById('departmentsList');
+    container.innerHTML = '';
+    
+    let totalEmployees = 0;
+    let totalPresent = 0;
+    let totalAbsent = 0;
+    let totalSick = 0;
+    let totalLeave = 0;
+    let bestDepartment = '';
+    let bestRate = 0;
+    
+    data.departments.forEach((dept, index) => {
+        totalEmployees += dept.total_employees;
+        totalPresent += dept.present;
+        totalAbsent += dept.absent;
+        totalSick += dept.sick;
+        totalLeave += dept.leave;
+        
+        if (dept.attendance_rate > bestRate) {
+            bestRate = dept.attendance_rate;
+            bestDepartment = dept.name;
+        }
+        
+        const attendanceRate = dept.total_records > 0 
+            ? Math.round((dept.present / dept.total_records) * 100) 
+            : 0;
+        
+        // تحديد لون شريط التقدم
+        let progressClass = 'bg-success';
+        let cardClass = 'gradient-bg-4';
+        if (attendanceRate < 70) {
+            progressClass = 'bg-danger';
+            cardClass = 'gradient-bg-2';
+        } else if (attendanceRate < 85) {
+            progressClass = 'bg-warning';
+            cardClass = 'gradient-bg-5';
+        }
+        
+        console.log(`قسم ${dept.name}: ${dept.total_employees} موظف، ${dept.present} حاضر، ${dept.sick} مرضي`);
+        
+        const deptCard = document.createElement('div');
+        deptCard.className = 'col-lg-6 col-xl-4 mb-3';
+        deptCard.innerHTML = `
+            <div class="department-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="fw-bold mb-1">${dept.name}</h6>
+                            <small class="text-muted">${dept.total_employees} موظف</small>
+                        </div>
+                        <div class="stats-icon ${cardClass}" style="width: 40px; height: 40px; font-size: 16px;">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="text-center p-2 rounded" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                                <div class="text-white fw-bold">${dept.present}</div>
+                                <small class="text-white d-block">حاضر</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-2 rounded" style="background: linear-gradient(135deg, #dc3545, #fd7e14);">
+                                <div class="text-white fw-bold">${dept.absent}</div>
+                                <small class="text-white d-block">غائب</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="text-center p-2 rounded" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">
+                                <div class="text-dark fw-bold">${dept.leave}</div>
+                                <small class="text-dark d-block">إجازة</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-2 rounded" style="background: linear-gradient(135deg, #17a2b8, #007bff);">
+                                <div class="text-white fw-bold">${dept.sick}</div>
+                                <small class="text-white d-block">مرضي</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- معلومات إضافية -->
+                    <div class="mb-3 p-2 bg-light rounded">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <small class="text-muted d-block">أيام العمل</small>
+                                <strong class="text-primary">${dept.working_days || 0}</strong>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">إجمالي السجلات</small>
+                                <strong class="text-info">${dept.total_records || 0}</strong>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">المتوقع</small>
+                                <strong class="text-secondary">${dept.expected_records || 0}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">معدل الحضور</small>
+                            <small class="fw-bold">${attendanceRate}%</small>
+                        </div>
+                        <div class="progress-custom">
+                            <div class="progress-bar-custom ${progressClass}" style="width: ${attendanceRate}%"></div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-outline-primary btn-sm w-100" 
+                            onclick="showDepartmentDetails('${dept.name}', '${currentPeriod}')">
+                        <i class="fas fa-eye me-1"></i>عرض التفاصيل
+                    </button>
+                </div>
+            </div>
+        `;
+        container.appendChild(deptCard);
+    });
+    
+    // تحديث الإحصائيات الرئيسية في أعلى الصفحة
+    const averageRate = totalEmployees > 0 ? Math.round((totalPresent / totalEmployees) * 100) : 0;
+    
+    updateMainStats({
+        totalDepartments: data.departments.length,
+        totalEmployees: totalEmployees,
+        totalPresent: totalPresent,
+        totalAbsent: totalAbsent,
+        totalSick: totalSick,
+        averageRate: averageRate
+    });
+    
+    // تحديث الملخص السريع
+    document.getElementById('statsTotal').textContent = data.departments.length;
+    document.getElementById('statsBest').textContent = bestDepartment || 'غير محدد';
+    document.getElementById('statsAverage').textContent = averageRate + '%';
+    document.getElementById('statsEmployees').textContent = totalEmployees;
+    
+    document.getElementById('departmentsContent').classList.remove('d-none');
+}
+
+function updatePeriodInfo(data) {
+    const periodText = currentPeriod === 'weekly' ? 'الأسبوع الحالي' : 'الشهر الحالي';
+    const dateRange = `${data.start_date} إلى ${data.end_date}`;
+    document.getElementById('periodInfo').innerHTML = 
+        `<strong>${periodText}:</strong> ${dateRange}`;
+}
+
+function updateMainStats(stats) {
+    // تحديث الإحصائيات الرئيسية مع تأثيرات بصرية
+    const elements = [
+        { id: 'totalDepartmentsMain', value: stats.totalDepartments },
+        { id: 'totalEmployeesMain', value: stats.totalEmployees },
+        { id: 'totalPresentMain', value: stats.totalPresent },
+        { id: 'totalAbsentMain', value: stats.totalAbsent },
+        { id: 'totalSickMain', value: stats.totalSick },
+        { id: 'averageAttendanceMain', value: stats.averageRate + '%' }
+    ];
+    
+    elements.forEach(element => {
+        const el = document.getElementById(element.id);
+        if (el) {
+            // تأثير التحديث
+            el.style.transform = 'scale(1.1)';
+            el.style.transition = 'transform 0.3s ease';
+            
+            setTimeout(() => {
+                el.textContent = element.value;
+                el.style.transform = 'scale(1)';
+            }, 150);
+        }
+    });
+}
+
+function showDepartmentDetails(departmentName, period) {
+    const projectParam = '{{ selected_project }}' ? '&project={{ selected_project }}' : '';
+    const url = `/attendance/department-details?department=${encodeURIComponent(departmentName)}&period=${period}${projectParam}`;
+    window.open(url, '_blank', 'width=1200,height=700,scrollbars=yes');
+}
+
+// تحديث الأرقام بتأثير الحركة
+function animateNumbers() {
+    document.querySelectorAll('.animate-number').forEach(element => {
+        element.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+            element.style.transform = 'scale(1)';
+        }, 200);
+    });
+}
+
+// دالة تصدير Excel مع رسم بياني
+function exportToExcel() {
+    const selectedDepartment = document.getElementById('departmentFilter').value;
+    const selectedProject = document.getElementById('projectFilter').value;
+    
+    // إعداد المعاملات
+    let params = new URLSearchParams();
+    if (selectedDepartment) params.append('department', selectedDepartment);
+    if (selectedProject) params.append('project', selectedProject);
+    
+    // إظهار تحميل
+    const btn = document.getElementById('exportExcelBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري التصدير...';
+    btn.disabled = true;
+    
+    // طلب تصدير Excel
+    window.location.href = `/attendance/export-excel-dashboard?${params.toString()}`;
+    
+    // إعادة تعيين الزر بعد ثانيتين
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 2000);
+}
+
+// إضافة مستمع الحدث لزر التصدير
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
+    
+    // التبديل بين اليوم والشهر في قسم الغياب
+    document.querySelectorAll('input[name="absencePeriod"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const dailyData = document.getElementById('dailyAbsenceData');
+            const monthlyData = document.getElementById('monthlyAbsenceData');
+            
+            if (this.value === 'daily') {
+                dailyData.style.display = 'block';
+                monthlyData.style.display = 'none';
+            } else {
+                dailyData.style.display = 'none';
+                monthlyData.style.display = 'block';
+            }
+        });
+    });
+});
+</script>

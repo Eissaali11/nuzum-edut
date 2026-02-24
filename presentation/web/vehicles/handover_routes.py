@@ -3,8 +3,98 @@
 تُسجَّل على vehicles_bp عبر register_handover_routes(bp) للحفاظ على url_for('vehicles.xxx').
 """
 from datetime import datetime
+import os
+import io
+import base64
 from flask import request, redirect, url_for, flash, render_template, abort, current_app, send_file, jsonify
 from flask_login import login_required, current_user
+from werkzeug.exceptions import HTTPException
+import qrcode
+def _image_to_base64(file_path):
+    if not file_path or file_path in {"None", "null"}:
+        return None
+
+    normalized = str(file_path).replace("\\", "/")
+    if normalized.startswith("/"):
+        normalized = normalized[1:]
+    stripped_static = normalized.replace("static/", "", 1) if normalized.startswith("static/") else normalized
+
+    candidates = [
+        normalized,
+        stripped_static,
+        os.path.join(current_app.root_path, normalized),
+        os.path.join(current_app.root_path, stripped_static),
+        os.path.join(current_app.root_path, "static", normalized),
+        os.path.join(current_app.root_path, "static", stripped_static),
+        os.path.join(current_app.static_folder, normalized),
+        os.path.join(current_app.static_folder, stripped_static),
+    ]
+
+    seen = set()
+    for candidate in candidates:
+        if not candidate:
+            continue
+        real = os.path.normpath(candidate)
+        if real in seen:
+            continue
+        seen.add(real)
+        if os.path.exists(real) and os.path.isfile(real):
+            try:
+                with open(real, "rb") as image_file:
+                    image_data = image_file.read()
+                ext = os.path.splitext(real)[1].lower()
+                mime_type = {
+                    ".png": "image/png",
+                    ".jpg": "image/jpeg",
+                    ".jpeg": "image/jpeg",
+                    ".gif": "image/gif",
+                    ".bmp": "image/bmp",
+                    ".webp": "image/webp",
+                }.get(ext, "image/png")
+                encoded = base64.b64encode(image_data).decode("utf-8")
+                return f"data:{mime_type};base64,{encoded}"
+            except Exception:
+                continue
+    return None
+
+
+def _qr_data_url(link):
+    if not link:
+        return None
+    qr_image = qrcode.make(link)
+    buffer = io.BytesIO()
+    qr_image.save(buffer, format="PNG")
+    encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return f"data:image/png;base64,{encoded}"
+
+
+def _build_handover_report_context(handover):
+    handover_images_b64 = []
+    if getattr(handover, "images", None):
+        for image in handover.images:
+            path = image.get_path() if hasattr(image, "get_path") else None
+            path = path or getattr(image, "file_path", None) or getattr(image, "image_path", None)
+            if not path:
+                continue
+            lower_path = str(path).lower()
+            if lower_path.endswith(".pdf"):
+                continue
+            image_b64 = _image_to_base64(path)
+            if image_b64:
+                description = image.get_description() if hasattr(image, "get_description") else None
+                description = description or getattr(image, "file_description", None) or getattr(image, "image_description", None)
+                handover_images_b64.append({"file_path": image_b64, "file_description": description})
+
+    return {
+        "qr_code_url": _qr_data_url(getattr(handover, "form_link", None)),
+        "qr_code_url_2": _qr_data_url(getattr(handover, "form_link_2", None)),
+        "damage_diagram_b64": _image_to_base64(getattr(handover, "damage_diagram_path", None)),
+        "driver_signature_b64": _image_to_base64(getattr(handover, "driver_signature_path", None)),
+        "supervisor_signature_b64": _image_to_base64(getattr(handover, "supervisor_signature_path", None)),
+        "movement_officer_signature_b64": _image_to_base64(getattr(handover, "movement_officer_signature_path", None)),
+        "custom_logo_b64": _image_to_base64(getattr(handover, "custom_logo_path", None)),
+        "handover_images_b64": handover_images_b64,
+    }
 
 from core.extensions import db
 from modules.vehicles.domain.models import Vehicle, VehicleHandover, VehicleHandoverImage
@@ -47,6 +137,11 @@ def create_handover(id):
         )
 
     if request.method == "POST":
+        # فحص الرسم قبل الحفظ
+        damage_diagram_data = request.form.get("damage_diagram_data", "")
+        if not damage_diagram_data or len(damage_diagram_data) < 100:
+            flash("❌ يجب رسم المخطط قبل الحفظ.", "danger")
+            return redirect(url_for("vehicles.create_handover", id=id))
         try:
             form_data = {
                 "handover_type": request.form.get("handover_type"),
@@ -208,6 +303,11 @@ def edit_handover(id):
                 saved_sig = save_base64_image(driver_signature_data, "signatures")
                 if saved_sig:
                     handover.driver_signature_path = saved_sig
+            # تحديث ملاحظات الصور الموجودة
+            for image in images:
+                note_val = request.form.get(f"image_note_{image.id}", None)
+                if note_val is not None:
+                    image.file_description = note_val
             for file in request.files.getlist("files"):
                 if file and file.filename:
                     file_path, file_type = save_file(file, "handover")
@@ -326,21 +426,8 @@ def delete_handovers(vehicle_id):
 
 
 def handover_pdf(id):
-    """إنشاء نموذج تسليم/استلام كملف PDF"""
-    from utils.enhanced_arabic_handover_pdf import create_vehicle_handover_pdf
-    try:
-        hid = int(id) if not isinstance(id, int) else id
-        handover = VehicleHandover.query.get_or_404(hid)
-        vehicle = Vehicle.query.get_or_404(handover.vehicle_id)
-        pdf_buffer = create_vehicle_handover_pdf(handover)
-        filename = f"handover_form_{vehicle.plate_number}.pdf"
-        return send_file(pdf_buffer, download_name=filename, as_attachment=True, mimetype="application/pdf")
-    except Exception as e:
-        flash(f"خطأ في إنشاء ملف PDF: {str(e)}", "danger")
-        try:
-            return redirect(url_for("vehicles.view", id=vehicle.id))
-        except NameError:
-            return redirect(url_for("vehicles.index"))
+    """توجيه مسار PDF الداخلي إلى المسار العام الموحّد لمنع اختلاف القوالب."""
+    return redirect(url_for("vehicles.handover_pdf_public", id=id))
 
 
 def handover_view_public(id):
@@ -357,11 +444,28 @@ def handover_view_public(id):
 
 def handover_pdf_public(id):
     """إنشاء ملف PDF لنموذج تسليم/استلام (وصول عام)"""
-    from utils.fpdf_handover_pdf import generate_handover_report_pdf_weasyprint
     try:
         handover = VehicleHandover.query.get_or_404(id)
         vehicle = Vehicle.query.get_or_404(handover.vehicle_id)
-        pdf_buffer = generate_handover_report_pdf_weasyprint(handover)
+        try:
+            from utils.fpdf_handover_pdf import generate_handover_report_pdf_weasyprint
+            pdf_buffer = generate_handover_report_pdf_weasyprint(handover)
+        except Exception as weasy_error:
+            current_app.logger.warning("WeasyPrint غير متاح للتسليم %s: %s. سيتم عرض القالب الأصلي HTML.", id, weasy_error)
+            report_context = _build_handover_report_context(handover)
+            html_string = render_template(
+                "vehicles/handover_report.html",
+                handover=handover,
+                **report_context,
+            )
+
+            html_string = html_string.replace('href="static/', 'href="/static/')
+            html_string = html_string.replace('src="static/', 'src="/static/')
+            html_string = html_string.replace('src="images/', 'src="/static/images/')
+            html_string = html_string.replace('src="uploads/', 'src="/uploads/')
+
+            return current_app.response_class(html_string, mimetype="text/html")
+
         if not pdf_buffer:
             current_app.logger.error("فشل في إنشاء PDF للتسليم %s", id)
             return "خطأ في إنشاء ملف PDF. يرجى المحاولة مرة أخرى.", 500
@@ -377,6 +481,8 @@ def handover_pdf_public(id):
         date_str = handover.handover_date.strftime("%Y-%m-%d") if handover.handover_date else "no_date"
         filename = f"{plate_clean}_{driver_name}_{handover_type}_{date_str}.pdf"
         return send_file(pdf_buffer, download_name=filename, as_attachment=False, mimetype="application/pdf")
+    except HTTPException:
+        raise
     except Exception as e:
         current_app.logger.error("خطأ في إنشاء PDF للتسليم %s: %s", id, e)
         return "خطأ في إنشاء الملف. يرجى المحاولة مرة أخرى.", 500

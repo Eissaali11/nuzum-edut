@@ -1,0 +1,107 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل قائمة التصدير المنسدلة
+    const dropdownToggle = document.getElementById('exportDropdown');
+    const dropdownMenu = document.getElementById('exportMenu');
+    
+    // التأكد من وجود الزر والقائمة
+    if (dropdownToggle && dropdownMenu) {
+        console.log("زر التصدير والقائمة المنسدلة موجودان");
+        
+        // ضبط موضع القائمة المنسدلة نسبة للزر
+        function positionDropdown() {
+            if (dropdownMenu.style.display === 'block') {
+                const btnRect = dropdownToggle.getBoundingClientRect();
+                dropdownMenu.style.top = (btnRect.bottom) + 'px';
+                dropdownMenu.style.left = btnRect.left + 'px';
+                dropdownMenu.style.minWidth = btnRect.width + 'px';
+            }
+        }
+        
+        // إضافة حدث النقر على الزر
+        dropdownToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log("تم النقر على زر التصدير");
+            
+            // تبديل حالة عرض القائمة
+            if (dropdownMenu.style.display === 'block') {
+                dropdownMenu.style.display = 'none';
+                console.log("تم إخفاء القائمة المنسدلة");
+            } else {
+                dropdownMenu.style.display = 'block';
+                positionDropdown();
+                console.log("تم إظهار القائمة المنسدلة");
+            }
+        });
+        
+        // إضافة النقر على روابط القائمة
+        const dropdownLinks = dropdownMenu.querySelectorAll('a.dropdown-item');
+        dropdownLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                console.log("تم النقر على عنصر من القائمة: " + this.textContent.trim());
+            });
+        });
+        
+        // إغلاق القائمة عند النقر في أي مكان آخر
+        document.addEventListener('click', function(e) {
+            if (dropdownMenu.style.display === 'block' && 
+                !dropdownToggle.contains(e.target) && 
+                !dropdownMenu.contains(e.target)) {
+                dropdownMenu.style.display = 'none';
+                console.log("تم إغلاق القائمة عند النقر خارجها");
+            }
+        });
+        
+        // إعادة ضبط موضع القائمة عند التمرير أو تغيير حجم النافذة
+        window.addEventListener('scroll', positionDropdown);
+        window.addEventListener('resize', positionDropdown);
+    } else {
+        console.error("لم يتم العثور على زر التصدير أو القائمة المنسدلة");
+    }
+    
+    // إنشاء رسم بياني للموظفين
+    const ctx = document.getElementById('employeesChart').getContext('2d');
+    const employeesChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['ذكور', 'إناث'],
+            datasets: [{
+                data: [
+                    {{ employees|selectattr('gender', 'equalto', 'ذكر')|list|length }},
+                    {{ employees|selectattr('gender', 'equalto', 'أنثى')|list|length }}
+                ],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 99, 132, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            family: 'Tajawal, Arial'
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'توزيع الموظفين حسب الجنس',
+                    font: {
+                        family: 'Tajawal, Arial',
+                        size: 14
+                    }
+                }
+            }
+        }
+    });
+});
+</script>

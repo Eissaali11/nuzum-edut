@@ -1,0 +1,153 @@
+<style>
+    :root {
+        --ai-primary: #1e3a5c;
+        --ai-secondary: #2d5a87;
+        --ai-accent: #00d4aa;
+        --ai-gradient: linear-gradient(135deg, var(--ai-primary) 0%, var(--ai-secondary) 100%);
+        --ai-card-bg: rgba(255, 255, 255, 0.05);
+        --ai-border: rgba(0, 212, 170, 0.2);
+    }
+
+    body {
+        background: linear-gradient(135deg, var(--ai-primary) 0%, #1a1a1a 50%, var(--ai-secondary) 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .api-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .api-header {
+        background: var(--ai-card-bg);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--ai-border);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .api-section {
+        background: var(--ai-card-bg);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--ai-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .api-section:hover {
+        box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+    }
+
+    .endpoint-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(0, 212, 170, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .endpoint-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--ai-accent);
+    }
+
+    .method-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        margin-right: 0.5rem;
+    }
+
+    .method-get { background-color: #28a745; color: white; }
+    .method-post { background-color: #007bff; color: white; }
+    .method-put { background-color: #ffc107; color: black; }
+    .method-delete { background-color: #dc3545; color: white; }
+
+    .code-block {
+        background-color: #2d3748;
+        border: 1px solid #4a5568;
+        border-radius: 6px;
+        padding: 1rem;
+        margin: 1rem 0;
+        overflow-x: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        color: #e2e8f0;
+    }
+
+    .response-example {
+        background-color: #1a202c;
+        border-left: 4px solid var(--ai-accent);
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0 6px 6px 0;
+    }
+
+    .test-button {
+        background: linear-gradient(45deg, var(--ai-accent), var(--ai-secondary));
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+    }
+
+    .test-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
+    }
+
+    .api-key-section {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .live-demo {
+        background: rgba(40, 167, 69, 0.1);
+        border: 1px solid rgba(40, 167, 69, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+
+    .status-active { background-color: #28a745; }
+    .status-inactive { background-color: #dc3545; }
+
+    .copy-button {
+        background: transparent;
+        border: 1px solid var(--ai-accent);
+        color: var(--ai-accent);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.75rem;
+        float: right;
+        margin-top: -0.5rem;
+    }
+
+    .copy-button:hover {
+        background: var(--ai-accent);
+        color: white;
+    }
+</style>

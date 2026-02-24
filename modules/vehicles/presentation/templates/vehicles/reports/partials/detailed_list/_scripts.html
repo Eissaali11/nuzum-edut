@@ -1,0 +1,54 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter section toggle
+    const filtersSection = document.getElementById('filtersSection');
+    const filterText = document.querySelector('.filter-text');
+    
+    filtersSection.addEventListener('hidden.bs.collapse', function() {
+        filterText.textContent = 'عرض خيارات البحث';
+    });
+    
+    filtersSection.addEventListener('shown.bs.collapse', function() {
+        filterText.textContent = 'إخفاء خيارات البحث';
+    });
+    
+    // Scroll indicator
+    const tableResponsive = document.querySelector('.table-responsive');
+    const scrollIndicator = document.querySelector('.scroll-indicator');
+    
+    function checkScroll() {
+        if (tableResponsive.scrollWidth > tableResponsive.clientWidth) {
+            scrollIndicator.style.display = 'flex';
+        } else {
+            scrollIndicator.style.display = 'none';
+        }
+    }
+    
+    tableResponsive.addEventListener('scroll', function() {
+        if (tableResponsive.scrollLeft + tableResponsive.clientWidth >= tableResponsive.scrollWidth - 10) {
+            scrollIndicator.style.display = 'none';
+        } else if (scrollIndicator.style.display === 'none' && tableResponsive.scrollWidth > tableResponsive.clientWidth) {
+            scrollIndicator.style.display = 'flex';
+        }
+    });
+    
+    scrollIndicator.addEventListener('click', function() {
+        tableResponsive.scrollBy({
+            left: 200,
+            behavior: 'smooth'
+        });
+    });
+    
+    // Initialize on load and resize
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    
+    // Initialize tooltips
+    if (typeof bootstrap !== 'undefined') {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+});
+</script>

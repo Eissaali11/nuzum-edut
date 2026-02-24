@@ -1,0 +1,170 @@
+<div class="page-wrapper">
+    <div class="container-lg">
+        <!-- Header -->
+        <div class="header-card">
+            <div class="header-content">
+                <h1><i class="fas fa-building me-3"></i>إدارة الأقسام</h1>
+                <p>عرض وإدارة سجلات الحضور حسب الأقسام</p>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        {% if stats %}
+        <div class="stats-grid">
+            <div class="stat-card success">
+                <div class="stat-icon"><i class="fas fa-check-circle text-success"></i></div>
+                <div class="stat-label">الحاضرون</div>
+                <div class="stat-value">{{ stats.present }}</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-icon"><i class="fas fa-times-circle text-danger"></i></div>
+                <div class="stat-label">الغائبون</div>
+                <div class="stat-value">{{ stats.absent }}</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon"><i class="fas fa-calendar-times text-warning"></i></div>
+                <div class="stat-label">الإجازات</div>
+                <div class="stat-value">{{ stats.leave }}</div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-icon"><i class="fas fa-hospital-user text-info"></i></div>
+                <div class="stat-label">المرضى</div>
+                <div class="stat-value">{{ stats.sick }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Departments List -->
+        {% if departments %}
+            {% for department in departments %}
+            <div class="department-card">
+                <!-- Department Header -->
+                <div class="department-header">
+                    <div>
+                        <div class="department-name">
+                            <i class="fas fa-sitemap me-2"></i>{{ department.name }}
+                        </div>
+                    </div>
+                    <div class="department-badge">
+                        👥 {{ department.employee_count }} موظف
+                    </div>
+                </div>
+
+                <!-- Department Body -->
+                <div class="department-body">
+                    <!-- Department Stats -->
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-icon" style="background: linear-gradient(135deg, #11998e, #38ef7d);">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="info-content">
+                                <h4>الحاضرون</h4>
+                                <p>{{ department.present_count }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                                <i class="fas fa-user-times"></i>
+                            </div>
+                            <div class="info-content">
+                                <h4>الغائبون</h4>
+                                <p>{{ department.absent_count }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <div class="info-content">
+                                <h4>معدل الحضور</h4>
+                                <p>{{ ((department.present_count / department.employee_count * 100)|round(1))|string + '%' if department.employee_count > 0 else '0%' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Table -->
+                    {% if department.employees %}
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-user me-2"></i>الموظف</th>
+                                <th><i class="fas fa-id-card me-2"></i>الرقم الوظيفي</th>
+                                <th><i class="fas fa-check me-2"></i>الحالة</th>
+                                <th><i class="fas fa-clock me-2"></i>وقت الدخول</th>
+                                <th><i class="fas fa-clock me-2"></i>وقت الخروج</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in department.employees %}
+                            <tr>
+                                <td class="employee-name">{{ employee.name }}</td>
+                                <td>{{ employee.employee_id }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ employee.status|lower }}">
+                                        {% if employee.status == 'present' %}
+                                            <i class="fas fa-check-circle me-1"></i>حاضر
+                                        {% elif employee.status == 'absent' %}
+                                            <i class="fas fa-times-circle me-1"></i>غائب
+                                        {% elif employee.status == 'leave' %}
+                                            <i class="fas fa-calendar-times me-1"></i>إجازة
+                                        {% elif employee.status == 'sick' %}
+                                            <i class="fas fa-hospital-user me-1"></i>مرضي
+                                        {% else %}
+                                            <i class="fas fa-question-circle me-1"></i>غير محدد
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if employee.check_in %}
+                                        <span style="color: var(--success); font-weight: 600;">
+                                            <i class="fas fa-arrow-circle-down me-1"></i>{{ employee.check_in }}
+                                        </span>
+                                    {% else %}
+                                        <span style="color: #6c757d;">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if employee.check_out %}
+                                        <span style="color: var(--danger); font-weight: 600;">
+                                            <i class="fas fa-arrow-circle-up me-1"></i>{{ employee.check_out }}
+                                        </span>
+                                    {% else %}
+                                        <span style="color: #6c757d;">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fas fa-inbox"></i></div>
+                        <div class="empty-state-title">لا توجد بيانات موظفين</div>
+                        <div class="empty-state-text">هذا القسم لا يحتوي على موظفين حالياً</div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <a href="{{ url_for('attendance.department_attendance') }}?department_id={{ department.id }}" class="btn-action btn-primary-action">
+                            <i class="fas fa-edit"></i> تعديل الحضور
+                        </a>
+                        <a href="{{ url_for('attendance.export_page') }}?department_id={{ department.id }}" class="btn-action btn-secondary-action">
+                            <i class="fas fa-download"></i> تصدير التقرير
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="department-card">
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-inbox"></i></div>
+                <div class="empty-state-title">لا توجد أقسام</div>
+                <div class="empty-state-text">لا يوجد أي أقسام مسجلة في النظام</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>

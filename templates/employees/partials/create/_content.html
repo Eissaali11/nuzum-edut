@@ -1,0 +1,37 @@
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>إضافة موظف جديد</h1>
+        <a href="{{ url_for('employees.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right me-1"></i> العودة للقائمة
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">بيانات الموظف الجديد</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('employees.create') }}" method="post" enctype="multipart/form-data">
+                <div class="row">
+                    {% include 'employees/partials/create/_basic_work.html' %}
+                    {% include 'employees/partials/create/_custody.html' %}
+                    {% include 'employees/partials/create/_sponsorship.html' %}
+                    {% include 'employees/partials/create/_housing.html' %}
+                    {% include 'employees/partials/create/_uniform.html' %}
+                    {% include 'employees/partials/create/_documents.html' %}
+                    {% include 'employees/partials/create/_employment_fields.html' %}
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> حفظ البيانات
+                    </button>
+                    <button type="reset" class="btn btn-secondary">
+                        <i class="fas fa-undo me-1"></i> إعادة تعيين
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

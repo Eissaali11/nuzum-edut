@@ -1,0 +1,209 @@
+<div class="container-fluid py-4">
+    <!-- رأس الصفحة -->
+    <div class="alerts-summary">
+        <div class="text-center mb-4">
+            <h1 class="mb-3">
+                <i class="fas fa-bell me-3"></i>
+                التنبيهات الذكية الاستباقية
+            </h1>
+            <p class="lead mb-0">
+                نظام تنبيهات ذكي يتوقع المشاكل قبل حدوثها ويقدم حلول استباقية
+            </p>
+        </div>
+
+        <!-- ملخص التنبيهات -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="summary-stat">
+                    <span class="summary-number text-danger">{{ alerts|selectattr('type', 'equalto', 'danger')|list|length }}</span>
+                    <span class="summary-label">تنبيهات عاجلة</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-stat">
+                    <span class="summary-number text-warning">{{ alerts|selectattr('type', 'equalto', 'warning')|list|length }}</span>
+                    <span class="summary-label">تنبيهات مهمة</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-stat">
+                    <span class="summary-number text-info">{{ alerts|selectattr('type', 'equalto', 'info')|list|length }}</span>
+                    <span class="summary-label">معلومات</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-stat">
+                    <span class="summary-number text-light">{{ alerts|length }}</span>
+                    <span class="summary-label">إجمالي التنبيهات</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- قائمة التنبيهات -->
+    {% if alerts %}
+        {% for alert in alerts %}
+        <div class="alert-card alert-{{ alert.type }} {% if alert.type == 'danger' %}urgent-alert{% endif %}">
+            <div class="alert-priority priority-{% if alert.type == 'danger' %}high{% elif alert.type == 'warning' %}medium{% else %}low{% endif %}">
+                {% if alert.type == 'danger' %}عاجل{% elif alert.type == 'warning' %}مهم{% else %}عادي{% endif %}
+            </div>
+            
+            <div class="alert-header">
+                <div class="d-flex align-items-center">
+                    <div class="alert-icon {{ alert.type }}">
+                        {% if alert.type == 'danger' %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% elif alert.type == 'warning' %}
+                            <i class="fas fa-exclamation-circle"></i>
+                        {% elif alert.type == 'info' %}
+                            <i class="fas fa-info-circle"></i>
+                        {% else %}
+                            <i class="fas fa-check-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4 class="text-light mb-1">{{ alert.title }}</h4>
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            منذ {{ alert.time or 'بضع دقائق' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert-body">
+                <p class="text-light mb-3">{{ alert.message }}</p>
+                
+                {% if alert.type == 'warning' and 'وثائق' in alert.message %}
+                <!-- تفاصيل الوثائق المنتهية -->
+                <div class="alert alert-warning alpha-warning">
+                    <h6><i class="fas fa-file-alt me-2"></i>تفاصيل الوثائق</h6>
+                    <ul class="mb-0">
+                        <li>رخص القيادة: 5 رخص ستنتهي</li>
+                        <li>هويات الموظفين: 3 هويات</li>
+                        <li>عقود العمل: 7 عقود تحتاج تجديد</li>
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if alert.type == 'info' and 'مركبات' in alert.message %}
+                <!-- تفاصيل المركبات -->
+                <div class="alert alert-info alpha-info">
+                    <h6><i class="fas fa-car me-2"></i>تفاصيل المركبات</h6>
+                    <ul class="mb-0">
+                        <li>تغيير زيت: 2 مركبة</li>
+                        <li>فحص دوري: 1 مركبة</li>
+                        <li>إطارات: 1 مركبة تحتاج تغيير</li>
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="alert-actions">
+                    <button class="alert-btn alert-btn-primary" onclick="handleAlert('{{ alert.action_url or '#' }}')">
+                        <i class="fas fa-arrow-right me-1"></i>
+                        اتخاذ إجراء
+                    </button>
+                    <button class="alert-btn alert-btn-secondary" onclick="dismissAlert(this)">
+                        <i class="fas fa-times me-1"></i>
+                        تجاهل
+                    </button>
+                    <button class="alert-btn alert-btn-secondary" onclick="snoozeAlert(this)">
+                        <i class="fas fa-clock me-1"></i>
+                        تذكير لاحقاً
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- حالة عدم وجود تنبيهات -->
+        <div class="alert-card">
+            <div class="no-alerts">
+                <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                <h3 class="text-light">ممتاز! لا توجد تنبيهات</h3>
+                <p class="text-muted">
+                    جميع أنظمة الشركة تعمل بكفاءة عالية.
+                    سيتم إشعارك فور ظهور أي تنبيهات جديدة.
+                </p>
+                <button class="btn btn-outline-info mt-3" onclick="checkForAlerts()">
+                    <i class="fas fa-sync me-2"></i>
+                    فحص التنبيهات الجديدة
+                </button>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- إعدادات التنبيهات -->
+    <div class="alert-card">
+        <div class="alert-header">
+            <h4 class="text-light mb-0">
+                <i class="fas fa-cog me-2"></i>
+                إعدادات التنبيهات الذكية
+            </h4>
+        </div>
+        <div class="alert-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-light">تفعيل التنبيهات:</h6>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="docAlerts" checked>
+                        <label class="form-check-label text-light" for="docAlerts">
+                            تنبيهات انتهاء الوثائق
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="vehicleAlerts" checked>
+                        <label class="form-check-label text-light" for="vehicleAlerts">
+                            تنبيهات صيانة المركبات
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="attendanceAlerts" checked>
+                        <label class="form-check-label text-light" for="attendanceAlerts">
+                            تنبيهات الحضور المنخفض
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-light">طرق الإشعار:</h6>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="emailNotif" checked>
+                        <label class="form-check-label text-light" for="emailNotif">
+                            إشعارات البريد الإلكتروني
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="smsNotif">
+                        <label class="form-check-label text-light" for="smsNotif">
+                            إشعارات الرسائل النصية
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="whatsappNotif">
+                        <label class="form-check-label text-light" for="whatsappNotif">
+                            إشعارات واتساب
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <button class="btn btn-outline-success" onclick="saveAlertSettings()">
+                    <i class="fas fa-save me-2"></i>
+                    حفظ الإعدادات
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- أزرار الإجراءات -->
+    <div class="text-center">
+        <a href="/ai/" class="btn btn-outline-light btn-lg me-3">
+            <i class="fas fa-arrow-left me-2"></i>
+            العودة للذكاء الاصطناعي
+        </a>
+        <button class="btn btn-outline-info btn-lg" onclick="exportAlerts()">
+            <i class="fas fa-download me-2"></i>
+            تصدير التنبيهات
+        </button>
+    </div>
+</div>

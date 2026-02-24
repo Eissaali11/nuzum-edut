@@ -7,53 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="workshop-details-container">
-    {% include 'vehicles/partials/_workshop_hero.html' %}
-
-    <section class="content-wrapper">
-        <div class="container">
-            {% include 'vehicles/partials/_workshop_info.html' %}
-            {% include 'vehicles/partials/_workshop_details.html' %}
-            {% include 'vehicles/partials/_workshop_images.html' %}
-            {% include 'vehicles/partials/_workshop_actions.html' %}
-        </div>
-    </section>
-</div>
-
-<script type="application/json" id="workshop-config">
-{{ {
-    "title": "تقرير سجل الورشة - " ~ vehicle.plate_number,
-    "vehicle": {
-        "plateNumber": vehicle.plate_number,
-        "make": vehicle.make,
-        "model": vehicle.model,
-        "year": vehicle.year
-    },
-    "record": {
-        "workshopName": record.workshop_name or "غير محدد",
-        "entryDate": record.formatted_entry_date or "غير محدد",
-        "exitDate": record.formatted_exit_date if record.exit_date else "",
-        "technicianName": record.technician_name or "",
-        "reason": record.reason or "",
-        "reasonLabel": "صيانة دورية" if record.reason == "maintenance" else "عطل" if record.reason == "breakdown" else "حادث" if record.reason == "accident" else (record.reason or "غير محدد"),
-        "repairStatus": record.repair_status or "",
-        "repairStatusLabel": "تم الإصلاح" if record.repair_status == "completed" else "قيد التنفيذ" if record.repair_status == "in_progress" else "بانتظار الموافقة" if record.repair_status == "pending_approval" else (record.repair_status or "غير محدد"),
-        "cost": record.cost or 0,
-        "costFormatted": "{:,.2f}".format(record.cost) if record.cost and record.cost > 0 else "",
-        "description": record.description or "",
-        "notes": record.notes or "",
-        "deliveryLink": record.delivery_link or "",
-        "receptionLink": record.reception_link or ""
-    },
-    "images": [
-        {
-            "type": image.image_type or "",
-            "notes": image.notes or "",
-            "url": '/' ~ image.image_path
-        } for image in (record.images or [])
-    ]
-} | tojson }}
-</script>
+{% include 'vehicles/views/partials/workshop_details/_content.html' %}
 {% endblock %}
 
 {% block scripts %}
