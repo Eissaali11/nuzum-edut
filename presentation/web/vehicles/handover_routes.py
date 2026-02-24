@@ -96,7 +96,7 @@ def _build_handover_report_context(handover):
         "handover_images_b64": handover_images_b64,
     }
 
-from core.extensions import db
+from core.extensions import db, csrf
 from modules.vehicles.domain.models import Vehicle, VehicleHandover, VehicleHandoverImage
 from domain.employees.models import Employee, Department
 from modules.vehicles.application.services import get_vehicle_handover_context, create_vehicle_handover_action
@@ -585,7 +585,7 @@ def register_handover_routes(bp):
     bp.add_url_rule(
         "/handover/<int:id>/edit",
         "edit_handover",
-        view_func=login_required(edit_handover),
+        view_func=csrf.exempt(login_required(edit_handover)),
         methods=["GET", "POST"],
     )
     bp.add_url_rule("/handover/<int:id>/view", "view_handover", view_func=login_required(view_handover), methods=["GET"])

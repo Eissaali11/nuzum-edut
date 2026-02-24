@@ -1,5 +1,16 @@
 <!-- Drivers Tab Content -->
 <div class="tab-pane fade" id="drivers" role="tabpanel" aria-labelledby="drivers-tab">
+    {% set ns = namespace(latest_delivery=None, latest_return=None) %}
+    {% for record in handover_records %}
+        {% set htype = record.handover_type or '' %}
+        {% if ns.latest_delivery is none and htype in ['delivery', 'تسليم', 'handover'] %}
+            {% set ns.latest_delivery = record %}
+        {% endif %}
+        {% if ns.latest_return is none and htype in ['return', 'استلام', 'receive'] %}
+            {% set ns.latest_return = record %}
+        {% endif %}
+    {% endfor %}
+
     <div class="row mb-4">
         <!-- Current Driver -->
         <div class="col-md-6">
@@ -11,24 +22,24 @@
                     </a>
                 </div>
                 <div class="card-body">
-                    {% if current_driver %}
+                    {% if ns.latest_delivery %}
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="h5 mb-1">{{ current_driver.name }}</div>
-                            <div class="small text-muted">منذ {{ current_driver.formatted_date }}</div>
+                            <div class="h5 mb-1">{{ ns.latest_delivery.person_name }}</div>
+                            <div class="small text-muted">منذ {{ ns.latest_delivery.formatted_handover_date or ns.latest_delivery.handover_date }}</div>
                         </div>
                         <div>
-                            <a href="{{ url_for('vehicles.view_handover', id=current_driver.handover_id) }}" class="btn btn-sm btn-outline-primary" title="التفاصيل">
+                            <a href="{{ url_for('vehicles.view_handover', id=ns.latest_delivery.id) }}" class="btn btn-sm btn-outline-primary" title="التفاصيل">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ url_for('vehicles.handover_pdf_public', id=current_driver.handover_id) }}" target="_blank" class="btn btn-sm btn-outline-danger ms-1" title="PDF">
+                            <a href="{{ url_for('vehicles.handover_pdf_public', id=ns.latest_delivery.id) }}" target="_blank" class="btn btn-sm btn-outline-danger ms-1" title="PDF">
                                 <i class="fas fa-file-pdf"></i>
                             </a>
-                            {% if current_driver.mobile %}
-                            <a href="https://wa.me/{{ current_driver.mobile | replace('+', '') | replace(' ', '') | replace('-', '') }}?text={{ (
-                                'مرحباً ' ~ current_driver.name ~ '\n\n' ~
+                            {% if ns.latest_delivery.driver_phone_number %}
+                            <a href="https://wa.me/{{ ns.latest_delivery.driver_phone_number | replace('+', '') | replace(' ', '') | replace('-', '') }}?text={{ (
+                                'مرحباً ' ~ ns.latest_delivery.person_name ~ '\n\n' ~
                                 'بخصوص المركبة رقم: ' ~ vehicle.plate_number ~ '\n' ~
-                                'تاريخ ' ~ current_driver.handover_type_ar ~ ': ' ~ current_driver.formatted_date ~ '\n\n' ~
+                                'تاريخ تسليم: ' ~ (ns.latest_delivery.formatted_handover_date or ns.latest_delivery.handover_date) ~ '\n\n' ~
                                 '🚗 عزيزي السائق، نتمنى لك قيادة آمنة\n\n' ~
                                 '⚠️ تنبيهات مهمة:\n' ~
                                 '• تأكد من تغيير زيت السيارة في موعده\n' ~
@@ -41,7 +52,7 @@
                                 '• الهلال الأحمر: 997\n' ~
                                 '• الشرطة: 999\n' ~
                                 '• أمن الطرق: 996\n\n' ~
-                                '📄 المستندات:\n' ~ url_for('vehicles.handover_pdf_public', id=current_driver.handover_id, _external=True) ~
+                                '📄 المستندات:\n' ~ url_for('vehicles.handover_pdf_public', id=ns.latest_delivery.id, _external=True) ~
                                 '\n\n🙏 شكراً لك والسلامة في الطريق'
                             ) | urlencode }}" class="btn btn-sm btn-success ms-1" target="_blank" title="WhatsApp">
                                 <i class="fab fa-whatsapp"></i>
@@ -60,32 +71,30 @@
         <div class="col-md-6">
             <div class="vehicle-card card h-100">
                 <div class="vehicle-card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-history ms-2"></i> السائقين السابقين <span class="badge-enhanced bg-secondary">{{ previous_drivers|length }}</span></h5>
+                    <h5 class="mb-0"><i class="fas fa-history ms-2"></i> السائقين السابقين <span class="badge-enhanced bg-secondary">{{ 1 if ns.latest_return else 0 }}</span></h5>
                     <a href="{{ url_for('vehicles.create_handover', id=vehicle.id) }}?type=receive" class="btn btn-sm btn-info">
                         <i class="fas fa-exchange-alt ms-1"></i> استلام
                     </a>
                 </div>
                 <div class="card-body">
-                    {% if previous_drivers %}
+                    {% if ns.latest_return %}
                     <div class="list-group">
-                        {% for driver in previous_drivers %}
                         <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="fw-bold">{{ driver.name }}</div>
-                                <div class="small text-muted">{{ driver.formatted_date }}</div>
+                                <div class="fw-bold">{{ ns.latest_return.person_name }}</div>
+                                <div class="small text-muted">{{ ns.latest_return.formatted_handover_date or ns.latest_return.handover_date }}</div>
                             </div>
                             <div>
-                                <a href="{{ url_for('vehicles.view_handover', id=driver.handover_id) }}" class="btn btn-sm btn-outline-primary" title="التفاصيل">
+                                <a href="{{ url_for('vehicles.view_handover', id=ns.latest_return.id) }}" class="btn btn-sm btn-outline-primary" title="التفاصيل">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                {% if driver.mobile %}
-                                <a href="https://wa.me/{{ driver.mobile | replace('+', '') | replace(' ', '') | replace('-', '') }}" class="btn btn-sm btn-success ms-1" target="_blank" title="WhatsApp">
+                                {% if ns.latest_return.driver_phone_number %}
+                                <a href="https://wa.me/{{ ns.latest_return.driver_phone_number | replace('+', '') | replace(' ', '') | replace('-', '') }}" class="btn btn-sm btn-success ms-1" target="_blank" title="WhatsApp">
                                     <i class="fab fa-whatsapp"></i>
                                 </a>
                                 {% endif %}
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
                     {% else %}
                     <div class="text-muted"><i class="fas fa-info-circle ms-1"></i> لا يوجد سائقين سابقين</div>
@@ -108,7 +117,7 @@
                 <div class="card-body">
                     {% if handover_records %}
                     <form action="{{ url_for('vehicles.confirm_delete_handovers', vehicle_id=vehicle.id) }}" method="post" id="handover-delete-form">
-                        {{ csrf_token() }}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                         <div class="mb-3 d-flex justify-content-end">
                             <button type="submit" class="btn btn-sm btn-danger" id="delete-selected-btn" disabled>
                                 <i class="fas fa-trash-alt ms-1"></i> حذف المحدد

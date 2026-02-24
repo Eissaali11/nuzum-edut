@@ -775,28 +775,35 @@ def get_vehicle_detail_data(vehicle_id: int) -> Optional[Dict[str, Any]]:
     )
     today = datetime.now().date()
 
-    current_driver = None
-    if vehicle.driver_name:
-        latest_delivery = next(
-            (
-                r
-                for r in handover_records
-                if r.handover_type == "delivery" and r.person_name == vehicle.driver_name
-            ),
-            None,
-        )
-        if latest_delivery:
-            current_driver = {
-                "name": latest_delivery.person_name,
-                "date": latest_delivery.handover_date,
-                "formatted_date": format_date_arabic(latest_delivery.handover_date),
-                "handover_id": latest_delivery.id,
-                "mobile": latest_delivery.driver_phone_number,
-                "employee_id": latest_delivery.employee_id,
-                "handover_type_ar": "تسليم" if latest_delivery.handover_type == "delivery" else "استلام",
-            }
+    delivery_types = {"delivery", "تسليم", "handover"}
+    return_types = {"return", "استلام", "receive"}
 
-    all_deliveries = [r for r in handover_records if r.handover_type == "delivery"]
+    all_deliveries = [r for r in handover_records if (r.handover_type or "") in delivery_types]
+    all_returns = [r for r in handover_records if (r.handover_type or "") in return_types]
+
+    latest_delivery = all_deliveries[0] if all_deliveries else None
+    latest_return = all_returns[0] if all_returns else None
+
+    def _record_sort_key(record):
+        return record.created_at or record.handover_date
+
+    current_driver = None
+    if latest_delivery and (
+        not latest_return or _record_sort_key(latest_delivery) > _record_sort_key(latest_return)
+    ):
+        current_driver = {
+            "name": latest_delivery.person_name,
+            "date": latest_delivery.handover_date,
+            "formatted_date": format_date_arabic(latest_delivery.handover_date),
+            "handover_id": latest_delivery.id,
+            "mobile": latest_delivery.driver_phone_number,
+            "employee_id": latest_delivery.employee_id,
+            "handover_type_ar": "تسليم",
+        }
+
+    previous_source = [
+        r for r in all_deliveries if not current_driver or r.id != current_driver["handover_id"]
+    ]
     previous_drivers: List[Dict[str, Any]] = [
         {
             "name": r.person_name,
@@ -805,7 +812,7 @@ def get_vehicle_detail_data(vehicle_id: int) -> Optional[Dict[str, Any]]:
             "handover_id": r.id,
             "mobile": r.driver_phone_number,
         }
-        for r in all_deliveries[1:]
+        for r in previous_source
     ]
 
     for record in (

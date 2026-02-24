@@ -12,6 +12,7 @@ from modules.employees.application.core import (
     create_employee,
     update_employee,
     delete_employee,
+    get_employee_view_context,
 )
 
 employees_bp = Blueprint("employees", __name__, url_prefix="/employees")
@@ -221,7 +222,7 @@ def create():
 @login_required
 @require_module_access(Module.EMPLOYEES, Permission.CREATE)
 def import_excel():
-    from routes.employees import import_excel as legacy_import
+    from routes.hr.employees import import_excel as legacy_import
     return legacy_import()
 
 
@@ -229,7 +230,7 @@ def import_excel():
 @login_required
 @require_module_access(Module.EMPLOYEES, Permission.VIEW)
 def export_excel():
-    from routes.employees import export_excel as legacy_export
+    from routes.hr.employees import export_excel as legacy_export
     return legacy_export()
 
 
@@ -237,7 +238,7 @@ def export_excel():
 @login_required
 @require_module_access(Module.EMPLOYEES, Permission.VIEW)
 def export_comprehensive():
-    from routes.employees import export_comprehensive as legacy_export
+    from routes.hr.employees import export_comprehensive as legacy_export
     return legacy_export()
 
 
@@ -289,16 +290,26 @@ def edit(id):
 @login_required
 @require_module_access(Module.EMPLOYEES, Permission.VIEW)
 def view(id):
-    from routes.employees import view as legacy_view
-    return legacy_view(id)
+    context = get_employee_view_context(id)
+    if not context:
+        flash("الموظف غير موجود", "danger")
+        return redirect(url_for("employees.index"))
+    return render_template("employees/view.html", **context)
 
 
 @employees_bp.route("/<int:id>/confirm_delete")
 @login_required
 @require_module_access(Module.EMPLOYEES, Permission.DELETE)
 def confirm_delete(id):
-    from routes.employees import confirm_delete as legacy_confirm
-    return legacy_confirm(id)
+    context = get_employee_view_context(id)
+    if not context:
+        flash("الموظف غير موجود", "danger")
+        return redirect(url_for("employees.index"))
+    return render_template(
+        "employees/confirm_delete.html",
+        employee=context["employee"],
+        return_url=request.referrer or url_for("employees.index"),
+    )
 
 
 @employees_bp.route("/<int:id>/delete", methods=["GET", "POST"])

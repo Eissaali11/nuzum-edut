@@ -11,7 +11,7 @@ from flask_login import login_required, current_user
 from werkzeug.exceptions import HTTPException
 import qrcode
 
-from core.extensions import db
+from core.extensions import db, csrf
 from modules.vehicles.domain.models import Vehicle, VehicleHandover, VehicleHandoverImage
 from domain.employees.models import Employee, Department
 from modules.vehicles.application.services import get_vehicle_handover_context, create_vehicle_handover_action
@@ -317,6 +317,12 @@ def edit_handover(id):
                 saved_sig = save_base64_image(driver_signature_data, "signatures")
                 if saved_sig:
                     handover.driver_signature_path = saved_sig
+
+            for image in images:
+                note_value = request.form.get(f"image_note_{image.id}", "")
+                image.file_description = note_value
+                image.image_description = note_value
+
             for file in request.files.getlist("files"):
                 if file and file.filename:
                     file_path, file_type = save_file(file, "handover")
@@ -595,7 +601,7 @@ def register_handover_routes(bp):
     bp.add_url_rule(
         "/handover/<int:id>/edit",
         "edit_handover",
-        view_func=login_required(edit_handover),
+            view_func=csrf.exempt(login_required(edit_handover)),
         methods=["GET", "POST"],
     )
     bp.add_url_rule("/handover/<int:id>/view", "view_handover", view_func=login_required(view_handover), methods=["GET"])

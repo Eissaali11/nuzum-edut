@@ -24,6 +24,7 @@
 
         <div class="card-body p-lg-4">
             <form method="post" action="{% if edit_mode %}{{ url_for('vehicles.edit_handover', id=handover.id) }}{% else %}{{ url_for('vehicles.create_handover', id=vehicle.id) }}{% endif %}" enctype="multipart/form-data" id="main-handover-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
                 {% if info_message %}
                 <div class="alert alert-info border-0 shadow-sm" role="alert">

@@ -1,10 +1,11 @@
 # تشغيل نواة نُظم (يُنشئ venv ويثبت المتطلبات إن لزم)
 $ErrorActionPreference = "Stop"
-Set-Location $PSScriptRoot
+$RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+Set-Location $RepoRoot
 
-if (-not (Test-Path "venv\Scripts\python.exe")) {
+if (-not (Test-Path ".\venv\Scripts\python.exe")) {
     Write-Host "جاري إنشاء البيئة الافتراضية (venv)..."
-    python -m venv venv
+    python -m venv .\venv
 }
 & ".\venv\Scripts\Activate.ps1"
 

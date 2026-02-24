@@ -26,7 +26,8 @@ def create_app(config_name=None):
 
     # مسارات العرض الجديد (presentation/web)
     templates_dir = str(BASE_DIR / "presentation" / "web" / "templates")
-    static_dir = str(BASE_DIR / "presentation" / "web" / "static")
+    # خدمة static من الجذر لدعم القوالب القديمة والجديدة معاً
+    static_dir = ROOT_STATIC_DIR
 
     app = Flask(
         __name__,

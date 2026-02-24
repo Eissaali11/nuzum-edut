@@ -24,6 +24,7 @@
 
         <div class="card-body p-lg-4">
             <form method="post" action="{% if edit_mode %}{{ url_for('vehicles.edit_handover', id=handover.id) }}{% else %}{{ url_for('vehicles.create_handover', id=vehicle.id) }}{% endif %}" enctype="multipart/form-data" id="main-handover-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
                 {% if info_message %}
                 <div class="alert alert-info border-0 shadow-sm" role="alert">
@@ -446,6 +447,16 @@
                 <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
                     <i class="fas fa-file-pdf fa-3x text-danger mb-2"></i>
                     <h6 class="text-truncate small">{{ image.file_description or image.image_description or 'ملف PDF' }}</h6>
+                    <div class="w-100 mt-2">
+                        <label class="form-label small mb-1">ملاحظة</label>
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            name="image_note_{{ image.id }}"
+                            value="{{ image.file_description or image.image_description or '' }}"
+                            placeholder="أدخل ملاحظة للصورة"
+                        >
+                    </div>
                     <div class="btn-group mt-2">
                         <a href="/{{ image.get_path() }}" target="_blank" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-eye me-1"></i>عرض
@@ -460,6 +471,14 @@
                 <img src="/{{ image.get_path() }}" alt="صورة توثيقية" class="card-img-top" style="height:120px; object-fit: cover; cursor: pointer;" onclick="window.open('/{{ image.get_path() }}', '_blank')">
                 <div class="card-body p-2">
                     <small class="text-muted d-block mb-2">{{ image.file_description or image.image_description or 'صورة توثيقية' }}</small>
+                    <label class="form-label small mb-1">ملاحظة</label>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm mb-2"
+                        name="image_note_{{ image.id }}"
+                        value="{{ image.file_description or image.image_description or '' }}"
+                        placeholder="أدخل ملاحظة للصورة"
+                    >
                     <div class="btn-group w-100">
                         <a href="/{{ image.get_path() }}" target="_blank" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-external-link-alt me-1"></i>عرض
