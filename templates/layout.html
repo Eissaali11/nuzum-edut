@@ -171,10 +171,12 @@
         {% block extra_css%} {% endblock%}
     </head>
     <body>
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="فتح القائمة">&#9776;</button>
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
         <div class="container-fluid">
             <div class="row">
                 <!-- Sidebar -->
-                <div class="col-lg-2 col-md-3 sidebar p-0">
+                <div class="col-lg-2 col-md-3 sidebar p-0" id="mainSidebar">
                     <div
                         class="d-flex flex-column flex-shrink-0 p-3 sidebar-content"
                     >
@@ -1081,6 +1083,19 @@
         </script>
         {% endif %}
 
+        <script>
+        (function(){
+            var btn=document.getElementById('sidebarToggleBtn'),
+                sb=document.getElementById('mainSidebar'),
+                bd=document.getElementById('sidebarBackdrop');
+            if(!btn||!sb||!bd) return;
+            function open(){sb.classList.add('sidebar-open');bd.classList.add('active');}
+            function close(){sb.classList.remove('sidebar-open');bd.classList.remove('active');}
+            btn.addEventListener('click',function(){sb.classList.contains('sidebar-open')?close():open();});
+            bd.addEventListener('click',close);
+            sb.querySelectorAll('.nav-link, .dropdown-item').forEach(function(a){a.addEventListener('click',close);});
+        })();
+        </script>
         <!-- مكان لتضمين النصوص البرمجية الإضافية من القوالب الخاصة -->
         {% block scripts %}{% endblock %}
     </body>

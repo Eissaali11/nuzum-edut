@@ -1875,13 +1875,65 @@ table {
 /* Responsive adjustments for fixed sidebar */
 @media (max-width: 991px) {
     .sidebar {
-        position: relative;
-        width: 100%;
-        height: auto;
+        position: fixed;
+        right: -280px;
+        width: 260px;
+        height: 100vh;
+        z-index: 1050;
+        transition: right 0.3s ease-in-out;
     }
-    
+
+    .sidebar.sidebar-open {
+        right: 0;
+    }
+
     .content-wrapper {
-        margin-right: 0;
+        margin-right: 0 !important;
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+
+    .col-lg-10.col-md-9 {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        margin-right: 0 !important;
+    }
+}
+
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+}
+
+.sidebar-backdrop.active {
+    display: block;
+}
+
+.sidebar-toggle-btn {
+    display: none;
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 1060;
+    background: #29406A;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    line-height: 1;
+}
+
+@media (max-width: 991px) {
+    .sidebar-toggle-btn {
+        display: block;
     }
 }
 
