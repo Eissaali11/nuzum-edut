@@ -130,7 +130,7 @@ init_db_config(app)
 
 # Provide default values for uploads and other configurations
 app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024  # 500 MB - لدعم رفع عدد كبير من الصور
-app.config["UPLOAD_FOLDER"] = "uploads"
+app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "uploads")
 
 # Initialize SQLAlchemy with the app
 db.init_app(app)
@@ -269,21 +269,23 @@ with app.app_context():
     @app.route('/static/uploads/<path:filename>')
     def static_uploaded_file(filename):
         from flask import send_from_directory, abort, Response
+        from werkzeug.security import safe_join
         from utils.storage_helper import download_image
         import os
-        
-        # البحث في static/uploads
-        file_path = os.path.join('static', 'uploads', filename)
-        if os.path.exists(file_path):
-            dir_parts = filename.split('/')
-            if len(dir_parts) > 1:
-                subdir = '/'.join(dir_parts[:-1])
-                file_name = dir_parts[-1]
-                return send_from_directory(f'static/uploads/{subdir}', file_name)
-            else:
-                return send_from_directory('static/uploads', filename)
-        
-        # البحث في Object Storage
+
+        uploads_root = app.config.get("UPLOAD_FOLDER", os.path.join(app.root_path, "static", "uploads"))
+
+        safe_path = safe_join(uploads_root, filename)
+        if safe_path is None:
+            abort(404)
+
+        resolved = os.path.realpath(safe_path)
+        if not resolved.startswith(os.path.realpath(uploads_root) + os.sep):
+            abort(404)
+
+        if os.path.isfile(resolved):
+            return send_from_directory(os.path.dirname(resolved), os.path.basename(resolved))
+
         image_data = download_image(filename)
         if image_data:
             ext = filename.lower().rsplit('.', 1)[-1]
@@ -294,12 +296,10 @@ with app.app_context():
             }
             content_type = content_types.get(ext, 'image/jpeg')
             return Response(image_data, mimetype=content_type)
-        
-        # في حالة عدم وجود الصورة، إرجاع صورة بديلة
+
         if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
-            return send_from_directory('static/images', 'image-not-found.svg')
-        
-        abort(404)
+            return send_from_directory(os.path.join(app.root_path, 'static', 'images'), 'image-not-found.svg')
+
         abort(404)
 
     # إضافة دوال مساعدة لقوالب Jinja

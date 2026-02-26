@@ -37,6 +37,14 @@ The project follows a **Layered Modular Architecture** transitioning from legacy
 - `SESSION_SECRET` must be set as environment variable (no fallback)
 - `LOCATION_API_KEY` must be set for external API access
 - CSRF enabled globally with exemptions for specific API blueprints
+- Static upload serving uses `safe_join` + `realpath` validation to prevent path traversal
+
+## File Uploads
+- All uploads stored in `static/uploads/` (absolute path via `app.config["UPLOAD_FOLDER"]`)
+- Employee images: `static/uploads/employees/`
+- Vehicle files: `static/uploads/vehicles/` (registration_forms, plates, insurance)
+- Other: handovers, maintenance, safety_checks, workshop, properties, accidents, invoices
+- DB stores relative paths like `uploads/employees/...` or `static/uploads/vehicles/...`
 
 ## Attendance Module
 - Modular architecture is active by default (7 core files + 3 auxiliary)

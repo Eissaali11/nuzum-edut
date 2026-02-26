@@ -5,7 +5,15 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 
 
-UPLOAD_FOLDER = "static/uploads/employees"
+def _get_upload_folder():
+    """Return absolute path to employee uploads folder."""
+    try:
+        from flask import current_app
+        return os.path.join(current_app.root_path, "static", "uploads", "employees")
+    except (ImportError, RuntimeError):
+        return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "static", "uploads", "employees")
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "static", "uploads", "employees")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "pdf"}
 
 
@@ -19,12 +27,17 @@ def verify_employee_image(image_path: str):
     if not image_path:
         return None
 
-    if image_path.startswith("static/"):
-        full_path = image_path
-    else:
-        full_path = f"static/{image_path}"
+    upload_dir = _get_upload_folder()
+    base_static = os.path.dirname(os.path.dirname(upload_dir))
 
-    if os.path.exists(full_path) and os.path.getsize(full_path) > 0:
+    if image_path.startswith("static/"):
+        full_path = os.path.join(os.path.dirname(base_static), image_path)
+    elif image_path.startswith("uploads/"):
+        full_path = os.path.join(base_static, image_path)
+    else:
+        full_path = os.path.join(upload_dir, os.path.basename(image_path))
+
+    if os.path.isfile(full_path) and os.path.getsize(full_path) > 0:
         return image_path
     return None
 
@@ -36,7 +49,8 @@ def save_employee_image(file, employee_id: int, image_type: str):
         return None
 
     try:
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        folder = _get_upload_folder()
+        os.makedirs(folder, exist_ok=True)
 
         filename = secure_filename(file.filename)
         name, ext = os.path.splitext(filename)
@@ -54,7 +68,7 @@ def save_employee_image(file, employee_id: int, image_type: str):
                 ext = ".jpg"
 
         unique_filename = f"{employee_id}_{image_type}_{datetime.now().strftime('%Y%m%d_%H%M%S%f')}{ext}"
-        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+        filepath = os.path.join(folder, unique_filename)
 
         file_content = file.read()
         file.seek(0)

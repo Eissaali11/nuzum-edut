@@ -44,19 +44,21 @@ def register_vehicle_extra_document_misc_routes(bp):
             unique_filename = f"{uuid.uuid4()}_{filename}"
 
             if document_type == 'registration_form':
-                upload_folder, field_name = 'static/uploads/vehicles/registration_forms', 'registration_form_image'
+                subfolder, field_name = 'vehicles/registration_forms', 'registration_form_image'
             elif document_type == 'plate':
-                upload_folder, field_name = 'static/uploads/vehicles/plates', 'plate_image'
+                subfolder, field_name = 'vehicles/plates', 'plate_image'
             elif document_type == 'insurance':
-                upload_folder, field_name = 'static/uploads/vehicles/insurance', 'insurance_file'
+                subfolder, field_name = 'vehicles/insurance', 'insurance_file'
             else:
                 flash('نوع الوثيقة غير صحيح', 'error')
                 return redirect(url_for('vehicles.view', id=id))
 
+            upload_folder = os.path.join(current_app.static_folder, 'uploads', subfolder)
             os.makedirs(upload_folder, exist_ok=True)
             file_path = os.path.join(upload_folder, unique_filename)
             file.save(file_path)
-            setattr(vehicle, field_name, file_path)
+            relative_path = os.path.join('static', 'uploads', subfolder, unique_filename)
+            setattr(vehicle, field_name, relative_path)
 
             try:
                 db.session.commit()
