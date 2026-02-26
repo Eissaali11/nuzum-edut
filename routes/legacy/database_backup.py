@@ -140,6 +140,20 @@ def import_backup():
             raise ValueError(f"Invalid identifier: {name}")
         return f'"{name}"'
 
+    _TABLE_NAME_MAP = {
+        'employees': 'employee',
+        'vehicles': 'vehicle',
+        'departments': 'department',
+        'users': 'user',
+        'salaries': 'salary',
+        'vehicle_handovers': 'vehicle_handover',
+        'vehicle_workshops': 'vehicle_workshop',
+        'documents': 'document',
+        'vehicle_accidents': 'vehicle_accident',
+        'external_safety_checks': 'vehicle_external_safety_check',
+        'safety_images': 'vehicle_safety_image',
+    }
+
     try:
         if 'backup_file' not in request.files:
             flash('يجب اختيار ملف النسخة الاحتياطية', 'warning')
@@ -156,52 +170,83 @@ def import_backup():
 
         backup_data = json.load(file)
 
-        if 'tables' not in backup_data:
-            flash('ملف النسخة الاحتياطية غير صالح', 'danger')
+        if 'tables' in backup_data:
+            tables_dict = {}
+            for tname, tdata in backup_data['tables'].items():
+                tables_dict[tname] = tdata.get('rows', [])
+        elif 'data' in backup_data:
+            tables_dict = backup_data['data']
+        else:
+            flash('ملف النسخة الاحتياطية غير صالح — لا يحتوي على tables أو data', 'danger')
             return redirect(url_for('database_backup.backup_page'))
 
         inspector = inspect(db.engine)
         valid_tables = set(inspector.get_table_names())
+        valid_columns_cache = {}
 
         imported_count = 0
         skipped_count = 0
+        table_results = []
 
-        for table_name, table_data in backup_data['tables'].items():
-            if table_name not in valid_tables:
-                current_app.logger.warning(f"Skipping unknown table: {table_name}")
+        for backup_table_name, rows in tables_dict.items():
+            db_table = _TABLE_NAME_MAP.get(backup_table_name, backup_table_name)
+            if db_table not in valid_tables:
+                current_app.logger.warning(f"Skipping unknown table: {backup_table_name} (mapped: {db_table})")
+                table_results.append(f'{backup_table_name}: تم تخطيه (غير موجود)')
+                continue
+
+            if not isinstance(rows, list):
                 continue
 
             try:
-                safe_table = _safe_identifier(table_name)
+                safe_table = _safe_identifier(db_table)
+
+                if db_table not in valid_columns_cache:
+                    valid_columns_cache[db_table] = set(c['name'] for c in inspector.get_columns(db_table))
 
                 if import_mode == 'replace':
                     db.session.execute(db.text(f"DELETE FROM {safe_table}"))
 
-                for row in table_data.get('rows', []):
+                table_imported = 0
+                table_skipped = 0
+
+                for row in rows:
                     try:
-                        safe_cols = [_safe_identifier(k) for k in row.keys()]
+                        filtered_row = {k: v for k, v in row.items() if k in valid_columns_cache[db_table]}
+                        if not filtered_row:
+                            table_skipped += 1
+                            continue
+
+                        safe_cols = [_safe_identifier(k) for k in filtered_row.keys()]
                         columns = ', '.join(safe_cols)
-                        placeholders = ', '.join([f":{key}" for key in row.keys()])
+                        placeholders = ', '.join([f":{key}" for key in filtered_row.keys()])
                         query = f"INSERT INTO {safe_table} ({columns}) VALUES ({placeholders})"
 
-                        db.session.execute(db.text(query), row)
-                        imported_count += 1
+                        db.session.execute(db.text(query), filtered_row)
+                        table_imported += 1
                     except ValueError:
-                        skipped_count += 1
-                    except Exception:
+                        table_skipped += 1
+                    except Exception as row_err:
+                        db.session.rollback()
                         if import_mode == 'add':
-                            skipped_count += 1
+                            table_skipped += 1
                         else:
                             raise
 
                 db.session.commit()
+                imported_count += table_imported
+                skipped_count += table_skipped
+                table_results.append(f'{backup_table_name}: {table_imported} سجل')
+                current_app.logger.info(f"Imported {table_imported} rows into {db_table} (skipped {table_skipped})")
 
             except Exception as e:
                 db.session.rollback()
-                current_app.logger.error(f"Error importing table {table_name}: {str(e)}")
-                flash(f'خطأ في استيراد جدول {table_name}: {str(e)}', 'danger')
+                current_app.logger.error(f"Error importing table {db_table}: {str(e)}")
+                table_results.append(f'{backup_table_name}: خطأ')
+                flash(f'خطأ في استيراد جدول {backup_table_name}: {str(e)}', 'danger')
 
-        flash(f'تم استيراد {imported_count} سجل بنجاح. تم تخطي {skipped_count} سجل.', 'success')
+        summary = ' | '.join(table_results[:10])
+        flash(f'تم استيراد {imported_count} سجل بنجاح. تم تخطي {skipped_count} سجل. ({summary})', 'success')
 
     except json.JSONDecodeError:
         flash('ملف النسخة الاحتياطية تالف أو ليس بصيغة JSON صحيحة', 'danger')
