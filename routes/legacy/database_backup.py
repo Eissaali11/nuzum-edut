@@ -73,8 +73,10 @@ def export_backup():
                 if table_name not in inspector.get_table_names():
                     continue
                 
-                # جلب البيانات
-                result = db.session.execute(db.text(f"SELECT * FROM {table_name}"))
+                import re as _re
+                if not _re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', table_name):
+                    continue
+                result = db.session.execute(db.text(f'SELECT * FROM "{table_name}"'))
                 columns = result.keys()
                 rows = result.fetchall()
                 
@@ -130,63 +132,84 @@ def export_backup():
 @permission_required('admin', 'edit')
 def import_backup():
     """استيراد نسخة احتياطية من ملف JSON"""
+    import re
+    _IDENTIFIER_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+    def _safe_identifier(name):
+        if not _IDENTIFIER_RE.match(name):
+            raise ValueError(f"Invalid identifier: {name}")
+        return f'"{name}"'
+
     try:
         if 'backup_file' not in request.files:
             flash('يجب اختيار ملف النسخة الاحتياطية', 'warning')
             return redirect(url_for('database_backup.backup_page'))
-        
+
         file = request.files['backup_file']
         if file.filename == '':
             flash('لم يتم اختيار ملف', 'warning')
             return redirect(url_for('database_backup.backup_page'))
-        
+
         import_mode = request.form.get('import_mode', 'add')
-        
-        # قراءة الملف
+        if import_mode not in ('add', 'replace'):
+            import_mode = 'add'
+
         backup_data = json.load(file)
-        
+
         if 'tables' not in backup_data:
             flash('ملف النسخة الاحتياطية غير صالح', 'danger')
             return redirect(url_for('database_backup.backup_page'))
-        
+
+        inspector = inspect(db.engine)
+        valid_tables = set(inspector.get_table_names())
+
         imported_count = 0
         skipped_count = 0
-        
+
         for table_name, table_data in backup_data['tables'].items():
+            if table_name not in valid_tables:
+                current_app.logger.warning(f"Skipping unknown table: {table_name}")
+                continue
+
             try:
-                # حذف البيانات القديمة في وضع الاستبدال
+                safe_table = _safe_identifier(table_name)
+
                 if import_mode == 'replace':
-                    db.session.execute(db.text(f"DELETE FROM {table_name}"))
-                
-                # إدراج البيانات الجديدة
-                for row in table_data['rows']:
+                    db.session.execute(db.text(f"DELETE FROM {safe_table}"))
+
+                for row in table_data.get('rows', []):
                     try:
-                        columns = ', '.join(row.keys())
+                        safe_cols = [_safe_identifier(k) for k in row.keys()]
+                        columns = ', '.join(safe_cols)
                         placeholders = ', '.join([f":{key}" for key in row.keys()])
-                        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
-                        
+                        query = f"INSERT INTO {safe_table} ({columns}) VALUES ({placeholders})"
+
                         db.session.execute(db.text(query), row)
                         imported_count += 1
-                    except Exception as e:
+                    except ValueError:
+                        skipped_count += 1
+                    except Exception:
                         if import_mode == 'add':
                             skipped_count += 1
                         else:
                             raise
-                
+
                 db.session.commit()
-                
+
             except Exception as e:
                 db.session.rollback()
                 current_app.logger.error(f"Error importing table {table_name}: {str(e)}")
                 flash(f'خطأ في استيراد جدول {table_name}: {str(e)}', 'danger')
-        
+
         flash(f'تم استيراد {imported_count} سجل بنجاح. تم تخطي {skipped_count} سجل.', 'success')
-        
+
+    except json.JSONDecodeError:
+        flash('ملف النسخة الاحتياطية تالف أو ليس بصيغة JSON صحيحة', 'danger')
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error importing backup: {str(e)}")
         flash(f'حدث خطأ أثناء استيراد النسخة الاحتياطية: {str(e)}', 'danger')
-    
+
     return redirect(url_for('database_backup.backup_page'))
 
 
@@ -202,8 +225,11 @@ def export_single_table(table_name):
             flash(f'الجدول {table_name} غير موجود', 'danger')
             return redirect(url_for('database_backup.backup_page'))
         
-        # جلب البيانات
-        result = db.session.execute(db.text(f"SELECT * FROM {table_name}"))
+        import re
+        if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', table_name):
+            flash('اسم جدول غير صالح', 'danger')
+            return redirect(url_for('database_backup.backup_page'))
+        result = db.session.execute(db.text(f'SELECT * FROM "{table_name}"'))
         columns = result.keys()
         rows = result.fetchall()
         
