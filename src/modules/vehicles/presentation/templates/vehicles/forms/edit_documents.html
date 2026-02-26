@@ -1,8 +1,0 @@
-{% extends "layout.html" %}
-{% set active_page = 'vehicles' %}
-
-{% block title %}تعديل تواريخ وثائق السيارة - {{ vehicle.plate_number }}{% endblock %}
-
-{% block content %}
-{% include 'vehicles/forms/partials/edit_documents/_content.html' %}
-{% endblock %}

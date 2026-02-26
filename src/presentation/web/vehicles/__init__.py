@@ -1,1 +1,0 @@
-from src.modules.vehicles.presentation.web import *

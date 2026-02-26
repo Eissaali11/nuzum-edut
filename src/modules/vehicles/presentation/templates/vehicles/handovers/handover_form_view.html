@@ -1,7 +1,0 @@
-{% extends "layout.html" %}
-
-{% block title %}نموذج {{ 'تسليم' if handover.handover_type == 'delivery' else 'استلام' }} السيارة{% endblock %}
-
-{% block content %}
-{% include 'vehicles/handovers/partials/handover_form_view/_content.html' %}
-{% endblock %}

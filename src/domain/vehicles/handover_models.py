@@ -1,1 +1,0 @@
-from src.modules.vehicles.domain.handover_models import *

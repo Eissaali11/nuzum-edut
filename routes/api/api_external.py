@@ -22,12 +22,14 @@ from time import time
 # إنشاء Blueprint
 api_external_bp = Blueprint('api_external', __name__, url_prefix='/api/external')
 
-# مفتاح API الثابت (محفوظ في متغير بيئة)
-LOCATION_API_KEY = os.environ.get('LOCATION_API_KEY', 'test_location_key_2025')
-
 # إعداد السجلات
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# مفتاح API الثابت (محفوظ في متغير بيئة)
+LOCATION_API_KEY = os.environ.get('LOCATION_API_KEY')
+if not LOCATION_API_KEY:
+    logger.warning("LOCATION_API_KEY is not set - external API endpoints will reject all requests")
 
 # ============================================
 # Rate Limiting و Caching

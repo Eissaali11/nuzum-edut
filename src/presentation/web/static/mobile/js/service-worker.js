@@ -1,1 +1,0 @@
-importScripts('/static/mobile/js/service-worker.js');

@@ -87,7 +87,10 @@ csrf = CSRFProtect()
 
 # Create the Flask application
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "employee_management_secret")
+_secret = os.environ.get("SESSION_SECRET")
+if not _secret:
+    raise RuntimeError("CRITICAL: SESSION_SECRET environment variable is not set. Application cannot start without it.")
+app.secret_key = _secret
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
 init_rate_limiter(app)
 register_api_v2_guard(app)

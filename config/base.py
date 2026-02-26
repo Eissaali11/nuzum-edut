@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 class BaseConfig:
     """الإعدادات الأساسية المشتركة."""
 
-    SECRET_KEY = os.environ.get("SECRET_KEY") or "nuzm-dev-secret-change-in-production"
+    SECRET_KEY = os.environ.get("SECRET_KEY") or os.environ.get("SESSION_SECRET")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # الحد الأقصى لرفع الملفات (500 MB)
