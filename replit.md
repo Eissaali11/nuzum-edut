@@ -38,6 +38,12 @@ The project follows a **Layered Modular Architecture** transitioning from legacy
 - `LOCATION_API_KEY` must be set for external API access
 - CSRF enabled globally with exemptions for specific API blueprints
 
+## Attendance Module
+- Phase 2 modular architecture is active by default
+- Split files: `routes/attendance/attendance_stats.py`, `attendance_export.py`, `attendance_circles.py`, `attendance_core.py`, `attendance_api.py`, `attendance_project.py`, `attendance_management.py`
+- Legacy monolith `routes/legacy/_attendance_main.py` kept as fallback (set `ATTENDANCE_USE_MODULAR=0` to force legacy)
+- Controlled by `ATTENDANCE_USE_MODULAR` env var: `0`=legacy, `1`=Phase 1, `2`=Phase 2 (default)
+
 ## Database
 - PostgreSQL via `DATABASE_URL` environment variable
 - Models defined in `core/domain/models.py` and `modules/*/domain/models.py`
