@@ -39,10 +39,11 @@ The project follows a **Layered Modular Architecture** transitioning from legacy
 - CSRF enabled globally with exemptions for specific API blueprints
 
 ## Attendance Module
-- Phase 2 modular architecture is active by default
-- Split files: `routes/attendance/attendance_stats.py`, `attendance_export.py`, `attendance_circles.py`, `attendance_core.py`, `attendance_api.py`, `attendance_project.py`, `attendance_management.py`
+- Modular architecture is active by default (7 core files + 3 auxiliary)
+- Core files: `attendance_list.py`, `attendance_record.py`, `attendance_edit_delete.py`, `attendance_export.py`, `attendance_stats.py`, `attendance_circles.py`, `attendance_api.py`
+- Auxiliary blueprints (registered separately): `mass_attendance.py`, `attendance_dashboard.py`, `leave_management.py`
 - Legacy monolith `routes/legacy/_attendance_main.py` kept as fallback (set `ATTENDANCE_USE_MODULAR=0` to force legacy)
-- Controlled by `ATTENDANCE_USE_MODULAR` env var: `0`=legacy, `1`=Phase 1, `2`=Phase 2 (default)
+- Phase 1 and v1/ bridge files have been removed — only modular + legacy fallback remain
 
 ## Database
 - PostgreSQL via `DATABASE_URL` environment variable
