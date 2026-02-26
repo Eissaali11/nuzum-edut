@@ -139,11 +139,17 @@
                 </div>
                 <div class="col-md-2">
                     <div class="summary-item">
+                        <h6>إجمالي التأمينات (GOSI)</h6>
+                        <h4>{{ total_gosi|default(0)|round(2) }}</h4>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="summary-item">
                         <h6>إجمالي المكافآت</h6>
                         <h4>{{ total_bonus|round(2) }}</h4>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2">
                     <div class="summary-item net-salary">
                         <h6>إجمالي صافي الرواتب</h6>
                         <h4>{{ total_net|round(2) }}</h4>
@@ -221,6 +227,7 @@
                             <th class="bg-success bg-opacity-10"><i class="fas fa-award me-1"></i>حافز الدوام</th>
                             <th>البدلات</th>
                             <th>الخصومات</th>
+                            <th>التأمينات (GOSI)</th>
                             <th>المكافآت</th>
                             <th class="bg-info bg-opacity-10"><i class="fas fa-calendar-check me-1"></i>الحضور</th>
                             <th class="bg-danger bg-opacity-10"><i class="fas fa-calendar-times me-1"></i>الغياب</th>
@@ -250,6 +257,7 @@
                             </td>
                             <td class="salary-value">{{ salary.allowances|round(2)|float }}</td>
                             <td class="salary-value">{{ salary.deductions|round(2)|float }}</td>
+                            <td class="salary-value">{{ salary.gosi_deduction_display|default(0)|round(2)|float }}</td>
                             <td class="salary-value">{{ salary.bonus|round(2)|float }}</td>
                             <td class="text-center">
                                 {% if salary.attendance_calculated %}
@@ -282,6 +290,9 @@
                             </td>
                             <td>
                                 <input type="number" class="form-control form-control-sm salary-input" data-field="deductions" data-employee="{{ salary.employee.id }}" placeholder="الخصومات">
+                            </td>
+                            <td class="text-center">
+                                <small class="text-muted">يحسب عند الحفظ</small>
                             </td>
                             <td>
                                 <input type="number" class="form-control form-control-sm salary-input" data-field="bonus" data-employee="{{ salary.employee.id }}" placeholder="المكافآت">

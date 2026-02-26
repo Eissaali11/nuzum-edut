@@ -1,0 +1,9 @@
+DB: D:\nuzm\instance\nuzum_local.db
+Creating index ix_attendance_date_status if missing...
+Creating index ix_attendance_employee_date if missing...
+Indexes created/ensured.
+INDEX: (0, 'ix_attendance_employee_date', 0, 'c', 0)
+INDEX: (1, 'ix_attendance_date_status', 0, 'c', 0)
+INDEX: (2, 'idx_attendance_employee_date', 0, 'c', 0)
+INDEX: (3, 'idx_attendance_date', 0, 'c', 0)
+ROW_COUNT: 14240

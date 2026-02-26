@@ -221,6 +221,7 @@ modules/attendance_module/
 ### قراءة التوثيق
 1. **للبدء السريع:** اقرأ [QUICKSTART.md](QUICKSTART.md)
 2. **للشرح التفصيلي:** اقرأ [README_SOLUTION.txt](docs/guides/README_SOLUTION.txt)
+2.1 **دليل تقني لوحدة الحضور v1:** اقرأ [Attendance v1 Technical Manual](docs/architecture/attendance_v1.md)
 3. **لحل المشاكل:** اقرأ [STARTUP_GUIDE.md](docs/guides/STARTUP_GUIDE.md)
 
 ---

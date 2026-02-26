@@ -8,7 +8,7 @@ from typing import Any, Dict
 from flask import Blueprint, current_app, jsonify, request
 from flask_login import login_required
 
-from app.utils.status_validator import StatusValidator
+from utils.status_validator import StatusValidator
 from core.extensions import db
 from modules.vehicles.application.document_service import DocumentService
 from utils.audit_logger import log_activity

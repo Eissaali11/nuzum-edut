@@ -35,35 +35,8 @@ from whatsapp_client import WhatsAppWrapper
 from core.api_v2_security import init_rate_limiter, register_api_v2_guard
 # ... استيراد مكتبات أخرى ...
 
-# Set up structured logging (JSON)
-class JsonLogFormatter(logging.Formatter):
-    def format(self, record):
-        payload = {
-            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-            "level": record.levelname,
-            "logger": record.name,
-            "message": record.getMessage(),
-        }
-        if hasattr(record, "pathname"):
-            payload["module"] = record.pathname
-        if hasattr(record, "lineno"):
-            payload["line"] = record.lineno
-        if record.exc_info:
-            payload["exception"] = self.formatException(record.exc_info)
-        return json.dumps(payload, ensure_ascii=False)
-
-
-def configure_structured_logging():
-    log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
-    root_logger = logging.getLogger()
-    root_logger.setLevel(log_level)
-    handler = logging.StreamHandler()
-    handler.setFormatter(JsonLogFormatter())
-    root_logger.handlers = [handler]
-
-
-configure_structured_logging()
-logger = logging.getLogger(__name__)
+from core.logging_config import init_logging
+logger = init_logging()
 
 # إنشاء كائن واتساب واحد عند بدء تشغيل التطبيق
 # سيقوم الكلاس تلقائياً بقراءة المتغيرات من ملف .env
@@ -119,12 +92,11 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for
 init_rate_limiter(app)
 register_api_v2_guard(app)
 
+from core.error_handlers import init_error_handlers
+init_error_handlers(app)
 
-@app.errorhandler(500)
-def handle_internal_error(error):
-    logger.error("Internal server error on %s", request.path)
-    traceback.print_exc()
-    return str(error), 500
+
+
 
 # Prefer module templates over global templates
 vehicles_templates_path = os.path.join(
@@ -150,192 +122,8 @@ app.jinja_loader = ChoiceLoader([
 app.config['WTF_CSRF_ENABLED'] = True
 app.config['WTF_CSRF_CHECK_DEFAULT'] = False  # تعطيل التحقق التلقائي من CSRF
 
-# Configure database connection with flexible support for different databases
-database_url = os.environ.get("DATABASE_URL")
-APP_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-def _sqlite_has_tables(db_path, required_tables):
-    """تحقق سريع أن ملف SQLite يحتوي الجداول المطلوبة."""
-    try:
-        normalized_path = db_path
-        if not os.path.isabs(normalized_path):
-            normalized_path = os.path.abspath(os.path.join(APP_BASE_DIR, normalized_path))
-
-        conn = sqlite3.connect(normalized_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        existing_tables = {row[0] for row in cursor.fetchall()}
-        conn.close()
-        return all(table in existing_tables for table in required_tables)
-    except Exception:
-        return False
-
-
-def _sqlite_uri_to_path(sqlite_uri):
-    """تحويل URI من شكل sqlite:///path.db إلى مسار ملف محلي."""
-    if not sqlite_uri.startswith("sqlite:///"):
-        return None
-    path = sqlite_uri.replace("sqlite:///", "", 1).replace('/', os.sep)
-    if not os.path.isabs(path):
-        path = os.path.abspath(os.path.join(APP_BASE_DIR, path))
-    return path
-
-
-def _build_sqlite_uri(file_path):
-    absolute_path = file_path
-    if not os.path.isabs(absolute_path):
-        absolute_path = os.path.abspath(os.path.join(APP_BASE_DIR, absolute_path))
-    return f"sqlite:///{absolute_path.replace(os.sep, '/')}"
-
-
-def _try_repair_sqlite(target_db_path, source_db_path):
-    """نسخ قاعدة SQLite صالحة إلى المسار المستهدف عند الحاجة."""
-    try:
-        if not target_db_path or not source_db_path:
-            return False
-
-        if not os.path.exists(source_db_path):
-            return False
-
-        target_dir = os.path.dirname(target_db_path)
-        if target_dir:
-            os.makedirs(target_dir, exist_ok=True)
-
-        shutil.copy2(source_db_path, target_db_path)
-        return True
-    except Exception as copy_error:
-        logger.warning(f"SQLite repair copy failed: {copy_error}")
-        return False
-
-
-
-# If no DATABASE_URL is provided, use SQLite as fallback
-if not database_url:
-    required_tables = ['employee', 'user']
-    candidate_sqlite_files = [
-        os.path.join('instance', 'nuzum_local.db'),
-        os.path.join('database', 'nuzum.db'),
-        os.path.join('instance', 'nuzm_dev.db'),
-    ]
-
-    selected_sqlite = None
-    for sqlite_file in candidate_sqlite_files:
-        if os.path.exists(sqlite_file) and _sqlite_has_tables(sqlite_file, required_tables):
-            selected_sqlite = sqlite_file
-            break
-
-    if not selected_sqlite:
-        for sqlite_file in candidate_sqlite_files:
-            if os.path.exists(sqlite_file):
-                selected_sqlite = sqlite_file
-                break
-
-    if not selected_sqlite:
-        os.makedirs('database', exist_ok=True)
-        selected_sqlite = os.path.join('database', 'nuzum.db')
-
-    database_url = _build_sqlite_uri(selected_sqlite)
-    logger.info(f"Using SQLite database: {selected_sqlite}")
-else:
-    logger.info(f"Using database: {database_url.split('@')[0]}@***")
-
-    # حماية إضافية: إذا كان DATABASE_URL يشير إلى SQLite غير صالح، نعيد التوجيه لملف SQLite صالح.
-    if database_url.startswith("sqlite:///"):
-        required_tables = ['employee', 'user']
-        configured_sqlite_path = _sqlite_uri_to_path(database_url)
-
-        if configured_sqlite_path and not _sqlite_has_tables(configured_sqlite_path, required_tables):
-            instance_db_path = os.path.join('instance', 'nuzum_local.db')
-            if _sqlite_has_tables(instance_db_path, required_tables):
-                if _try_repair_sqlite(configured_sqlite_path, instance_db_path):
-                    database_url = _build_sqlite_uri(configured_sqlite_path)
-                    logger.warning(
-                        f"Configured SQLite database '{configured_sqlite_path}' missing required tables; "
-                        f"synced from '{instance_db_path}'"
-                    )
-                    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-                else:
-                    logger.warning(
-                        f"Configured SQLite database '{configured_sqlite_path}' missing required tables; "
-                        "sync attempt failed"
-                    )
-
-            fallback_candidates = [
-                configured_sqlite_path,
-                os.path.join('instance', 'nuzum_local.db'),
-                os.path.join('database', 'nuzum.db'),
-                os.path.join('instance', 'nuzm_dev.db'),
-            ]
-
-            repaired_sqlite = None
-            for sqlite_file in fallback_candidates:
-                if os.path.exists(sqlite_file) and _sqlite_has_tables(sqlite_file, required_tables):
-                    repaired_sqlite = sqlite_file
-                    break
-
-            if repaired_sqlite:
-                database_url = _build_sqlite_uri(repaired_sqlite)
-                logger.warning(
-                    f"Configured SQLite database '{configured_sqlite_path}' missing required tables; "
-                    f"switched to '{repaired_sqlite}'"
-                )
-
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-
-# Configure engine options based on database type
-if database_url.startswith("postgresql://") or database_url.startswith("postgres://"):
-    # PostgreSQL optimized settings
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_recycle": 300,
-        "pool_pre_ping": True,
-        "pool_timeout": 30,
-        "pool_size": 10,
-        "max_overflow": 5,
-        "pool_reset_on_return": "rollback",
-        "connect_args": {
-            "connect_timeout": 10,
-            "keepalives": 1,
-            "keepalives_idle": 30,
-            "keepalives_interval": 10,
-            "keepalives_count": 5,
-        }
-    }
-elif database_url.startswith("mysql://"):
-    # MySQL optimized settings
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_recycle": 300,
-        "pool_pre_ping": True,
-        "pool_timeout": 30,
-        "pool_size": 5,
-        "max_overflow": 3,
-        "connect_args": {
-            "connect_timeout": 10,
-            "charset": "utf8mb4",
-        }
-    }
-else:
-    # SQLite settings (minimal connection pooling)
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_timeout": 20,
-        "pool_recycle": -1,
-        "pool_pre_ping": True,
-        "connect_args": {
-            "check_same_thread": False,
-            "timeout": 20,
-        }
-    }
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-# إعدادات لحجم الطلبات والملفات المرفوعة
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB - لدعم رفع عدد كبير من الصور
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
-
-# Add execution options only for PostgreSQL/MySQL
-if not database_url.startswith("sqlite"):
-    if "execution_options" not in app.config["SQLALCHEMY_ENGINE_OPTIONS"]:
-        app.config["SQLALCHEMY_ENGINE_OPTIONS"]["execution_options"] = {}
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"]["execution_options"]["isolation_level"] = "READ COMMITTED"
+from core.database_config import init_db_config
+init_db_config(app)
 
 # Provide default values for uploads and other configurations
 app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024  # 500 MB - لدعم رفع عدد كبير من الصور
@@ -365,6 +153,16 @@ csrf.init_app(app)
 # Initialize Gzip Compression
 Compress(app)
 
+# Initialize Extensions & Utilities
+from core.jinja_filters import init_filters
+from core.context_processors import init_context_processors
+from core.scheduler import init_scheduler
+
+init_filters(app)
+init_context_processors(app, csrf)
+init_scheduler(app)
+
+
 # تكوين Gzip Compression
 app.config['COMPRESS_LEVEL'] = 6  # مستوى الضغط (1-9، 6 متوازن)
 app.config['COMPRESS_MIN_SIZE'] = 1024  # ضغط الملفات > 1KB
@@ -391,104 +189,7 @@ def load_user(user_id):
     from models import User
     return User.query.get(int(user_id))
 
-# إضافة فلتر nl2br لتحويل السطور الجديدة إلى وسوم HTML <br>
-from markupsafe import Markup
 
-@app.template_filter('nl2br')
-def nl2br_filter(s):
-    if s:
-        return Markup(s.replace('\n', '<br>'))
-    return s
-
-# إضافة فلتر لتنسيق التاريخ بشكل آمن
-@app.template_filter('format_date')
-def format_date_filter(date, format='%Y-%m-%d'):
-    """
-    فلتر آمن لتنسيق التواريخ مع التعامل مع القيم الفارغة
-
-    :param date: كائن التاريخ (يمكن أن يكون None)
-    :param format: صيغة التنسيق (افتراضياً YYYY-MM-DD)
-    :return: التاريخ المنسق أو نص بديل
-    """
-    if date:
-        return date.strftime(format)
-    return ""
-
-# إضافة فلتر لعرض التاريخ مع نص بديل
-@app.template_filter('display_date')
-def display_date_filter(date, format='%Y-%m-%d', default="غير محدد"):
-    """
-    عرض التاريخ بشكل منسق أو نص بديل إذا كان التاريخ فارغاً
-
-    :param date: كائن التاريخ (يمكن أن يكون None)
-    :param format: صيغة التنسيق (افتراضياً YYYY-MM-DD)
-    :param default: النص البديل للعرض
-    :return: التاريخ المنسق أو النص البديل
-    """
-    if date:
-        return date.strftime(format)
-    return default
-
-# إضافة فلتر لحساب الأيام المتبقية من تاريخ معين
-@app.template_filter('days_remaining')
-def days_remaining_filter(date, from_date=None):
-    """
-    حساب عدد الأيام المتبقية من التاريخ المحدد حتى اليوم
-
-    :param date: تاريخ الانتهاء (يمكن أن يكون None)
-    :param from_date: تاريخ البداية (افتراضياً اليوم)
-    :return: عدد الأيام المتبقية أو None إذا كان التاريخ غير محدد
-    """
-    if not date:
-        return None
-
-    if not from_date:
-        from_date = datetime.now().date()
-    elif hasattr(from_date, 'date'):
-        from_date = from_date.date()
-
-    if hasattr(date, 'date'):
-        date = date.date()
-
-    return (date - from_date).days
-
-# Context processor to add variables to all templates
-@app.context_processor
-def inject_now():
-    return {
-        'now': datetime.now(),
-        'firebase_api_key': app.config['FIREBASE_API_KEY'],
-        'firebase_project_id': app.config['FIREBASE_PROJECT_ID'],
-        'firebase_app_id': app.config['FIREBASE_APP_ID']
-    }
-
-# تصحيح مشكلة CSRF token في القوالب
-@app.context_processor
-def inject_csrf_token():
-    """إضافة csrf_token إلى جميع القوالب"""
-    def get_csrf_token():
-        return csrf._get_csrf_token()
-
-    return {'csrf_token': get_csrf_token}
-
-# إضافة نظام الصلاحيات إلى جميع القوالب
-@app.context_processor
-def inject_permissions():
-    """إضافة دوال التحقق من الصلاحيات إلى جميع القوالب"""
-    from utils.permissions_service import get_permissions_context
-    return get_permissions_context()
-
-
-@app.context_processor
-def inject_endpoint_helpers():
-    """إضافة مساعدات endpoints للقوالب (متوافق مع layout الحديث)."""
-    def endpoint_exists(endpoint):
-        try:
-            return endpoint in current_app.view_functions
-        except Exception:
-            return False
-
-    return {'endpoint_exists': endpoint_exists}
 
 # مسار الجذر الرئيسي للتطبيق مع توجيه تلقائي حسب نوع الجهاز
 @app.route('/')
@@ -540,58 +241,11 @@ def root():
     else:
         return redirect(url_for('auth.login'))
 
-# إضافة route مختصر للتوافق مع الروابط القديمة
-@app.route('/login')
-def login_redirect():
-    """إعادة توجيه من /login إلى /auth/login للتوافق"""
-    return redirect(url_for('auth.login'))
 
 
-@app.route('/leave/manager')
-def legacy_leave_manager_redirect():
-    """توافق مع الروابط القديمة: /leave/manager -> /leaves/manager"""
-    return redirect(url_for('leaves.manager_dashboard'))
 
 
-@app.route('/leave/balances')
-def legacy_leave_balances_redirect():
-    """توافق مع الروابط القديمة: /leave/balances -> /leaves/balances"""
-    return redirect(url_for('leaves.leave_balances'))
 
-
-@app.route('/leave/employee')
-def legacy_leave_employee_redirect():
-    """توافق مع الروابط القديمة: /leave/employee -> /leaves/employee"""
-    return redirect(url_for('leaves.employee_view'))
-
-
-@app.route('/payroll_management/dashboard')
-@app.route('/payroll-management/dashboard')
-def legacy_payroll_dashboard_redirect():
-    """توافق مع الروابط القديمة: payroll_management -> /payroll/dashboard"""
-    return redirect(url_for('payroll.dashboard'))
-
-# معالج أخطاء الطلبات الكبيرة
-@app.errorhandler(413)
-def request_entity_too_large(error):
-    """معالجة خطأ الطلب الكبير"""
-    if request.endpoint and 'mobile' in request.endpoint:
-        # للجوال: عرض رسالة خطأ مناسبة
-        from flask import flash, redirect, url_for
-        flash('حجم البيانات المرسلة كبير جداً. يرجى تقليل عدد الصور أو حجمها.', 'danger')
-        return redirect(url_for('mobile.index'))
-    else:
-        # للويب: عرض صفحة خطأ
-        return render_template('error.html', 
-                             error_code=413,
-                             error_message='حجم الطلب كبير جداً. يرجى تقليل حجم البيانات المرسلة.'), 413
-
-# Google Search Console verification route
-@app.route('/googleab59b7c3bfbdd81d.html')
-def google_verification():
-    """عرض ملف التحقق من Google Search Console"""
-    from flask import Response
-    return Response('google-site-verification: googleab59b7c3bfbdd81d.html', mimetype='text/html')
 
 # تعطيل استخدام WeasyPrint مؤقتاً
 WEASYPRINT_ENABLED = False
@@ -602,248 +256,12 @@ with app.app_context():
     import models  # noqa: F401
     import models_accounting  # noqa: F401
 
-    # Import and register route blueprints
-    from routes.dashboard import dashboard_bp
-    from routes.employees import employees_bp
-    from routes.departments import departments_bp
-    from routes.attendance import attendance_bp
-    from routes.salaries import salaries_bp
-    from routes.documents import documents_bp
-    from routes.reports import reports_bp
-    from routes.auth import auth_bp
-    from modules.vehicles.presentation.web.main_routes import get_vehicles_blueprint
-    from routes.fees_costs import fees_costs_bp
-    from routes.api import api_bp
-    from routes.enhanced_reports import enhanced_reports_bp
-    from routes.mobile import mobile_bp
-    from routes.users import users_bp
-    from routes.mass_attendance import mass_attendance_bp
-    from routes.attendance_dashboard import attendance_dashboard_bp
-    from routes.e_invoicing import e_invoicing_bp
-
-    # Workshop reports now using ReportLab (no GTK dependency)
-    from modules.vehicles.presentation.web.workshop_reports import register_workshop_reports_routes
-    from flask import Blueprint as FlaskBlueprint
-    workshop_reports_bp = FlaskBlueprint('workshop_reports', __name__)
-    register_workshop_reports_routes(workshop_reports_bp)
-
-    from routes.employee_portal import employee_portal_bp
-    from routes.insights import insights_bp
-    from routes.external_safety import external_safety_bp
-    from routes.mobile_devices import mobile_devices_bp
-    from routes.operations import operations_bp
-    from routes.sim_management import sim_management_bp
-    from routes.device_management import device_management_bp
-    from routes.device_assignment import device_assignment_bp
-    from routes.accounting import accounting_bp
-    from routes.accounting_extended import accounting_ext_bp
-    from routes.analytics_simple import analytics_simple_bp
-    from modules.vehicles.presentation.web.vehicle_operations import vehicle_operations_bp
-    from routes.integrated_simple import integrated_bp
-    from routes.ai_services_simple import ai_services_bp
-    from routes.email_queue import email_queue_bp
-    from routes.voicehub import voicehub_bp
-    from routes.properties import properties_bp
-    from routes.api_external import api_external_bp
-    from routes.geofences import geofences_bp
-    from routes.google_drive_settings import google_drive_settings_bp
-    from routes.employee_requests import employee_requests
-    from routes.api_employee_requests import api_employee_requests
-    from routes.api_external_safety import api_external_safety
-    documents_api_v2_bp = None
-    try:
-        from api.v2.documents_api import documents_api_v2_bp as _documents_api_v2_bp
-        documents_api_v2_bp = _documents_api_v2_bp
-    except ImportError:
-        try:
-            import importlib.util
-            from pathlib import Path
-
-            module_path = Path(__file__).resolve().parent / 'api' / 'v2' / 'documents_api.py'
-            spec = importlib.util.spec_from_file_location('nuzm_app_documents_api_v2', module_path)
-            if spec and spec.loader:
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-                documents_api_v2_bp = module.documents_api_v2_bp
-        except Exception:
-            documents_api_v2_bp = None
-    from routes.drive_browser import drive_browser_bp
-    from routes.attendance_api import attendance_api_bp
-    from routes.api_accident_reports import api_accident_reports
-    from routes.leave_management import leave_bp
-    from routes.payroll_management import payroll_bp
-    # database_backup_bp import moved outside app_context block
-
-    # تعطيل حماية CSRF لطرق معينة
-    csrf.exempt(voicehub_bp)
-    csrf.exempt(auth_bp)
-
-    csrf.exempt(api_external_bp)  # API خارجي بدون CSRF
-    csrf.exempt(api_employee_requests)  # API طلبات الموظفين
-    csrf.exempt(api_external_safety)  # API فحص السلامة الخارجية
-    csrf.exempt(api_accident_reports)  # API تقارير الحوادث
-    csrf.exempt(attendance_api_bp)  # API الحضور بدون CSRF
-    if documents_api_v2_bp is not None:
-        csrf.exempt(documents_api_v2_bp)  # API v2 المستندات بدون CSRF
-    app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
-    app.register_blueprint(documents_refactored_bp)
-    app.register_blueprint(api_documents_v2_bp)
-    app.register_blueprint(employees_bp, url_prefix='/employees')
-    app.register_blueprint(departments_bp, url_prefix='/departments')
-    app.register_blueprint(attendance_bp, url_prefix='/attendance')
-    app.register_blueprint(salaries_bp, url_prefix='/salaries')
-    app.register_blueprint(documents_bp, url_prefix='/documents')
-    app.register_blueprint(reports_bp, url_prefix='/reports')
-    app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(get_vehicles_blueprint(), url_prefix='/vehicles')
-    app.register_blueprint(fees_costs_bp, url_prefix='/fees-costs')
-    app.register_blueprint(api_bp, url_prefix='/api')
-    app.register_blueprint(enhanced_reports_bp, url_prefix='/enhanced-reports')
-    app.register_blueprint(mobile_bp, url_prefix='/mobile')
-    app.register_blueprint(users_bp, url_prefix='/users')
-    app.register_blueprint(mass_attendance_bp, url_prefix='/mass-attendance')
-    app.register_blueprint(attendance_dashboard_bp, url_prefix='/attendance-dashboard')
-    app.register_blueprint(e_invoicing_bp, url_prefix="/e-invoicing")
-    app.register_blueprint(workshop_reports_bp, url_prefix='/workshop-reports')
-    app.register_blueprint(employee_portal_bp, url_prefix='/employee-portal')
-    app.register_blueprint(insights_bp, url_prefix='/insights')
-    app.register_blueprint(external_safety_bp, url_prefix='/external-safety')
-    app.register_blueprint(mobile_devices_bp, url_prefix='/mobile-devices')
-    app.register_blueprint(operations_bp, url_prefix='/operations')
-    app.register_blueprint(sim_management_bp, url_prefix='/sim-management')
-    app.register_blueprint(device_management_bp, url_prefix='/device-management')
-    app.register_blueprint(device_assignment_bp, url_prefix='/device-assignment')
-    app.register_blueprint(vehicle_operations_bp, url_prefix='/vehicle-operations')
-    app.register_blueprint(accounting_bp, url_prefix="/accounting")
-    app.register_blueprint(accounting_ext_bp, url_prefix="/accounting")
-    app.register_blueprint(analytics_simple_bp)
-    app.register_blueprint(integrated_bp, url_prefix='/integrated')
-    app.register_blueprint(voicehub_bp, url_prefix="/voicehub")
-    app.register_blueprint(ai_services_bp, url_prefix='/ai')
-    app.register_blueprint(email_queue_bp)
-    app.register_blueprint(api_external_bp)  # API خارجي لتتبع المواقع (محسّن للأداء)
-    app.register_blueprint(properties_bp, url_prefix='/properties')
-    app.register_blueprint(google_drive_settings_bp)  # إعدادات Google Drive
-    app.register_blueprint(geofences_bp)  # الدوائر الجغرافية
-    
-    # Analytics & Business Intelligence Blueprint
-    from routes.analytics import analytics_bp
-    app.register_blueprint(analytics_bp)
-    # Fallback analytics routes if blueprint endpoints are missing
-    if "analytics.dashboard" not in app.view_functions:
-        @login_required
-        def _analytics_dashboard_fallback():
-            if hasattr(current_user, "is_admin") and not current_user.is_admin:
-                return render_template("pages/error.html", code=403, message="غير مصرح"), 403
-            return render_template(
-                "analytics/dashboard.html",
-                kpis={},
-                page_title="Analytics & Business Intelligence",
-            )
-
-        app.add_url_rule(
-            "/analytics/dashboard",
-            "analytics.dashboard",
-            _analytics_dashboard_fallback,
-        )
-
-    if "analytics.dimensions_dashboard" not in app.view_functions:
-        @login_required
-        def _analytics_dimensions_fallback():
-            if hasattr(current_user, "is_admin") and not current_user.is_admin:
-                return render_template("pages/error.html", code=403, message="غير مصرح"), 403
-            return render_template(
-                "analytics/dimensions.html",
-                page_title="Dimensions Studio",
-            )
-
-        app.add_url_rule(
-            "/analytics/dimensions",
-            "analytics.dimensions_dashboard",
-            _analytics_dimensions_fallback,
-        )
-    app.register_blueprint(employee_requests)  # طلبات الموظفين
-    app.register_blueprint(api_employee_requests)  # API طلبات الموظفين
-    if documents_api_v2_bp is not None:
-        app.register_blueprint(documents_api_v2_bp)  # API v2 المستندات
-    app.register_blueprint(api_external_safety)  # API فحص السلامة الخارجية
-    app.register_blueprint(drive_browser_bp, url_prefix='/drive')  # مستعرض Google Drive
-    app.register_blueprint(attendance_api_bp)  # API الحضور
-    app.register_blueprint(api_accident_reports)  # API تقارير حوادث السيارات
-    app.register_blueprint(payroll_bp, url_prefix='/payroll')
-    app.register_blueprint(leave_bp, url_prefix='/leaves')
-    # database_backup_bp registration moved outside app_context block
-    
-    # استيراد وتسجيل مسار صفحة الهبوط - مسار منفصل عن النظام
-    from routes.landing import landing_bp
-    app.register_blueprint(landing_bp)
-    
-    # استيراد وتسجيل لوحة التحكم الإدارية
-    from routes.admin_dashboard import admin_dashboard_bp
-    app.register_blueprint(admin_dashboard_bp, url_prefix='/admin')
-    
-    # استيراد وتسجيل إدارة صفحة الهبوط
-    from routes.landing_admin import landing_admin_bp
-    app.register_blueprint(landing_admin_bp, url_prefix='/landing-admin')
-    
-    # استيراد وتسجيل نظام الإشعارات
-    from routes.notifications import notifications_bp
-    app.register_blueprint(notifications_bp)
-    
-    # Power BI Dashboard
-    from routes.powerbi_dashboard import powerbi_bp
-    app.register_blueprint(powerbi_bp)
-
-    # Auto-register any remaining blueprints from the 12-category structure
-    from routes import register_routes
-    register_routes(app)
+    # Register all blueprints
+    from routes.blueprint_registry import register_all_blueprints
+    register_all_blueprints(app, csrf)
     
 
-    @app.route('/uploads/<path:filename>')
-    def uploaded_file(filename):
-        from flask import send_from_directory, abort, Response
-        from utils.storage_helper import download_image
-        import os
-        
-        # البحث أولاً في uploads
-        file_path = os.path.join("uploads", filename)
-        if os.path.exists(file_path):
-            dir_parts = filename.split("/")
-            if len(dir_parts) > 1:
-                subdir = "/".join(dir_parts[:-1])
-                file_name = dir_parts[-1]
-                return send_from_directory(f"uploads/{subdir}", file_name)
-            else:
-                return send_from_directory("uploads", filename)
-        
-        # البحث في static/uploads كنسخة احتياطية
-        static_file_path = os.path.join("static", "uploads", filename)
-        if os.path.exists(static_file_path):
-            dir_parts = filename.split("/")
-            if len(dir_parts) > 1:
-                subdir = "/".join(dir_parts[:-1])
-                file_name = dir_parts[-1]
-                return send_from_directory(f"static/uploads/{subdir}", file_name)
-            else:
-                return send_from_directory("static/uploads", filename)
-        
-        # البحث في Object Storage
-        image_data = download_image(filename)
-        if image_data:
-            ext = filename.lower().rsplit('.', 1)[-1]
-            content_types = {
-                'jpg': 'image/jpeg', 'jpeg': 'image/jpeg',
-                'png': 'image/png', 'gif': 'image/gif',
-                'webp': 'image/webp', 'svg': 'image/svg+xml'
-            }
-            content_type = content_types.get(ext, 'image/jpeg')
-            return Response(image_data, mimetype=content_type)
-        
-        # في حالة عدم وجود الصورة، إرجاع صورة بديلة
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
-            return send_from_directory('static/images', 'image-not-found.svg')
-        
-        abort(404)
+
 
     @app.route('/static/uploads/<path:filename>')
     def static_uploaded_file(filename):
@@ -1019,104 +437,9 @@ def make_all_users_admins_command():
 
 
 
-# ================== صفحات المعلومات الثابتة ==================
-
-@app.route('/about')
-def about():
-    """صفحة من نحن - لتوضيح طبيعة النظام لمحركات البحث"""
-    return render_template('about.html')
-
-@app.route('/privacy')
-def privacy():
-    """صفحة سياسة الخصوصية - لتوضيح استخدام البيانات"""
-    return render_template('privacy.html')
-
-@app.route('/contact')
-def contact():
-    """صفحة اتصل بنا - معلومات الشركة"""
-    return render_template('contact.html')
 
 
-# ================== نهاية صفحات المعلومات الثابتة ==================
 
-# وظيفة حذف البيانات القديمة (أقدم من 14 ساعة)
-def cleanup_old_location_data():
-    """حذف مواقع الموظفين الأقدم من 14 ساعة"""
-    with app.app_context():
-        from models import EmployeeLocation
-        from datetime import datetime, timedelta, timezone
-        
-        try:
-            cutoff_time = datetime.now(timezone.utc) - timedelta(hours=14)
-            old_locations = EmployeeLocation.query.filter(
-                EmployeeLocation.recorded_at < cutoff_time
-            ).delete()
-            
-            db.session.commit()
-            
-            if old_locations > 0:
-                logger.info(f"تم حذف {old_locations} موقع قديم")
-            
-            return old_locations
-        except Exception as e:
-            logger.error(f"خطأ في حذف البيانات القديمة: {str(e)}")
-            db.session.rollback()
-            return 0
-
-# وظيفة حذف أحداث الدوائر الجغرافية القديمة (أقدم من 24 ساعة)
-def cleanup_old_geofence_events():
-    """حذف جلسات وأحداث الدوائر الجغرافية الأقدم من 24 ساعة"""
-    with app.app_context():
-        from models import GeofenceEvent, GeofenceSession
-        from datetime import datetime, timedelta, timezone
-        from sqlalchemy import update
-        
-        try:
-            cutoff_time = datetime.now(timezone.utc) - timedelta(hours=24)
-            
-            # أولاً: فصل الـ FK constraints - تعيين entry_event_id و exit_event_id إلى NULL
-            db.session.execute(
-                update(GeofenceSession).where(
-                    GeofenceSession.entry_time < cutoff_time
-                ).values(entry_event_id=None, exit_event_id=None)
-            )
-            
-            # حذف جميع الـ sessions التي دخلت قبل 24 ساعة
-            old_sessions = db.session.query(GeofenceSession).filter(
-                GeofenceSession.entry_time < cutoff_time
-            ).delete()
-            
-            # حذف الأحداث القديمة
-            old_events = db.session.query(GeofenceEvent).filter(
-                GeofenceEvent.recorded_at < cutoff_time
-            ).delete()
-            
-            db.session.commit()
-            
-            if old_events > 0 or old_sessions > 0:
-                logger.info(f"✅ حذف {old_sessions} جلسة و {old_events} حدث دائرة جغرافية قديمة (> 24 ساعة)")
-            
-            return old_events + old_sessions
-        except Exception as e:
-            logger.error(f"خطأ في حذف أحداث الدوائر الجغرافية: {str(e)}")
-            db.session.rollback()
-            return 0
-
-# تشغيل تنظيف البيانات عند بدء التطبيق وكل 6 ساعات
-import atexit
-from apscheduler.schedulers.background import BackgroundScheduler
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=cleanup_old_location_data, trigger="interval", hours=6)
-scheduler.add_job(func=cleanup_old_geofence_events, trigger="interval", hours=24)
-scheduler.start()
-
-# تشغيل التنظيف عند بدء التطبيق
-cleanup_old_location_data()
-cleanup_old_geofence_events()
-
-# إيقاف المجدول عند إيقاف التطبيق
-atexit.register(lambda: scheduler.shutdown())
 
 # تشغيل خادم Flask عند تنفيذ الملف مباشرة
 if __name__ == "__main__":

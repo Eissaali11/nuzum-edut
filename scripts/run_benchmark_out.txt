@@ -1,0 +1,46 @@
+{"timestamp": "2026-02-26T13:25:08.742642Z", "level": "WARNING", "logger": "core.logging_config", "message": "WhatsApp service not initialized: ┘è╪▒╪ش┘ë ╪د┘╪ز╪ث┘â╪» ┘à┘ ╪ز╪╣┘è┘è┘ WHATSAPP_ACCESS_TOKEN ┘ê WHATSAPP_PHONE_NUMBER_ID ┘┘è ┘à┘┘ .env", "module": "D:\\nuzm\\app.py", "line": 49}
+{"timestamp": "2026-02-26T13:25:08.742772Z", "level": "INFO", "logger": "core.logging_config", "message": "You can set WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID in .env to enable WhatsApp features", "module": "D:\\nuzm\\app.py", "line": 50}
+{"timestamp": "2026-02-26T13:25:11.629038Z", "level": "INFO", "logger": "core.database_config", "message": "Using database: sqlite:///nuzum_local.db@***", "module": "D:\\nuzm\\core\\database_config.py", "line": 90}
+{"timestamp": "2026-02-26T13:25:11.831332Z", "level": "INFO", "logger": "apscheduler.scheduler", "message": "Adding job tentatively -- it will be properly scheduled when the scheduler starts", "module": "D:\\nuzm\\venv\\Lib\\site-packages\\apscheduler\\schedulers\\base.py", "line": 507}
+{"timestamp": "2026-02-26T13:25:11.831594Z", "level": "INFO", "logger": "apscheduler.scheduler", "message": "Adding job tentatively -- it will be properly scheduled when the scheduler starts", "module": "D:\\nuzm\\venv\\Lib\\site-packages\\apscheduler\\schedulers\\base.py", "line": 507}
+{"timestamp": "2026-02-26T13:25:11.831908Z", "level": "INFO", "logger": "apscheduler.scheduler", "message": "Added job \"init_scheduler.<locals>.<lambda>\" to job store \"default\"", "module": "D:\\nuzm\\venv\\Lib\\site-packages\\apscheduler\\schedulers\\base.py", "line": 1090}
+{"timestamp": "2026-02-26T13:25:11.832067Z", "level": "INFO", "logger": "apscheduler.scheduler", "message": "Added job \"init_scheduler.<locals>.<lambda>\" to job store \"default\"", "module": "D:\\nuzm\\venv\\Lib\\site-packages\\apscheduler\\schedulers\\base.py", "line": 1090}
+{"timestamp": "2026-02-26T13:25:11.832156Z", "level": "INFO", "logger": "apscheduler.scheduler", "message": "Scheduler started", "module": "D:\\nuzm\\venv\\Lib\\site-packages\\apscheduler\\schedulers\\base.py", "line": 214}
+{"timestamp": "2026-02-26T13:25:13.848004Z", "level": "INFO", "logger": "modules.vehicles.presentation.web.main_routes", "message": "OK Handover routes registered successfully", "module": "D:\\nuzm\\modules\\vehicles\\presentation\\web\\main_routes.py", "line": 35}
+{"timestamp": "2026-02-26T13:25:13.849805Z", "level": "INFO", "logger": "modules.vehicles.presentation.web.main_routes", "message": "OK Workshop routes registered successfully", "module": "D:\\nuzm\\modules\\vehicles\\presentation\\web\\main_routes.py", "line": 49}
+{"timestamp": "2026-02-26T13:25:13.849886Z", "level": "INFO", "logger": "modules.vehicles.presentation.web.main_routes", "message": "OK Workshop reports routes registered successfully", "module": "D:\\nuzm\\modules\\vehicles\\presentation\\web\\main_routes.py", "line": 63}
+{"timestamp": "2026-02-26T13:25:13.852641Z", "level": "INFO", "logger": "modules.vehicles.presentation.web.main_routes", "message": "OK Accident routes registered successfully", "module": "D:\\nuzm\\modules\\vehicles\\presentation\\web\\main_routes.py", "line": 77}
+{"timestamp": "2026-02-26T13:25:13.855205Z", "level": "INFO", "logger": "modules.vehicles.presentation.web.main_routes", "message": "OK Main vehicle routes registered successfully", "module": "D:\\nuzm\\modules\\vehicles\\presentation\\web\\main_routes.py", "line": 91}
+{"timestamp": "2026-02-26T13:25:13.860167Z", "level": "INFO", "logger": "modules.vehicles.presentation.web.main_routes", "message": "OK Vehicle extra routes registered successfully", "module": "D:\\nuzm\\modules\\vehicles\\presentation\\web\\main_routes.py", "line": 105}
+{"timestamp": "2026-02-26T13:25:13.860250Z", "level": "INFO", "logger": "modules.vehicles.presentation.web.main_routes", "message": "============================================================", "module": "D:\\nuzm\\modules\\vehicles\\presentation\\web\\main_routes.py", "line": 116}
+{"timestamp": "2026-02-26T13:25:13.860294Z", "level": "INFO", "logger": "modules.vehicles.presentation.web.main_routes", "message": "Vehicles Blueprint Route Summary:", "module": "D:\\nuzm\\modules\\vehicles\\presentation\\web\\main_routes.py", "line": 117}
+{"timestamp": "2026-02-26T13:25:13.860335Z", "level": "INFO", "logger": "modules.vehicles.presentation.web.main_routes", "message": "Total routes registered: N/A", "module": "D:\\nuzm\\modules\\vehicles\\presentation\\web\\main_routes.py", "line": 118}
+{"timestamp": "2026-02-26T13:25:13.860373Z", "level": "INFO", "logger": "modules.vehicles.presentation.web.main_routes", "message": "============================================================", "module": "D:\\nuzm\\modules\\vehicles\\presentation\\web\\main_routes.py", "line": 119}
+{"timestamp": "2026-02-26T13:25:14.161884Z", "level": "INFO", "logger": "core.logging_config", "message": "Creating database tables...", "module": "D:\\nuzm\\app.py", "line": 344}
+{"timestamp": "2026-02-26T13:25:14.172643Z", "level": "INFO", "logger": "core.logging_config", "message": "Database tables created successfully.", "module": "D:\\nuzm\\app.py", "line": 347}
+{"timestamp": "2026-02-26T13:25:14.174302Z", "level": "INFO", "logger": "core.logging_config", "message": "Database backup blueprint registered successfully at /backup", "module": "D:\\nuzm\\app.py", "line": 353}
+Project root: D:\nuzm
+DB path: D:\nuzm\instance\nuzum_local.db
+Indexes:
+  (0, 'ix_attendance_employee_date', 0, 'c', 0)
+  (1, 'ix_attendance_date_status', 0, 'c', 0)
+  (2, 'idx_attendance_employee_date', 0, 'c', 0)
+  (3, 'idx_attendance_date', 0, 'c', 0)
+attendance row count: 14240
+[ERR] Phase 1 failed: Legacy module missing any of: ['department_attendance_view', 'department_attendance', 'department_view'], falling back to legacy
+ظ£à ╪ز┘à ╪ز╪│╪ش┘è┘: employee_requests_refactored
+ظ£à ╪ز┘à ╪ز╪│╪ش┘è┘: api_attendance_v2
+ظ£à ╪ز┘à ╪ز╪│╪ش┘è┘: analytics_direct
+ظ£à ╪ز┘à ╪ز╪│╪ش┘è┘: analytics_real
+ظ£à ╪ز┘à ╪ز╪│╪ش┘è┘: operations_accidents
+ظ£à ╪ز┘à ╪ز╪│╪ش┘è┘: operations_core
+ظ£à ╪ز┘à ╪ز╪│╪ش┘è┘: operations_export
+ظ£à ╪ز┘à ╪ز╪│╪ش┘è┘: operations_sharing
+ظ£à ╪ز┘à ╪ز╪│╪ش┘è┘: operations_workflow
+ظ£à ╪ز┘à ╪ز╪│╪ش┘è┘: powerbi_analytics
+ظ£à ╪ز┘à ╪ز╪│╪ش┘è┘: powerbi_main
+DASHBOARD_STATUS: 200
+DASHBOARD_TIME_MS: 189.44
+BODY_SNIPPET: <!DOCTYPE html>\n<html lang="ar" dir="rtl" data-bs-theme="dark">\n    <head>\n        <meta charset="UTF-8" />\n        <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n        <meta\n            name="description"\n            content="┘╪╕╪د┘à ┘à╪ز┘â╪د┘à┘ ┘╪ح╪»╪د╪▒╪ر ╪┤╪ج┘ê┘ ╪د┘┘à┘ê╪╕┘┘è┘ ┘ê╪د┘┘à╪▒┘â╪ذ╪د╪ز"\n        />\n        <meta name="author" content="┘┘╪╕┘à" />\n        <meta name="theme-color" content="#1E88E5" />\n        <title>┘┘╪╕┘à - ╪ح╪»╪د╪▒╪ر ┘à╪ز┘â╪د┘à┘╪ر</title>\n        \n        <!-- <style>\n    /* ... ╪ث┘è ╪│╪ز╪د┘è┘╪د╪ز ┘é╪»┘è┘à╪ر ... */\n    .signature-pad-container {\n        border: 1px dashed #6c757d;\n        cursor: crosshair;\n        background-color: #0a2642;\n        height: 150px;\n        width: 100%;\n    }\n    .signature-pad-container canvas {\n        display: block;\n    }\n    </style> -->\n        <!-- ┘┘è ┘à
+HANDLER: LEGACY_OR_UNKNOWN
+{"timestamp": "2026-02-26T13:25:14.365230Z", "level": "INFO", "logger": "apscheduler.scheduler", "message": "Scheduler has been shut down", "module": "D:\\nuzm\\venv\\Lib\\site-packages\\apscheduler\\schedulers\\base.py", "line": 245}

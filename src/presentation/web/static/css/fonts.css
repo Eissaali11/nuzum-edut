@@ -1,0 +1,26 @@
+/*
+ * خط المشروع: beIN-Normal
+ * الملف: presentation/web/static/fonts/beIN-Normal.ttf
+ * يُحمّل في كامل المشروع لضمان الهوية البصرية.
+ */
+@font-face {
+  font-family: "beIN-Normal";
+  src: url("../fonts/beIN-Normal.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+body,
+h1, h2, h3, h4, h5, h6,
+.nav-link,
+.btn,
+.form-control,
+.form-select,
+.dropdown-item,
+.sidebar .circular-logo .logo-text,
+.theme-sidebar-brand,
+.theme-navbar .navbar-brand,
+input, select, textarea, label {
+  font-family: "beIN-Normal", "Cairo", "Segoe UI", Tahoma, sans-serif !important;
+}

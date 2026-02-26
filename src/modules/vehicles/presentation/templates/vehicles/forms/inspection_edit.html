@@ -1,0 +1,7 @@
+{% extends 'layout.html' %}
+
+{% block title %}تعديل فحص دوري - {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+{% include 'vehicles/forms/partials/inspection_edit/_content.html' %}
+{% endblock %}

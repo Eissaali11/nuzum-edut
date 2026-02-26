@@ -1,0 +1,30 @@
+DB path: D:\nuzm\instance
+nuzum_local.db
+PRAGMA index_list:
+(0, 'idx_attendance_employee_date', 0, 'c', 0)
+(1, 'idx_attendance_date', 0, 'c', 0)
+ROW_COUNT: 14240
+
+Running flask db upgrade...
+RET_CODE: 1
+STDOUT:
+[ERR] Phase 1 failed: Legacy module missing any of: ['department_attendance_view', 'department_attendance', 'department_view'], falling back to legacy
+✅ تم تسجيل: employee_requests_refactored
+✅ تم تسجيل: api_attendance_v2
+✅ تم تسجيل: analytics_direct
+✅ تم تسجيل: analytics_real
+✅ تم تسجيل: operations_accidents
+✅ تم تسجيل: operations_core
+✅ تم تسجيل: operations_export
+✅ تم تسجيل: operations_sharing
+✅ تم تسجيل: operations_workflow
+✅ تم تسجيل: powerbi_analytics
+✅ تم تسجيل: powerbi_main
+
+STDERR:
+{"timestamp": "2026-02-26T13:01:48.908258Z", "level": "WARNING", "logger": "core.logging_config", "message": "WhatsApp service not initialized: يرجى التأكد من تعيين WHATSAPP_ACCESS_TOKEN و WHATSAPP_PHONE_NUMBER_ID في ملف .env", "module": "D:\\nuzm\\app.py", "line": 49}
+{"timestamp": "2026-02-26T13:01:48.908361Z", "level": "INFO", "logger": "core.logging_config", "message": "You can set WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID in .env to enable WhatsApp features", "module": "D:\\nuzm\\app.py", "line": 50}
+{"timestamp": "2026-02-26T13:01:51.325404Z", "level": "INFO", "logger": "core.database_config", "message": "Using database: sqlite:///nuzum_local.db@***", "module": "D:\\nuzm\\core\\database_config.py", "line": 90}
+... (truncated)
+
+Audit complete

@@ -1,0 +1,46 @@
+REPO_SCAN_ROOT: D:\nuzm
+
+Top large files:
+ - 832.36MB  .git\objects\pack\pack-78292b18e3f4b53d15ed643390ad8015cdaae8cc.pack
+ - 28.42MB   backups\attached_assets.zip
+ - 19.86MB   venv\Lib\site-packages\libx265-215-26a1b263cc94c0914815c4e86e1c2701.dll
+ - 19.46MB   venv\Lib\site-packages\numpy.libs\libscipy_openblas64_-74a408729250596b0973e69fdd954eea.dll
+ - 8.84MB    venv\Lib\site-packages\cryptography\hazmat\bindings\_rust.pyd
+ - 7.47MB    venv\Lib\site-packages\PIL\_avif.cp313-win_amd64.pyd
+ - 6.75MB    backups\car_care-main.zip
+ - 6.58MB    static\uploads.bak_20260226_132035\employees\180_profile_20260222_175945175794.png
+ - 6.58MB    static\uploads.bak_20260226_132035\employees\296_license_20260222_172732059075.png
+ - 6.58MB    static\uploads.bak_20260226_132035\employees\296_national_id_20260222_172726604729.png
+ - 6.58MB    static\uploads.bak_20260226_132035\employees\296_profile_20260222_172714700147.png
+ - 5.40MB    venv\Lib\site-packages\pythonwin\mfc140u.dll
+ - 5.32MB    venv\Lib\site-packages\googleapiclient\discovery_cache\documents\compute.alpha.json
+ - 5.19MB    static\images\hero-nuzum-original.png
+ - 5.19MB    venv\Lib\site-packages\pydantic_core\_pydantic_core.cp313-win_amd64.pyd
+ - 4.83MB    venv\Lib\site-packages\googleapiclient\discovery_cache\documents\compute.beta.json
+ - 4.77MB    venv\Lib\site-packages\plotly\package_data\widgetbundle.js
+ - 4.61MB    venv\Lib\site-packages\plotly\package_data\plotly.min.js
+ - 4.60MB    venv\share\jupyter\labextensions\jupyterlab-plotly\static\340.b079a9b51d0cddaf4ab3.js
+ - 4.60MB    venv\Lib\site-packages\plotly\labextension\static\340.b079a9b51d0cddaf4ab3.js
+ - 4.22MB    venv\Lib\site-packages\googleapiclient\discovery_cache\documents\compute.v1.json
+ - 3.93MB    venv\Lib\site-packages\lxml\etree.cp311-win_amd64.pyd
+ - 3.60MB    venv\Lib\site-packages\plotly\validators\_validators.json
+ - 3.54MB    venv\Lib\site-packages\numpy\_core\_multiarray_umath.cp313-win_amd64.pyd
+ - 3.45MB    instance\nuzum_local.db
+ - 3.45MB    instance\test_nuzum.db
+ - 3.45MB    instance\backups\nuzum_before_migration_fix_20260226T144142Z.db
+ - 2.80MB    instance\schema_verification.db
+ - 2.78MB    nuzum_local.db
+ - 2.74MB    venv\Lib\site-packages\googleapiclient\discovery_cache\documents\aiplatform.v1beta1.json
+ - 2.52MB    venv\Lib\site-packages\PyWin32.chm
+ - 2.47MB    venv\Lib\site-packages\PIL\_imaging.cp313-win_amd64.pyd
+ - 2.47MB    venv\Lib\site-packages\~il\_imaging.cp313-win_amd64.pyd
+ - 2.34MB    venv\Lib\site-packages\libstdc++-6-8471d2916511add931f9fd7fc5d329c1.dll
+ - 2.31MB    venv\Lib\site-packages\googleapiclient\discovery_cache\documents\aiplatform.v1.json
+ - 2.07MB    venv\Lib\site-packages\PIL\_imagingft.cp313-win_amd64.pyd
+ - 2.07MB    venv\Lib\site-packages\~il\_imagingft.cp313-win_amd64.pyd
+ - 1.77MB    venv\Lib\site-packages\fontTools\misc\bezierTools.c
+ - 1.70MB    venv\Lib\site-packages\libheif-2496d3d1ba316c692db7ffb55fed2fa9.dll
+ - 1.67MB    venv\Lib\site-packages\lxml\objectify.cp311-win_amd64.pyd
+
+Blueprint prefix collisions:
+ - None found

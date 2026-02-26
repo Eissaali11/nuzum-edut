@@ -1,0 +1,32 @@
+<div class="container-fluid">
+    {# Page Header with Title and Action Buttons #}
+    {% include 'vehicles/partials/_header.html' %}
+
+    <div class="row">
+        {# Sidebar Navigation #}
+        {% include 'vehicles/partials/_sidebar.html' %}
+
+        {# Main Content Area #}
+        <div class="col-lg-9">
+            <div id="main-content">
+                {# Basic Vehicle Information Section #}
+                {% include 'vehicles/partials/_basic_info.html' %}
+
+                {# Vehicle License Image Section #}
+                {% include 'vehicles/partials/_license.html' %}
+
+                {# Rental Information Section #}
+                {% include 'vehicles/partials/_rental.html' %}
+
+                {# All Other Content Sections (Lazy Loaded) #}
+                {% include 'vehicles/partials/_content_sections.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# License Image Modal #}
+{% include 'vehicles/partials/_license_modal.html' %}
+
+{# CSS and JavaScript Assets #}
+{% include 'vehicles/partials/_scripts.html' %}

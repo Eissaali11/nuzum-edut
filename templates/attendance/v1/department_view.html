@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>عرض حضور القسم</title>
+</head>
+<body>
+    <h1>عرض حضور القسم {% if department %} - {{ department.name }} {% endif %}</h1>
+    <p>التاريخ: {{ date }}</p>
+    <table border="1" cellpadding="6">
+        <thead>
+            <tr><th>الموظف</th><th>الحالة</th><th>ملاحظات</th></tr>
+        </thead>
+        <tbody>
+            {% for a in attendances %}
+            <tr>
+                <td>{{ a.employee_name if a.get('employee_name') else (a.employee.name if a and a.employee is defined else '-') }}</td>
+                <td>{{ a.status if a.get('status') else (a.status if a and a.status is defined else '-') }}</td>
+                <td>{{ a.get('notes','') if a.get is defined else ('') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3">لا توجد سجلات حضور لهذا التاريخ</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

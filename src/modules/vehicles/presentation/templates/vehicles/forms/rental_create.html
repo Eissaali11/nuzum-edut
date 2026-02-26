@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block title %}إضافة إيجار للسيارة: {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+{% include 'vehicles/forms/partials/rental_create/_content.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ضبط تاريخ اليوم كقيمة افتراضية لتاريخ البداية
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('start_date').value = today;
+    });
+</script>
+{% endblock %}

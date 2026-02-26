@@ -1,0 +1,7 @@
+{% extends 'layout.html' %}
+
+{% block title %}مشاركة سجلات الورشة للسيارة: {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+{% include 'vehicles/reports/partials/share_workshop/_content.html' %}
+{% endblock %}

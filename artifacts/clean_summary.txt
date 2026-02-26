@@ -1,0 +1,5 @@
+scan_report: D:\nuzm\artifacts\scan_report.txt
+health_report: D:\nuzm\artifacts\health_final.txt
+moved_files_count: 1
+moved_files_sample:
+docs\legacy_archive\backups\nuzum.sql

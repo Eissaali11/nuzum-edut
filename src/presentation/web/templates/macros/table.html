@@ -1,0 +1,95 @@
+{#
+  جدول الموظفين — ماكرو قابل لإعادة الاستخدام.
+  الخط: var(--font-default) (beIN-Normal) | الألوان من theme.css
+  الاستخدام: {% from 'macros/table.html' import employee_table %}
+#}
+{% macro employee_table(employees, duplicate_names_set, can_edit=False, can_delete=False, view_route='employees.view', edit_route='employees.edit', delete_route='employees.confirm_delete') %}
+<div class="table-responsive theme-employee-table-wrap">
+  <table class="table table-hover table-striped align-middle mb-0 theme-employee-table" id="employeesTable">
+    <thead class="theme-employee-thead">
+      <tr>
+        <th scope="col">الرقم الوظيفي</th>
+        <th scope="col" class="theme-employee-name-col">الاسم</th>
+        <th scope="col">رقم الهوية</th>
+        <th scope="col">الجوال</th>
+        <th scope="col">المسمى الوظيفي</th>
+        <th scope="col">القسم</th>
+        <th scope="col">الحالة</th>
+        <th scope="col">تاريخ التعيين</th>
+        <th scope="col" class="text-center">الإجراءات</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for employee in employees %}
+      <tr class="theme-employee-row theme-employee-row-{{ employee.status }}">
+        <td>{{ employee.employee_id }}</td>
+        <td class="theme-employee-name-cell">
+          {% if employee.status == 'terminated' %}
+            <del>{{ employee.name }}</del>
+          {% else %}
+            <strong>{{ employee.name }}</strong>
+          {% endif %}
+          {% if duplicate_names_set and employee.name in duplicate_names_set %}
+            <span class="badge theme-badge-warning ms-1" title="اسم مكرر">!</span>
+          {% endif %}
+        </td>
+        <td>{{ employee.national_id }}</td>
+        <td>{{ employee.mobile }}</td>
+        <td>{{ employee.job_title }}</td>
+        <td>
+          {% if employee.departments %}
+            {% if employee.departments|length > 1 %}
+              <div class="d-flex flex-wrap gap-1">
+                {% for dept in employee.departments %}
+                  <span class="badge theme-badge-primary">{{ dept.name }}</span>
+                {% endfor %}
+              </div>
+              <small class="theme-multi-dept-label">متعدد الأقسام</small>
+            {% else %}
+              <span class="badge theme-badge-secondary">{{ employee.departments[0].name }}</span>
+            {% endif %}
+          {% else %}
+            <span class="text-muted">-</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if employee.status == 'active' %}
+            <span class="badge theme-badge-success">نشط</span>
+          {% elif employee.status == 'inactive' %}
+            <span class="badge theme-badge-danger">غير نشط</span>
+          {% elif employee.status == 'on_leave' %}
+            <span class="badge theme-badge-warning">في إجازة</span>
+          {% elif employee.status == 'terminated' %}
+            <span class="badge theme-badge-secondary">متوقف</span>
+          {% else %}
+            <span class="badge theme-badge-secondary">{{ employee.status }}</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if employee.join_date %}
+            {{ employee.join_date.strftime('%d/%m/%Y') }}
+          {% else %}
+            <span class="text-muted">-</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="btn-group btn-group-sm">
+            <a href="{{ url_for(view_route, id=employee.id) }}" class="btn theme-btn-info" title="عرض">عرض</a>
+            {% if can_edit and edit_route %}
+              <a href="{{ url_for(edit_route, id=employee.id) }}" class="btn theme-btn-primary" title="تعديل">تعديل</a>
+            {% endif %}
+            {% if can_delete and delete_route %}
+              <a href="{{ url_for(delete_route, id=employee.id) }}" class="btn theme-btn-danger" title="حذف">حذف</a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="9" class="text-center text-muted py-4">لا يوجد موظفون.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endmacro %}

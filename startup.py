@@ -15,14 +15,20 @@ SERVER_CONFIG = {
     'HOST': '0.0.0.0',
     'PORT': 5000,  # البوابة الرسمية
     'DEBUG': False,
+    'APP_THREADED': 'true',
     'ATTENDANCE_USE_MODULAR': '0',  # استخدام الملف الأصلي الموثوق
     'ENVIRONMENT': 'production'
 }
 
 # مسارات أساسية
 BASE_DIR = Path(__file__).resolve().parent
+SRC_DIR = BASE_DIR / "src"
 VENV_PYTHON = BASE_DIR / "venv" / "Scripts" / "python.exe"
-APP_FILE = BASE_DIR / "app.py"
+APP_FILE = SRC_DIR / "app.py"
+
+# Add src/ to Python path to enable imports
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 def print_config():
     """طباعة الإعدادات الحالية"""
@@ -30,7 +36,7 @@ def print_config():
     print("نُظم - SERVER CONFIGURATION".center(70))
     print("="*70)
     print(f"Host:              {SERVER_CONFIG['HOST']}")
-    print(f"Port:              {SERVER_CONFIG['PORT']} ✓")
+    print(f"Port:              {SERVER_CONFIG['PORT']} [OK]")
     print(f"Debug Mode:        {SERVER_CONFIG['DEBUG']}")
     print(f"Environment:       {SERVER_CONFIG['ENVIRONMENT']}")
     print(f"Modular Mode:      {SERVER_CONFIG['ATTENDANCE_USE_MODULAR']}")
@@ -42,13 +48,13 @@ def verify_files():
     
     required_files = [
         APP_FILE,
-        BASE_DIR / "presentation" / "web" / "static" / "css" / "custom.css",
+        SRC_DIR / "presentation" / "web" / "static" / "css" / "custom.css",
         BASE_DIR / "instance" / "nuzum_local.db",
     ]
     
     all_exist = True
     for file_path in required_files:
-        exists = "✓" if file_path.exists() else "✗"
+        exists = "[OK]" if file_path.exists() else "[MISSING]"
         print(f"  {exists} {file_path.name}")
         if not file_path.exists():
             all_exist = False
@@ -60,7 +66,7 @@ def set_environment():
     debug_flag = "true" if SERVER_CONFIG['DEBUG'] else "false"
     os.environ.setdefault("FLASK_DEBUG", debug_flag)
     os.environ.setdefault("FLASK_ENV", "development" if SERVER_CONFIG['DEBUG'] else "production")
-    os.environ.setdefault("APP_THREADED", "false")
+    os.environ.setdefault("APP_THREADED", str(SERVER_CONFIG.get('APP_THREADED', 'true')))
     for key, value in SERVER_CONFIG.items():
         if key.startswith('HOST') or key.startswith('PORT'):
             continue
@@ -72,10 +78,10 @@ def start_server():
     print_config()
     
     if not verify_files():
-        print("\n❌ بعض الملفات المطلوبة غير موجودة!")
+        print("\n[ERROR] بعض الملفات المطلوبة غير موجودة!")
         sys.exit(1)
     
-    print("\n✓ جميع الملفات موجودة\n")
+    print("\n[OK] جميع الملفات موجودة\n")
     
     # تعيين متغيرات البيئة
     set_environment()
@@ -94,7 +100,7 @@ def start_server():
         print("\n\nServer stopped gracefully.")
         sys.exit(0)
     except Exception as e:
-        print(f"\n❌ Error starting server: {e}")
+        print(f"\n[ERROR] Error starting server: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

@@ -953,9 +953,9 @@
         <footer class="footer mt-auto py-3">
             <div class="container text-center" style="color: black">
                 <div class="mb-2">
-                    {% set about_endpoint = 'web.about' if endpoint_exists('web.about') else 'about' %}
-                    {% set privacy_endpoint = 'web.privacy' if endpoint_exists('web.privacy') else 'privacy' %}
-                    {% set contact_endpoint = 'web.contact' if endpoint_exists('web.contact') else 'contact' %}
+                    {% set about_endpoint = 'web.about' if endpoint_exists('web.about') else 'core_system.about' %}
+                    {% set privacy_endpoint = 'web.privacy' if endpoint_exists('web.privacy') else 'core_system.privacy' %}
+                    {% set contact_endpoint = 'web.contact' if endpoint_exists('web.contact') else 'core_system.contact' %}
                     <a href="{{ url_for(about_endpoint) }}" class="text-muted mx-2" style="color: black !important; text-decoration: none;">من نحن</a>
                     <span class="text-muted">|</span>
                     <a href="{{ url_for(privacy_endpoint) }}" class="text-muted mx-2" style="color: black !important; text-decoration: none;">سياسة الخصوصية</a>

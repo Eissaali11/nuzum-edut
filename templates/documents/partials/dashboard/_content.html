@@ -101,18 +101,19 @@
                 </div>
 
                 {% for doc in expired_docs %}
+                {% set employee = doc.employee %}
                 <div class="document-item expired">
                     <div class="doc-icon">
                         <i class="fas fa-file"></i>
                     </div>
                     <div class="doc-content">
                         <div class="doc-header">
-                            <div class="doc-name">{{ doc.employee.name }}</div>
+                            <div class="doc-name">{{ employee.name if employee else 'غير محدد' }}</div>
                             <div class="doc-type">{{ doc.document_type }}</div>
                         </div>
                         <div class="doc-expiry">
                             <i class="fas fa-calendar-times"></i>
-                            <span>انتهت منذ <strong>{{ (current_date - doc.expiry_date).days }}</strong> يوم</span>
+                            <span>انتهت منذ <strong>{{ (current_date - doc.expiry_date).days if doc.expiry_date else 0 }}</strong> يوم</span>
                         </div>
                     </div>
                 </div>
@@ -136,18 +137,19 @@
                 </div>
 
                 {% for doc in expiring_docs %}
+                {% set employee = doc.employee %}
                 <div class="document-item warning">
                     <div class="doc-icon">
                         <i class="fas fa-file"></i>
                     </div>
                     <div class="doc-content">
                         <div class="doc-header">
-                            <div class="doc-name">{{ doc.employee.name }}</div>
+                            <div class="doc-name">{{ employee.name if employee else 'غير محدد' }}</div>
                             <div class="doc-type">{{ doc.document_type }}</div>
                         </div>
                         <div class="doc-expiry">
                             <i class="fas fa-hourglass-half"></i>
-                            <span>متبقي <strong>{{ (doc.expiry_date - current_date).days }}</strong> يوم</span>
+                            <span>متبقي <strong>{{ (doc.expiry_date - current_date).days if doc.expiry_date else 0 }}</strong> يوم</span>
                         </div>
                     </div>
                 </div>

@@ -1,0 +1,145 @@
+{% extends 'layout.html' %}
+
+{% block title %}صورة رخصة السيارة: {{ vehicle.plate_number }}{% endblock %}
+
+{% block extra_css %}
+{% include 'vehicles/utilities/partials/license_image/_extra_css.html' %}
+{% endblock %}
+
+{% block content %}
+{% include 'vehicles/utilities/partials/license_image/_content.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// إدارة رفع الملفات
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    const uploadBtn = document.getElementById('uploadBtn');
+    
+    if (file) {
+        // فحص نوع الملف
+        if (!file.type.startsWith('image/')) {
+            alert('يرجى اختيار ملف صورة صالح');
+            event.target.value = '';
+            uploadBtn.disabled = true;
+            return;
+        }
+        
+        // فحص حجم الملف (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('حجم الملف كبير جداً. يرجى اختيار صورة أصغر من 10MB');
+            event.target.value = '';
+            uploadBtn.disabled = true;
+            return;
+        }
+        
+        uploadBtn.disabled = false;
+        
+        // معاينة الصورة
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const uploadArea = document.querySelector('.upload-area');
+            uploadArea.innerHTML = `
+                <div class="upload-icon" style="color: #28a745;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="upload-text" style="color: #28a745;">تم اختيار الصورة بنجاح</div>
+                <div class="upload-subtext">${file.name}</div>
+                <img src="${e.target.result}" style="max-width: 200px; max-height: 150px; border-radius: 10px; margin-top: 15px;" alt="معاينة">
+                <div class="mt-3">
+                    <small class="text-muted">انقر على "رفع الصورة" لحفظها</small>
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        uploadBtn.disabled = true;
+    }
+}
+
+// إدارة السحب والإفلات
+function handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('dragover');
+}
+
+function handleDragLeave(event) {
+    event.currentTarget.classList.remove('dragover');
+}
+
+function handleDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('dragover');
+    
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+        const fileInput = document.getElementById('licenseFile');
+        // استخدام DataTransfer لتعيين الملفات بشكل صحيح
+        const dt = new DataTransfer();
+        dt.items.add(files[0]);
+        fileInput.files = dt.files;
+        
+        handleFileSelect({ target: { files: files } });
+    }
+}
+
+// إظهار قسم الرفع
+function showUploadSection() {
+    document.getElementById('uploadSection').style.display = 'block';
+    document.getElementById('uploadSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// إخفاء قسم الرفع
+function hideUploadSection() {
+    document.getElementById('uploadSection').style.display = 'none';
+}
+
+// فتح نافذة عرض الصورة
+function openImageModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    document.getElementById('downloadLink').href = imageSrc;
+    new bootstrap.Modal(document.getElementById('imageModal')).show();
+}
+
+// تأكيد حذف الصورة
+function confirmDeleteImage() {
+    if (confirm('هل أنت متأكد من حذف صورة الرخصة؟\n\nلا يمكن التراجع عن هذا الإجراء.')) {
+        // إرسال طلب حذف
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = `
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="delete">
+        `;
+        document.body.appendChild(form);
+        
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        form.submit();
+    }
+}
+
+// إدارة نموذج الرفع
+document.getElementById('uploadForm').addEventListener('submit', function(event) {
+    const fileInput = document.getElementById('licenseFile');
+    
+    console.log('Form submitted');
+    console.log('File input:', fileInput);
+    console.log('Files:', fileInput.files);
+    console.log('Number of files:', fileInput.files.length);
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+        event.preventDefault();
+        alert('يرجى اختيار صورة أولاً');
+        return false;
+    }
+    
+    // إظهار مؤشر التحميل
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    // السماح للنموذج بالإرسال بشكل طبيعي
+    console.log('Submitting form with file:', fileInput.files[0].name);
+    return true;
+});
+</script>
+{% endblock %}

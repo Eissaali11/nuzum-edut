@@ -13,68 +13,76 @@ documents_bp = Blueprint('documents', __name__)
 @documents_bp.route('/dashboard')
 @login_required
 def dashboard():
-    stats = DocumentService.get_dashboard_stats()
-    return render_template(
-        'documents/dashboard.html',
-        total_documents=stats.get('total_documents', 0),
-        expired_documents=stats.get('expired_documents', 0),
-        expiring_soon=stats.get('expiring_soon', 0),
-        expiring_later=stats.get('expiring_later', 0),
-        valid_documents=stats.get('valid_documents', 0),
-        expired_docs=stats.get('expired_docs', []),
-        expiring_docs=stats.get('expiring_docs', []),
-        document_types_stats=stats.get('document_types_stats', []),
-        department_stats=stats.get('department_stats', []),
-        current_date=datetime.now().date(),
-    )
+    try:
+        stats = DocumentService.get_dashboard_stats()
+        return render_template(
+            'documents/dashboard.html',
+            total_documents=stats.get('total_documents', 0),
+            expired_documents=stats.get('expired_documents', 0),
+            expiring_soon=stats.get('expiring_soon', 0),
+            expiring_later=stats.get('expiring_later', 0),
+            valid_documents=stats.get('valid_documents', 0),
+            expired_docs=stats.get('expired_docs', []),
+            expiring_docs=stats.get('expiring_docs', []),
+            document_types_stats=stats.get('document_types_stats', []),
+            department_stats=stats.get('department_stats', []),
+            current_date=datetime.now().date(),
+        )
+    except Exception as e:
+        flash(f'حدث خطأ في تحميل الإحصائيات: {str(e)}', 'danger')
+        return redirect(url_for('documents.index'))
 
 
 @documents_bp.route('/')
 @login_required
 def index():
-    document_type = request.args.get('document_type')
-    employee_id = request.args.get('employee_id', type=int)
-    department_id = request.args.get('department_id', type=int)
-    sponsorship_status = request.args.get('sponsorship_status')
-    status_filter = request.args.get('expiring')
-    search_query = request.args.get('search_query', '').strip() or None
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 50, type=int)
+    try:
+        document_type = request.args.get('document_type')
+        employee_id = request.args.get('employee_id', type=int)
+        department_id = request.args.get('department_id', type=int)
+        sponsorship_status = request.args.get('sponsorship_status')
+        status_filter = request.args.get('expiring')
+        search_query = request.args.get('search_query', '').strip() or None
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
 
-    documents, total_count = DocumentService.get_documents(
-        document_type=document_type,
-        employee_id=employee_id,
-        department_id=department_id,
-        sponsorship_status=sponsorship_status,
-        status_filter=status_filter,
-        search_query=search_query,
-        page=page,
-        per_page=per_page,
-    )
+        documents, total_count = DocumentService.get_documents(
+            document_type=document_type,
+            employee_id=employee_id,
+            department_id=department_id,
+            sponsorship_status=sponsorship_status,
+            status_filter=status_filter,
+            search_query=search_query,
+            page=page,
+            per_page=per_page,
+        )
 
-    today = datetime.now().date()
-    for doc in documents:
-        doc.days_to_expiry = (doc.expiry_date - today).days if doc.expiry_date else None
+        today = datetime.now().date()
+        for doc in documents:
+            doc.days_to_expiry = (doc.expiry_date - today).days if doc.expiry_date else None
 
-    total_pages = (total_count + per_page - 1) // per_page if per_page else 1
+        total_pages = (total_count + per_page - 1) // per_page if per_page else 1
 
-    return render_template(
-        'documents/index.html',
-        documents=documents,
-        employees=Employee.query.all(),
-        departments=Department.query.all(),
-        document_types=DocumentService.get_document_types(),
-        selected_type=document_type,
-        selected_employee=employee_id,
-        selected_department=department_id,
-        selected_sponsorship=sponsorship_status,
-        status_filter=status_filter,
-        search_query=search_query or '',
-        page=page,
-        per_page=per_page,
-        total_count=total_count,
-        total_pages=total_pages,
-    )
+        return render_template(
+            'documents/index.html',
+            documents=documents,
+            employees=Employee.query.all(),
+            departments=Department.query.all(),
+            document_types=DocumentService.get_document_types(),
+            selected_type=document_type,
+            selected_employee=employee_id,
+            selected_department=department_id,
+            selected_sponsorship=sponsorship_status,
+            status_filter=status_filter,
+            search_query=search_query or '',
+            page=page,
+            per_page=per_page,
+            total_count=total_count,
+            total_pages=total_pages,
+        )
+    except Exception as e:
+        flash(f'حدث خطأ في تحميل الوثائق: {str(e)}', 'danger')
+        return redirect(url_for('documents.dashboard'))
 
 
 @documents_bp.route('/create', methods=['GET', 'POST'])
@@ -113,38 +121,42 @@ def create():
 @documents_bp.route('/expiring')
 @login_required
 def expiring():
-    status = request.args.get('status', 'expiring')
-    document_type = request.args.get('document_type')
-    employee_id = request.args.get('employee_id', type=int)
-    department_id = request.args.get('department_id', type=int)
-    sponsorship_status = request.args.get('sponsorship_status')
+    try:
+        status = request.args.get('status', 'expiring')
+        document_type = request.args.get('document_type')
+        employee_id = request.args.get('employee_id', type=int)
+        department_id = request.args.get('department_id', type=int)
+        sponsorship_status = request.args.get('sponsorship_status')
 
-    documents, _ = DocumentService.get_documents(
-        document_type=document_type,
-        employee_id=employee_id,
-        department_id=department_id,
-        sponsorship_status=sponsorship_status,
-        status_filter='expired' if status == 'expired' else 'expiring',
-        per_page=2000,
-    )
+        documents, _ = DocumentService.get_documents(
+            document_type=document_type,
+            employee_id=employee_id,
+            department_id=department_id,
+            sponsorship_status=sponsorship_status,
+            status_filter='expired' if status == 'expired' else 'expiring',
+            per_page=2000,
+        )
 
-    today = datetime.now().date()
-    for doc in documents:
-        doc.days_to_expiry = (doc.expiry_date - today).days if doc.expiry_date else None
+        today = datetime.now().date()
+        for doc in documents:
+            doc.days_to_expiry = (doc.expiry_date - today).days if doc.expiry_date else None
 
-    return render_template(
-        'documents/expiring.html',
-        documents=documents,
-        days=30,
-        document_types=DocumentService.get_document_types(),
-        employees=Employee.query.all(),
-        departments=Department.query.all(),
-        selected_type=document_type or '',
-        selected_employee=employee_id,
-        selected_department=department_id,
-        selected_sponsorship=sponsorship_status or '',
-        status=status,
-    )
+        return render_template(
+            'documents/expiring.html',
+            documents=documents,
+            days=30,
+            document_types=DocumentService.get_document_types(),
+            employees=Employee.query.all(),
+            departments=Department.query.all(),
+            selected_type=document_type or '',
+            selected_employee=employee_id,
+            selected_department=department_id,
+            selected_sponsorship=sponsorship_status or '',
+            status=status,
+        )
+    except Exception as e:
+        flash(f'حدث خطأ: {str(e)}', 'danger')
+        return redirect(url_for('documents.dashboard'))
 
 
 @documents_bp.route('/expiry_stats')
@@ -174,6 +186,38 @@ def delete(id):
     success, message = DocumentService.delete_document(id)
     flash(message, 'success' if success else 'danger')
     return redirect(url_for('documents.index'))
+
+
+@documents_bp.route('/<int:id>/confirm-delete')
+@login_required
+def confirm_delete(id):
+    document = DocumentService.get_document_by_id(id)
+    if not document:
+        flash('الوثيقة غير موجودة', 'danger')
+        return redirect(url_for('documents.index'))
+    return render_template('documents/confirm_delete.html', document=document)
+
+
+@documents_bp.route('/<int:id>/update-expiry', methods=['GET', 'POST'])
+@login_required
+def update_expiry(id):
+    document = DocumentService.get_document_by_id(id)
+    if not document:
+        flash('الوثيقة غير موجودة', 'danger')
+        return redirect(url_for('documents.index'))
+
+    if request.method == 'POST':
+        expiry_date_str = request.form.get('expiry_date')
+        expiry_date = parse_date(expiry_date_str) if expiry_date_str else None
+        if not expiry_date:
+            flash('يجب إدخال تاريخ الانتهاء', 'danger')
+            return redirect(request.referrer or url_for('documents.expiring'))
+
+        success, message = DocumentService.update_document(document_id=id, expiry_date=expiry_date)
+        flash(message, 'success' if success else 'danger')
+        return redirect(request.referrer or url_for('documents.expiring'))
+
+    return render_template('documents/update_expiry.html', document=document)
 
 
 @documents_bp.route('/upload/<int:document_id>', methods=['POST'])
@@ -208,6 +252,75 @@ def download_file(document_id):
         return redirect(request.referrer or url_for('documents.index'))
 
     return send_file(data['file_path'], download_name=data['download_name'], as_attachment=True)
+
+
+@documents_bp.route('/import', methods=['GET', 'POST'])
+@login_required
+def import_excel():
+    if request.method == 'POST':
+        try:
+            if 'file' not in request.files:
+                flash('لم يتم اختيار ملف', 'danger')
+                return redirect(url_for('documents.import_excel'))
+
+            file = request.files['file']
+            if not file or file.filename == '':
+                flash('لم يتم اختيار ملف', 'danger')
+                return redirect(url_for('documents.import_excel'))
+
+            success, message, _success_count, error_count = DocumentService.import_from_excel(file.stream)
+            flash(f'{message} ({error_count} فشل)' if error_count > 0 else message, 'warning' if error_count > 0 else 'success')
+            return redirect(url_for('documents.index'))
+        except Exception as e:
+            flash(f'حدث خطأ: {str(e)}', 'danger')
+            return redirect(url_for('documents.import_excel'))
+
+    return render_template('documents/import.html')
+
+
+@documents_bp.route('/export-excel')
+@login_required
+def export_excel():
+    try:
+        document_type = request.args.get('document_type')
+        employee_id = request.args.get('employee_id', type=int)
+        department_id = request.args.get('department_id', type=int)
+        sponsorship_status = request.args.get('sponsorship_status')
+        status_filter = request.args.get('expiring')
+
+        documents, _ = DocumentService.get_documents(
+            document_type=document_type if document_type else None,
+            employee_id=employee_id,
+            department_id=department_id,
+            sponsorship_status=sponsorship_status if sponsorship_status else None,
+            status_filter=status_filter if status_filter else None,
+            per_page=10000,
+        )
+
+        output = DocumentService.export_to_excel(documents, include_employee_data=True)
+        filename = f'تقرير_الوثائق_{datetime.now().strftime("%Y%m%d_%H%M")}.xlsx'
+        return send_file(
+            output,
+            download_name=filename,
+            as_attachment=True,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+    except Exception as e:
+        flash(f'حدث خطأ في التصدير: {str(e)}', 'danger')
+        return redirect(url_for('documents.index'))
+
+
+@documents_bp.route('/excel-dashboard', methods=['GET', 'POST'])
+@login_required
+def excel_dashboard():
+    if request.method == 'POST':
+        if 'excel_file' not in request.files or not request.files['excel_file'] or request.files['excel_file'].filename == '':
+            flash('لم يتم اختيار ملف', 'danger')
+            return redirect(request.url)
+        flash('هذه الميزة قيد التطوير. استخدم صفحة الاستيراد', 'info')
+        return redirect(url_for('documents.import_excel'))
+
+    return render_template('documents/excel_dashboard.html', uploaded=False)
 
 
 @documents_bp.route('/template/pdf')

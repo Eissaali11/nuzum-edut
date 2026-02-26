@@ -6,6 +6,7 @@ Contains: User, UserRole, Permission, Module, SystemAudit, AuditLog, Notificatio
 import enum
 from datetime import datetime
 from flask_login import UserMixin
+from sqlalchemy.orm import validates
 from core.extensions import db
 
 
@@ -99,16 +100,20 @@ class User(UserMixin, db.Model):
     __tablename__ = 'user'
     
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    username = db.Column(db.String(100), unique=True, nullable=True)
-    password_hash = db.Column(db.String(255))
+    email = db.Column(db.String(100), unique=False, nullable=False, index=False)
+    username = db.Column(db.String(100), unique=False, nullable=True)
+    password_hash = db.Column(db.String(256))
+    name = db.Column(db.String(100), nullable=True)
+    profile_picture = db.Column(db.String(255), nullable=True)
+    firebase_uid = db.Column(db.String(128), nullable=True)
+    auth_type = db.Column(db.String(20), nullable=True)
     full_name = db.Column(db.String(150), nullable=True)
     phone = db.Column(db.String(20), nullable=True)
     
     # الدور والحالة
-    role = db.Column(db.Enum(UserRole), default=UserRole.VIEWER, nullable=False)
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
-    is_admin = db.Column(db.Boolean, default=False, nullable=False)
+    role = db.Column(db.String(7), default=UserRole.VIEWER.value, nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=True)
+    is_admin = db.Column(db.Boolean, default=False, nullable=True)
     last_login = db.Column(db.DateTime, nullable=True)
     
     # معرفات خارجية
@@ -144,16 +149,22 @@ class User(UserMixin, db.Model):
         if self.password_hash:
             return check_password_hash(self.password_hash, password)
         return False
+
+    def _is_admin_role(self):
+        role_value = self.role.value if isinstance(self.role, enum.Enum) else str(self.role or '').strip().lower()
+        return bool(self.is_admin) or role_value == UserRole.ADMIN.value
     
     def has_permission(self, module, permission):
         """التحقق مما إذا كان المستخدم لديه صلاحية معينة"""
+        requested_module = module.value if isinstance(module, enum.Enum) else str(module)
+
         # المديرون لديهم كل الصلاحيات
-        if self.role == UserRole.ADMIN:
+        if self._is_admin_role():
             return True
             
         # التحقق من صلاحيات القسم المحدد
         for user_permission in self.permissions:
-            if user_permission.module == module:
+            if user_permission.module == requested_module:
                 return user_permission.permissions & permission
                 
         return False
@@ -161,7 +172,7 @@ class User(UserMixin, db.Model):
     def can_access_department(self, department_id):
         """التحقق مما إذا كان المستخدم يمكنه الوصول إلى قسم معين"""
         # المديرون لديهم وصول إلى جميع الأقسام
-        if self.role == UserRole.ADMIN:
+        if self._is_admin_role():
             return True
             
         # إذا كان لديه قسم مخصص، يمكنه الوصول إليه فقط
@@ -174,7 +185,7 @@ class User(UserMixin, db.Model):
     def get_accessible_departments(self):
         """جلب الأقسام التي يمكن للمستخدم الوصول إليها"""
         # المديرون لديهم وصول إلى جميع الأقسام
-        if self.role == UserRole.ADMIN:
+        if self._is_admin_role():
             from modules.employees.domain.models import Department
             return Department.query.all()
             
@@ -187,11 +198,13 @@ class User(UserMixin, db.Model):
     
     def has_module_access(self, module):
         """التحقق مما إذا كان المستخدم لديه وصول إلى وحدة معينة"""
+        requested_module = module.value if isinstance(module, enum.Enum) else str(module)
+
         # المديرون لديهم وصول إلى جميع الوحدات
-        if self.role == UserRole.ADMIN:
+        if self._is_admin_role():
             return True
             
-        return any(p.module == module for p in self.permissions)
+        return any(p.module == requested_module for p in self.permissions)
     
     def __repr__(self):
         return f'<User {self.email}>'
@@ -203,11 +216,17 @@ class UserPermission(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
-    module = db.Column(db.Enum(Module), nullable=False)
+    module = db.Column(db.String(17), nullable=False)
     permissions = db.Column(db.Integer, default=Permission.VIEW)  # بتات الصلاحيات
     
     # العلاقات
     user = db.relationship('User', back_populates='permissions')
+
+    @validates('module')
+    def _normalize_module(self, key, value):
+        if isinstance(value, enum.Enum):
+            return value.value
+        return str(value) if value is not None else value
     
     def __repr__(self):
         return f'<UserPermission {self.user_id} - {self.module}>'

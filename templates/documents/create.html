@@ -7,51 +7,48 @@
 {% block extra_js %}
 <script>
 
-const empSelect       = document.getElementById('employee_id');
-    const docTypeSelect   = document.getElementById('document_type');
-    const docNumInput     = document.getElementById('document_number');
-    const deptInfoText    = document.getElementById('department_document_number_info');
-    const addForDeptRadio = document.querySelector('input[name="add_scope"][value="department"]');
-    const addForEmpRadio  = document.querySelector('input[name="add_scope"][value="employee"]');
+        function initDocumentNumberBehavior() {
+                const empSelect = document.getElementById('employee_id');
+                const docTypeSelect = document.getElementById('document_type');
+                const docNumInput = document.getElementById('document_number');
+                const deptInfoText = document.getElementById('department_document_number_info');
+                const addForDeptRadio = document.querySelector('input[name="add_scope"][value="department"]');
+                const addForEmpRadio = document.querySelector('input[name="add_scope"][value="employee"]');
 
-    function updateDocumentNumber() {
-      const empOption = empSelect.options[empSelect.selectedIndex];
-      const docType = docTypeSelect.value;
-        console.log(docType ,  empOption)
-      if (docType) {
-        // بناء الرقم: نوع_المستند + "_" + الرقم_الوطني
-        docNumInput.value = `${empOption}.${docType}`;
-      } else {
-        docNumInput.value = '';
-      }
-    }
+                if (!empSelect || !docTypeSelect || !docNumInput) {
+                        return;
+                }
 
-    // استمعي لتغيّر الموظف ونوع الوثيقة
-    empSelect.addEventListener('change', updateDocumentNumber);
-    docTypeSelect.addEventListener('change', updateDocumentNumber);
+                function updateDocumentNumber() {
+                        const selectedOption = empSelect.options[empSelect.selectedIndex];
+                        const docType = docTypeSelect.value;
+                        if (!selectedOption) {
+                                docNumInput.value = '';
+                                return;
+                        }
+                        docNumInput.value = docType ? `${selectedOption}.${docType}` : '';
+                }
 
-    // لو عندك اختيار "إضافة لقسم كامل"، تريدين إظهار/إخفاء دليل استخدام الرقم الوطني
-    // افتراضيّاً نخفي info عند إضافة لقسم كامل:
-    if (addForDeptRadio) {
-      addForDeptRadio.addEventListener('change', () => {
-        deptInfoText.classList.remove('d-none');
-        docNumInput.readOnly = true;
-      });
-    }
-    if (addForEmpRadio) {
-      addForEmpRadio.addEventListener('change', () => {
-        deptInfoText.classList.add('d-none');
-        docNumInput.readOnly = false;
-      });
-    }
+                empSelect.addEventListener('change', updateDocumentNumber);
+                docTypeSelect.addEventListener('change', updateDocumentNumber);
 
+                if (addForDeptRadio && deptInfoText) {
+                        addForDeptRadio.addEventListener('change', () => {
+                                deptInfoText.classList.remove('d-none');
+                                docNumInput.readOnly = true;
+                        });
+                }
 
+                if (addForEmpRadio && deptInfoText) {
+                        addForEmpRadio.addEventListener('change', () => {
+                                deptInfoText.classList.add('d-none');
+                                docNumInput.readOnly = false;
+                        });
+                }
+        }
 
-
-
-
-
-
+        document.addEventListener('DOMContentLoaded', function() {
+                initDocumentNumberBehavior();
 
 
 
@@ -823,7 +820,7 @@ const empSelect       = document.getElementById('employee_id');
         function loadSponsorshipEmployeesByType(sponsorshipType) {
             // إرسال طلب AJAX لجلب الموظفين
             $.ajax({
-                url: '{{ url_for("documents.get_sponsorship_employees") }}',
+                url: '{{ url_for("documents.get_sponsorship_employees") if endpoint_exists("documents.get_sponsorship_employees") else url_for("documents_refactored.get_sponsorship_employees") }}',
                 type: 'POST',
                 data: {
                     sponsorship_filter: sponsorshipType,
@@ -878,7 +875,7 @@ const empSelect       = document.getElementById('employee_id');
             };
             
             $.ajax({
-                url: '{{ url_for("documents.create") }}',
+                url: '{{ url_for("documents.create") if endpoint_exists("documents.create") else url_for("documents_refactored.create") }}',
                 type: 'POST',
                 data: data,
                 success: function(response) {
@@ -916,7 +913,7 @@ const empSelect       = document.getElementById('employee_id');
             };
             
             $.ajax({
-                url: '{{ url_for("documents.create") }}',
+                url: '{{ url_for("documents.create") if endpoint_exists("documents.create") else url_for("documents_refactored.create") }}',
                 method: 'POST',
                 data: data,
                 success: function(response) {
@@ -1048,7 +1045,7 @@ const empSelect       = document.getElementById('employee_id');
             };
             
             $.ajax({
-                url: '{{ url_for("documents.create") }}',
+                url: '{{ url_for("documents.create") if endpoint_exists("documents.create") else url_for("documents_refactored.create") }}',
                 method: 'POST',
                 data: data,
                 success: function(response) {
@@ -1112,7 +1109,7 @@ const empSelect       = document.getElementById('employee_id');
             };
             
             $.ajax({
-                url: '{{ url_for("documents.create") }}',
+                url: '{{ url_for("documents.create") if endpoint_exists("documents.create") else url_for("documents_refactored.create") }}',
                 method: 'POST',
                 data: data,
                 success: function(response) {

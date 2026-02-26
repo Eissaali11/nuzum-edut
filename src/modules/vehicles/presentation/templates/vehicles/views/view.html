@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modules/vehicles/view.css') }}">
+{% endblock %}
+
+{% block title %}تفاصيل السيارة: {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+{% include 'vehicles/views/partials/view/_content.html' %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/modules/vehicles/view_logic.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vehicle_document_share.js') }}"></script>
+{% endblock %}

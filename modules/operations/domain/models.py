@@ -80,7 +80,7 @@ class EmployeeRequest(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     employee_id = db.Column(db.Integer, db.ForeignKey('employee.id', ondelete='CASCADE'), nullable=False, index=True)
-    request_type = db.Column(db.Enum(RequestType), nullable=False, index=True)
+    request_type = db.Column(db.Enum(RequestType), nullable=False)
     status = db.Column(db.Enum(RequestStatus), nullable=False, default=RequestStatus.PENDING, index=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
@@ -98,7 +98,6 @@ class EmployeeRequest(db.Model):
     deleted_at = db.Column(db.DateTime)
     
     __table_args__ = (
-        db.Index('idx_employee_status', 'employee_id', 'status'),
         db.Index('idx_type_status', 'request_type', 'status'),
     )
     

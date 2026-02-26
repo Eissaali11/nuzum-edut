@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+
+{% block title %}تعديل تخصيص المشروع: {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+{% include 'vehicles/forms/partials/project_edit/_content.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // إضافة التحقق من التواريخ
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+        
+        endDateInput.addEventListener('change', function() {
+            if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                alert('لا يمكن أن يكون تاريخ النهاية قبل تاريخ البداية');
+                endDateInput.value = '';
+            }
+        });
+        
+        startDateInput.addEventListener('change', function() {
+            if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                endDateInput.value = '';
+            }
+        });
+    });
+</script>
+{% endblock %}

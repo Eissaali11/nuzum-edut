@@ -30,11 +30,27 @@ from flask import Blueprint
 
 
 def _load_legacy_module(parent_dir: Path):
-	spec = importlib.util.spec_from_file_location("_attendance_main", str(parent_dir / "_attendance_main.py"))
-	attendance_module = importlib.util.module_from_spec(spec)
-	sys.modules['_attendance_main'] = attendance_module
-	spec.loader.exec_module(attendance_module)
-	return attendance_module
+	# Try multiple likely locations for the legacy module: top-level `routes/_attendance_main.py`
+	# or the `routes/legacy/_attendance_main.py` path.
+	paths_to_try = [parent_dir / "_attendance_main.py", parent_dir / "legacy" / "_attendance_main.py"]
+
+	last_err = None
+	for p in paths_to_try:
+		if not p.exists():
+			continue
+		try:
+			spec = importlib.util.spec_from_file_location("_attendance_main", str(p))
+			attendance_module = importlib.util.module_from_spec(spec)
+			sys.modules['_attendance_main'] = attendance_module
+			spec.loader.exec_module(attendance_module)
+			return attendance_module
+		except Exception as e:
+			last_err = e
+
+	# If we reach here no candidate path loaded successfully.
+	if last_err:
+		raise last_err
+	raise FileNotFoundError(f"Could not locate _attendance_main.py in {paths_to_try}")
 
 
 def _load_legacy_blueprint(parent_dir: Path):
@@ -42,11 +58,39 @@ def _load_legacy_blueprint(parent_dir: Path):
 	return attendance_module.attendance_bp
 
 
+def _resolve_legacy_func(mod, names):
+	"""Try alternative names on legacy module and return the first found callable.
+
+	Raises AttributeError if none found.
+	"""
+	for name in names:
+		if hasattr(mod, name):
+			return getattr(mod, name)
+
+	# Fallback: try to find a view function registered on the legacy blueprint
+	bp = getattr(mod, 'attendance_bp', None)
+	if bp is not None:
+		# blueprint.view_functions keys can be 'attendance.endpoint' or 'endpoint'
+		for name in names:
+			for candidate in (f"{bp.name}.{name}", name):
+				vf = bp.view_functions.get(candidate)
+				if vf:
+					return vf
+
+	raise AttributeError(f"Legacy module missing any of: {names}")
+
+
 def _build_modular_blueprint_v1():
 	"""Phase 1: Old modular structure (7 files)"""
 	attendance_bp_modular = Blueprint('attendance', __name__)
 
-	from .views import register_views_routes
+	# Prefer v1 registration helpers when present to avoid registering legacy
+	# view functions that would force fallback behavior.
+	try:
+		from routes.attendance.v1.attendance_views import register_views_routes as register_views_routes
+	except Exception:
+		from .views import register_views_routes
+
 	from .recording import register_recording_routes
 	from .export import register_export_routes
 	from .statistics import register_statistics_routes
@@ -60,25 +104,65 @@ def _build_modular_blueprint_v1():
 	register_crud_routes(attendance_bp_modular)
 	register_circles_routes(attendance_bp_modular)
 
-	# Backward-compatibility bridge: routes still referenced by templates.
+	# Backward-compatibility bridge: prefer v1 handlers when available,
+	# otherwise fall back to the legacy module functions.
 	parent_dir = Path(__file__).parent.parent
-	legacy_module = _load_legacy_module(parent_dir)
+	department_view_func = None
+	export_data_func = None
+	export_period_func = None
+
+	# Try to use `routes.attendance.v1` implementations if present
+	try:
+		v1_mod = importlib.import_module('routes.attendance.v1.attendance_list')
+		if hasattr(v1_mod, 'department_attendance_view'):
+			department_view_func = getattr(v1_mod, 'department_attendance_view')
+		if hasattr(v1_mod, 'export_department_data'):
+			export_data_func = getattr(v1_mod, 'export_department_data')
+		if hasattr(v1_mod, 'export_department_period'):
+			export_period_func = getattr(v1_mod, 'export_department_period')
+	except Exception:
+		# ignore import errors and try legacy fallback below
+		pass
+
+	# Legacy fallback for any missing handlers
+	legacy_module = None
+	if department_view_func is None or export_data_func is None or export_period_func is None:
+		legacy_module = _load_legacy_module(parent_dir)
+		if department_view_func is None:
+			department_view_func = _resolve_legacy_func(legacy_module, ['department_attendance_view', 'department_attendance', 'department_view'])
+		if export_data_func is None:
+			try:
+				export_data_func = _resolve_legacy_func(legacy_module, ['export_department_data', 'export_department'])
+			except AttributeError:
+				def _missing_export(*a, **kw):
+					from flask import abort
+					abort(501, description='Export handler not implemented')
+					export_data_func = _missing_export
+		if export_period_func is None:
+			try:
+				export_period_func = _resolve_legacy_func(legacy_module, ['export_department_period', 'export_department_period'])
+			except AttributeError:
+				def _missing_export_period(*a, **kw):
+					from flask import abort
+					abort(501, description='Export period handler not implemented')
+				export_period_func = _missing_export_period
+
 	attendance_bp_modular.add_url_rule(
 		'/department/view',
 		endpoint='department_attendance_view',
-		view_func=legacy_module.department_attendance_view,
+		view_func=department_view_func,
 		methods=['GET']
 	)
 	attendance_bp_modular.add_url_rule(
 		'/department/export-data',
 		endpoint='export_department_data',
-		view_func=legacy_module.export_department_data,
+		view_func=export_data_func,
 		methods=['GET']
 	)
 	attendance_bp_modular.add_url_rule(
 		'/department/export-period',
 		endpoint='export_department_period',
-		view_func=legacy_module.export_department_period,
+		view_func=export_period_func,
 		methods=['GET']
 	)
 
@@ -150,29 +234,57 @@ def _build_modular_blueprint_v2():
 # Resolve routes directory once (without modifying sys.path)
 parent_dir = Path(__file__).parent.parent
 
-# Default behavior: legacy blueprint (safe)
-attendance_bp = _load_legacy_blueprint(parent_dir)
+# Lazy-load blueprint to avoid forcing legacy dependencies on v1-only code imports
+_attendance_bp_cache = None
+_initialization_attempted = False
 
-# Optional modular activation
-modular_mode = os.getenv('ATTENDANCE_USE_MODULAR', '0')
 
-if modular_mode == '1':
-	# Phase 1: Old modular structure
+def _initialize_attendance_bp():
+	"""Initialize the attendance blueprint based on environment and fallback logic."""
+	global _attendance_bp_cache, _initialization_attempted
+	
+	if _initialization_attempted:
+		return _attendance_bp_cache
+	
+	_initialization_attempted = True
+	
+	# Optional modular activation (prefer modular if set)
+	modular_mode = os.getenv('ATTENDANCE_USE_MODULAR', '0')
+	
+	if modular_mode == '1':
+		# Phase 1: Old modular structure
+		try:
+			_attendance_bp_cache = _build_modular_blueprint_v1()
+			print("[OK] Attendance Module: Using Phase 1 (OLD modular structure)")
+			return _attendance_bp_cache
+		except Exception as e:
+			print(f"[ERR] Phase 1 failed: {e}, attempting legacy fallback")
+	
+	elif modular_mode == '2':
+		# Phase 2: New optimized structure (EXPERIMENTAL)
+		try:
+			_attendance_bp_cache = _build_modular_blueprint_v2()
+			print("[OK] Attendance Module: Using Phase 2 (NEW optimized structure) [EXPERIMENTAL]")
+			return _attendance_bp_cache
+		except Exception as e:
+			print(f"[ERR] Phase 2 failed: {e}, attempting legacy fallback")
+	
+	# Default fallback: legacy blueprint
 	try:
-		attendance_bp = _build_modular_blueprint_v1()
-		print("[OK] Attendance Module: Using Phase 1 (OLD modular structure)")
+		_attendance_bp_cache = _load_legacy_blueprint(parent_dir)
+		return _attendance_bp_cache
 	except Exception as e:
-		print(f"[ERR] Phase 1 failed: {e}, falling back to legacy")
-		attendance_bp = _load_legacy_blueprint(parent_dir)
+		print(f"[ERR] Legacy blueprint load failed: {e}")
+		# Create empty blueprint as last resort to avoid complete failure
+		_attendance_bp_cache = Blueprint('attendance', __name__)
+		return _attendance_bp_cache
 
-elif modular_mode == '2':
-	# Phase 2: New optimized structure (EXPERIMENTAL)
-	try:
-		attendance_bp = _build_modular_blueprint_v2()
-		print("[OK] Attendance Module: Using Phase 2 (NEW optimized structure) [EXPERIMENTAL]")
-	except Exception as e:
-		print(f"[ERR] Phase 2 failed: {e}, falling back to legacy")
-		attendance_bp = _load_legacy_blueprint(parent_dir)
+
+def __getattr__(name):
+	"""Lazy-load attendance_bp on first access to avoid forcing legacy deps."""
+	if name == 'attendance_bp':
+		return _initialize_attendance_bp()
+	raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 __all__ = ['attendance_bp']

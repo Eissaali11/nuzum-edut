@@ -1,4 +1,5 @@
 import logging
+import enum
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -9,6 +10,16 @@ from utils.audit_helpers import log_create, log_update, log_delete
 
 # إعداد التسجيل
 logger = logging.getLogger(__name__)
+
+
+def _normalize_role_value(role) -> str:
+    if isinstance(role, enum.Enum):
+        role = role.value
+    return str(role or '').strip().lower()
+
+
+def _is_admin_user(user: User) -> bool:
+    return bool(getattr(user, 'is_admin', False)) or _normalize_role_value(getattr(user, 'role', None)) == UserRole.ADMIN.value
 
 # تعريف الصلاحيات الافتراضية حسب الدور
 DEFAULT_PERMISSIONS = {
@@ -335,7 +346,9 @@ def create_default_permissions(user: User) -> List[UserPermission]:
     permissions = []
     
     # الحصول على الصلاحيات الافتراضية للدور
-    role_permissions = DEFAULT_PERMISSIONS.get(user.role, {})
+    normalized_role = _normalize_role_value(user.role)
+    role_enum = next((role for role in UserRole if role.value == normalized_role), None)
+    role_permissions = DEFAULT_PERMISSIONS.get(role_enum, {}) if role_enum else {}
     
     # إنشاء كائن صلاحية لكل وحدة
     for module, permission_bit in role_permissions.items():
@@ -364,7 +377,7 @@ def update_user_permissions(user_id: int, permissions_data: Dict[str, int]) -> L
         raise ValueError(f"لم يتم العثور على المستخدم بالمعرف {user_id}")
     
     # المدير لديه كل الصلاحيات دائمًا
-    if user.role == UserRole.ADMIN:
+    if _is_admin_user(user):
         raise ValueError("لا يمكن تعديل صلاحيات مدير النظام")
     
     # حذف الصلاحيات الحالية
@@ -417,17 +430,19 @@ def check_module_access(user: User, module: Module, permission: int = Permission
     :param permission: الصلاحية المطلوبة (القيمة الافتراضية هي العرض)
     :return: هل المستخدم لديه الصلاحية
     """
+    requested_module = module.value if isinstance(module, enum.Enum) else str(module)
+
     # التحقق من أن المستخدم نشط
     if not user.is_active:
         return False
     
     # المدير لديه كل الصلاحيات
-    if user.role == UserRole.ADMIN:
+    if _is_admin_user(user):
         return True
     
     # البحث عن صلاحيات الوحدة
     for user_permission in user.permissions:
-        if user_permission.module == module:
+        if user_permission.module == requested_module:
             return bool(user_permission.permissions & permission)
     
     return False

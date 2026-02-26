@@ -1,4 +1,7 @@
 <div>
+    {% set documents_index_url = url_for('documents.index') if endpoint_exists('documents.index') else url_for('documents_refactored.index') %}
+    {% set documents_export_excel_url = url_for('documents.export_excel') if endpoint_exists('documents.export_excel') else url_for('documents_refactored.export_excel') %}
+    {% set documents_excel_dashboard_url = url_for('documents.excel_dashboard') if endpoint_exists('documents.excel_dashboard') else url_for('documents_refactored.excel_dashboard') %}
     <!-- Page Header -->
     <div class="page-header mb-4">
         <h1 style="color: #667eea; font-weight: 700;">
@@ -23,11 +26,11 @@
     
     <!-- Quick Actions -->
     <div class="text-center mt-4">
-        <a href="{{ url_for('documents.index') }}" class="action-btn">
+        <a href="{{ documents_index_url }}" class="action-btn">
             <i class="fas fa-arrow-right me-2"></i>
             العودة للوثائق
         </a>
-        <a href="{{ url_for('documents.export_excel') }}" class="action-btn" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+        <a href="{{ documents_export_excel_url }}" class="action-btn" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
             <i class="fas fa-download me-2"></i>
             تحميل نموذج Excel
         </a>
@@ -116,7 +119,7 @@
                     <i class="fas fa-print me-2"></i>
                     طباعة
                 </button>
-                <a href="{{ url_for('documents.excel_dashboard') }}" class="action-btn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+                <a href="{{ documents_excel_dashboard_url }}" class="action-btn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
                     <i class="fas fa-upload me-2"></i>
                     رفع ملف آخر
                 </a>

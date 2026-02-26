@@ -1,4 +1,11 @@
 <div >
+    {% set documents_create_ep = 'documents.create' if endpoint_exists('documents.create') else 'documents_refactored.create' %}
+    {% set documents_bulk_ep = 'documents.department_bulk_create' if endpoint_exists('documents.department_bulk_create') else 'documents_refactored.department_bulk_create' %}
+    {% set documents_import_ep = 'documents.import_excel' if endpoint_exists('documents.import_excel') else 'documents_refactored.import_excel' %}
+    {% set documents_excel_dashboard_ep = 'documents.excel_dashboard' if endpoint_exists('documents.excel_dashboard') else 'documents_refactored.excel_dashboard' %}
+    {% set documents_index_ep = 'documents.index' if endpoint_exists('documents.index') else 'documents_refactored.index' %}
+    {% set documents_expiring_ep = 'documents.expiring' if endpoint_exists('documents.expiring') else 'documents_refactored.expiring' %}
+
     <!-- Enhanced Header -->
     <div class="page-header">
         <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -7,17 +14,17 @@
                 <p class="subtitle">نظام إدارة الوثائق والملفات الخاصة بالموظفين</p>
             </div>
             <div class="btn-action-group">
-                <a href="{{ url_for('documents.create') }}" class="btn-enhanced btn-success-enhanced">
+                <a href="{{ url_for(documents_create_ep) }}" class="btn-enhanced btn-success-enhanced">
                     <i class="fas fa-plus"></i> إضافة وثيقة
                 </a>
-                <a href="{{ url_for('documents.department_bulk_create') }}" class="btn-enhanced btn-info-enhanced">
+                <a href="{{ url_for(documents_bulk_ep) }}" class="btn-enhanced btn-info-enhanced">
                     <i class="fas fa-building"></i> إضافة وثائق قسم كامل
                 </a>
-                <a href="{{ url_for('documents.import_excel') }}" class="btn-enhanced btn-primary-enhanced">
+                <a href="{{ url_for(documents_import_ep) }}" class="btn-enhanced btn-primary-enhanced">
                     <i class="fas fa-file-import"></i> استيراد من Excel
                 </a>
-                <a href="{{ url_for('documents.excel_dashboard') }}" class="btn-enhanced" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);"><i class="fas fa-chart-pie"></i> داش بورد Excel</a>
-                <a href="{{ url_for('documents.expiring') }}" class="btn-enhanced btn-warning-enhanced">
+                <a href="{{ url_for(documents_excel_dashboard_ep) }}" class="btn-enhanced" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);"><i class="fas fa-chart-pie"></i> داش بورد Excel</a>
+                <a href="{{ url_for(documents_expiring_ep) }}" class="btn-enhanced btn-warning-enhanced">
                     <i class="fas fa-exclamation-triangle"></i> الوثائق المنتهية
                 </a>
                 <a href="#" onclick="exportToExcel()" class="btn-enhanced btn-success-enhanced">
@@ -35,7 +42,7 @@
             <h5 class="card-title mb-0">خيارات البحث</h5>
         </div>
         <div class="card-body">
-            <form method="get" action="{{ url_for('documents.index') }}" class="row">
+            <form method="get" action="{{ url_for(documents_index_ep) }}" class="row">
                 <div class="col-md-3 mb-3">
                     <label for="document_type" class="form-label">نوع الوثيقة</label>
                     <select class="form-select" id="document_type" name="document_type">
@@ -102,7 +109,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-search"></i> بحث
                     </button>
-                    <a href="{{ url_for('documents.index') }}" class="btn btn-secondary">
+                    <a href="{{ url_for(documents_index_ep) }}" class="btn btn-secondary">
                         <i class="fas fa-refresh"></i> إعادة تعيين
                     </a>
                     <button type="button" class="btn btn-info" onclick="printPage()">
@@ -138,13 +145,14 @@
                     </thead>
                     <tbody>
                         {% for document in documents %}
+                        {% set employee = document.employee %}
                         <tr>
-                            <td data-label="اسم الموظف">{{ document.employee.name }}</td>
-                            <td data-label="رقم الموظف">{{ document.employee.employee_id or 'غير محدد' }}</td>
-                            <td data-label="رقم الهوية">{{ document.employee.national_id or 'غير محدد' }}</td>
+                            <td data-label="اسم الموظف">{{ employee.name if employee else 'غير محدد' }}</td>
+                            <td data-label="رقم الموظف">{{ employee.employee_id if employee and employee.employee_id else 'غير محدد' }}</td>
+                            <td data-label="رقم الهوية">{{ employee.national_id if employee and employee.national_id else 'غير محدد' }}</td>
                             <td data-label="القسم">
-                                {% if document.employee.departments %}
-                                    {% for dept in document.employee.departments %}
+                                {% if employee and employee.departments %}
+                                    {% for dept in employee.departments %}
                                         <span class="badge bg-secondary">{{ dept.name }}</span>
                                     {% endfor %}
                                 {% else %}
@@ -184,7 +192,7 @@
                             </td>
                             <td data-label="الحالة">
                                 {% if document.expiry_date %}
-                                    {% set days_until_expiry = (document.expiry_date - today).days %}
+                                    {% set days_until_expiry = document.days_to_expiry if document.days_to_expiry is not none else (document.expiry_date - now.date()).days %}
                                     {% if days_until_expiry < 0 %}
                                         <span class="badge bg-danger">منتهية</span>
                                     {% elif days_until_expiry <= 30 %}
@@ -199,11 +207,31 @@
                             <td data-label="الملاحظات">{{ document.notes or 'لا توجد' }}</td>
                             <td data-label="الإجراءات">
                                 <div class="action-buttons">
+                                    {% if endpoint_exists('documents.update_expiry_date') %}
+                                    <a href="{{ url_for('documents.update_expiry_date', document_id=document.id) }}" 
+                                       class="btn btn-sm-enhanced btn-success" 
+                                       title="تحديث تاريخ الانتهاء">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </a>
+                                    {% elif endpoint_exists('documents.update_expiry') %}
                                     <a href="{{ url_for('documents.update_expiry', id=document.id) }}" 
                                        class="btn btn-sm-enhanced btn-success" 
                                        title="تحديث تاريخ الانتهاء">
                                         <i class="fas fa-calendar-alt"></i>
                                     </a>
+                                    {% elif endpoint_exists('documents_refactored.update_expiry_date') %}
+                                    <a href="{{ url_for('documents_refactored.update_expiry_date', document_id=document.id) }}" 
+                                       class="btn btn-sm-enhanced btn-success" 
+                                       title="تحديث تاريخ الانتهاء">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </a>
+                                    {% elif endpoint_exists('documents_refactored.update_expiry') %}
+                                    <a href="{{ url_for('documents_refactored.update_expiry', id=document.id) }}" 
+                                       class="btn btn-sm-enhanced btn-success" 
+                                       title="تحديث تاريخ الانتهاء">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </a>
+                                    {% endif %}
                                     {% if document.file_path %}
                                     <a href="{{ url_for('static', filename=document.file_path) }}" 
                                        class="btn btn-sm-enhanced btn-info" 
@@ -212,11 +240,25 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     {% endif %}
+                                    {% if endpoint_exists('documents.delete') %}
+                                    <form method="post" action="{{ url_for('documents.delete', id=document.id) }}" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف الوثيقة؟');">
+                                        <button type="submit" class="btn btn-sm-enhanced btn-danger" title="حذف الوثيقة">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% elif endpoint_exists('documents.delete_document') %}
                                     <a href="{{ url_for('documents.delete_document', document_id=document.id) }}" 
                                        class="btn btn-sm-enhanced btn-danger" 
                                        title="حذف الوثيقة">
                                         <i class="fas fa-trash"></i>
                                     </a>
+                                    {% elif endpoint_exists('documents_refactored.delete_document') %}
+                                    <a href="{{ url_for('documents_refactored.delete_document', document_id=document.id) }}" 
+                                       class="btn btn-sm-enhanced btn-danger" 
+                                       title="حذف الوثيقة">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>
@@ -229,10 +271,10 @@
                 <i class="fas fa-file-alt text-muted fs-1 mb-3"></i>
                 <p>لا توجد وثائق مسجلة</p>
                 <div class="mt-3">
-                    <a href="{{ url_for('documents.create') }}" class="btn btn-success mx-2">
+                    <a href="{{ url_for(documents_create_ep) }}" class="btn btn-success mx-2">
                         <i class="fas fa-plus me-1"></i> إضافة وثيقة
                     </a>
-                    <a href="{{ url_for('documents.import_excel') }}" class="btn btn-primary mx-2">
+                    <a href="{{ url_for(documents_import_ep) }}" class="btn btn-primary mx-2">
                         <i class="fas fa-file-import me-1"></i> استيراد من Excel
                     </a>
                 </div>

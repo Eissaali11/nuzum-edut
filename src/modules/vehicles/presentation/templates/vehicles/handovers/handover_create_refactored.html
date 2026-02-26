@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    {% if force_mode == 'return' %}
+        نموذج استلام مركبة - {{ vehicle.plate_number }}
+    {% else %}
+        نموذج تسليم مركبة - {{ vehicle.plate_number }}
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modules/vehicles/handover_form.css') }}">
+{% endblock %}
+
+{% block content %}
+{% include 'vehicles/handovers/partials/handover_create_refactored/_content.html' %}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    
+    <!-- fabric.js library for canvas drawings -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    
+    <!-- Canvas drawing system (damage diagram) -->
+    <script src="{{ url_for('static', filename='js/modules/vehicles/handover_canvas.js') }}"></script>
+    
+    <!-- Form interactions (signatures, search, file upload, image management) -->
+    <script src="{{ url_for('static', filename='js/modules/vehicles/handover_interactions.js') }}"></script>
+{% endblock %}

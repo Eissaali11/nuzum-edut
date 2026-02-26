@@ -11,7 +11,7 @@ from typing import Any, Dict
 from flask import Blueprint, current_app, jsonify, render_template, request, url_for, redirect, flash
 from flask_login import login_required
 
-from app.utils.status_validator import StatusValidator
+from utils.status_validator import StatusValidator
 from core.extensions import db
 from models import Vehicle, VehicleMaintenance, VehicleMaintenanceImage
 from modules.vehicles.application.maintenance_service import MaintenanceService

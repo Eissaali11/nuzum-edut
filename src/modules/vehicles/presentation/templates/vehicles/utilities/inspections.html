@@ -1,0 +1,7 @@
+{% extends 'layout.html' %}
+
+{% block title %}فحوصات السيارة {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+{% include 'vehicles/utilities/partials/inspections/_content.html' %}
+{% endblock %}

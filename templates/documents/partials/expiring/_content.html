@@ -1,7 +1,13 @@
 <div class="container-fluid">
+    {% set documents_index_url = url_for('documents.index') if endpoint_exists('documents.index') else url_for('documents_refactored.index') %}
+    {% set documents_expiring_url = url_for('documents.expiring') if endpoint_exists('documents.expiring') else url_for('documents_refactored.expiring') %}
+    {% set document_template_pdf_url = url_for('documents.document_template_pdf') if endpoint_exists('documents.document_template_pdf') else url_for('documents_refactored.document_template_pdf') %}
+    {% set documents_create_url = url_for('documents.create') if endpoint_exists('documents.create') else url_for('documents_refactored.create') %}
+    {% set confirm_delete_url_base = 'documents.confirm_delete' if endpoint_exists('documents.confirm_delete') else 'documents_refactored.confirm_delete' %}
+    {% set export_excel_url = url_for('documents.export_excel', expiring=request.args.get('status', 'expiring'), document_type=selected_type, employee_id=selected_employee, department_id=selected_department, sponsorship_status=selected_sponsorship) if endpoint_exists('documents.export_excel') else url_for('documents_refactored.export_excel', expiring=request.args.get('status', 'expiring'), document_type=selected_type, employee_id=selected_employee, department_id=selected_department, sponsorship_status=selected_sponsorship) %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>الوثائق التي ستنتهي قريباً</h1>
-        <a href="{{ url_for('documents.index') }}" class="btn btn-secondary">
+        <a href="{{ documents_index_url }}" class="btn btn-secondary">
             <i class="fas fa-arrow-right me-1"></i> العودة للقائمة
         </a>
     </div>
@@ -12,7 +18,7 @@
             <h5 class="card-title mb-0">خيارات البحث</h5>
         </div>
         <div class="card-body">
-            <form method="get" action="{{ url_for('documents.expiring') }}" class="row">
+            <form method="get" action="{{ documents_expiring_url }}" class="row">
                 <!-- خيار حالة الوثائق -->
                 <div class="col-12 mb-3">
                     <div class="btn-group w-100" role="group">
@@ -105,7 +111,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-search me-1"></i> بحث
                     </button>
-                    <a href="{{ url_for('documents.expiring') }}" class="btn btn-secondary">
+                    <a href="{{ documents_expiring_url }}" class="btn btn-secondary">
                         <i class="fas fa-undo me-1"></i> إعادة تعيين
                     </a>
                 </div>
@@ -187,13 +193,13 @@
             <!-- أزرار الإجراءات -->
             <div class="btn-group">
                 {% if documents %}
-                <a href="{{ url_for('documents.export_excel', expiring=request.args.get('status', 'expiring'), document_type=selected_type, employee_id=selected_employee, department_id=selected_department, sponsorship_status=selected_sponsorship) }}" 
+                <a href="{{ export_excel_url }}" 
                    class="btn btn-success btn-sm" title="تصدير إلى إكسل">
                     <i class="fas fa-file-excel"></i> تصدير إلى إكسل
                 </a>
                 {% endif %}
                 
-                <a href="{{ url_for('documents.document_template_pdf') }}" 
+                <a href="{{ document_template_pdf_url }}" 
                    class="btn btn-primary btn-sm" title="عرض نموذج الوثائق" target="_blank">
                     <i class="fas fa-file-pdf"></i> عرض النموذج
                 </a>
@@ -220,9 +226,10 @@
                     <tbody>
                         {% for document in documents %}
                         {% set days_to_expiry = (document.expiry_date - now.date()).days if now else 0 %}
+                        {% set employee = document.employee %}
                         <tr class="document-{{ document.document_type }} {% if days_to_expiry < 30 %}table-warning{% endif %} {% if days_to_expiry < 0 %}table-danger{% endif %}">
-                            <td>{{ document.employee.name }}</td>
-                            <td>{{ document.employee.employee_id }}</td>
+                            <td>{{ employee.name if employee else 'غير محدد' }}</td>
+                            <td>{{ employee.employee_id if employee and employee.employee_id else 'غير محدد' }}</td>
                             <td>
                                 {% if document.document_type == 'national_id' %}
                                 <span class="badge bg-primary">الهوية الوطنية</span>
@@ -260,9 +267,9 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if document.employee.sponsorship_status == 'inside' %}
+                                {% if employee and employee.sponsorship_status == 'inside' %}
                                 <span class="badge bg-success">على الكفالة</span>
-                                {% elif document.employee.sponsorship_status == 'outside' %}
+                                {% elif employee and employee.sponsorship_status == 'outside' %}
                                 <span class="badge bg-warning">خارج الكفالة</span>
                                 {% else %}
                                 <span class="badge bg-secondary">غير محدد</span>
@@ -274,10 +281,10 @@
                                     <button type="button" class="btn btn-sm btn-primary" title="تحديث تاريخ الانتهاء" onclick="updateExpiryDate({{ document.id }}, '{{ document.expiry_date }}')">
                                         <i class="fas fa-calendar-alt"></i>
                                     </button>
-                                    <a href="{{ url_for('documents.create') }}" class="btn btn-sm btn-success" title="تجديد">
+                                    <a href="{{ documents_create_url }}" class="btn btn-sm btn-success" title="تجديد">
                                         <i class="fas fa-sync-alt"></i>
                                     </a>
-                                    <a href="{{ url_for('documents.confirm_delete', id=document.id) }}" class="btn btn-sm btn-danger" title="حذف">
+                                    <a href="{{ url_for(confirm_delete_url_base, id=document.id) }}" class="btn btn-sm btn-danger" title="حذف">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </div>

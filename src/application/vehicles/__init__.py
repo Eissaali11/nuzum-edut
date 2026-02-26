@@ -1,0 +1,1 @@
+from src.modules.vehicles.application import *

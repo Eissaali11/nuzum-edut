@@ -9,12 +9,15 @@
                     </h5>
                 </div>
                 <div class="card-body">
+                    {% set employee = document.employee if document and document.employee else None %}
+                    {% set update_expiry_action = url_for('documents.update_expiry', id=document.id) if endpoint_exists('documents.update_expiry') else url_for('documents_refactored.update_expiry', id=document.id) %}
+                    {% set documents_index_url = url_for('documents.index') if endpoint_exists('documents.index') else url_for('documents_refactored.index') %}
                     <p class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        أنت تقوم بتحديث تاريخ انتهاء {{ document_type_ar }} رقم <strong>{{ document.document_number }}</strong> للموظف <strong>{{ document.employee.name }}</strong>.
+                        أنت تقوم بتحديث تاريخ انتهاء {{ document_type_ar }} رقم <strong>{{ document.document_number }}</strong> للموظف <strong>{{ employee.name if employee else 'غير محدد' }}</strong>.
                     </p>
 
-                    <form method="POST" action="{{ url_for('documents.update_expiry', id=document.id) }}">
+                    <form method="POST" action="{{ update_expiry_action }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         
                         <div class="row mb-4">
@@ -36,7 +39,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('documents.index') }}" class="btn btn-secondary">
+                            <a href="{{ documents_index_url }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-right me-1"></i>
                                 رجوع
                             </a>

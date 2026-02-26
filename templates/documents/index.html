@@ -57,12 +57,14 @@
 </script>
 
 <script>
+const documentsExportEndpoint = "{{ url_for('documents.export_excel') if endpoint_exists('documents.export_excel') else url_for('documents_refactored.export_excel') }}";
+
 function exportToExcel() {
     // الحصول على معلمات الفلتر الحالية من URL
     const urlParams = new URLSearchParams(window.location.search);
     
     // بناء رابط التصدير مع نفس الفلاتر
-    let exportUrl = '{{ url_for("documents.export_excel") }}?';
+    let exportUrl = documentsExportEndpoint + '?';
     
     // إضافة معلمات الفلتر
     if (urlParams.get('document_type')) {

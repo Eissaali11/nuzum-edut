@@ -25,7 +25,7 @@
                                 </a>
                             </div>
                             {% endif %}
-                            
+
                             {% if current_user|check_module_access(Module.DEPARTMENTS) %}
                             <div class="col">
                                 <a href="{{ url_for('departments.index') }}" class="text-decoration-none">

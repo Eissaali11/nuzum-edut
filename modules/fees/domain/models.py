@@ -6,6 +6,8 @@ Contains: RenewalFee, Fee, FeesCost
 from datetime import datetime
 from core.extensions import db
 
+__all__ = ["RenewalFee", "Fee", "FeesCost"]
+
 
 class RenewalFee(db.Model):
     """تكاليف رسوم تجديد أوراق الموظفين"""
@@ -97,3 +99,60 @@ class FeesCost(db.Model):
     def total_fees(self):
         """إجمالي تكاليف جميع الرسوم"""
         return self.passport_fee + self.labor_office_fee + self.insurance_fee + self.social_insurance_fee
+
+
+# Legacy table mirrors (schema drift compatibility)
+class RenewalFeeLegacy(db.Model):
+    __tablename__ = 'renewal_fee'
+
+    id = db.Column(db.Integer, primary_key=True)
+    document_id = db.Column(db.Integer, db.ForeignKey('document.id', ondelete='CASCADE'), nullable=False)
+    fee_date = db.Column(db.Date, nullable=False)
+    fee_type = db.Column(db.String(50), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    payment_status = db.Column(db.String(20), default='pending')
+    payment_date = db.Column(db.Date, nullable=True)
+    receipt_number = db.Column(db.String(50), nullable=True)
+    transfer_number = db.Column(db.String(50), nullable=True)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class FeeLegacy(db.Model):
+    __tablename__ = 'fee'
+
+    id = db.Column(db.Integer, primary_key=True)
+    fee_type = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.String(255))
+    amount = db.Column(db.Float, nullable=False)
+    due_date = db.Column(db.Date)
+    is_paid = db.Column(db.Boolean, default=False)
+    paid_date = db.Column(db.Date)
+    recipient = db.Column(db.String(100))
+    reference_number = db.Column(db.String(50))
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id', ondelete='SET NULL'), nullable=True)
+    document_id = db.Column(db.Integer, db.ForeignKey('document.id', ondelete='SET NULL'), nullable=True)
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicle.id', ondelete='SET NULL'), nullable=True)
+
+
+class FeesCostLegacy(db.Model):
+    __tablename__ = 'fees_cost'
+
+    id = db.Column(db.Integer, primary_key=True)
+    document_id = db.Column(db.Integer, db.ForeignKey('document.id', ondelete='CASCADE'), nullable=False)
+    document_type = db.Column(db.String(50), nullable=False)
+    passport_fee = db.Column(db.Float, default=0.0)
+    labor_office_fee = db.Column(db.Float, default=0.0)
+    insurance_fee = db.Column(db.Float, default=0.0)
+    social_insurance_fee = db.Column(db.Float, default=0.0)
+    transfer_sponsorship = db.Column(db.Boolean, default=False)
+    due_date = db.Column(db.Date, nullable=False)
+    payment_status = db.Column(db.String(20), default='pending')
+    payment_date = db.Column(db.Date, nullable=True)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -7,6 +7,7 @@
         </div>
         
         <div class="delete-body">
+            {% set employee = document.employee if document and document.employee else None %}
             <div class="document-info">
                 <h5 class="text-center mb-3 text-danger fw-bold">معلومات الوثيقة المراد حذفها</h5>
                 
@@ -26,17 +27,17 @@
                         اسم الموظف
                     </div>
                     <div class="info-value">
-                        <strong>{{ document.employee.name }}</strong>
+                        <strong>{{ employee.name if employee else 'غير محدد' }}</strong>
                     </div>
                 </div>
                 
-                {% if document.employee.employee_id %}
+                {% if employee and employee.employee_id %}
                 <div class="info-row">
                     <div class="info-label">
                         <i class="fas fa-id-badge text-info"></i>
                         رقم الموظف
                     </div>
-                    <div class="info-value">{{ document.employee.employee_id }}</div>
+                    <div class="info-value">{{ employee.employee_id }}</div>
                 </div>
                 {% endif %}
                 

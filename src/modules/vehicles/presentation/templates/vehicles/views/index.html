@@ -1,0 +1,71 @@
+{% extends 'layout.html' %}
+
+{% block title %}إدارة السيارات{% endblock %}
+
+{% block extra_css %}
+{% include 'vehicles/views/partials/index/_extra_css.html' %}
+{% endblock %}
+
+{% block content %}
+{% include 'vehicles/views/partials/index/_content.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    if (typeof bootstrap !== 'undefined') {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+
+    // Add animation to table rows
+    const tableRows = document.querySelectorAll('.table tbody tr');
+    tableRows.forEach((row, index) => {
+        row.style.animation = `fadeIn 0.5s ease-in-out ${index * 0.05}s both`;
+    });
+
+    console.log('تم تحميل صفحة إدارة السيارات بنجاح');
+});
+</script>
+{% endblock %}
+<style>
+/* إصلاح عرض جميع السيارات - إضافة نظام تمرير للجدول */
+.vehicles-table-container {
+    overflow: visible !important;
+}
+
+.table-responsive {
+    max-height: 70vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    border-radius: 0 0 12px 12px;
+}
+
+/* تحسين شريط التمرير */
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* ضمان عرض جميع الصفوف */
+.table tbody {
+    height: auto !important;
+    max-height: none !important;
+}
+</style>

@@ -10,7 +10,7 @@ Service Layer: services/attendance_service.py (~900 lines)
 Architecture: Controller calls Service → Service returns data → Controller renders
 """
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file, make_response
 from flask_login import login_required, current_user
 from datetime import datetime, date, time, timedelta
 from services.attendance_service import AttendanceService
@@ -24,6 +24,20 @@ logger = logging.getLogger(__name__)
 
 # Blueprint registration
 attendance_refactored_bp = Blueprint('attendance_refactored', __name__)
+
+
+def _with_modular_header(resp):
+    """Attach X-Attendance-Handler header to a Flask response."""
+    r = make_response(resp)
+    r.headers['X-Attendance-Handler'] = 'MODULAR_v1'
+    return r
+
+
+@attendance_refactored_bp.after_request
+def _add_modular_header(response):
+    """Ensure all blueprint responses include the modular handler header."""
+    response.headers['X-Attendance-Handler'] = 'MODULAR_v1'
+    return response
 
 
 # ==================== Main Routes ====================
@@ -67,23 +81,25 @@ def index():
         hijri_date = format_date_hijri(date_obj)
         gregorian_date = format_date_gregorian(date_obj)
         
-        return render_template('attendance/index.html',
-                              attendances=unified_attendances,
-                              departments=departments,
-                              date=date_obj,
-                              hijri_date=hijri_date,
-                              gregorian_date=gregorian_date,
-                              selected_department=department_id,
-                              selected_status=status,
-                              present_count=stats['present'],
-                              absent_count=stats['absent'],
-                              leave_count=stats['leave'],
-                              sick_count=stats['sick'])
+        return _with_modular_header(render_template('attendance/index.html',
+                      attendances=unified_attendances,
+                      departments=departments,
+                      date=date_obj,
+                      hijri_date=hijri_date,
+                      gregorian_date=gregorian_date,
+                      selected_department=department_id,
+                      selected_status=status,
+                      present_count=stats['present'],
+                      absent_count=stats['absent'],
+                      leave_count=stats['leave'],
+                      sick_count=stats['sick']))
     
     except Exception as e:
         logger.error(f'Error in index: {str(e)}', exc_info=True)
         flash('حدث خطأ في تحميل البيانات', 'danger')
-        return render_template('error.html', error_title='خطأ', error_message=str(e)), 500
+        resp = _with_modular_header(render_template('error.html', error_title='خطأ', error_message=str(e)))
+        resp.status_code = 500
+        return resp
 
 
 @attendance_refactored_bp.route('/record', methods=['GET', 'POST'])
@@ -125,12 +141,12 @@ def record():
             )
             
             flash(message, 'success' if attendance else 'danger')
-            return redirect(url_for('attendance_refactored.index', date=date_str))
+            return _with_modular_header(redirect(url_for('attendance_refactored.index', date=date_str)))
         
         except Exception as e:
             logger.error(f'Error in record POST: {str(e)}', exc_info=True)
             flash(f'حدث خطأ: {str(e)}', 'danger')
-            return redirect(url_for('attendance_refactored.record'))
+            return _with_modular_header(redirect(url_for('attendance_refactored.record')))
     
     # GET: Show form
     user_role = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
@@ -144,11 +160,11 @@ def record():
     hijri_date = format_date_hijri(today)
     gregorian_date = format_date_gregorian(today)
     
-    return render_template('attendance/record.html',
+    return _with_modular_header(render_template('attendance/record.html',
                           employees=employees,
                           today=today,
                           hijri_date=hijri_date,
-                          gregorian_date=gregorian_date)
+                          gregorian_date=gregorian_date))
 
 
 @attendance_refactored_bp.route('/department', methods=['GET', 'POST'])

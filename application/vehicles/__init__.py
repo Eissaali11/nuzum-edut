@@ -1,1 +1,1 @@
-"""نطاق تطبيق المركبات — خدمات وعمليات."""
+from modules.vehicles.application import *

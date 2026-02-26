@@ -1,0 +1,7 @@
+{% extends 'layout.html' %}
+
+{% block title %}تفاصيل السيارة: {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+{% include 'vehicles/views/partials/view_simple/_content.html' %}
+{% endblock %}

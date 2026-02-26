@@ -1,0 +1,1 @@
+from src.modules.vehicles.presentation.web.routes import *

@@ -217,16 +217,18 @@
                 </div>
                 
                 <div class="col-12">
+                    {% set documents_create_ep = 'documents.create' if endpoint_exists('documents.create') else 'documents_refactored.create' %}
+                    {% set documents_expiring_ep = 'documents.expiring' if endpoint_exists('documents.expiring') else 'documents_refactored.expiring' %}
                     <div class="action-card">
                         <h5 class="chart-title" style="margin-bottom: 20px;">
                             <i class="fas fa-bolt me-2"></i>
                             Quick Actions
                         </h5>
-                        <button onclick="window.location.href='{{ url_for('documents.create') }}'" class="action-btn">
+                        <button onclick="window.location.href='{{ url_for(documents_create_ep) }}'" class="action-btn">
                             <i class="fas fa-plus me-2"></i>
                             إضافة وثيقة جديدة
                         </button>
-                        <button onclick="window.location.href='{{ url_for('documents.expiring') }}'" class="action-btn-secondary">
+                        <button onclick="window.location.href='{{ url_for(documents_expiring_ep) }}'" class="action-btn-secondary">
                             <i class="fas fa-exclamation-circle me-2"></i>
                             عرض الوثائق المنتهية
                         </button>

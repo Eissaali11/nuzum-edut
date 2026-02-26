@@ -1,0 +1,93 @@
+{# Rental Information Section #}
+<div id="content-rental" class="content-section d-none">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-money-bill-wave ms-2"></i>
+                معلومات الإيجار
+            </h5>
+            <a href="{{ url_for('vehicles.create_rental', id=vehicle.id) }}" class="btn btn-sm btn-dark">
+                {% if rental %}تعديل الإيجار{% else %}إضافة إيجار{% endif %}
+            </a>
+        </div>
+        <div class="card-body">
+            {% if rental %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="row mb-2">
+                        <div class="col-sm-6 fw-bold">تاريخ البداية:</div>
+                        <div class="col-sm-6">{{ rental.formatted_start_date }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-6 fw-bold">تاريخ النهاية:</div>
+                        <div class="col-sm-6">
+                            {% if rental.end_date %}
+                            {{ rental.formatted_end_date }}
+                            {% else %}
+                            <span class="badge bg-info">مستمر</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-6 fw-bold">قيمة الإيجار الشهري:</div>
+                        <div class="col-sm-6">{{ "{:,.2f}".format(rental.monthly_cost) }} ريال</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row mb-2">
+                        <div class="col-sm-6 fw-bold">حالة الإيجار:</div>
+                        <div class="col-sm-6">
+                            {% if rental.is_active %}
+                            <span class="badge bg-success">نشط</span>
+                            {% else %}
+                            <span class="badge bg-danger">منتهي</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-6 fw-bold">المؤجر:</div>
+                        <div class="col-sm-6">{{ rental.lessor_name or 'غير محدد' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-6 fw-bold">معلومات الاتصال:</div>
+                        <div class="col-sm-6">{{ rental.lessor_contact or 'غير محدد' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-6 fw-bold">رقم العقد:</div>
+                        <div class="col-sm-6">{{ rental.contract_number or 'غير محدد' }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if rental.notes %}
+            <hr class="my-3">
+            <div class="row mb-2">
+                <div class="col-12 fw-bold">ملاحظات الإيجار:</div>
+                <div class="col-12 mt-2">
+                    <div class="alert alert-secondary">{{ rental.notes }}</div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mt-3">
+                <a href="{{ url_for('vehicles.edit_rental', id=rental.id) }}" class="btn btn-sm btn-warning">
+                    <i class="fas fa-edit ms-1"></i>
+                    تعديل معلومات الإيجار
+                </a>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <div class="mb-3">
+                    <i class="fas fa-file-contract fa-4x text-muted"></i>
+                </div>
+                <h5>لا يوجد إيجار نشط حالياً</h5>
+                <p class="text-muted">يمكنك إضافة معلومات الإيجار للسيارة من خلال النقر على زر "إضافة إيجار"</p>
+                <a href="{{ url_for('vehicles.create_rental', id=vehicle.id) }}" class="btn btn-primary mt-2">
+                    <i class="fas fa-plus ms-1"></i>
+                    إضافة إيجار
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

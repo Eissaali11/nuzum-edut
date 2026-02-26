@@ -4,11 +4,11 @@
 """
 from datetime import datetime, date, timedelta
 from decimal import Decimal
-from sqlalchemy import func, and_, or_
+from sqlalchemy import func
 from core.extensions import db
 from models import (
     Employee, EmployeeLiability, LiabilityInstallment, EmployeeRequest,
-    Salary, LiabilityType, LiabilityStatus, InstallmentStatus, AdvancePaymentRequest
+    Salary, LiabilityType, LiabilityStatus, InstallmentStatus
 )
 
 
@@ -180,11 +180,13 @@ class EmployeeFinanceService:
         total_deductions = db.session.query(func.coalesce(func.sum(Salary.deductions), 0)).filter(
             Salary.employee_id == employee_id).scalar()
         
-        current_balance = float(total_earnings or 0) - float(total_deductions or 0)
+        # net_salary في جدول الرواتب محسوب بعد الخصومات بالفعل، لذا لا نخصم مرة ثانية
+        current_balance = float(total_earnings or 0)
         
         monthly_summary = None
         if last_salary:
-            total_income = float(last_salary.net_salary or 0)
+            gross_income = float(last_salary.basic_salary or 0) + float(last_salary.allowances or 0) + float(last_salary.bonus or 0) + float(last_salary.attendance_bonus or 0)
+            net_salary_value = float(last_salary.net_salary or 0)
             total_deductions_monthly = float(last_salary.deductions or 0)
             
             monthly_installments = db.session.query(func.coalesce(func.sum(LiabilityInstallment.amount), 0)).join(
@@ -197,10 +199,11 @@ class EmployeeFinanceService:
             ).scalar()
             
             monthly_summary = {
-                'total_income': total_income,
+                'total_income': gross_income,
+                'net_salary': net_salary_value,
                 'total_deductions': total_deductions_monthly,
                 'installments': float(monthly_installments or 0),
-                'net_income': total_income - total_deductions_monthly - float(monthly_installments or 0)
+                'net_income': net_salary_value - float(monthly_installments or 0)
             }
         
         return {
@@ -225,49 +228,6 @@ class EmployeeFinanceService:
             } if next_installment else None,
             'monthly_summary': monthly_summary
         }
-    
-    @staticmethod
-    def create_liability_from_advance_payment(advance_request, approved_by_user_id=None):
-        """
-        إنشاء التزام مالي من طلب سلفة معتمد
-        
-        Args:
-            advance_request: كائن AdvancePaymentRequest
-            approved_by_user_id: معرف المستخدم الذي اعتمد السلفة
-        
-        Returns:
-            EmployeeLiability: الالتزام المنشأ
-        """
-        employee_request = advance_request.request
-        
-        liability = EmployeeLiability(
-            employee_id=employee_request.employee_id,
-            liability_type=LiabilityType.ADVANCE_REPAYMENT,
-            amount=advance_request.requested_amount,
-            remaining_amount=advance_request.requested_amount,
-            paid_amount=Decimal('0'),
-            description=f"سداد سلفة - {advance_request.reason or 'بدون سبب'}",
-            reference_type='advance_payment',
-            employee_request_id=employee_request.id,
-            status=LiabilityStatus.ACTIVE,
-            created_by=approved_by_user_id
-        )
-        
-        monthly_installment = advance_request.requested_amount / advance_request.installments
-        
-        for i in range(1, advance_request.installments + 1):
-            installment = LiabilityInstallment(
-                liability=liability,
-                installment_number=i,
-                amount=monthly_installment,
-                due_date=date.today() + timedelta(days=30 * i),
-                status=InstallmentStatus.PENDING
-            )
-            db.session.add(installment)
-        
-        db.session.add(liability)
-        
-        return liability
     
     @staticmethod
     def validate_advance_payment_request(employee_id, requested_amount, installments):

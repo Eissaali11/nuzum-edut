@@ -1,0 +1,7 @@
+{% extends 'layout.html' %}
+
+{% block title %}إضافة فحص سلامة - {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+{% include 'vehicles/forms/partials/safety_check_create/_content.html' %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "layout.html" %}
+{% set active_page = 'vehicles' %}
+
+{% block title %}جميع السيارات مع حالة الفحص الدوري{% endblock %}
+
+{% block content %}
+{% include 'vehicles/utilities/partials/valid_documents/_content.html' %}
+{% endblock %}

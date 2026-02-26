@@ -1,0 +1,107 @@
+{% extends 'layout.html' %}
+
+{% block extra_css %}
+<style>
+	.employees-page-shell .table-responsive {
+		max-height: none;
+		overflow: visible;
+		box-shadow: none;
+		margin-bottom: 0;
+	}
+
+	.employees-page-shell .table-horizontal-scroll {
+		overflow-x: auto;
+		overflow-y: visible;
+		max-height: none;
+		background: transparent;
+		box-shadow: none;
+		border-radius: .75rem;
+	}
+
+	.employees-page-shell .table-horizontal-scroll::before,
+	.employees-page-shell .table-horizontal-scroll::after {
+		display: none;
+	}
+
+	.employees-page-shell #employeesTable {
+		min-width: 1200px;
+		color: #eaf2ff;
+	}
+
+	.employees-page-shell #employeesTable thead th {
+		color: #7dd3fc;
+		border-bottom: 1px solid rgba(125, 211, 252, 0.35);
+		white-space: nowrap;
+	}
+
+	.employees-page-shell #employeesTable tbody td,
+	.employees-page-shell #employeesTable tbody td strong,
+	.employees-page-shell #employeesTable tbody td a {
+		color: #f8fafc;
+	}
+
+	.employees-page-shell #employeesTable tbody tr:nth-of-type(odd) {
+		background-color: rgba(255, 255, 255, 0.04);
+	}
+
+	.employees-page-shell #employeesTable tbody tr:nth-of-type(even) {
+		background-color: rgba(255, 255, 255, 0.02);
+	}
+
+	.employees-page-shell #employeesTable tbody tr:hover {
+		background-color: rgba(56, 189, 248, 0.12) !important;
+	}
+
+	.employees-page-shell .emp-status {
+		display: inline-flex;
+		align-items: center;
+		gap: .3rem;
+		padding: .2rem .55rem;
+		border-radius: 999px;
+		font-size: .72rem;
+		font-weight: 700;
+		line-height: 1.1;
+		color: #fff;
+	}
+
+	.employees-page-shell .emp-status i {
+		font-size: .45rem;
+	}
+
+	.employees-page-shell .emp-status-active { background-color: #10b981; }
+	.employees-page-shell .emp-status-inactive { background-color: #ef4444; }
+	.employees-page-shell .emp-status-leave { background-color: #f59e0b; color: #111827; }
+	.employees-page-shell .emp-status-terminated { background-color: #6b7280; }
+
+	.employees-page-shell .page-link {
+		color: #f8fafc;
+		background-color: rgba(30, 58, 92, 0.85);
+		border: 1px solid rgba(125, 211, 252, 0.2);
+	}
+
+	.employees-page-shell .employees-table-toolbar #rowsPerPage {
+		color: #e2e8f0;
+		background-color: rgba(30, 64, 112, 0.95);
+		border: 1px solid rgba(125, 211, 252, 0.35);
+	}
+
+	.employees-page-shell .employees-table-toolbar #rowsPerPage:focus {
+		border-color: #38bdf8;
+		box-shadow: 0 0 0 0.2rem rgba(56, 189, 248, 0.2);
+	}
+
+	.employees-page-shell .pagination .page-item.active .page-link {
+		background-color: #2563eb;
+		border-color: #2563eb;
+		color: #fff;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'employees/partials/module_index/_content.html' %}
+{% endblock %}
+
+{% block scripts %}
+{% include 'employees/partials/module_index/_scripts.html' %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'layout.html' %}
+
+{% block title %}إضافة سجل ورشة للسيارة: {{ vehicle.plate_number }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='css/theme.css') }}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+{% include 'vehicles/forms/partials/workshop_create/_content.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ضبط تاريخ اليوم كقيمة افتراضية لتاريخ الدخول
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('entry_date').value = today;
+        
+        // إضافة التحقق من التواريخ
+        const entryDateInput = document.getElementById('entry_date');
+        const exitDateInput = document.getElementById('exit_date');
+        
+        exitDateInput.addEventListener('change', function() {
+            if (exitDateInput.value && exitDateInput.value < entryDateInput.value) {
+                alert('لا يمكن أن يكون تاريخ الخروج قبل تاريخ الدخول');
+                exitDateInput.value = '';
+            }
+        });
+        
+        entryDateInput.addEventListener('change', function() {
+            if (exitDateInput.value && exitDateInput.value < entryDateInput.value) {
+                exitDateInput.value = '';
+            }
+        });
+    });
+</script>
+{% endblock %}

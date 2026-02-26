@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}تحديث الرابط الخارجي - {{ handover.handover_type }} - {{ vehicle.plate_number }}{% endblock %}
+
+{% block extra_css %}
+{% include 'vehicles/handovers/partials/update_handover_link/_extra_css.html' %}
+{% endblock %}
+
+{% block content %}
+{% include 'vehicles/handovers/partials/update_handover_link/_content.html' %}
+{% endblock %}

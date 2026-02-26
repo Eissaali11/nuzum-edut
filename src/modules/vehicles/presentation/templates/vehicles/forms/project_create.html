@@ -1,0 +1,34 @@
+{% extends 'layout.html' %}
+
+{% block title %}تخصيص السيارة لمشروع: {{ vehicle.plate_number }}{% endblock %}
+
+{% block content %}
+{% include 'vehicles/forms/partials/project_create/_content.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ضبط تاريخ اليوم كقيمة افتراضية لتاريخ البداية
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('start_date').value = today;
+        
+        // إضافة التحقق من التواريخ
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+        
+        endDateInput.addEventListener('change', function() {
+            if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                alert('لا يمكن أن يكون تاريخ النهاية قبل تاريخ البداية');
+                endDateInput.value = '';
+            }
+        });
+        
+        startDateInput.addEventListener('change', function() {
+            if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                endDateInput.value = '';
+            }
+        });
+    });
+</script>
+{% endblock %}

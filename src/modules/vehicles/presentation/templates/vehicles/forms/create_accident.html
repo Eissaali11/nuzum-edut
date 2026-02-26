@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+
+{% block title %}إضافة حادث مروري جديد{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='css/theme.css') }}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+{% include 'vehicles/forms/partials/create_accident/_content.html' %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تهيئة مختار التاريخ
+        $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true,
+            language: 'ar',
+            rtl: true
+        });
+    });
+</script>
+{% endblock %}
