@@ -245,3 +245,67 @@ h1, h2, h3, h4, h5, h6,
   color: #fff;
   border-bottom: 1px solid var(--card-border);
 }
+
+/* ========== 9. استجابة الجوال — القائمة الجانبية ========== */
+.theme-sidebar-toggle {
+  display: none;
+  background: var(--sidebar-bg);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  font-size: 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.theme-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+
+.theme-sidebar-overlay.active {
+  display: block;
+}
+
+@media (max-width: 991.98px) {
+  .theme-sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .theme-sidebar {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 260px;
+    height: 100vh;
+    z-index: 1050;
+    transition: right 0.3s ease-in-out;
+    overflow-y: auto;
+  }
+
+  .theme-sidebar.open {
+    right: 0;
+  }
+
+  .theme-content-wrap {
+    width: 100%;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .theme-sidebar {
+    width: 240px;
+    right: -260px;
+  }
+
+  .theme-content-wrap .container-fluid {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
