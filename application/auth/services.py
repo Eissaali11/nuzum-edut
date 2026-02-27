@@ -3,10 +3,13 @@
 مشترك بين الويب (routes/auth) والجوال (presentation/api/mobile).
 لا يتجاوز 400 سطر.
 """
+import logging
 from datetime import datetime
 from typing import Optional, Tuple, Any
 
 from core.extensions import db
+
+logger = logging.getLogger(__name__)
 
 
 def get_user_by_identifier(identifier: str) -> Optional[Any]:
@@ -21,6 +24,9 @@ def get_user_by_identifier(identifier: str) -> Optional[Any]:
     user = User.query.filter(
         (User.username == ident) | (User.email == ident)
     ).first()
+    if not user:
+        total_users = User.query.count()
+        logger.warning(f"Login attempt: user not found for identifier '{ident}'. Total users in DB: {total_users}")
     return user
 
 
@@ -34,9 +40,11 @@ def verify_credentials(identifier: str, password: str) -> Tuple[Optional[Any], O
     if not user:
         return None, "اسم المستخدم أو كلمة المرور غير صحيحة"
     if not user.check_password(password):
+        logger.warning(f"Login attempt: password mismatch for user id={user.id} email={user.email}")
         return None, "اسم المستخدم أو كلمة المرور غير صحيحة"
     if not getattr(user, "is_active", True):
         return None, "الحساب غير مفعّل"
+    logger.info(f"Login successful for user id={user.id} email={user.email}")
     return user, None
 
 
