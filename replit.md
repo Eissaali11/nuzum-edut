@@ -76,7 +76,8 @@ The project follows a **Layered Modular Architecture** transitioning from legacy
 - **Models**: `ProjectContract`, `ContractResource` in `modules/accounting/domain/profitability_models.py`
 - **Service**: `modules/accounting/application/profitability_service.py` — Quad-Sync calculation (HR + Fleet + Revenue + Attendance)
 - **Routes**: `routes/accounting/profitability_routes.py` — Two blueprints: `profitability` (dashboard, report, Excel export) and `contracts` (CRUD for contracts and billing rates)
-- **Templates**: `templates/accounting/profitability/` (dashboard, report), `templates/accounting/contracts/` (index, form, resources)
+- **Templates**: `templates/accounting/profitability/` (dashboard, report), `templates/accounting/contracts/` (index, form, resources) — premium redesigned UI
+- **Sidebar Links**: المحاسبة, إدارة العقود والأسعار, ربحية المشاريع, توزيع الفواتير — all use `_is_admin_role()` check
 - **Vehicle.monthly_fixed_cost**: Added to Vehicle model — aggregated monthly cost (installment + insurance + maintenance)
 - **ContractResource.billing_rate**: What the client pays per employee (monthly or daily)
 - **Profitability = Revenue (billing rates) - Costs (salary + GOSI + vehicle + overhead + housing)**

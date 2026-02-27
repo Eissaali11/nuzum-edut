@@ -329,7 +329,8 @@ contracts_bp = Blueprint('contracts', __name__, url_prefix='/accounting/contract
 @login_required
 def index():
     contracts = ProjectContract.query.order_by(ProjectContract.created_at.desc()).all()
-    return render_template('accounting/contracts/index.html', contracts=contracts)
+    total_resources = sum(c.resources.count() for c in contracts)
+    return render_template('accounting/contracts/index.html', contracts=contracts, total_resources=total_resources)
 
 
 @contracts_bp.route('/new', methods=['GET', 'POST'])
