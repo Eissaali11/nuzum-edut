@@ -262,7 +262,7 @@ def _seed_admin_if_empty():
             admin.username = 'admin'
             admin.email = 'admin@nuzum.sa'
             admin.password_hash = generate_password_hash('admin123')
-            admin.role = UserRole.ADMIN
+            admin.role = UserRole.ADMIN.value
             admin.is_admin = True
             admin.is_active = True
             db.session.add(admin)
