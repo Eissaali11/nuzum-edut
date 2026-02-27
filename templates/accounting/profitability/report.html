@@ -1,0 +1,232 @@
+{% extends "layout.html" %}
+
+{% block title %}تقرير ربحية — {{ result.department.name }}{% endblock %}
+
+{% block styles %}
+<style>
+    .report-page { background: #f0f2f5; min-height: 100vh; }
+    .report-header {
+        background: linear-gradient(135deg, #1B2A4A 0%, #0D7377 100%);
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .kpi-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+    .kpi-mini {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        flex: 1;
+        min-width: 150px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+    .kpi-mini .value { font-size: 1.5rem; font-weight: 800; }
+    .kpi-mini .label { font-size: 0.8rem; color: #6c757d; }
+    .detail-table {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .detail-table thead th {
+        background: #1B2A4A;
+        color: white;
+        padding: 0.85rem 0.75rem;
+        font-weight: 600;
+        border: none;
+        text-align: center;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    .detail-table tbody td {
+        padding: 0.7rem 0.75rem;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.9rem;
+    }
+    .detail-table tbody tr:hover { background: #f8f9fa; }
+    .detail-table tfoot td {
+        background: #0D7377;
+        color: white;
+        padding: 0.85rem;
+        font-weight: 700;
+        text-align: center;
+    }
+    .profit-positive { color: #155724; font-weight: 700; }
+    .profit-negative { color: #721c24; font-weight: 700; }
+    .margin-badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+    .margin-pos { background: #d4edda; color: #155724; }
+    .margin-neg { background: #f8d7da; color: #721c24; }
+    .btn-export-xl {
+        background: linear-gradient(135deg, #0D7377, #14919B);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+    }
+    .btn-export-xl:hover { color: white; opacity: 0.9; }
+    .unconfigured-badge {
+        background: #fff3cd;
+        color: #856404;
+        padding: 0.15rem 0.5rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-page p-4">
+    <div class="report-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-chart-bar me-2"></i>تقرير ربحية: {{ result.department.name }}</h2>
+                <p class="mb-0 opacity-75">
+                    العميل: {{ result.contract.client_name }} |
+                    النوع: {{ result.contract.contract_type_ar }} |
+                    {{ result.period.month_name }} {{ result.period.year }}
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('profitability.export_excel', department_id=result.department.id, month=selected_month, year=selected_year) }}"
+                   class="btn btn-export-xl">
+                    <i class="fas fa-file-excel me-2"></i>تصدير Excel
+                </a>
+                <a href="{{ url_for('profitability.dashboard', month=selected_month, year=selected_year) }}"
+                   class="btn btn-outline-light">
+                    <i class="fas fa-arrow-right me-2"></i>رجوع
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-mini">
+            <div class="label">عدد الموظفين</div>
+            <div class="value text-primary">{{ result.employee_count }}</div>
+        </div>
+        <div class="kpi-mini">
+            <div class="label">إجمالي الإيرادات</div>
+            <div class="value text-primary">{{ "{:,.0f}".format(result.totals.revenue) }}</div>
+            <small class="text-muted">ريال</small>
+        </div>
+        <div class="kpi-mini">
+            <div class="label">إجمالي التكاليف</div>
+            <div class="value text-danger">{{ "{:,.0f}".format(result.totals.total_cost) }}</div>
+            <small class="text-muted">ريال</small>
+        </div>
+        <div class="kpi-mini">
+            <div class="label">صافي الربح</div>
+            <div class="value {% if result.totals.profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                {{ "{:,.0f}".format(result.totals.profit) }}
+            </div>
+            <small class="text-muted">ريال</small>
+        </div>
+        <div class="kpi-mini">
+            <div class="label">هامش الربح</div>
+            <div class="value {% if result.overall_margin >= 0 %}text-info{% else %}text-danger{% endif %}">
+                {{ "%.1f"|format(result.overall_margin) }}%
+            </div>
+        </div>
+    </div>
+
+    {% if result.configured_count < result.employee_count %}
+    <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <div>
+            <strong>{{ result.employee_count - result.configured_count }}</strong> موظف بدون سعر فوترة.
+            {% if result.contract.id %}
+            <a href="{{ url_for('contracts.resources', contract_id=result.contract.id) }}" class="alert-link">إعداد أسعار الفوترة</a>
+            {% else %}
+            <a href="{{ url_for('contracts.create') }}" class="alert-link">إنشاء عقد أولاً</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="detail-table">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الموظف</th>
+                        <th>الرقم الوظيفي</th>
+                        <th>المسمى</th>
+                        <th>سعر الفوترة</th>
+                        <th>النوع</th>
+                        <th>أيام الحضور</th>
+                        <th>الإيراد</th>
+                        <th>الراتب</th>
+                        <th>GOSI</th>
+                        <th>السيارة</th>
+                        <th>مصاريف</th>
+                        <th>إجمالي التكلفة</th>
+                        <th>صافي الربح</th>
+                        <th>الهامش</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in result.employees %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td class="fw-bold text-start">{{ emp.employee_name }}</td>
+                        <td>{{ emp.employee_code }}</td>
+                        <td>{{ emp.job_title }}</td>
+                        <td>
+                            {% if emp.billing_rate > 0 %}
+                            {{ "{:,.0f}".format(emp.billing_rate) }}
+                            {% else %}
+                            <span class="unconfigured-badge">غير محدد</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ 'شهري' if emp.billing_type == 'monthly' else 'يومي' }}</td>
+                        <td>{{ emp.present_days }}</td>
+                        <td class="text-primary fw-bold">{{ "{:,.0f}".format(emp.revenue) }}</td>
+                        <td>{{ "{:,.0f}".format(emp.salary_cost) }}</td>
+                        <td>{{ "{:,.0f}".format(emp.gosi_cost) }}</td>
+                        <td>{{ "{:,.0f}".format(emp.vehicle_cost) }}</td>
+                        <td>{{ "{:,.0f}".format(emp.overhead + emp.housing) }}</td>
+                        <td class="fw-bold">{{ "{:,.0f}".format(emp.total_cost) }}</td>
+                        <td class="{% if emp.net_profit >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+                            {{ "{:,.0f}".format(emp.net_profit) }}
+                        </td>
+                        <td>
+                            <span class="margin-badge {% if emp.margin_pct >= 0 %}margin-pos{% else %}margin-neg{% endif %}">
+                                {{ "%.1f"|format(emp.margin_pct) }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="7">الإجمالي ({{ result.employee_count }} موظف)</td>
+                        <td>{{ "{:,.0f}".format(result.totals.revenue) }}</td>
+                        <td>{{ "{:,.0f}".format(result.totals.salary_cost) }}</td>
+                        <td>{{ "{:,.0f}".format(result.totals.gosi_cost) }}</td>
+                        <td>{{ "{:,.0f}".format(result.totals.vehicle_cost) }}</td>
+                        <td>{{ "{:,.0f}".format(result.totals.overhead) }}</td>
+                        <td>{{ "{:,.0f}".format(result.totals.total_cost) }}</td>
+                        <td>{{ "{:,.0f}".format(result.totals.profit) }}</td>
+                        <td>{{ "%.1f"|format(result.overall_margin) }}%</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

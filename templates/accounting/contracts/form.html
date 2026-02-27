@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+
+{% block title %}{% if contract %}تعديل العقد{% else %}عقد جديد{% endif %}{% endblock %}
+
+{% block styles %}
+<style>
+    .form-page { background: #f0f2f5; min-height: 100vh; }
+    .form-header {
+        background: linear-gradient(135deg, #1B2A4A 0%, #2563EB 100%);
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .form-label { font-weight: 600; color: #334155; }
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        padding: 0.7rem 1rem;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #2563EB;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    .btn-save {
+        background: linear-gradient(135deg, #2563EB, #1d4ed8);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+    }
+    .btn-save:hover { color: white; opacity: 0.9; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page p-4">
+    <div class="form-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-file-contract me-2"></i>
+                {% if contract %}تعديل العقد{% else %}إنشاء عقد جديد{% endif %}
+            </h2>
+            <p class="mb-0 opacity-75">ربط المشروع بالعميل وتحديد نوع العقد</p>
+        </div>
+        <a href="{{ url_for('contracts.index') }}" class="btn btn-outline-light">
+            <i class="fas fa-arrow-right me-2"></i>رجوع
+        </a>
+    </div>
+
+    <div class="form-card">
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">المشروع <span class="text-danger">*</span></label>
+                    <select name="department_id" class="form-select" required>
+                        <option value="">اختر المشروع...</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}"
+                            {% if contract and contract.department_id == dept.id %}selected{% endif %}>
+                            {{ dept.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">اسم العميل <span class="text-danger">*</span></label>
+                    <input type="text" name="client_name" class="form-control"
+                           value="{{ contract.client_name if contract else '' }}" required
+                           placeholder="مثال: شركة أرامكس">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">رقم العقد</label>
+                    <input type="text" name="contract_number" class="form-control"
+                           value="{{ contract.contract_number if contract and contract.contract_number else '' }}"
+                           placeholder="اختياري">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">نوع العقد</label>
+                    <select name="contract_type" class="form-select">
+                        <option value="manpower" {% if contract and contract.contract_type == 'manpower' %}selected{% endif %}>قوى عاملة (Manpower)</option>
+                        <option value="outsource" {% if contract and contract.contract_type == 'outsource' %}selected{% endif %}>تعهيد خارجي (Outsource)</option>
+                        <option value="mixed" {% if contract and contract.contract_type == 'mixed' %}selected{% endif %}>مختلط</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">تاريخ البداية <span class="text-danger">*</span></label>
+                    <input type="date" name="start_date" class="form-control" required
+                           value="{{ contract.start_date.strftime('%Y-%m-%d') if contract else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">تاريخ الانتهاء</label>
+                    <input type="date" name="end_date" class="form-control"
+                           value="{{ contract.end_date.strftime('%Y-%m-%d') if contract and contract.end_date else '' }}">
+                </div>
+                {% if contract %}
+                <div class="col-md-4">
+                    <label class="form-label">الحالة</label>
+                    <select name="status" class="form-select">
+                        <option value="active" {% if contract.status == 'active' %}selected{% endif %}>نشط</option>
+                        <option value="expired" {% if contract.status == 'expired' %}selected{% endif %}>منتهي</option>
+                        <option value="suspended" {% if contract.status == 'suspended' %}selected{% endif %}>معلّق</option>
+                        <option value="draft" {% if contract.status == 'draft' %}selected{% endif %}>مسودة</option>
+                    </select>
+                </div>
+                {% endif %}
+                <div class="col-12">
+                    <label class="form-label">ملاحظات</label>
+                    <textarea name="notes" class="form-control" rows="3">{{ contract.notes if contract and contract.notes else '' }}</textarea>
+                </div>
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-save">
+                        <i class="fas fa-save me-2"></i>
+                        {% if contract %}حفظ التغييرات{% else %}إنشاء العقد{% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

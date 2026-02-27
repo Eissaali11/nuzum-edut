@@ -81,6 +81,10 @@ def update_vehicle_record(
         vehicle.project = _safe_str(form_data.get("project")) or None
         vehicle.owned_by = _safe_str(form_data.get("owned_by")) or None
         vehicle.region = _safe_str(form_data.get("region")) or None
+        try:
+            vehicle.monthly_fixed_cost = float(form_data.get("monthly_fixed_cost") or 0)
+        except (TypeError, ValueError):
+            pass
         vehicle.notes = _safe_str(form_data.get("notes")) or None
         vehicle.type_of_car = _safe_str(form_data.get("type_of_car")) or None
         vehicle.updated_at = datetime.utcnow()
@@ -160,6 +164,7 @@ def create_vehicle_record(
             type_of_car=_safe_str(form_data.get("type_of_car")) or None,
             owned_by=_safe_str(form_data.get("owned_by")) or None,
             region=_safe_str(form_data.get("region")) or None,
+            monthly_fixed_cost=float(form_data.get("monthly_fixed_cost") or 0),
         )
         db.session.add(vehicle)
         db.session.flush()

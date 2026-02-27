@@ -72,6 +72,17 @@ The project follows a **Layered Modular Architecture** transitioning from legacy
 - Touch targets: All buttons enforce minimum 40-44px height on mobile
 - Applied to: Dashboard, Employee list, Vehicle list, Operations list
 
+## Project Profitability Module (Phase 5)
+- **Models**: `ProjectContract`, `ContractResource` in `modules/accounting/domain/profitability_models.py`
+- **Service**: `modules/accounting/application/profitability_service.py` — Quad-Sync calculation (HR + Fleet + Revenue + Attendance)
+- **Routes**: `routes/accounting/profitability_routes.py` — Two blueprints: `profitability` (dashboard, report, Excel export) and `contracts` (CRUD for contracts and billing rates)
+- **Templates**: `templates/accounting/profitability/` (dashboard, report), `templates/accounting/contracts/` (index, form, resources)
+- **Vehicle.monthly_fixed_cost**: Added to Vehicle model — aggregated monthly cost (installment + insurance + maintenance)
+- **ContractResource.billing_rate**: What the client pays per employee (monthly or daily)
+- **Profitability = Revenue (billing rates) - Costs (salary + GOSI + vehicle + overhead + housing)**
+- Chart.js charts: Revenue vs Cost bar chart, Margin % donut chart
+- Excel export: Navy/teal styling matching payroll exports, KPI summary, per-employee breakdown, totals row, signature fields
+
 ## Database
 - PostgreSQL via `DATABASE_URL` environment variable
 - Models defined in `core/domain/models.py` and `modules/*/domain/models.py`

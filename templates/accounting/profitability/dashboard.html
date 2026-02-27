@@ -1,0 +1,346 @@
+{% extends "layout.html" %}
+
+{% block title %}ربحية المشاريع{% endblock %}
+
+{% block styles %}
+<style>
+    .profit-page { background: #f0f2f5; min-height: 100vh; }
+    .page-header-profit {
+        background: linear-gradient(135deg, #1B2A4A 0%, #0D7377 100%);
+        border-radius: 20px;
+        padding: 2.5rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(27, 42, 74, 0.3);
+    }
+    .kpi-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        border: none;
+        transition: transform 0.3s;
+    }
+    .kpi-card:hover { transform: translateY(-4px); }
+    .kpi-value { font-size: 1.8rem; font-weight: 800; }
+    .kpi-label { font-size: 0.9rem; color: #6c757d; }
+    .kpi-icon {
+        width: 50px; height: 50px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; color: white;
+    }
+    .project-table {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .project-table thead th {
+        background: #1B2A4A;
+        color: white;
+        padding: 1rem;
+        font-weight: 600;
+        border: none;
+        text-align: center;
+        white-space: nowrap;
+    }
+    .project-table tbody td {
+        padding: 0.85rem 1rem;
+        vertical-align: middle;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .project-table tbody tr:hover { background: #f8f9fa; }
+    .margin-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+    .margin-positive { background: #d4edda; color: #155724; }
+    .margin-negative { background: #f8d7da; color: #721c24; }
+    .margin-zero { background: #fff3cd; color: #856404; }
+    .filter-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        margin-bottom: 1.5rem;
+    }
+    .chart-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .btn-export {
+        background: linear-gradient(135deg, #0D7377, #14919B);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+    }
+    .btn-export:hover { color: white; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(13,115,119,0.3); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profit-page p-4">
+    <div class="page-header-profit text-center">
+        <h1 class="mb-2"><i class="fas fa-chart-line me-3"></i>ربحية المشاريع</h1>
+        <p class="mb-0 opacity-75">تحليل شامل للإيرادات والتكاليف وهوامش الربح لجميع المشاريع</p>
+    </div>
+
+    <div class="filter-card">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">الشهر</label>
+                <select name="month" class="form-select">
+                    {% for m_val, m_name in months %}
+                    <option value="{{ m_val }}" {% if m_val == selected_month %}selected{% endif %}>{{ m_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">السنة</label>
+                <select name="year" class="form-select">
+                    {% for y in range(current_year - 2, current_year + 1) %}
+                    <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill"><i class="fas fa-search me-2"></i>عرض</button>
+                <a href="{{ url_for('profitability.export_excel', month=selected_month, year=selected_year) }}" class="btn btn-export">
+                    <i class="fas fa-file-excel me-2"></i>تصدير
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label">إجمالي الإيرادات</div>
+                        <div class="kpi-value text-primary">{{ "{:,.0f}".format(summary.totals.revenue) }}</div>
+                        <small class="text-muted">ريال</small>
+                    </div>
+                    <div class="kpi-icon bg-primary"><i class="fas fa-coins"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label">إجمالي التكاليف</div>
+                        <div class="kpi-value text-danger">{{ "{:,.0f}".format(summary.totals.total_cost) }}</div>
+                        <small class="text-muted">ريال</small>
+                    </div>
+                    <div class="kpi-icon bg-danger"><i class="fas fa-money-bill-wave"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label">صافي الربح</div>
+                        <div class="kpi-value {% if summary.totals.profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            {{ "{:,.0f}".format(summary.totals.profit) }}
+                        </div>
+                        <small class="text-muted">ريال</small>
+                    </div>
+                    <div class="kpi-icon {% if summary.totals.profit >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label">هامش الربح</div>
+                        <div class="kpi-value {% if summary.totals.margin >= 0 %}text-info{% else %}text-danger{% endif %}">
+                            {{ "%.1f"|format(summary.totals.margin) }}%
+                        </div>
+                    </div>
+                    <div class="kpi-icon bg-info"><i class="fas fa-percentage"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="chart-card">
+                <h6 class="fw-bold mb-3"><i class="fas fa-chart-bar me-2 text-primary"></i>الإيرادات مقابل التكاليف</h6>
+                <canvas id="revenueVsCostChart" height="280"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="chart-card">
+                <h6 class="fw-bold mb-3"><i class="fas fa-chart-pie me-2 text-info"></i>هامش الربح حسب المشروع</h6>
+                <canvas id="marginChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="project-table">
+        <div class="p-3 d-flex justify-content-between align-items-center" style="background: #1B2A4A; color: white;">
+            <h5 class="mb-0"><i class="fas fa-th-list me-2"></i>تفاصيل المشاريع — {{ summary.period.month_name }} {{ summary.period.year }}</h5>
+            <span class="badge bg-light text-dark fs-6">{{ summary.projects|length }} مشروع</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>المشروع</th>
+                        <th>العميل</th>
+                        <th>الموظفين</th>
+                        <th>مُهيّأ</th>
+                        <th>الإيرادات</th>
+                        <th>التكاليف</th>
+                        <th>صافي الربح</th>
+                        <th>الهامش</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proj in summary.projects %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td class="fw-bold">{{ proj.department_name }}</td>
+                        <td>{{ proj.client_name }}</td>
+                        <td><span class="badge bg-primary">{{ proj.employee_count }}</span></td>
+                        <td>
+                            {% if proj.configured_count == proj.employee_count %}
+                            <span class="badge bg-success">{{ proj.configured_count }}/{{ proj.employee_count }}</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">{{ proj.configured_count }}/{{ proj.employee_count }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-primary fw-bold">{{ "{:,.0f}".format(proj.revenue) }}</td>
+                        <td class="text-danger">{{ "{:,.0f}".format(proj.total_cost) }}</td>
+                        <td class="fw-bold {% if proj.profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            {{ "{:,.0f}".format(proj.profit) }}
+                        </td>
+                        <td>
+                            <span class="margin-badge {% if proj.margin > 0 %}margin-positive{% elif proj.margin < 0 %}margin-negative{% else %}margin-zero{% endif %}">
+                                {{ "%.1f"|format(proj.margin) }}%
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('profitability.report', department_id=proj.department_id, month=selected_month, year=selected_year) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not summary.projects %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4 text-muted">
+                            <i class="fas fa-info-circle me-2"></i>لا توجد مشاريع بها موظفين نشطين
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+                {% if summary.projects %}
+                <tfoot>
+                    <tr style="background: #1B2A4A; color: white;">
+                        <td colspan="3" class="fw-bold">الإجمالي</td>
+                        <td class="fw-bold">{{ summary.totals.employees }}</td>
+                        <td></td>
+                        <td class="fw-bold">{{ "{:,.0f}".format(summary.totals.revenue) }}</td>
+                        <td class="fw-bold">{{ "{:,.0f}".format(summary.totals.total_cost) }}</td>
+                        <td class="fw-bold">{{ "{:,.0f}".format(summary.totals.profit) }}</td>
+                        <td><span class="margin-badge margin-positive">{{ "%.1f"|format(summary.totals.margin) }}%</span></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const projects = {{ summary.projects | tojson }};
+    if (!projects.length) return;
+
+    const labels = projects.map(p => p.department_name);
+    const revenues = projects.map(p => p.revenue);
+    const costs = projects.map(p => p.total_cost);
+    const margins = projects.map(p => p.margin);
+
+    new Chart(document.getElementById('revenueVsCostChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'الإيرادات',
+                    data: revenues,
+                    backgroundColor: 'rgba(13, 115, 119, 0.8)',
+                    borderRadius: 8,
+                },
+                {
+                    label: 'التكاليف',
+                    data: costs,
+                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                    borderRadius: 8,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+                y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() + ' ر.س' } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('marginChart'), {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: margins.map(m => Math.abs(m)),
+                backgroundColor: [
+                    '#0D7377', '#1B2A4A', '#14919B', '#2563EB',
+                    '#7C3AED', '#059669', '#D97706', '#DC2626'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff',
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 15 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            const orig = margins[ctx.dataIndex];
+                            return ctx.label + ': ' + orig.toFixed(1) + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

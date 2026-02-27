@@ -40,6 +40,7 @@ def register_all_blueprints(app, csrf):
     from routes.device_assignment import device_assignment_bp
     from routes.accounting import accounting_bp
     from routes.accounting_extended import accounting_ext_bp
+    from routes.accounting.profitability_routes import profitability_bp, contracts_bp
     from routes.analytics_simple import analytics_simple_bp
     from modules.vehicles.presentation.web.vehicle_operations import vehicle_operations_bp
     from routes.integrated_simple import integrated_bp
@@ -138,6 +139,8 @@ def register_all_blueprints(app, csrf):
     app.register_blueprint(accounting_bp, url_prefix="/accounting")
     # Prevent collision: register extended accounting under a separate prefix
     app.register_blueprint(accounting_ext_bp, url_prefix="/accounting-ext")
+    app.register_blueprint(profitability_bp)
+    app.register_blueprint(contracts_bp)
     app.register_blueprint(analytics_simple_bp)
     app.register_blueprint(integrated_bp, url_prefix='/integrated')
     app.register_blueprint(voicehub_bp, url_prefix="/voicehub")

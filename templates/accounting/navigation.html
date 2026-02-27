@@ -71,7 +71,18 @@
             </a>
         </div>
         
-        <!-- الإعدادات -->
+        <div class="nav-group">
+            <h6 class="nav-header text-muted px-2 mt-3 mb-1">💼 الربحية والعقود</h6>
+            <a class="nav-link text-white {% if request.endpoint and 'profitability' in request.endpoint %}active bg-primary{% endif %}" 
+               href="{{ url_for('profitability.dashboard') }}">
+                <i class="fas fa-chart-line me-2"></i> ربحية المشاريع
+            </a>
+            <a class="nav-link text-white {% if request.endpoint and 'contracts' in request.endpoint %}active bg-primary{% endif %}" 
+               href="{{ url_for('contracts.index') }}">
+                <i class="fas fa-file-contract me-2"></i> إدارة العقود
+            </a>
+        </div>
+        
         <div class="nav-group">
             <h6 class="nav-header text-muted px-2 mt-3 mb-1">⚙️ الإعدادات</h6>
             <a class="nav-link text-white {% if request.endpoint == 'accounting.fiscal_years' %}active bg-primary{% endif %}" 

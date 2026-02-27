@@ -258,6 +258,7 @@ with app.app_context():
     # Import models before creating tables
     import models  # noqa: F401
     import models_accounting  # noqa: F401
+    from modules.accounting.domain import profitability_models  # noqa: F401
 
     # Register all blueprints
     from routes.blueprint_registry import register_all_blueprints

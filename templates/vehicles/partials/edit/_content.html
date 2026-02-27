@@ -122,6 +122,14 @@
                         <div class="form-text-enhanced">اختياري - المنطقة التي تعمل بها المركبة</div>
                     </div>
                 </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="monthly_fixed_cost" class="form-label-enhanced">التكلفة الشهرية الثابتة (ريال)</label>
+                        <input type="number" class="form-control form-control-enhanced" id="monthly_fixed_cost" name="monthly_fixed_cost" value="{{ vehicle.monthly_fixed_cost or 0 }}" step="0.01" min="0">
+                        <div class="form-text-enhanced">قسط السيارة + التأمين + الصيانة الدورية</div>
+                    </div>
+                </div>
                 
                 <div class="mb-3">
                     <label for="notes" class="form-label-enhanced">ملاحظات</label>

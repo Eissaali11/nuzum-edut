@@ -1,0 +1,166 @@
+{% extends "layout.html" %}
+
+{% block title %}موارد العقد — {{ contract.department.name if contract.department else '' }}{% endblock %}
+
+{% block styles %}
+<style>
+    .resources-page { background: #f0f2f5; min-height: 100vh; }
+    .resources-header {
+        background: linear-gradient(135deg, #1B2A4A 0%, #0D7377 100%);
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .resources-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .resources-table thead th {
+        background: #1B2A4A;
+        color: white;
+        padding: 0.85rem 0.75rem;
+        font-weight: 600;
+        text-align: center;
+        border: none;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    .resources-table tbody td {
+        padding: 0.7rem 0.75rem;
+        vertical-align: middle;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .resources-table tbody tr:hover { background: #f0f7ff; }
+    .rate-input {
+        width: 120px;
+        text-align: center;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.4rem 0.5rem;
+        font-size: 0.9rem;
+    }
+    .rate-input:focus {
+        border-color: #0D7377;
+        box-shadow: 0 0 0 3px rgba(13, 115, 119, 0.15);
+        outline: none;
+    }
+    .type-select {
+        width: 100px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.4rem;
+        font-size: 0.85rem;
+        text-align: center;
+    }
+    .btn-save-all {
+        background: linear-gradient(135deg, #0D7377, #14919B);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    .btn-save-all:hover { color: white; opacity: 0.9; }
+    .salary-info { font-size: 0.8rem; color: #6c757d; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="resources-page p-4">
+    <div class="resources-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-users-cog me-2"></i>إدارة موارد العقد</h2>
+                <p class="mb-0 opacity-75">
+                    {{ contract.department.name if contract.department else '' }} —
+                    العميل: {{ contract.client_name }} |
+                    {{ employees_data|length }} موظف نشط
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('profitability.report', department_id=contract.department_id, month=none, year=none) }}"
+                   class="btn btn-outline-light">
+                    <i class="fas fa-chart-bar me-2"></i>تقرير الربحية
+                </a>
+                <a href="{{ url_for('contracts.index') }}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-right me-2"></i>رجوع
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if not employees_data %}
+    <div class="text-center py-5">
+        <i class="fas fa-user-slash fa-3x text-muted mb-3 d-block"></i>
+        <h5 class="text-muted">لا يوجد موظفين نشطين مربوطين بهذا المشروع</h5>
+        <p class="text-muted">تأكد من ربط الموظفين بالمشروع في صفحة إدارة الموظفين</p>
+    </div>
+    {% else %}
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="resources-card">
+            <div class="table-responsive">
+                <table class="table resources-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>الموظف</th>
+                            <th>الرقم الوظيفي</th>
+                            <th>المسمى</th>
+                            <th>الراتب الأساسي</th>
+                            <th>سعر الفوترة (ريال)</th>
+                            <th>نوع الفوترة</th>
+                            <th>مصاريف إضافية</th>
+                            <th>بدل سكن</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in employees_data %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td class="fw-bold text-start">{{ item.employee.name }}</td>
+                            <td>{{ item.employee.employee_id }}</td>
+                            <td>{{ item.employee.job_title }}</td>
+                            <td>
+                                <span class="salary-info">{{ "{:,.0f}".format(item.employee.basic_salary or 0) }}</span>
+                            </td>
+                            <td>
+                                <input type="hidden" name="employee_ids" value="{{ item.employee.id }}">
+                                <input type="number" name="billing_rates" class="rate-input"
+                                       value="{{ item.billing_rate }}" step="0.01" min="0">
+                            </td>
+                            <td>
+                                <select name="billing_types" class="type-select">
+                                    <option value="monthly" {% if item.billing_type == 'monthly' %}selected{% endif %}>شهري</option>
+                                    <option value="daily" {% if item.billing_type == 'daily' %}selected{% endif %}>يومي</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="overheads" class="rate-input"
+                                       value="{{ item.overhead }}" step="0.01" min="0">
+                            </td>
+                            <td>
+                                <input type="number" name="housings" class="rate-input"
+                                       value="{{ item.housing }}" step="0.01" min="0">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-save-all">
+                <i class="fas fa-save me-2"></i>حفظ جميع البيانات
+            </button>
+        </div>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}
