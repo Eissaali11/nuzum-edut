@@ -336,37 +336,52 @@
                                 </ul>
                             </li>
                             {% endif %}
-                            {# التحقق من صلاحيات التقارير #} {% if
+                            {# قسم التقارير وذكاء الأعمال الموحد #} {% if
                             current_user._is_admin_role() or
                             current_user|check_module_access(Module.REPORTS) %}
                             <li class="nav-item mb-1">
                                 <a
-                                    href="{{ url_for('reports.index') }}"
-                                    class="nav-link nav-link-custom {% if '/reports' in request.path and '/powerbi' not in request.path %}active{% endif %}"
+                                    href="#reportsSubmenu"
+                                    data-bs-toggle="collapse"
+                                    class="nav-link nav-link-custom {% if '/reports' in request.path or '/powerbi' in request.path or '/analytics' in request.path %}active{% endif %}"
+                                    aria-expanded="{% if '/reports' in request.path or '/powerbi' in request.path or '/analytics' in request.path %}true{% else %}false{% endif %}"
                                 >
                                     <i class="fas fa-chart-column me-2"></i>
-                                    <span>التقارير</span>
+                                    <span>التقارير وذكاء الأعمال</span>
+                                    <i class="fas fa-chevron-down ms-auto"></i>
                                 </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{% if endpoint_exists is defined and endpoint_exists('powerbi.dashboard') %}{{ url_for('powerbi.dashboard') }}{% elif endpoint_exists is defined and endpoint_exists('powerbi_main.dashboard') %}{{ url_for('powerbi_main.dashboard') }}{% else %}/powerbi/dashboard{% endif %}"
-                                    class="nav-link nav-link-custom {% if '/powerbi' in request.path %}active{% endif %}"
-                                    style="background: linear-gradient(135deg, rgba(242, 200, 17, 0.12) 0%, rgba(102, 126, 234, 0.1) 100%); border-right: 3px solid #F2C811;"
+                                <ul
+                                    class="collapse {% if '/reports' in request.path or '/powerbi' in request.path or '/analytics' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    id="reportsSubmenu"
                                 >
-                                    <i class="fas fa-chart-pie me-2" style="color: #F2C811;"></i>
-                                    <span>Power BI</span>
-                                </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{% if endpoint_exists is defined and endpoint_exists('analytics.dashboard') %}{{ url_for('analytics.dashboard') }}{% else %}/analytics/dashboard{% endif %}"
-                                    class="nav-link nav-link-custom {% if '/analytics' in request.path %}active{% endif %}"
-                                    style="background: linear-gradient(135deg, rgba(0, 212, 170, 0.12) 0%, rgba(0, 212, 255, 0.1) 100%); border-right: 3px solid #00D4AA;"
-                                >
-                                    <i class="fas fa-chart-line me-2" style="color: #00D4AA;"></i>
-                                    <span>ذكاء الأعمال</span>
-                                </a>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('reports.index') }}"
+                                            class="nav-link nav-link-custom {% if '/reports' in request.path and '/powerbi' not in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-file-alt me-2"></i>
+                                            <span>التقارير</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{% if endpoint_exists is defined and endpoint_exists('powerbi.dashboard') %}{{ url_for('powerbi.dashboard') }}{% elif endpoint_exists is defined and endpoint_exists('powerbi_main.dashboard') %}{{ url_for('powerbi_main.dashboard') }}{% else %}/powerbi/dashboard{% endif %}"
+                                            class="nav-link nav-link-custom {% if '/powerbi' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-chart-pie me-2" style="color: #F2C811;"></i>
+                                            <span>Power BI</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{% if endpoint_exists is defined and endpoint_exists('analytics.dashboard') %}{{ url_for('analytics.dashboard') }}{% else %}/analytics/dashboard{% endif %}"
+                                            class="nav-link nav-link-custom {% if '/analytics/dashboard' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-chart-line me-2" style="color: #00D4AA;"></i>
+                                            <span>ذكاء الأعمال</span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                             {% endif %} {# التحقق من صلاحيات الموظفين #} {% if
                             current_user._is_admin_role() or
@@ -539,16 +554,7 @@
                                     <span>إدارة المشاريع</span>
                                 </a>
                             </li>
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{% if endpoint_exists is defined and endpoint_exists('powerbi.dashboard') %}{{ url_for('powerbi.dashboard') }}{% elif endpoint_exists is defined and endpoint_exists('powerbi_main.dashboard') %}{{ url_for('powerbi_main.dashboard') }}{% else %}/powerbi/dashboard{% endif %}"
-                                    class="nav-link nav-link-custom {% if '/powerbi' in request.path %}active{% endif %}"
-                                >
-                                    <i class="fas fa-chart-line me-2"></i>
-                                    <span>لوحة التحليلات</span>
-                                </a>
-                            </li>
-                            {% endif %} {# التحقق من صلاحيات التقارير #}
+                            {% endif %}
                             {# التحقق من صلاحيات الموظفين #} {% if
                             current_user._is_admin_role() or
                             current_user|check_module_access(Module.EMPLOYEES)
