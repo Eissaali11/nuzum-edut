@@ -383,89 +383,112 @@
                                     </li>
                                 </ul>
                             </li>
-                            {% endif %} {# التحقق من صلاحيات الموظفين #} {% if
+                            {% endif %} {# قسم إدارة الموظفين الموحد #} {% if
                             current_user._is_admin_role() or
                             current_user|check_module_access(Module.EMPLOYEES)
                             %}
                             <li class="nav-item mb-1">
                                 <a
-                                    href="{{ url_for('employees.index') }}"
-                                    class="nav-link nav-link-custom {% if '/employees' in request.path %}active{% endif %}"
+                                    href="#employeesSubmenu"
+                                    data-bs-toggle="collapse"
+                                    class="nav-link nav-link-custom {% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}active{% endif %}"
+                                    aria-expanded="{% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}true{% else %}false{% endif %}"
                                 >
                                     <i class="fas fa-user-group me-2"></i>
-                                    <span>الموظفين</span>
-                                </a>
-                            </li>
-                            {# طلبات الموظفين #}
-                            {% if current_user._is_admin_role() %}
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="#employeeRequestsSubmenu"
-                                    data-bs-toggle="collapse"
-                                    class="nav-link nav-link-custom {% if '/employee-requests' in request.path %}active{% endif %}"
-                                    aria-expanded="false"
-                                >
-                                    <i class="fas fa-clipboard-list me-2"></i>
-                                    <span>طلبات الموظفين</span>
+                                    <span>إدارة الموظفين</span>
                                     <i class="fas fa-chevron-down ms-auto"></i>
                                 </a>
                                 <ul
-                                    class="collapse {% if '/employee-requests' in request.path %}show{% endif %} list-unstyled ps-4"
-                                    id="employeeRequestsSubmenu"
+                                    class="collapse {% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    id="employeesSubmenu"
                                 >
                                     <li class="nav-item mb-1">
                                         <a
-                                            href="{{ url_for('employee_requests.index') }}"
-                                            class="nav-link nav-link-custom {% if request.path == url_for('employee_requests.index') %}active{% endif %}"
+                                            href="{{ url_for('employees.index') }}"
+                                            class="nav-link nav-link-custom {% if '/employees' in request.path and '/tracking' not in request.path %}active{% endif %}"
                                         >
-                                            <i class="fas fa-list me-2"></i>
-                                            <span>جميع الطلبات</span>
+                                            <i class="fas fa-users me-2"></i>
+                                            <span>الموظفين</span>
                                         </a>
                                     </li>
+                                    {% if current_user._is_admin_role() %}
                                     <li class="nav-item mb-1">
                                         <a
-                                            href="{{ url_for('employee_requests.invoices') }}"
-                                            class="nav-link nav-link-custom {% if '/employee-requests/invoices' in request.path %}active{% endif %}"
+                                            href="{{ url_for('employees.tracking') }}"
+                                            class="nav-link nav-link-custom {% if '/employees/tracking' in request.path %}active{% endif %}"
                                         >
-                                            <i class="fas fa-file-invoice me-2"></i>
-                                            <span>الفواتير</span>
+                                            <i class="fas fa-location-dot me-2"></i>
+                                            <span>تتبع الموظفين</span>
                                         </a>
                                     </li>
+                                    {% endif %}
                                     <li class="nav-item mb-1">
                                         <a
-                                            href="{{ url_for('employee_requests.advance_payments') }}"
-                                            class="nav-link nav-link-custom {% if '/employee-requests/advance-payments' in request.path %}active{% endif %}"
+                                            href="{{ url_for('attendance.index') }}"
+                                            class="nav-link nav-link-custom {% if '/attendance' in request.path %}active{% endif %}"
                                         >
-                                            <i class="fas fa-money-bill-wave me-2"></i>
-                                            <span>السلف المالية</span>
+                                            <i class="fas fa-calendar-days me-2"></i>
+                                            <span>الحضور</span>
                                         </a>
                                     </li>
+                                    {# طلبات الموظفين #}
+                                    {% if current_user._is_admin_role() %}
                                     <li class="nav-item mb-1">
                                         <a
-                                            href="{{ url_for('employee_requests.liabilities') }}"
-                                            class="nav-link nav-link-custom {% if '/employee-requests/liabilities' in request.path %}active{% endif %}"
+                                            href="#employeeRequestsSubmenu"
+                                            data-bs-toggle="collapse"
+                                            class="nav-link nav-link-custom {% if '/employee-requests' in request.path %}active{% endif %}"
+                                            aria-expanded="{% if '/employee-requests' in request.path %}true{% else %}false{% endif %}"
                                         >
-                                            <i class="fas fa-exclamation-triangle me-2"></i>
-                                            <span>الالتزامات المالية</span>
+                                            <i class="fas fa-clipboard-list me-2"></i>
+                                            <span>طلبات الموظفين</span>
+                                            <i class="fas fa-chevron-down ms-auto"></i>
                                         </a>
+                                        <ul
+                                            class="collapse {% if '/employee-requests' in request.path %}show{% endif %} list-unstyled ps-4"
+                                            id="employeeRequestsSubmenu"
+                                        >
+                                            <li class="nav-item mb-1">
+                                                <a
+                                                    href="{{ url_for('employee_requests.index') }}"
+                                                    class="nav-link nav-link-custom {% if request.path == url_for('employee_requests.index') %}active{% endif %}"
+                                                >
+                                                    <i class="fas fa-list me-2"></i>
+                                                    <span>جميع الطلبات</span>
+                                                </a>
+                                            </li>
+                                            <li class="nav-item mb-1">
+                                                <a
+                                                    href="{{ url_for('employee_requests.invoices') }}"
+                                                    class="nav-link nav-link-custom {% if '/employee-requests/invoices' in request.path %}active{% endif %}"
+                                                >
+                                                    <i class="fas fa-file-invoice me-2"></i>
+                                                    <span>الفواتير</span>
+                                                </a>
+                                            </li>
+                                            <li class="nav-item mb-1">
+                                                <a
+                                                    href="{{ url_for('employee_requests.advance_payments') }}"
+                                                    class="nav-link nav-link-custom {% if '/employee-requests/advance-payments' in request.path %}active{% endif %}"
+                                                >
+                                                    <i class="fas fa-money-bill-wave me-2"></i>
+                                                    <span>السلف المالية</span>
+                                                </a>
+                                            </li>
+                                            <li class="nav-item mb-1">
+                                                <a
+                                                    href="{{ url_for('employee_requests.liabilities') }}"
+                                                    class="nav-link nav-link-custom {% if '/employee-requests/liabilities' in request.path %}active{% endif %}"
+                                                >
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                                    <span>الالتزامات المالية</span>
+                                                </a>
+                                            </li>
+                                        </ul>
                                     </li>
+                                    {% endif %}
                                 </ul>
                             </li>
-                            {% endif %}
-                            
-                            
-                            {# تتبع الموظفين - للمديرين فقط #}
-                            {% if current_user._is_admin_role() %}
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{{ url_for('employees.tracking') }}"
-                                    class="nav-link nav-link-custom {% if '/employees/tracking' in request.path %}active{% endif %}"
-                                >
-                                    <i class="fas fa-location-dot me-2"></i>
-                                    <span>تتبع الموظفين</span>
-                                </a>
-                            </li>
-                            {% endif %}
                             {# إدارة الأجهزة المحمولة #}
                             {% if current_user._is_admin_role() %}
                             <li class="nav-item mb-1">
@@ -555,20 +578,7 @@
                                 </a>
                             </li>
                             {% endif %}
-                            {# التحقق من صلاحيات الموظفين #} {% if
-                            current_user._is_admin_role() or
-                            current_user|check_module_access(Module.EMPLOYEES)
-                            %}
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{{ url_for('attendance.index') }}"
-                                    class="nav-link nav-link-custom {% if '/attendance' in request.path %}active{% endif %}"
-                                >
-                                    <i class="fas fa-calendar-days me-2"></i>
-                                    <span>الحضور</span>
-                                </a>
-                            </li>
-                            {% endif %} {# التحقق من صلاحيات الوثائق #} {% if
+                            {# التحقق من صلاحيات الوثائق #} {% if
                             current_user._is_admin_role() or
                             current_user|check_module_access(Module.DOCUMENTS)
                             %}
