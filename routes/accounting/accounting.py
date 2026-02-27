@@ -32,7 +32,7 @@ accounting_bp = Blueprint('accounting', __name__, url_prefix='/accounting')
 @accounting_bp.route('/dashboard')
 @login_required
 def dashboard():
-    return redirect(url_for('accounting_dashboard.dashboard'))
+    return redirect(url_for('profitability.dashboard'))
 
 # تسجيل جميع البلوبرينتات الفرعية
 def register_accounting_blueprints(app):
