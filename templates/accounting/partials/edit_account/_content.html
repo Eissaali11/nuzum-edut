@@ -5,8 +5,8 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('accounting.dashboard') }}">المحاسبة</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('accounting.chart_of_accounts') }}">شجرة الحسابات</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('accounting.accounts') }}">الحسابات</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('accounting_charts.chart_of_accounts') }}">شجرة الحسابات</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('accounting_accounts.accounts') }}">الحسابات</a></li>
                     <li class="breadcrumb-item">{{ account.code }}</li>
                     <li class="breadcrumb-item active">تعديل</li>
                 </ol>
@@ -16,7 +16,7 @@
         </div>
         
         <div class="d-flex gap-2">
-            <a href="{{ url_for('accounting.accounts') }}" class="btn btn-outline-secondary">
+            <a href="{{ url_for('accounting_accounts.accounts') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-right me-2"></i>إلغاء
             </a>
         </div>
@@ -84,7 +84,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ url_for('accounting.accounts') }}" class="btn btn-secondary">
+                            <a href="{{ url_for('accounting_accounts.accounts') }}" class="btn btn-secondary">
                                 <i class="fas fa-times me-2"></i>إلغاء
                             </a>
                             <button type="submit" class="btn btn-primary">

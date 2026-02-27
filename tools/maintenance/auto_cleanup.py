@@ -185,6 +185,13 @@ class ProjectCleaner:
             'uploads',
             'static/images/uploads'
         ]
+
+        # مسارات حساسة لا يجب حذفها تلقائياً لأنها تمثل سجلات رسمية دائمة
+        # (صور الموظفين والوثائق القانونية المرتبطة بهم)
+        protected_subpaths = [
+            os.path.normpath('static/uploads/employees'),
+            os.path.normpath('uploads/employees'),
+        ]
         
         old_threshold = timedelta(days=max_age_days)
         count = 0
@@ -196,6 +203,10 @@ class ProjectCleaner:
             
             for file_path in dir_path.rglob('*'):
                 if file_path.is_file():
+                    normalized_file_path = os.path.normpath(str(file_path))
+                    if any(protected in normalized_file_path for protected in protected_subpaths):
+                        continue
+
                     try:
                         file_age = datetime.now() - datetime.fromtimestamp(
                             file_path.stat().st_mtime

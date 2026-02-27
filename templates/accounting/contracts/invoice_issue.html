@@ -1,0 +1,296 @@
+{% extends "layout.html" %}
+
+{% block title %}إصدار فاتورة ZATCA{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" dir="rtl">
+    <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #001f3f, #39cccc); color:#fff;">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h4 class="mb-1"><i class="fas fa-file-invoice-dollar me-2"></i>إصدار فاتورة ZATCA</h4>
+                <div class="small opacity-75">العقد #{{ contract.id }} - {{ contract.client_name }}</div>
+            </div>
+            <a href="{{ url_for('contracts.resources', contract_id=contract.id) }}" class="btn btn-light btn-sm">
+                <i class="fas fa-arrow-right me-1"></i>العودة لصفحة الموارد
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body" style="background:#f4f7f6;">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label">الشهر</label>
+                    <input type="number" id="invoiceMonth" class="form-control" min="1" max="12">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">السنة</label>
+                    <input type="number" id="invoiceYear" class="form-control" min="2020" max="2100">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Tax Rate %</label>
+                    <input type="number" id="invoiceTaxRate" class="form-control" min="0" step="0.01" value="15">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Discount</label>
+                    <input type="number" id="invoiceDiscount" class="form-control" min="0" step="0.01" value="0">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Payment Terms</label>
+                    <input type="text" id="invoicePaymentTerms" class="form-control" placeholder="Standard">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Manual OT (H)</label>
+                    <input type="number" id="invoiceManualOtHours" class="form-control" min="0" step="0.25" value="0">
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mb-3">
+                <button type="button" id="dryRunBtn" class="btn btn-outline-primary">
+                    <i class="fas fa-flask me-1"></i>Dry Run
+                </button>
+                <button type="button" id="finalizeInvoiceBtn" class="btn text-white" style="background:#001f3f;">
+                    <span class="spinner-border spinner-border-sm me-2 d-none" id="invoiceSpinner"></span>
+                    <i class="fas fa-stamp me-1"></i>Finalize & Sign
+                </button>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white"><strong>Billable Items Summary</strong></div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>الموظف</th>
+                                <th>الأيام</th>
+                                <th>الوصف</th>
+                                <th class="text-end">المبلغ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicePreviewRows">
+                            <tr><td colspan="4" class="text-center text-muted py-3">اضغط Dry Run لعرض الملخص</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row g-2">
+                <div class="col-md-4"><div class="alert alert-light mb-0">Subtotal: <strong id="subtotalText">0.00 SAR</strong></div></div>
+                <div class="col-md-4"><div class="alert alert-light mb-0">VAT: <strong id="taxText">0.00 SAR</strong></div></div>
+                <div class="col-md-4"><div class="alert alert-info mb-0">Grand Total: <strong id="totalText">0.00 SAR</strong></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
+    <div id="invoiceToast" class="toast align-items-center text-bg-dark border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="invoiceToastBody">Ready</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var dryRunBtn = document.getElementById('dryRunBtn');
+    var finalizeBtn = document.getElementById('finalizeInvoiceBtn');
+    var spinner = document.getElementById('invoiceSpinner');
+    var monthInput = document.getElementById('invoiceMonth');
+    var yearInput = document.getElementById('invoiceYear');
+    var taxRateInput = document.getElementById('invoiceTaxRate');
+    var discountInput = document.getElementById('invoiceDiscount');
+    var paymentTermsInput = document.getElementById('invoicePaymentTerms');
+    var manualOtHoursInput = document.getElementById('invoiceManualOtHours');
+    var previewRows = document.getElementById('invoicePreviewRows');
+    var subtotalText = document.getElementById('subtotalText');
+    var taxText = document.getElementById('taxText');
+    var totalText = document.getElementById('totalText');
+    var toastEl = document.getElementById('invoiceToast');
+    var toastBody = document.getElementById('invoiceToastBody');
+    var toast = toastEl ? new bootstrap.Toast(toastEl) : null;
+    var activeJobId = null;
+    var statusPollTimer = null;
+    var lastJobMessage = '';
+
+    var today = new Date();
+    monthInput.value = today.getMonth() + 1;
+    yearInput.value = today.getFullYear();
+
+    function showToast(message) {
+        if (toast && toastBody) {
+            toastBody.textContent = message;
+            toast.show();
+            return;
+        }
+        alert(message);
+    }
+
+    function payload() {
+        return {
+            month: parseInt(monthInput.value || 0, 10),
+            year: parseInt(yearInput.value || 0, 10),
+            tax_rate: parseFloat(taxRateInput.value || 0),
+            discount: parseFloat(discountInput.value || 0),
+            payment_terms: paymentTermsInput.value || '',
+            manual_ot_hours: parseFloat(manualOtHoursInput.value || 0)
+        };
+    }
+
+    function setLoading(loading) {
+        if (loading) {
+            spinner.classList.remove('d-none');
+            finalizeBtn.setAttribute('disabled', 'disabled');
+            dryRunBtn.setAttribute('disabled', 'disabled');
+        } else {
+            spinner.classList.add('d-none');
+            finalizeBtn.removeAttribute('disabled');
+            dryRunBtn.removeAttribute('disabled');
+        }
+    }
+
+    function stopPolling() {
+        if (statusPollTimer) {
+            clearInterval(statusPollTimer);
+            statusPollTimer = null;
+        }
+    }
+
+    function pollJobStatus(jobId) {
+        stopPolling();
+        statusPollTimer = setInterval(function() {
+            fetch(`{{ url_for('finance_bridge.invoice_job_status', job_id='__JOB_ID__') }}`.replace('__JOB_ID__', jobId), {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (!data.ok || !data.job) {
+                    stopPolling();
+                    setLoading(false);
+                    showToast(data.message || 'فشل متابعة حالة الفاتورة');
+                    return;
+                }
+
+                var job = data.job;
+                if (job.message && job.message !== lastJobMessage) {
+                    lastJobMessage = job.message;
+                    showToast(job.message);
+                }
+
+                if (job.status === 'done') {
+                    stopPolling();
+                    setLoading(false);
+                    activeJobId = null;
+                    showToast(job.message || 'تم إصدار الفاتورة بنجاح');
+                    if (job.result && job.result.pdf_url) {
+                        window.open(job.result.pdf_url, '_blank');
+                    }
+                    return;
+                }
+
+                if (job.status === 'failed') {
+                    stopPolling();
+                    setLoading(false);
+                    activeJobId = null;
+                    showToast(job.message || 'فشل إصدار الفاتورة');
+                }
+            })
+            .catch(function() {
+                stopPolling();
+                setLoading(false);
+                activeJobId = null;
+                showToast('تعذر متابعة حالة الفاتورة');
+            });
+        }, 1800);
+    }
+
+    dryRunBtn.addEventListener('click', function() {
+        setLoading(true);
+        fetch("{{ url_for('finance_bridge.preview_contract_invoice', contract_id=contract.id) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(payload())
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (!data.ok) {
+                showToast(data.message || 'Preview failed');
+                return;
+            }
+
+            if (!data.lines || data.lines.length === 0) {
+                previewRows.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">لا توجد بنود قابلة للفوترة</td></tr>';
+            } else {
+                previewRows.innerHTML = data.lines.map(function(line) {
+                    return '<tr>' +
+                        '<td>' + (line.employee_name || '-') + '</td>' +
+                        '<td>' + (line.days_worked || 0) + '</td>' +
+                        '<td>' + (line.description || '-') + '</td>' +
+                        '<td class="text-end">' + (line.amount || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + ' SAR</td>' +
+                    '</tr>';
+                }).join('');
+            }
+
+            subtotalText.textContent = data.subtotal_formatted || '0.00 SAR';
+            taxText.textContent = data.tax_amount_formatted || '0.00 SAR';
+            totalText.textContent = data.grand_total_formatted || '0.00 SAR';
+            showToast('تم تجهيز المعاينة بنجاح');
+        })
+        .catch(function() {
+            showToast('فشل في تنفيذ المعاينة');
+        })
+        .finally(function() {
+            setLoading(false);
+        });
+    });
+
+    finalizeBtn.addEventListener('click', function() {
+        if (activeJobId) {
+            showToast('توجد عملية فوترة قيد التنفيذ، انتظر حتى تكتمل');
+            return;
+        }
+
+        setLoading(true);
+        fetch("{{ url_for('finance_bridge.generate_contract_invoice', contract_id=contract.id) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(Object.assign(payload(), { async: true }))
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (!data.ok) {
+                setLoading(false);
+                showToast(data.message || 'Invoice generation failed');
+                return;
+            }
+
+            if (data.queued && data.job_id) {
+                activeJobId = data.job_id;
+                lastJobMessage = '';
+                setLoading(false);
+                showToast('تم إرسال الطلب للمعالجة الخلفية، جاري المتابعة...');
+                pollJobStatus(data.job_id);
+                return;
+            }
+
+            setLoading(false);
+            showToast(data.message || 'تم إصدار الفاتورة بنجاح');
+        })
+        .catch(function() {
+            setLoading(false);
+            showToast('تعذر التواصل مع الخادم');
+        });
+    });
+});
+</script>
+{% endblock %}

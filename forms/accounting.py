@@ -33,8 +33,8 @@ class TransactionEntryForm(FlaskForm):
     account_id = SelectField('الحساب', coerce=lambda x: int(x) if x else None, validators=[DataRequired()])
     entry_type = SelectField('النوع', 
                             choices=[
-                                ('DEBIT', 'مدين'),
-                                ('CREDIT', 'دائن')
+                                ('debit', 'مدين'),
+                                ('credit', 'دائن')
                             ],
                             validators=[DataRequired()])
     amount = DecimalField('المبلغ', validators=[DataRequired(), NumberRange(min=0.01)])

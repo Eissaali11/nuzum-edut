@@ -272,6 +272,17 @@
                                             <span>الحضور</span>
                                         </a>
                                     </li>
+                                    {% if current_user._is_admin_role() %}
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('payroll.hr_command_center') }}"
+                                            class="nav-link nav-link-custom {% if '/payroll/hr-command-center' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-robot me-2"></i>
+                                            <span>HR Automation 16.0</span>
+                                        </a>
+                                    </li>
+                                    {% endif %}
                                     {# إدارة الموارد البشرية #}
                                     {% if current_user._is_admin_role() %}
                                     <li class="nav-item mb-1">
@@ -527,6 +538,24 @@
                                     </li>
                                     <li class="nav-item mb-1">
                                         <a
+                                            href="{{ url_for('payroll.hr_command_center') }}"
+                                            class="nav-link nav-link-custom {% if '/payroll/hr-command-center' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-robot me-2"></i>
+                                            <span>مركز أتمتة الرواتب</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('payroll.payslips_review') }}"
+                                            class="nav-link nav-link-custom {% if '/payroll/payslips/review' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-file-signature me-2"></i>
+                                            <span>استعراض القسائم</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
                                             href="{{ url_for('salaries.index') }}"
                                             class="nav-link nav-link-custom {% if '/salaries' in request.path and '/salaries/report' not in request.path and '/salaries/export' not in request.path %}active{% endif %}"
                                         >
@@ -655,17 +684,35 @@
                                 <a
                                     href="#accountingSubmenu"
                                     data-bs-toggle="collapse"
-                                    class="nav-link nav-link-custom {% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/fees-costs' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}active{% endif %}"
-                                    aria-expanded="{% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/fees-costs' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}true{% else %}false{% endif %}"
+                                    class="nav-link nav-link-custom {% if '/accounting' in request.path or '/finance-bridge' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/fees-costs' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}active{% endif %}"
+                                    aria-expanded="{% if '/accounting' in request.path or '/finance-bridge' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/fees-costs' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}true{% else %}false{% endif %}"
                                 >
                                     <i class="fas fa-calculator me-2"></i>
                                     <span>المحاسبة والتحليل المالي</span>
                                     <i class="fas fa-chevron-down ms-auto"></i>
                                 </a>
                                 <ul
-                                    class="collapse {% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/fees-costs' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    class="collapse {% if '/accounting' in request.path or '/finance-bridge' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/fees-costs' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}show{% endif %} list-unstyled ps-4"
                                     id="accountingSubmenu"
                                 >
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('finance_bridge.dashboard') }}"
+                                            class="nav-link nav-link-custom {% if '/finance-bridge' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-coins me-2"></i>
+                                            <span>المركز المالي</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('finance_bridge.invoice_data_settings') }}"
+                                            class="nav-link nav-link-custom {% if '/finance-bridge/invoice-settings' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-file-invoice me-2"></i>
+                                            <span>إعدادات بيانات الفاتورة</span>
+                                        </a>
+                                    </li>
                                     <li class="nav-item mb-1">
                                         <a
                                             href="{{ url_for('accounting.dashboard') }}"
@@ -673,6 +720,33 @@
                                         >
                                             <i class="fas fa-tachometer-alt me-2"></i>
                                             <span>لوحة المحاسبة</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('accounting_transactions.transactions') }}"
+                                            class="nav-link nav-link-custom {% if '/accounting/transactions' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-book me-2"></i>
+                                            <span>القيود المحاسبية</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('accounting_transactions.add_transaction') }}"
+                                            class="nav-link nav-link-custom {% if '/accounting/transactions/new' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-plus-circle me-2"></i>
+                                            <span>إنشاء قيد جديد</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('accounting_accounts.accounting_health_report', source='local') }}"
+                                            class="nav-link nav-link-custom {% if '/accounting/health-report' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-radar me-2"></i>
+                                            <span>رادار النظافة المحاسبية</span>
                                         </a>
                                     </li>
                                     <li class="nav-item mb-1">

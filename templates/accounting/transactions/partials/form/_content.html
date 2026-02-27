@@ -78,7 +78,7 @@
                                             {{ entry.amount(class="form-control", placeholder="المبلغ") }}
                                         </div>
                                         <div class="col-md-2">
-                                            {{ entry.description(class="form-control", placeholder="البيان") if entry.description else "" }}
+                                            {{ entry['description'](class="form-control", placeholder="البيان") if entry and entry['description'] else "" }}
                                         </div>
                                         <div class="col-md-1">
                                             <button type="button" class="btn btn-sm btn-danger remove-entry">
@@ -96,7 +96,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('accounting.transactions') }}" class="btn btn-secondary">
+                            <a href="{{ url_for('accounting_transactions.transactions') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-right me-2"></i>رجوع
                             </a>
                             <button type="submit" class="btn btn-primary">

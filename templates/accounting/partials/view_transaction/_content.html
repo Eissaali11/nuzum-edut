@@ -8,13 +8,16 @@
             <p class="text-muted mb-0">رقم المرجع: {{ transaction.reference_number or transaction.id }}</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ url_for('accounting.transactions') }}" class="btn btn-secondary">
+            <a href="{{ url_for('accounting_transactions.transactions') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-right me-2"></i>العودة للقائمة
             </a>
             {% if not transaction.is_approved %}
-            <button class="btn btn-success" onclick="approveTransaction({{ transaction.id }})">
-                <i class="fas fa-check me-2"></i>اعتماد
-            </button>
+            <form method="POST" action="{{ url_for('accounting_transactions.approve_transaction', transaction_id=transaction.id) }}" onsubmit="return confirm('هل أنت متأكد من اعتماد هذه المعاملة؟')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check me-2"></i>اعتماد
+                </button>
+            </form>
             {% endif %}
         </div>
     </div>
@@ -162,30 +165,6 @@
         </div>
     </div>
 </div>
-
-<script>
-function approveTransaction(transactionId) {
-    if (confirm('هل أنت متأكد من اعتماد هذه المعاملة؟')) {
-        fetch(`/accounting/transactions/${transactionId}/approve`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('حدث خطأ: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('حدث خطأ في الشبكة');
-        });
-    }
-}
-</script>
 
 <style>
 .badge {

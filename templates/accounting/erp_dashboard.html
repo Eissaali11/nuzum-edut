@@ -1,0 +1,410 @@
+{% extends "layout.html" %}
+{% set lang = request.args.get('lang', 'ar') %}
+{% set is_en = lang == 'en' %}
+
+{% block title %}{{ 'NUZUM Financial Center' if is_en else 'المركز المالي - نُظم' }}{% endblock %}
+
+{% block styles %}
+<style>
+    .nuzum-header {
+        background: linear-gradient(135deg, #001f3f, #39cccc);
+        color: #fff;
+        border-radius: 16px;
+    }
+    .nuzum-led {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-left: 8px;
+        box-shadow: 0 0 0 0 rgba(57, 204, 204, 0.8);
+        animation: pulse 1.8s infinite;
+    }
+    .nuzum-led.connected { background: #39cccc; }
+    .nuzum-led.disconnected {
+        background: #dc3545;
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(57, 204, 204, 0.8); }
+        70% { box-shadow: 0 0 0 10px rgba(57, 204, 204, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(57, 204, 204, 0); }
+    }
+    .summary-card {
+        border: 0;
+        border-radius: 14px;
+        background: #f4f7f6;
+    }
+    .summary-label {
+        font-size: .85rem;
+        color: #6c757d;
+        margin-bottom: .3rem;
+    }
+    .summary-value {
+        color: #001f3f;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    .nuzum-btn-primary {
+        background-color: #001f3f;
+        border-color: #001f3f;
+    }
+    .nuzum-btn-primary:hover {
+        background-color: #001733;
+        border-color: #001733;
+    }
+    .table thead th {
+        background: #001f3f;
+        color: #fff;
+        font-weight: 600;
+    }
+    .nuzum-section-header {
+        background: #f8fafc !important;
+        color: #001f3f !important;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .nuzum-section-header strong,
+    .nuzum-section-header a,
+    .nuzum-section-header span {
+        color: #001f3f !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" dir="{{ 'ltr' if is_en else 'rtl' }}">
+    <div class="card nuzum-header border-0 shadow-sm mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h4 class="mb-1"><i class="fas fa-chart-line me-2"></i>NUZUM Financial Center</h4>
+                <div class="small opacity-75">{{ 'ERPNext Connection Status' if is_en else 'حالة الاتصال مع ERPNext' }}</div>
+            </div>
+            <div class="text-end">
+                <div class="mb-2 d-flex gap-2 justify-content-end">
+                    <a href="{{ url_for('finance_bridge.dashboard', lang='ar', page=page) }}" class="btn btn-light btn-sm {% if not is_en %}active{% endif %}">العربية</a>
+                    <a href="{{ url_for('finance_bridge.dashboard', lang='en', page=page) }}" class="btn btn-light btn-sm {% if is_en %}active{% endif %}">English</a>
+                </div>
+                <div class="fw-bold">
+                    {% if connection_ok %}
+                    <span id="connection-dot" class="nuzum-led connected"></span><span id="connection-text">{{ 'Connected' if is_en else 'متصل' }}</span>
+                    {% else %}
+                    <span id="connection-dot" class="nuzum-led disconnected"></span><span id="connection-text">{{ 'Disconnected' if is_en else 'غير متصل' }}</span>
+                    {% endif %}
+                </div>
+                <div class="small mt-1" id="connection-message">{{ connection_message }}</div>
+                <button type="button" class="btn btn-light btn-sm mt-2" id="testConnectionBtn">{{ 'Test Connection' if is_en else 'فحص الاتصال' }}</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body">
+                    <div class="summary-label">{{ 'Total Invoiced' if is_en else 'إجمالي الفواتير' }}</div>
+                    <div class="summary-value">{{ format_sar(total_invoiced) }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body">
+                    <div class="summary-label">{{ 'Pending Collection' if is_en else 'المبالغ المعلّقة' }}</div>
+                    <div class="summary-value">{{ format_sar(pending_collection) }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body">
+                    <div class="summary-label">{{ 'Tax Liabilities (VAT)' if is_en else 'الالتزامات الضريبية (VAT)' }}</div>
+                    <div class="summary-value">{{ format_sar(tax_liabilities) }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card summary-card shadow-sm">
+                <div class="card-body">
+                    <div class="summary-label">{{ 'Project Profitability Index' if is_en else 'مؤشر ربحية المشاريع' }}</div>
+                    <div class="summary-value">{{ '%.2f'|format(profitability_index) }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header nuzum-section-header d-flex justify-content-between align-items-center">
+                    <strong>{{ 'Recent Invoices' if is_en else 'آخر الفواتير' }}</strong>
+                    <a href="{{ url_for('finance_bridge.integration_settings') }}" class="btn btn-sm nuzum-btn-primary text-white">
+                        <i class="fas fa-cog me-1"></i>{{ 'Integration Settings' if is_en else 'إعدادات الربط' }}
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>{{ 'Invoice' if is_en else 'الفاتورة' }}</th>
+                                <th>{{ 'Customer' if is_en else 'العميل' }}</th>
+                                <th>{{ 'Date' if is_en else 'التاريخ' }}</th>
+                                <th>{{ 'Status' if is_en else 'الحالة' }}</th>
+                                <th class="text-end">{{ 'Total' if is_en else 'الإجمالي' }}</th>
+                                <th>{{ 'Actions' if is_en else 'الإجراءات' }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inv in invoices %}
+                            <tr>
+                                <td>{{ inv.name }}</td>
+                                <td>{{ inv.customer }}</td>
+                                <td>{{ inv.posting_date }}</td>
+                                <td><span class="badge bg-info text-dark">{{ inv.status }}</span></td>
+                                <td class="text-end">{{ inv.grand_total_formatted }}</td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            {{ 'Actions' if is_en else 'الإجراءات' }}
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" target="_blank" href="{{ url_for('finance_bridge.invoice_pdf', invoice_name=inv.name) }}">
+                                                    <i class="fas fa-file-pdf me-2"></i>{{ 'View PDF' if is_en else 'عرض PDF' }}
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item sync-status-btn" type="button" data-invoice="{{ inv.name }}">
+                                                    <i class="fas fa-sync-alt me-2"></i>{{ 'Sync Status' if is_en else 'مزامنة الحالة' }}
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="6" class="text-center py-4 text-muted">{{ 'No invoices found.' if is_en else 'لا توجد فواتير.' }}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-white">
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0 justify-content-end">
+                            <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                                <a class="page-link" href="{{ url_for('finance_bridge.dashboard', page=page-1, lang=lang) }}">{{ 'Previous' if is_en else 'السابق' }}</a>
+                            </li>
+                            <li class="page-item disabled"><span class="page-link">{{ page }} / {{ total_pages }}</span></li>
+                            <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+                                <a class="page-link" href="{{ url_for('finance_bridge.dashboard', page=page+1, lang=lang) }}">{{ 'Next' if is_en else 'التالي' }}</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header nuzum-section-header"><strong>{{ 'Monthly Revenue' if is_en else 'الإيراد الشهري' }}</strong></div>
+                <div class="card-body">
+                    {% if chart_labels and chart_labels|length > 0 %}
+                    <canvas id="monthlyRevenueChart" height="230"></canvas>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-chart-bar fa-2x mb-3"></i>
+                        <div>{{ 'No revenue data yet' if is_en else 'لا توجد بيانات إيرادات بعد' }}</div>
+                        <small>{{ 'Create your first invoice to start the chart.' if is_en else 'أنشئ أول فاتورة لبدء عرض الرسم البياني.' }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header nuzum-section-header d-flex justify-content-between align-items-center">
+                    <strong>{{ 'Contracts Ready for Sync' if is_en else 'عقود جاهزة للمزامنة' }}</strong>
+                    <a href="{{ url_for('contracts.index') }}" class="btn btn-sm btn-outline-primary">{{ 'Manage Contracts' if is_en else 'إدارة العقود' }}</a>
+                </div>
+                {% if contracts and contracts|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>{{ 'Contract No.' if is_en else 'رقم العقد' }}</th>
+                                <th>{{ 'Customer' if is_en else 'العميل' }}</th>
+                                <th>{{ 'Actions' if is_en else 'الإجراءات' }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contract in contracts %}
+                            <tr>
+                                <td>#{{ contract.id }}</td>
+                                <td>{{ contract.client_name }}</td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-success sync-customer-btn" data-contract-id="{{ contract.id }}">
+                                            <i class="fas fa-user-check me-1"></i>{{ 'Sync Customer' if is_en else 'مزامنة العميل' }}
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary create-invoice-btn" data-contract-id="{{ contract.id }}">
+                                            <i class="fas fa-file-invoice-dollar me-1"></i>{{ 'Create Invoice' if is_en else 'إصدار فاتورة' }}
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-4 text-center text-muted">
+                    {{ 'No contracts ready for sync. Start by creating a contract.' if is_en else 'لا توجد عقود جاهزة للمزامنة حاليًا. ابدأ بإضافة عقد جديد.' }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
+    <div id="dashboardToast" class="toast align-items-center text-bg-dark border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="dashboardToastBody">{{ 'Ready' if is_en else 'جاهز' }}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function () {
+    const ctx = document.getElementById('monthlyRevenueChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ chart_labels|tojson }},
+                datasets: [{
+                    label: '{{ 'Revenue (SAR)' if is_en else 'الإيراد (ريال)' }}',
+                    data: {{ chart_values|tojson }},
+                    backgroundColor: '#39cccc',
+                    borderColor: '#001f3f',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    const toastEl = document.getElementById('dashboardToast');
+    const toastBody = document.getElementById('dashboardToastBody');
+    const toast = toastEl ? new bootstrap.Toast(toastEl) : null;
+    const statusDot = document.getElementById('connection-dot');
+    const statusText = document.getElementById('connection-text');
+    const statusMessage = document.getElementById('connection-message');
+    const testConnectionBtn = document.getElementById('testConnectionBtn');
+
+    function showToast(message) {
+        if (!toast || !toastBody) return;
+        toastBody.textContent = message;
+        toast.show();
+    }
+
+    async function checkSystemConnection() {
+        if (statusText) statusText.textContent = '{{ 'Checking...' if is_en else 'جاري الفحص...' }}';
+        if (statusMessage) statusMessage.textContent = '{{ 'Running ERPNext handshake test' if is_en else 'يتم تنفيذ اختبار المصافحة الرقمية مع ERPNext' }}';
+
+        try {
+            const res = await fetch(`{{ url_for('finance_bridge.test_connection') }}`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            const ok = !!data.ok;
+            const color = ok ? '#39cccc' : '#ff4136';
+
+            if (statusDot) {
+                statusDot.style.backgroundColor = color;
+                statusDot.classList.remove('connected', 'disconnected');
+            }
+            if (statusText) {
+                statusText.textContent = ok ? '{{ 'Connected' if is_en else 'متصل' }}' : '{{ 'Disconnected' if is_en else 'غير متصل' }}';
+                statusText.style.color = color;
+            }
+            if (statusMessage) {
+                statusMessage.textContent = data.message || '{{ 'Test completed' if is_en else 'تم تنفيذ الفحص' }}';
+                statusMessage.style.color = color;
+            }
+            showToast(data.message || '{{ 'Connection checked' if is_en else 'تم فحص الاتصال' }}');
+        } catch (error) {
+            if (statusDot) {
+                statusDot.style.backgroundColor = '#ff4136';
+                statusDot.classList.remove('connected');
+                statusDot.classList.add('disconnected');
+            }
+            if (statusText) {
+                statusText.textContent = '{{ 'Disconnected' if is_en else 'غير متصل' }}';
+                statusText.style.color = '#ff4136';
+            }
+            if (statusMessage) {
+                statusMessage.textContent = '{{ 'Internal server connection error' if is_en else 'خطأ في الاتصال بالسيرفر الداخلي' }}';
+                statusMessage.style.color = '#ff4136';
+            }
+            showToast('{{ 'Internal server connection error' if is_en else 'خطأ في الاتصال بالسيرفر الداخلي' }}');
+        }
+    }
+
+    if (testConnectionBtn) {
+        testConnectionBtn.addEventListener('click', checkSystemConnection);
+    }
+
+    document.querySelectorAll('.sync-status-btn').forEach((button) => {
+        button.addEventListener('click', async function () {
+            const invoice = this.dataset.invoice;
+            try {
+                const res = await fetch(`{{ url_for('finance_bridge.sync_invoice_status', invoice_name='__INVOICE__') }}`.replace('__INVOICE__', invoice), {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                showToast(data.message || '{{ 'Status synced' if is_en else 'تمت مزامنة الحالة' }}');
+            } catch (e) {
+                showToast('{{ 'Sync failed' if is_en else 'فشلت المزامنة' }}');
+            }
+        });
+    });
+
+    document.querySelectorAll('.sync-customer-btn').forEach((button) => {
+        button.addEventListener('click', async function () {
+            const contractId = this.dataset.contractId;
+            try {
+                const res = await fetch(`/accounting/finance-bridge/contracts/${contractId}/sync-customer`, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                showToast(data.message || '{{ 'Sync completed' if is_en else 'تمت المزامنة' }}');
+            } catch (e) {
+                showToast('{{ 'Customer sync failed' if is_en else 'فشلت مزامنة العميل' }}');
+            }
+        });
+    });
+
+    document.querySelectorAll('.create-invoice-btn').forEach((button) => {
+        button.addEventListener('click', async function () {
+            const contractId = this.dataset.contractId;
+            window.location.href = `/accounting/contracts/${contractId}/invoice`;
+        });
+    });
+})();
+</script>
+{% endblock %}

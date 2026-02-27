@@ -1,6 +1,21 @@
 from flask import Blueprint as FlaskBlueprint
 from flask_login import login_required, current_user
-from flask import render_template
+from flask import render_template, redirect, url_for
+
+
+def add_compatibility_alias(app, legacy_endpoint, legacy_rule, target_endpoint, methods=("GET",)):
+    if legacy_endpoint in app.view_functions:
+        return False
+
+    if target_endpoint not in app.view_functions:
+        return False
+
+    @login_required
+    def _compatibility_alias(**_kwargs):
+        return redirect(url_for(target_endpoint, **_kwargs))
+
+    app.add_url_rule(legacy_rule, legacy_endpoint, _compatibility_alias, methods=list(methods))
+    return True
 
 def register_all_blueprints(app, csrf):
     """
@@ -39,6 +54,7 @@ def register_all_blueprints(app, csrf):
     from routes.device_management import device_management_bp
     from routes.device_assignment import device_assignment_bp
     from routes.accounting import accounting_bp
+    from routes.accounting.accounting import register_accounting_blueprints
     from routes.accounting_extended import accounting_ext_bp
     from routes.accounting.profitability_routes import profitability_bp, contracts_bp, utility_bp
     from routes.analytics_simple import analytics_simple_bp
@@ -137,6 +153,7 @@ def register_all_blueprints(app, csrf):
     app.register_blueprint(device_assignment_bp, url_prefix='/device-assignment')
     app.register_blueprint(vehicle_operations_bp, url_prefix='/vehicle-operations')
     app.register_blueprint(accounting_bp, url_prefix="/accounting")
+    register_accounting_blueprints(app)
     # Prevent collision: register extended accounting under a separate prefix
     app.register_blueprint(accounting_ext_bp, url_prefix="/accounting-ext")
     app.register_blueprint(profitability_bp)
@@ -205,6 +222,16 @@ def register_all_blueprints(app, csrf):
     app.register_blueprint(api_accident_reports)  # API تقارير حوادث السيارات
     app.register_blueprint(payroll_bp, url_prefix='/payroll')
     app.register_blueprint(leave_bp, url_prefix='/leaves')
+
+    from routes.accounting.mapping_registry import get_critical_mappings
+    for mapping in get_critical_mappings():
+        add_compatibility_alias(
+            app=app,
+            legacy_endpoint=mapping.legacy_endpoint,
+            legacy_rule=mapping.legacy_rule,
+            target_endpoint=mapping.canonical_endpoint,
+            methods=mapping.methods,
+        )
 
     # استيراد وتسجيل مسار صفحة الهبوط - مسار منفصل عن النظام
     from routes.landing import landing_bp

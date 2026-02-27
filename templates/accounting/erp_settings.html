@@ -1,0 +1,119 @@
+{% extends "layout.html" %}
+
+{% block title %}إعدادات الربط المالي{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #001f3f, #39cccc); color:#fff;">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-1"><i class="fas fa-sliders-h me-2"></i>Integration Settings</h4>
+                <div class="small opacity-75">NUZUM ↔ ERPNext Secure Bridge Control</div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('finance_bridge.invoice_data_settings') }}" class="btn btn-warning btn-sm">إعدادات بيانات الفاتورة</a>
+                <a href="{{ url_for('finance_bridge.dashboard') }}" class="btn btn-light btn-sm">العودة للوحة المالية</a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white"><strong>Auth Section</strong></div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">ERP Base URL</label>
+                            <input type="url" class="form-control" name="base_url" value="{{ default_base_url }}" placeholder="https://erpnext-bgj-wjk.k.frappe.cloud">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">API Key</label>
+                            <input type="text" class="form-control" name="api_key" placeholder="{{ masked_key if masked_key else 'Enter new API key' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">API Secret</label>
+                            <input type="password" class="form-control" name="api_secret" placeholder="{{ masked_secret if masked_secret else 'Enter new API secret' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">VAT Account Head (15%)</label>
+                            <input type="text" class="form-control" name="vat_account_head" value="{{ settings.get('ERPNEXT_VAT_ACCOUNT_HEAD', '') }}" list="erpAccounts">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Print Format Name</label>
+                            <input type="text" class="form-control" name="print_format" value="{{ settings.get('ERPNEXT_PRINT_FORMAT', 'Standard') }}" placeholder="مثال: NUZUM Professional Invoice">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Letterhead Name</label>
+                            <input type="text" class="form-control" name="letter_head_name" value="{{ settings.get('ERPNEXT_LETTER_HEAD', 'NUZUM') }}" placeholder="مثال: NUZUM">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Print Language</label>
+                            <select class="form-select" name="print_lang">
+                                <option value="ar" {% if settings.get('ERPNEXT_PRINT_LANG', 'ar') == 'ar' %}selected{% endif %}>Arabic</option>
+                                <option value="en" {% if settings.get('ERPNEXT_PRINT_LANG', 'ar') == 'en' %}selected{% endif %}>English</option>
+                            </select>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="apply_logo_sync" id="applyLogoSync" {% if settings.get('ERPNEXT_APPLY_NUZUM_LOGO') %}checked{% endif %}>
+                            <label class="form-check-label" for="applyLogoSync">Apply NUZUM Logo to ERPNext Invoices</label>
+                        </div>
+                        <div class="small text-muted mt-2">
+                            لاستخدام تصميم احترافي، أنشئ Print Format بنفس الاسم داخل ERPNext، وفعّل الشعار مع اسم Letterhead الصحيح.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white"><strong>Account Mapping</strong></div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>NUZUM Cost Center</th>
+                                        <th>ERPNext Account</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cc in cost_centers %}
+                                    <tr>
+                                        <td>{{ cc.code }} - {{ cc.name }}</td>
+                                        <td>
+                                            <input type="text"
+                                                   name="mapping_{{ cc.code }}"
+                                                   class="form-control form-control-sm"
+                                                   value="{{ settings.get('cost_center_mapping', {}).get(cc.code, '') }}"
+                                                   list="erpAccounts"
+                                                   placeholder="Select or type ERP account">
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted">لا توجد مراكز تكلفة حالياً</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 text-end">
+            <button type="submit" class="btn text-white" style="background:#001f3f;">
+                <i class="fas fa-save me-1"></i>حفظ الإعدادات
+            </button>
+        </div>
+    </form>
+
+    <datalist id="erpAccounts">
+        {% for account in account_options %}
+        <option value="{{ account }}"></option>
+        {% endfor %}
+    </datalist>
+</div>
+{% endblock %}

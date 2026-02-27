@@ -7,9 +7,14 @@
                         <i class="fas fa-list me-2"></i>
                         دليل الحسابات
                     </h5>
-                    <a href="{{ url_for('accounting.create_account') }}" class="btn btn-light btn-sm">
-                        <i class="fas fa-plus me-1"></i>حساب جديد
-                    </a>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('accounting_accounts.accounting_health_report') }}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-radar me-1"></i>رادار النظافة
+                        </a>
+                        <a href="{{ url_for('accounting_accounts.create_account') }}" class="btn btn-light btn-sm">
+                            <i class="fas fa-plus me-1"></i>حساب جديد
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -49,11 +54,11 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-1">
-                                            <a href="{{ url_for('accounting.edit_account', account_id=account.id) }}" 
+                                            <a href="{{ url_for('accounting_accounts.edit_account', account_id=account.id) }}" 
                                                class="btn btn-sm btn-primary" title="تعديل">
                                                 <i class="fas fa-edit me-1"></i>تعديل
                                             </a>
-                                            <a href="{{ url_for('accounting.confirm_delete_account', account_id=account.id) }}" 
+                                            <a href="{{ url_for('accounting_accounts.confirm_delete_account', account_id=account.id) }}" 
                                                class="btn btn-sm btn-danger" title="حذف">
                                                 <i class="fas fa-trash me-1"></i>حذف
                                             </a>

@@ -141,8 +141,8 @@
                             </div>
                             <div class="card-body">
                                 <p class="mb-2"><strong>رقم الوثيقة:</strong> {{ documents_by_type[doc_type].document_number }}</p>
-                                <p class="mb-2"><strong>تاريخ الإصدار:</strong> {{ documents_by_type[doc_type].issue_date.strftime('%d/%m/%Y') }}</p>
-                                <p class="mb-2"><strong>تاريخ الانتهاء:</strong> {{ documents_by_type[doc_type].expiry_date.strftime('%d/%m/%Y') }}</p>
+                                <p class="mb-2"><strong>تاريخ الإصدار:</strong> {{ documents_by_type[doc_type].issue_date.strftime('%d/%m/%Y') if documents_by_type[doc_type].issue_date else '—' }}</p>
+                                <p class="mb-2"><strong>تاريخ الانتهاء:</strong> {{ documents_by_type[doc_type].expiry_date.strftime('%d/%m/%Y') if documents_by_type[doc_type].expiry_date else '—' }}</p>
                                 <p class="mb-2">
                                     <strong>الحالة:</strong>
                                     <span class="badge-enhanced bg-{{ documents_by_type[doc_type].status_class }}">{{ documents_by_type[doc_type].status_text }}</span>

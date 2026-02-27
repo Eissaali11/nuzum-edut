@@ -280,6 +280,42 @@ def _seed_admin_if_empty():
         db.session.rollback()
 
 
+def _ensure_vehicle_monthly_fixed_cost_column():
+    """Ensure vehicle.monthly_fixed_cost exists in SQLite databases."""
+    database_uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+    if not database_uri.startswith("sqlite:///"):
+        return
+
+    db_path = database_uri.replace("sqlite:///", "", 1).split("?", 1)[0]
+    if not os.path.isabs(db_path):
+        db_path = os.path.abspath(db_path)
+
+    if not os.path.exists(db_path):
+        return
+
+    conn = None
+    try:
+        conn = sqlite3.connect(db_path)
+        cur = conn.cursor()
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='vehicle'")
+        if not cur.fetchone():
+            return
+
+        cur.execute("PRAGMA table_info(vehicle)")
+        existing_columns = {row[1] for row in cur.fetchall()}
+        if "monthly_fixed_cost" in existing_columns:
+            return
+
+        cur.execute("ALTER TABLE vehicle ADD COLUMN monthly_fixed_cost FLOAT DEFAULT 0")
+        conn.commit()
+        logger.warning("Patched SQLite schema: added vehicle.monthly_fixed_cost")
+    except Exception as e:
+        logger.warning(f"Failed to patch vehicle.monthly_fixed_cost column: {e}")
+    finally:
+        if conn is not None:
+            conn.close()
+
+
 # تعطيل استخدام WeasyPrint مؤقتاً
 WEASYPRINT_ENABLED = False
 
@@ -378,6 +414,7 @@ with app.app_context():
     logger.info("Creating database tables...")
     try:
         db.create_all()
+        _ensure_vehicle_monthly_fixed_cost_column()
         logger.info("Database tables created successfully.")
     except Exception as e:
         logger.info(f"Database tables already exist: {str(e)}")

@@ -15,12 +15,12 @@
         <!-- دليل الحسابات -->
         <div class="nav-group">
             <h6 class="nav-header text-muted px-2 mt-3 mb-1">📊 الحسابات</h6>
-            <a class="nav-link text-white {% if request.endpoint == 'accounting.accounts' %}active bg-primary{% endif %}" 
-               href="{{ url_for('accounting.accounts') }}">
+                <a class="nav-link text-white {% if request.endpoint == 'accounting_accounts.accounts' %}active bg-primary{% endif %}" 
+                    href="{{ url_for('accounting_accounts.accounts') }}">
                 <i class="fas fa-list me-2"></i> دليل الحسابات
             </a>
-            <a class="nav-link text-white {% if request.endpoint == 'accounting.chart_of_accounts' %}active bg-primary{% endif %}" 
-               href="{{ url_for('accounting.chart_of_accounts') }}">
+                <a class="nav-link text-white {% if request.endpoint == 'accounting_charts.chart_of_accounts' %}active bg-primary{% endif %}" 
+                    href="{{ url_for('accounting_charts.chart_of_accounts') }}">
                 <i class="fas fa-sitemap me-2"></i> شجرة الحسابات
             </a>
         </div>
@@ -28,16 +28,16 @@
         <!-- المعاملات المالية -->
         <div class="nav-group">
             <h6 class="nav-header text-muted px-2 mt-3 mb-1">💰 المعاملات</h6>
-            <a class="nav-link text-white {% if request.endpoint == 'accounting.transactions' %}active bg-primary{% endif %}" 
-               href="{{ url_for('accounting.transactions') }}">
+                <a class="nav-link text-white {% if request.endpoint == 'accounting_transactions.transactions' %}active bg-primary{% endif %}" 
+                    href="{{ url_for('accounting_transactions.transactions') }}">
                 <i class="fas fa-exchange-alt me-2"></i> سجل المعاملات
             </a>
-            <a class="nav-link text-white {% if request.endpoint == 'accounting.journal_entries' %}active bg-primary{% endif %}" 
-               href="{{ url_for('accounting.journal_entries') }}">
+                <a class="nav-link text-white {% if request.endpoint == 'accounting_transactions.transactions' %}active bg-primary{% endif %}" 
+                    href="{{ url_for('accounting_transactions.transactions') }}">
                 <i class="fas fa-book me-2"></i> القيود اليومية
             </a>
-            <a class="nav-link text-white {% if request.endpoint == 'accounting.pending_transactions' %}active bg-primary{% endif %}" 
-               href="{{ url_for('accounting.pending_transactions') }}">
+                <a class="nav-link text-white {% if request.endpoint == 'accounting_transactions.transactions' %}active bg-primary{% endif %}" 
+                    href="{{ url_for('accounting_transactions.transactions') }}">
                 <i class="fas fa-hourglass-half me-2"></i> معاملات في الانتظار
             </a>
         </div>
@@ -45,20 +45,20 @@
         <!-- التقارير المالية -->
         <div class="nav-group">
             <h6 class="nav-header text-muted px-2 mt-3 mb-1">📈 التقارير والنظم</h6>
-            <a class="nav-link text-white {% if request.endpoint == 'accounting.trial_balance' %}active bg-primary{% endif %}" 
-               href="{{ url_for('accounting.trial_balance') }}">
+                <a class="nav-link text-white {% if request.endpoint == 'accounting_ext.trial_balance' %}active bg-primary{% endif %}" 
+                    href="{{ url_for('accounting_ext.trial_balance') }}">
                 <i class="fas fa-balance-scale me-2"></i> ميزان المراجعة
             </a>
             <a class="nav-link text-white {% if request.endpoint == 'accounting.income_statement' %}active bg-primary{% endif %}" 
                href="{{ url_for('accounting.income_statement') }}">
                 <i class="fas fa-chart-line me-2"></i> قائمة الدخل
             </a>
-            <a class="nav-link text-white {% if request.endpoint == 'accounting.balance_sheet' %}active bg-primary{% endif %}" 
-               href="{{ url_for('accounting.balance_sheet') }}">
+                <a class="nav-link text-white {% if request.endpoint == 'accounting_ext.balance_sheet' %}active bg-primary{% endif %}" 
+                    href="{{ url_for('accounting_ext.balance_sheet') }}">
                 <i class="fas fa-chart-area me-2"></i> الميزانية العمومية
             </a>
-            <a class="nav-link text-white {% if request.endpoint == 'accounting.analytics' %}active bg-primary{% endif %}" 
-               href="{{ url_for('accounting.analytics') }}">
+                <a class="nav-link text-white {% if request.endpoint == 'analytics_simple.dashboard' %}active bg-primary{% endif %}" 
+                    href="{{ url_for('analytics_simple.dashboard') }}">
                 <i class="fas fa-chart-pie me-2"></i> التحليلات المالية
             </a>
             <a class="nav-link text-white {% if request.endpoint == 'integrated.comprehensive_report' %}active bg-primary{% endif %}" 
@@ -89,8 +89,8 @@
                href="{{ url_for('accounting.fiscal_years') }}">
                 <i class="fas fa-calendar-alt me-2"></i> السنوات المالية
             </a>
-            <a class="nav-link text-white {% if request.endpoint == 'accounting.cost_centers' %}active bg-primary{% endif %}" 
-               href="{{ url_for('accounting.cost_centers') }}">
+                <a class="nav-link text-white {% if request.endpoint == 'accounting_costcenters.cost_centers' %}active bg-primary{% endif %}" 
+                    href="{{ url_for('accounting_costcenters.cost_centers') }}">
                 <i class="fas fa-building me-2"></i> مراكز التكلفة
             </a>
             <a class="nav-link text-white {% if request.endpoint == 'accounting.vendors' %}active bg-primary{% endif %}" 

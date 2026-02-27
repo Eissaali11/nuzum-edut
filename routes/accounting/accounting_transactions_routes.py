@@ -20,6 +20,7 @@ from models_accounting import (
     Vendor, Customer, TransactionType, EntryType, Account
 )
 from forms.accounting import TransactionForm
+from services.finance_bridge import validate_accounting_payload, ERPNextBridgeError
 from utils.helpers import log_activity
 
 from .accounting_helpers import (
@@ -141,8 +142,28 @@ def add_transaction():
     
     form = TransactionForm()
     
-    accounts = search_accounts(is_active=True)
+    accounts_result = search_accounts()
+    if hasattr(accounts_result, 'filter'):
+        accounts = accounts_result.filter(Account.is_active == True).all()
+    else:
+        accounts = [account for account in (accounts_result or []) if getattr(account, 'is_active', False)]
     cost_centers = CostCenter.query.filter_by(is_active=True).all()
+    if not cost_centers:
+        try:
+            default_cost_center = CostCenter(
+                code='CC-001',
+                name='المركز الرئيسي',
+                name_en='Main Cost Center',
+                description='مركز تكلفة افتراضي تم إنشاؤه تلقائياً',
+                budget_amount=Decimal('0.00'),
+                is_active=True,
+            )
+            db.session.add(default_cost_center)
+            db.session.commit()
+            cost_centers = [default_cost_center]
+        except Exception:
+            db.session.rollback()
+            cost_centers = []
     vendors = Vendor.query.filter_by(is_active=True).all()
     customers = Customer.query.filter_by(is_active=True).all()
     
@@ -163,17 +184,66 @@ def add_transaction():
     
     if request.method == 'POST':
         try:
+            def normalize_entry_type(value):
+                raw = str(value or '').strip().lower()
+                if 'debit' in raw or 'مدين' in raw:
+                    return 'debit'
+                if 'credit' in raw or 'دائن' in raw:
+                    return 'credit'
+                return raw
+
+            normalized_entries = [
+                (
+                    normalize_entry_type(e.entry_type.data),
+                    float(e.amount.data or 0),
+                    e,
+                )
+                for e in form.entries
+                if e.amount.data
+            ]
+
             total_debits = sum(
-                float(e.amount.data) for e in form.entries 
-                if e.entry_type.data == 'debit' and e.amount.data
+                amount for entry_type, amount, _ in normalized_entries
+                if entry_type == 'debit'
             )
             total_credits = sum(
-                float(e.amount.data) for e in form.entries 
-                if e.entry_type.data == 'credit' and e.amount.data
+                amount for entry_type, amount, _ in normalized_entries
+                if entry_type == 'credit'
             )
             
             if not validate_transaction_balance(total_debits, total_credits):
                 flash('خطأ: القيد غير متوازن. المدين يجب أن يساوي الدائن', 'danger')
+                return render_template(
+                    'accounting/transactions/form.html',
+                    form=form, title='إضافة قيد جديد'
+                )
+
+            try:
+                entry_payloads = []
+                for entry_form in form.entries:
+                    if entry_form.account_id.data and entry_form.amount.data:
+                        amount_value = float(entry_form.amount.data or 0)
+                        normalized_entry_type = normalize_entry_type(entry_form.entry_type.data)
+                        if normalized_entry_type == 'debit':
+                            entry_payloads.append({
+                                'account_id': int(entry_form.account_id.data),
+                                'debit': amount_value,
+                                'credit': 0,
+                            })
+                        else:
+                            entry_payloads.append({
+                                'account_id': int(entry_form.account_id.data),
+                                'debit': 0,
+                                'credit': amount_value,
+                            })
+
+                validate_accounting_payload(
+                    entries=entry_payloads,
+                    entry_date=form.transaction_date.data,
+                    require_entries=True,
+                )
+            except ERPNextBridgeError as validation_exc:
+                flash(f'فشل التحقق المحاسبي: {validation_exc}', 'danger')
                 return render_template(
                     'accounting/transactions/form.html',
                     form=form, title='إضافة قيد جديد'
@@ -215,19 +285,36 @@ def add_transaction():
             
             for entry_form in form.entries:
                 if entry_form.account_id.data and entry_form.amount.data:
+                    normalized_entry_type = normalize_entry_type(entry_form.entry_type.data)
+                    if normalized_entry_type not in ('debit', 'credit'):
+                        continue
+
+                    description_value = None
+                    try:
+                        description_field = None
+                        if hasattr(entry_form, 'form') and hasattr(entry_form.form, '_fields'):
+                            description_field = entry_form.form._fields.get('description')
+                        elif hasattr(entry_form, '__getitem__'):
+                            description_field = entry_form['description']
+
+                        if description_field is not None and hasattr(description_field, 'data'):
+                            description_value = description_field.data
+                    except Exception:
+                        description_value = None
+
                     entry = TransactionEntry(
                         transaction_id=transaction.id,
                         account_id=entry_form.account_id.data,
-                        entry_type=EntryType(entry_form.entry_type.data),
+                        entry_type=EntryType(normalized_entry_type),
                         amount=Decimal(str(entry_form.amount.data)),
-                        description=entry_form.description.data
+                        description=description_value
                     )
                     db.session.add(entry)
                     
                     apply_changes_to_account_balance(
                         account_id=entry_form.account_id.data,
                         amount=Decimal(str(entry_form.amount.data)),
-                        entry_type=entry_form.entry_type.data
+                        entry_type=normalized_entry_type
                     )
             
             db.session.commit()
@@ -245,3 +332,38 @@ def add_transaction():
         form=form,
         title='إضافة قيد محاسبي جديد'
     )
+
+
+@transactions_bp.route('/transaction/<int:transaction_id>/approve', methods=['POST'])
+@transactions_bp.route('/transactions/<int:transaction_id>/approve', methods=['POST'])
+@login_required
+def approve_transaction(transaction_id):
+    """اعتماد قيد محاسبي"""
+
+    if not check_accounting_access(current_user):
+        flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    transaction = Transaction.query.get_or_404(transaction_id)
+
+    if transaction.is_approved:
+        flash('هذا القيد معتمد مسبقاً', 'info')
+        return redirect(url_for('accounting_transactions.view_transaction', transaction_id=transaction.id))
+
+    try:
+        transaction.is_approved = True
+        transaction.approved_by_id = current_user.id
+        transaction.approval_date = datetime.utcnow()
+
+        if not transaction.is_posted:
+            transaction.is_posted = True
+            transaction.posted_date = datetime.utcnow()
+
+        db.session.commit()
+        log_activity(f"اعتماد قيد محاسبي: {transaction.transaction_number}")
+        flash('تم اعتماد القيد بنجاح', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'تعذر اعتماد القيد: {str(e)}', 'danger')
+
+    return redirect(url_for('accounting_transactions.view_transaction', transaction_id=transaction.id))

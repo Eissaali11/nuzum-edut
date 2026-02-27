@@ -21,6 +21,7 @@ from .accounting_accounts_routes import accounts_bp
 from .accounting_transactions_routes import transactions_bp
 from .accounting_charts_routes import charts_bp
 from .accounting_costcenters_routes import costcenters_bp
+from .finance_bridge_routes import finance_bridge_bp
 
 # ────────────────────────────────────────────────────────────────────────────
 # 🔧 البلوبرينت الرئيسي (يعيد توجيه إلى dashboard)
@@ -42,6 +43,7 @@ def register_accounting_blueprints(app):
     app.register_blueprint(transactions_bp)
     app.register_blueprint(charts_bp)
     app.register_blueprint(costcenters_bp)
+    app.register_blueprint(finance_bridge_bp)
 
 __all__ = [
     'accounting_bp',
@@ -50,5 +52,6 @@ __all__ = [
     'accounts_bp',
     'transactions_bp',
     'charts_bp',
-    'costcenters_bp'
+    'costcenters_bp',
+    'finance_bridge_bp',
 ]

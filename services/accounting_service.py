@@ -1,12 +1,17 @@
 """
 خدمات النظام المحاسبي
 """
+import logging
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from sqlalchemy import func, and_, or_
 from core.extensions import db
 from models_accounting import *
-from models import Employee, Vehicle
+from models import Employee, Vehicle, Department, employee_departments
+from modules.accounting.domain.profitability_models import ContractResource
+
+
+logger = logging.getLogger(__name__)
 
 
 class AccountingService:
@@ -377,3 +382,300 @@ class AccountingService:
         except Exception as e:
             db.session.rollback()
             return False, f"خطأ في تحديث الأرصدة: {str(e)}"
+
+    @staticmethod
+    def get_profitability_dashboard_data(month=None, year=None):
+        """تجهيز سياق لوحة ربحية المشاريع."""
+        from modules.accounting.application.profitability_service import get_all_projects_summary
+
+        now = datetime.now()
+        month = int(month or now.month)
+        year = int(year or now.year)
+
+        months = [
+            (1, 'يناير'), (2, 'فبراير'), (3, 'مارس'), (4, 'أبريل'),
+            (5, 'مايو'), (6, 'يونيو'), (7, 'يوليو'), (8, 'أغسطس'),
+            (9, 'سبتمبر'), (10, 'أكتوبر'), (11, 'نوفمبر'), (12, 'ديسمبر')
+        ]
+
+        return {
+            'summary': get_all_projects_summary(month, year),
+            'months': months,
+            'selected_month': month,
+            'selected_year': year,
+            'current_year': now.year,
+        }
+
+    @staticmethod
+    def get_profitability_report_data(department_id, month=None, year=None):
+        """تجهيز سياق تقرير ربحية مشروع مفرد."""
+        from modules.accounting.application.profitability_service import calculate_project_profitability
+
+        if not department_id:
+            return None
+
+        now = datetime.now()
+        month = int(month or now.month)
+        year = int(year or now.year)
+
+        result = calculate_project_profitability(department_id, month, year)
+        if not result:
+            return None
+
+        return {
+            'result': result,
+            'selected_month': month,
+            'selected_year': year,
+            'selected_department': department_id,
+        }
+
+    @staticmethod
+    def _parse_non_negative_float(value, default=0.0):
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError):
+            return float(default)
+        return max(0.0, parsed)
+
+    @staticmethod
+    def get_contract_resources_view_data(contract):
+        dept_employees = (
+            Employee.query
+            .join(employee_departments)
+            .filter(
+                employee_departments.c.department_id == contract.department_id,
+                Employee.status == 'active'
+            )
+            .order_by(Employee.name)
+            .all()
+        )
+
+        existing_resources = {r.employee_id: r for r in contract.resources.all()}
+
+        employees_data = []
+        for emp in dept_employees:
+            res = existing_resources.get(emp.id)
+            employees_data.append({
+                'employee': emp,
+                'billing_rate': float(res.billing_rate) if res else 0,
+                'billing_type': res.billing_type if res else 'monthly',
+                'overhead': float(res.overhead_monthly) if res else 0,
+                'housing': float(res.housing_allowance) if res else 0,
+            })
+
+        return {
+            'dept_employees': dept_employees,
+            'existing_resources': existing_resources,
+            'employees_data': employees_data,
+        }
+
+    @staticmethod
+    def save_contract_resources(contract, form_data):
+        employee_ids = form_data.getlist('employee_ids')
+        billing_rates = form_data.getlist('billing_rates')
+        billing_types = form_data.getlist('billing_types')
+        overheads = form_data.getlist('overheads')
+        housings = form_data.getlist('housings')
+
+        list_len = len(employee_ids)
+        if not (len(billing_rates) == len(billing_types) == len(overheads) == len(housings) == list_len):
+            return False, 'خطأ في البيانات المرسلة — عدم تطابق الحقول'
+
+        view_data = AccountingService.get_contract_resources_view_data(contract)
+        dept_employees = view_data['dept_employees']
+        existing_resources = view_data['existing_resources']
+        valid_emp_ids = {e.id for e in dept_employees}
+
+        try:
+            for emp_id_str, rate_str, btype, overhead_str, housing_str in zip(
+                employee_ids, billing_rates, billing_types, overheads, housings
+            ):
+                emp_id = int(emp_id_str)
+                if emp_id not in valid_emp_ids:
+                    continue
+
+                rate = AccountingService._parse_non_negative_float(rate_str or 0)
+                overhead_val = AccountingService._parse_non_negative_float(overhead_str or 0)
+                housing_val = AccountingService._parse_non_negative_float(housing_str or 0)
+                btype = btype if btype in ('monthly', 'daily') else 'monthly'
+
+                if emp_id in existing_resources:
+                    res = existing_resources[emp_id]
+                    res.billing_rate = rate
+                    res.billing_type = btype
+                    res.overhead_monthly = overhead_val
+                    res.housing_allowance = housing_val
+                    res.is_active = True
+                else:
+                    res = ContractResource(
+                        contract_id=contract.id,
+                        employee_id=emp_id,
+                        billing_rate=rate,
+                        billing_type=btype,
+                        overhead_monthly=overhead_val,
+                        housing_allowance=housing_val,
+                        is_active=True,
+                    )
+                    db.session.add(res)
+
+            db.session.commit()
+            return True, 'تم حفظ بيانات الموارد بنجاح'
+        except (ValueError, TypeError) as e:
+            db.session.rollback()
+            logger.error(f'Error saving resources: {e}')
+            return False, 'خطأ في البيانات المرسلة'
+
+    @staticmethod
+    def create_quick_entry_transaction(form_data, user_id):
+        try:
+            settings = AccountingSettings.query.first()
+            if not settings:
+                settings = AccountingSettings(company_name='شركة نُظم', next_transaction_number=1)
+                db.session.add(settings)
+                db.session.flush()
+
+            transaction_number = f"{settings.transaction_prefix}{settings.next_transaction_number:06d}"
+
+            fiscal_year = FiscalYear.query.filter_by(is_active=True).first()
+            if not fiscal_year:
+                return False, 'لا توجد سنة مالية نشطة'
+
+            amount = form_data.amount.data
+            transaction = Transaction(
+                transaction_number=transaction_number,
+                transaction_date=form_data.transaction_date.data,
+                transaction_type=TransactionType.MANUAL,
+                reference_number=form_data.reference_number.data,
+                description=form_data.description.data,
+                total_amount=amount,
+                fiscal_year_id=fiscal_year.id,
+                cost_center_id=form_data.cost_center_id.data if form_data.cost_center_id.data else None,
+                created_by_id=user_id,
+                is_approved=True,
+                approval_date=datetime.utcnow(),
+                approved_by_id=user_id,
+            )
+
+            db.session.add(transaction)
+            db.session.flush()
+
+            debit_entry = TransactionEntry(
+                transaction_id=transaction.id,
+                account_id=form_data.debit_account_id.data,
+                entry_type=EntryType.DEBIT,
+                amount=amount,
+                description=form_data.description.data,
+            )
+            credit_entry = TransactionEntry(
+                transaction_id=transaction.id,
+                account_id=form_data.credit_account_id.data,
+                entry_type=EntryType.CREDIT,
+                amount=amount,
+                description=form_data.description.data,
+            )
+            db.session.add(debit_entry)
+            db.session.add(credit_entry)
+
+            debit_account = Account.query.get(form_data.debit_account_id.data)
+            credit_account = Account.query.get(form_data.credit_account_id.data)
+
+            if debit_account.account_type in [AccountType.ASSETS, AccountType.EXPENSES]:
+                debit_account.balance += amount
+            else:
+                debit_account.balance -= amount
+
+            if credit_account.account_type in [AccountType.ASSETS, AccountType.EXPENSES]:
+                credit_account.balance -= amount
+            else:
+                credit_account.balance += amount
+
+            settings.next_transaction_number += 1
+            db.session.commit()
+            return True, transaction.transaction_number
+        except Exception as e:
+            db.session.rollback()
+            return False, f'خطأ في إضافة القيد: {str(e)}'
+
+    @staticmethod
+    def create_vehicle_expense_transaction(form_data, user_id):
+        try:
+            expense_accounts = {
+                'fuel': Account.query.filter_by(code='5101').first(),
+                'maintenance': Account.query.filter_by(code='5102').first(),
+                'insurance': Account.query.filter_by(code='5103').first(),
+                'registration': Account.query.filter_by(code='5104').first(),
+                'fines': Account.query.filter_by(code='5105').first(),
+                'other': Account.query.filter_by(code='5199').first(),
+            }
+
+            expense_account = expense_accounts.get(form_data.expense_type.data)
+            cash_account = Account.query.filter_by(code='1001').first()
+            if not expense_account or not cash_account:
+                return False, 'الحسابات المحاسبية للمصروفات غير موجودة'
+
+            settings = AccountingSettings.query.first()
+            if not settings:
+                return False, 'إعدادات النظام المحاسبي غير مهيأة'
+
+            fiscal_year = FiscalYear.query.filter_by(is_active=True).first()
+            if not fiscal_year:
+                return False, 'لا توجد سنة مالية نشطة'
+
+            vehicle = Vehicle.query.get(form_data.vehicle_id.data)
+            if not vehicle:
+                return False, 'المركبة المحددة غير موجودة'
+
+            transaction_number = f"{settings.transaction_prefix}{settings.next_transaction_number:06d}"
+            amount = form_data.amount.data
+            transaction = Transaction(
+                transaction_number=transaction_number,
+                transaction_date=form_data.expense_date.data,
+                transaction_type=TransactionType.VEHICLE_EXPENSE,
+                reference_number=form_data.receipt_number.data if hasattr(form_data, 'receipt_number') else '',
+                description=form_data.description.data,
+                total_amount=amount,
+                fiscal_year_id=fiscal_year.id,
+                vehicle_id=vehicle.id,
+                vendor_id=form_data.vendor_id.data if form_data.vendor_id.data else None,
+                created_by_id=user_id,
+                is_approved=True,
+                approval_date=datetime.utcnow(),
+                approved_by_id=user_id,
+            )
+            db.session.add(transaction)
+            db.session.flush()
+
+            debit_entry = TransactionEntry(
+                transaction_id=transaction.id,
+                account_id=expense_account.id,
+                entry_type=EntryType.DEBIT,
+                amount=amount,
+                description=f"{form_data.description.data} - {vehicle.plate_number}",
+            )
+            db.session.add(debit_entry)
+
+            if form_data.vendor_id.data:
+                vendor = Vendor.query.get(form_data.vendor_id.data)
+                vendor_account = Account.query.filter_by(code=f"2{vendor.id:03d}").first() if vendor else None
+                credit_account = vendor_account or cash_account
+            else:
+                credit_account = cash_account
+
+            credit_entry = TransactionEntry(
+                transaction_id=transaction.id,
+                account_id=credit_account.id,
+                entry_type=EntryType.CREDIT,
+                amount=amount,
+                description=f"دفع {form_data.description.data}",
+            )
+            db.session.add(credit_entry)
+
+            expense_account.balance += amount
+            credit_account.balance -= amount
+            settings.next_transaction_number += 1
+
+            db.session.commit()
+            return True, {'transaction_number': transaction.transaction_number, 'vehicle_plate': vehicle.plate_number, 'amount': amount}
+        except Exception as e:
+            db.session.rollback()
+            return False, f'خطأ في إضافة مصروف المركبة: {str(e)}'

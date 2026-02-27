@@ -6,14 +6,14 @@
         </div>
         
         <div class="d-flex gap-2">
-            <a href="{{ url_for('accounting.create_account') }}" class="btn btn-primary">
+            <a href="{{ url_for('accounting_accounts.create_account') }}" class="btn btn-primary">
                 <i class="fas fa-plus me-2"></i>إضافة حساب جديد
             </a>
-            <a href="{{ url_for('accounting.accounts') }}" class="btn btn-outline-primary">
+            <a href="{{ url_for('accounting_accounts.accounts') }}" class="btn btn-outline-primary">
                 <i class="fas fa-list me-2"></i>إدارة الحسابات
             </a>
             {% if current_user.role.value == 'admin' and total_accounts == 0 %}
-            <form method="POST" action="{{ url_for('accounting.create_default_accounts') }}" style="display: inline;">
+            <form method="POST" action="{{ url_for('accounting_charts.create_default_accounts') }}" style="display: inline;">
                 <button type="submit" class="btn btn-success" onclick="return confirm('هل تريد إنشاء شجرة الحسابات الافتراضية؟')">
                     <i class="fas fa-plus me-2"></i>إنشاء الحسابات الافتراضية
                 </button>
@@ -107,7 +107,7 @@
                 <p class="text-muted">قم بإنشاء شجرة الحسابات الافتراضية للبدء</p>
             </div>
             {% if current_user.role.value == 'admin' %}
-            <form method="POST" action="{{ url_for('accounting.create_default_accounts') }}" style="display: inline;">
+            <form method="POST" action="{{ url_for('accounting_charts.create_default_accounts') }}" style="display: inline;">
                 <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('هل تريد إنشاء شجرة الحسابات الافتراضية؟')">
                     <i class="fas fa-plus me-2"></i>إنشاء الحسابات الافتراضية
                 </button>
@@ -141,7 +141,7 @@
                         </div>
                         <div class="d-flex align-items-center">
                             <span class="badge bg-primary me-2">{{ main_data.account.account_type.value }}</span>
-                            <a href="{{ url_for('accounting.account_balance_page', account_id=main_id) }}" 
+                            <a href="{{ url_for('accounting_charts.account_balance_page', account_id=main_id) }}" 
                                class="btn btn-sm btn-outline-info me-2" onclick="event.stopPropagation();">
                                 <i class="fas fa-calculator"></i> الرصيد
                             </a>
@@ -165,7 +165,7 @@
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center">
-                                    <a href="{{ url_for('accounting.account_balance_page', account_id=sub_id) }}" 
+                                    <a href="{{ url_for('accounting_charts.account_balance_page', account_id=sub_id) }}" 
                                        class="btn btn-sm btn-outline-info me-2" onclick="event.stopPropagation();">
                                         <i class="fas fa-calculator"></i>
                                     </a>
@@ -192,7 +192,7 @@
                                         </div>
                                         <div class="d-flex align-items-center">
                                             <span class="text-muted me-3">{{ "%.2f"|format(detail_data.account.balance) }} ر.س</span>
-                                            <a href="{{ url_for('accounting.account_balance_page', account_id=detail_id) }}" 
+                                            <a href="{{ url_for('accounting_charts.account_balance_page', account_id=detail_id) }}" 
                                                class="btn btn-sm btn-outline-info">
                                                 <i class="fas fa-info-circle"></i>
                                             </a>

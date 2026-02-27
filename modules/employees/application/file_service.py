@@ -9,9 +9,34 @@ def _get_upload_folder():
     """Return absolute path to employee uploads folder."""
     try:
         from flask import current_app
-        return os.path.join(current_app.root_path, "static", "uploads", "employees")
+
+        static_root = os.path.join(current_app.root_path, "static")
+        uploads_root = os.path.join(static_root, "uploads")
+
+        # Self-heal: if uploads is a broken link/junction, recreate it as local folder
+        if os.path.lexists(uploads_root) and not os.path.exists(uploads_root):
+            try:
+                os.unlink(uploads_root)
+            except OSError:
+                pass
+
+        os.makedirs(uploads_root, exist_ok=True)
+        employees_root = os.path.join(uploads_root, "employees")
+        os.makedirs(employees_root, exist_ok=True)
+        return employees_root
     except (ImportError, RuntimeError):
-        return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "static", "uploads", "employees")
+        base_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        uploads_root = os.path.join(base_root, "static", "uploads")
+
+        if os.path.lexists(uploads_root) and not os.path.exists(uploads_root):
+            try:
+                os.unlink(uploads_root)
+            except OSError:
+                pass
+
+        employees_root = os.path.join(uploads_root, "employees")
+        os.makedirs(employees_root, exist_ok=True)
+        return employees_root
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), "static", "uploads", "employees")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "pdf"}

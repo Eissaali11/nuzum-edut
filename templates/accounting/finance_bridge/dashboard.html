@@ -1,0 +1,118 @@
+{% extends "layout.html" %}
+
+{% block title %}الجسر المالي الذكي{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #001f3f, #39cccc);">
+        <div class="card-body text-white d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h3 class="mb-1"><i class="fas fa-bridge me-2"></i>الجسر المالي الذكي</h3>
+                <p class="mb-0 opacity-75">NUZUM × ERPNext — فوترة رسمية متوافقة مع ZATCA</p>
+            </div>
+            <div class="text-end">
+                {% if connection_ok %}
+                    <span class="badge bg-success fs-6">Connected 🟢</span>
+                {% else %}
+                    <span class="badge bg-danger fs-6">Disconnected 🔴</span>
+                {% endif %}
+                <div class="small mt-2">{{ connection_message }}</div>
+                <form method="post" action="{{ url_for('finance_bridge.test_connection') }}" class="mt-2">
+                    <button type="submit" class="btn btn-light btn-sm">
+                        <i class="fas fa-plug me-1"></i>Test Connection
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light"><strong>إنشاء فاتورة مشروع</strong></div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('finance_bridge.generate_contract_invoice', contract_id=0) }}" id="generateInvoiceForm">
+                        <div class="mb-3">
+                            <label class="form-label">العقد</label>
+                            <select class="form-select" id="contractSelect" required>
+                                <option value="">اختر العقد</option>
+                                {% for contract in contracts %}
+                                <option value="{{ contract.id }}">#{{ contract.id }} — {{ contract.client_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label">الشهر</label>
+                                <input class="form-control" type="number" name="month" min="1" max="12" value="{{ now.month }}" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">السنة</label>
+                                <input class="form-control" type="number" name="year" min="2020" max="2100" value="{{ now.year }}" required>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100 mt-3" type="submit">
+                            <i class="fas fa-file-invoice-dollar me-1"></i>Generate ZATCA Invoice
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <strong>فواتير ERPNext</strong>
+                    <a href="{{ url_for('finance_bridge.dashboard') }}" class="btn btn-sm btn-outline-secondary">تحديث</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>رقم الفاتورة</th>
+                                <th>العميل</th>
+                                <th>التاريخ</th>
+                                <th>الحالة</th>
+                                <th class="text-end">الإجمالي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inv in invoices %}
+                            <tr>
+                                <td>{{ inv.name }}</td>
+                                <td>{{ inv.customer }}</td>
+                                <td>{{ inv.posting_date }}</td>
+                                <td><span class="badge bg-info">{{ inv.status }}</span></td>
+                                <td class="text-end fw-bold">{{ inv.grand_total_formatted }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">لا توجد فواتير أو لا يوجد اتصال نشط</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const form = document.getElementById('generateInvoiceForm');
+    const select = document.getElementById('contractSelect');
+    if (!form || !select) return;
+
+    form.addEventListener('submit', function (e) {
+        const id = select.value;
+        if (!id) {
+            e.preventDefault();
+            return;
+        }
+        const action = "{{ url_for('finance_bridge.generate_contract_invoice', contract_id=999999) }}";
+        form.action = action.replace('999999', id);
+    });
+})();
+</script>
+{% endblock %}

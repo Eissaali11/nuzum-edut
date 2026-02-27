@@ -1,0 +1,384 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<style>
+    .hrcc-page .card-header.bg-light,
+    .hrcc-page .card-header.bg-light strong,
+    .hrcc-page .card-header,
+    .hrcc-page .card-header strong {
+        color: #111827 !important;
+    }
+
+    .hrcc-page .form-control,
+    .hrcc-page .form-select {
+        color: #111827 !important;
+        background-color: #ffffff !important;
+    }
+
+    .hrcc-page .form-control::placeholder {
+        color: #6b7280 !important;
+    }
+
+    .hrcc-page .text-muted {
+        color: #6b7280 !important;
+    }
+</style>
+<div class="container-fluid py-3 hrcc-page" dir="rtl">
+    <div class="card shadow-sm mb-3" style="border-top: 4px solid #001f3f;">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div>
+                    <h4 class="mb-1 text-dark"><i class="fas fa-robot me-2"></i>مركز أتمتة الموارد البشرية</h4>
+                    <div class="text-muted">Payroll + Compliance + Field Assets</div>
+                </div>
+            </div>
+            <form class="row g-2 align-items-end" method="get" action="{{ url_for('payroll.hr_command_center') }}">
+                <div class="col-12 col-md-2">
+                    <label class="form-label mb-1">الشهر</label>
+                    <input class="form-control" type="number" name="month" min="1" max="12" value="{{ month }}">
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label mb-1">السنة</label>
+                    <input class="form-control" type="number" name="year" min="2020" max="2100" value="{{ year }}">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label mb-1">المشروع (اختياري)</label>
+                    <input class="form-control" type="text" name="project" value="{{ project or '' }}" placeholder="مثال: Al Qassim">
+                </div>
+                <div class="col-12 col-md-2">
+                    <button class="btn btn-primary w-100 text-nowrap" type="submit">تحديث النتائج</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted">سجلات الرواتب</div><h4>{{ payroll_count }}</h4></div></div></div>
+        <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted">إجمالي الصافي</div><h4>{{ '{:,.2f}'.format(total_net) }} ريال</h4></div></div></div>
+        <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted">وثائق قريبة الانتهاء</div><h4>{{ compliance_rows|length }}</h4></div></div></div>
+        <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted">عهد نشطة</div><h4>{{ active_vehicle_handover_count + active_device_assignment_count }}</h4></div></div></div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <strong>Payroll Draft Actions</strong>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <input id="bulkProjectFilter" class="form-control form-control-sm" type="text" placeholder="Project (اختياري)" value="{{ project or '' }}" style="max-width:180px;">
+                <a class="btn btn-sm btn-outline-dark" href="{{ url_for('payroll.payslips_review', month=month, year=year) }}">صفحة استعراض القسائم</a>
+                <button id="bulkGeneratePayslipsBtn" class="btn btn-sm btn-primary text-white">إصدار جماعي للقسائم</button>
+                <button id="emailAllPayslipsBtn" class="btn btn-sm btn-success text-white">إرسال عبر البريد</button>
+                <button id="whatsappAllPayslipsBtn" class="btn btn-sm btn-success text-white">إرسال عبر واتساب</button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>الموظف</th>
+                        <th>المشروع</th>
+                        <th>الإجمالي</th>
+                        <th>الخصومات</th>
+                        <th>الصافي</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for p in payroll_rows %}
+                    <tr>
+                        <td>{{ p.employee.name if p.employee else '-' }}<br><small class="text-muted">{{ p.employee.employee_id if p.employee else '-' }}</small></td>
+                        <td>{{ p.employee.project if p.employee and p.employee.project else '-' }}</td>
+                        <td>{{ '{:,.2f}'.format(p.gross_salary or 0) }}</td>
+                        <td>{{ '{:,.2f}'.format(p.total_deductions or 0) }}</td>
+                        <td><strong>{{ '{:,.2f}'.format(p.net_payable or 0) }}</strong></td>
+                        <td>
+                            <a class="btn btn-sm btn-dark" style="background:#001f3f;border-color:#001f3f;"
+                               href="{{ url_for('payroll.generate_payslip', employee_id=p.employee_id, month_year=year ~ '-' ~ '%02d'|format(month)) }}"
+                               target="_blank">
+                                View/Print Payslip
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center text-muted py-3">لا توجد سجلات رواتب في هذه الفترة</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex gap-2 align-items-center flex-wrap mb-2">
+                <input id="financeCcEmail" class="form-control form-control-sm" type="email" placeholder="Finance Archive Email (اختياري)" style="max-width:320px;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="1" id="financeCcEnabled">
+                    <label class="form-check-label" for="financeCcEnabled">نسخة أرشيف للإدارة المالية (CC)</label>
+                </div>
+            </div>
+            <small id="payslipBulkStatus" class="text-muted"></small>
+            <div id="payslipBulkLinks" class="mt-2 d-flex flex-wrap gap-2"></div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light"><strong>1) مسودة الرواتب من الحضور</strong></div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('payroll.automation_generate_payroll_draft') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="month" value="{{ month }}">
+                        <input type="hidden" name="year" value="{{ year }}">
+                        <button class="btn btn-success w-100" type="submit"><i class="fas fa-play me-1"></i>إنشاء/تحديث المسودة</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light"><strong>2) ترحيل قيد ERPNext</strong></div>
+                <div class="card-body">
+                    <form id="erpSyncForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="month" value="{{ month }}">
+                        <input type="hidden" name="year" value="{{ year }}">
+                        <input class="form-control mb-2" name="expense_account" placeholder="Expense Account" required>
+                        <input class="form-control mb-2" name="payable_account" placeholder="Payable Account" required>
+                        <input class="form-control mb-2" name="cost_center" placeholder="Cost Center (اختياري)" value="Al Qassim Project">
+                        <button class="btn btn-primary w-100" type="submit"><i class="fas fa-link me-1"></i>مزامنة قيد ERP</button>
+                    </form>
+                    <button id="approvePayrollBtn" class="btn btn-outline-primary w-100 mt-2" type="button">اعتماد الرواتب + ترحيل ERP</button>
+                    <small id="erpSyncResult" class="text-muted d-block mt-2"></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light"><strong>3) تصدير WPS</strong></div>
+                <div class="card-body">
+                    <form method="get" action="{{ url_for('payroll.automation_wps_export') }}">
+                        <input type="hidden" name="month" value="{{ month }}">
+                        <input type="hidden" name="year" value="{{ year }}">
+                        <input class="form-control mb-2" type="date" name="payment_date">
+                        <button class="btn btn-dark w-100" style="background:#001f3f;border-color:#001f3f;" type="submit"><i class="fas fa-file-export me-1"></i>تنزيل ملف WPS</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>مركز الامتثال - الوثائق المنتهية قريباً</strong>
+                    <button id="escalateSmsBtn" class="btn btn-sm btn-outline-danger">تصعيد SMS</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light">
+                            <tr><th>الموظف</th><th>الوثيقة</th><th>الانتهاء</th><th>متبقي</th></tr>
+                        </thead>
+                        <tbody>
+                        {% for row in compliance_rows %}
+                            <tr>
+                                <td>{{ row.employee_name }}</td>
+                                <td>{{ row.document_type }} - {{ row.document_number }}</td>
+                                <td>{{ row.expiry_date }}</td>
+                                <td><span class="badge bg-{{ row.severity }}">{{ row.days_left }} يوم</span></td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" class="text-center text-muted py-3">لا توجد وثائق تحتاج تنبيه حالياً</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header"><strong>إدارة العهد الميدانية</strong></div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2"><span>عهد مركبات نشطة</span><strong>{{ active_vehicle_handover_count }}</strong></div>
+                    <div class="d-flex justify-content-between"><span>عهد أجهزة نشطة</span><strong>{{ active_device_assignment_count }}</strong></div>
+                </div>
+            </div>
+            <div class="card shadow-sm">
+                <div class="card-header"><strong>آخر العهد</strong></div>
+                <div class="card-body" style="max-height: 260px; overflow:auto;">
+                    <ul class="list-group list-group-flush">
+                        {% for item in recent_device_assignments %}
+                        <li class="list-group-item px-0">
+                            {{ item.employee.name if item.employee else '-' }}
+                            <span class="text-muted">• {{ item.assignment_date.strftime('%Y-%m-%d') if item.assignment_date else '-' }}</span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item px-0 text-muted">لا توجد بيانات عهد حالياً</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    const erpForm = document.getElementById('erpSyncForm');
+    const approvePayrollBtn = document.getElementById('approvePayrollBtn');
+    const resultEl = document.getElementById('erpSyncResult');
+    const smsBtn = document.getElementById('escalateSmsBtn');
+    const bulkGenerateBtn = document.getElementById('bulkGeneratePayslipsBtn');
+    const emailAllBtn = document.getElementById('emailAllPayslipsBtn');
+    const whatsappAllBtn = document.getElementById('whatsappAllPayslipsBtn');
+    const bulkProjectFilter = document.getElementById('bulkProjectFilter');
+    const payslipBulkStatus = document.getElementById('payslipBulkStatus');
+    const payslipBulkLinks = document.getElementById('payslipBulkLinks');
+    const financeCcEnabled = document.getElementById('financeCcEnabled');
+    const financeCcEmail = document.getElementById('financeCcEmail');
+
+    const buildPayslipFormData = () => {
+        const formData = new FormData();
+        formData.append('month', '{{ month }}');
+        formData.append('year', '{{ year }}');
+        if (bulkProjectFilter && bulkProjectFilter.value.trim()) {
+            formData.append('project', bulkProjectFilter.value.trim());
+        }
+        if (financeCcEnabled && financeCcEnabled.checked && financeCcEmail && financeCcEmail.value.trim()) {
+            formData.append('finance_cc_email', financeCcEmail.value.trim());
+        }
+        formData.append('csrf_token', '{{ csrf_token() }}');
+        return formData;
+    };
+
+    if (erpForm) {
+        erpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            resultEl.textContent = 'جارٍ المزامنة...';
+            const formData = new FormData(erpForm);
+            const res = await fetch('{{ url_for('payroll.automation_sync_erp_journal') }}', { method: 'POST', body: formData });
+            const data = await res.json();
+            resultEl.textContent = data.message || (data.ok ? 'تمت العملية' : 'فشلت العملية');
+            resultEl.className = data.ok ? 'text-success d-block mt-2' : 'text-danger d-block mt-2';
+        });
+    }
+
+    if (approvePayrollBtn) {
+        approvePayrollBtn.addEventListener('click', async () => {
+            approvePayrollBtn.disabled = true;
+            resultEl.textContent = 'جارٍ اعتماد الدفعة وترحيل القيد...';
+            const formData = new FormData();
+            formData.append('month', '{{ month }}');
+            formData.append('year', '{{ year }}');
+            formData.append('expense_account', erpForm?.elements['expense_account']?.value || 'Payroll Expenses');
+            formData.append('payable_account', erpForm?.elements['payable_account']?.value || 'Salaries Payable');
+            formData.append('cost_center', erpForm?.elements['cost_center']?.value || 'Al Qassim Project');
+            formData.append('csrf_token', '{{ csrf_token() }}');
+            const res = await fetch('{{ url_for('payroll.automation_approve_payroll_batch') }}', { method: 'POST', body: formData });
+            const data = await res.json();
+            resultEl.textContent = data.message || (data.ok ? 'تمت العملية' : 'فشلت العملية');
+            resultEl.className = data.ok ? 'text-success d-block mt-2' : 'text-danger d-block mt-2';
+            approvePayrollBtn.disabled = false;
+        });
+    }
+
+    if (smsBtn) {
+        smsBtn.addEventListener('click', async () => {
+            smsBtn.disabled = true;
+            const formData = new FormData();
+            formData.append('days', '{{ days_ahead }}');
+            formData.append('channel', 'sms');
+            formData.append('csrf_token', '{{ csrf_token() }}');
+            const res = await fetch('{{ url_for('payroll.automation_compliance_escalate') }}', { method: 'POST', body: formData });
+            const data = await res.json();
+            alert(`تم الإرسال: ${data.sent || 0} | فشل: ${data.failed || 0}`);
+            smsBtn.disabled = false;
+        });
+    }
+
+    if (bulkGenerateBtn) {
+        bulkGenerateBtn.addEventListener('click', async () => {
+            bulkGenerateBtn.disabled = true;
+            if (payslipBulkLinks) payslipBulkLinks.innerHTML = '';
+            payslipBulkStatus.textContent = 'جارٍ تجهيز روابط القسائم...';
+            const formData = buildPayslipFormData();
+            const res = await fetch('{{ url_for('payroll.automation_generate_bulk_payslips') }}', { method: 'POST', body: formData });
+            const data = await res.json();
+            payslipBulkStatus.textContent = data.ok
+                ? `تم تجهيز ${data.count || 0} قسيمة${data.project ? ` | المشروع: ${data.project}` : ''}`
+                : (data.message || 'فشل التجهيز');
+            bulkGenerateBtn.disabled = false;
+        });
+    }
+
+    const startBulkSend = async (channel) => {
+        if (emailAllBtn) emailAllBtn.disabled = true;
+        if (whatsappAllBtn) whatsappAllBtn.disabled = true;
+        const channelLabel = channel === 'whatsapp' ? 'واتساب' : 'البريد';
+        if (payslipBulkLinks) payslipBulkLinks.innerHTML = '';
+        payslipBulkStatus.textContent = `جارٍ بدء الإرسال الجماعي عبر ${channelLabel}...`;
+        const formData = buildPayslipFormData();
+        formData.append('channel', channel);
+
+        try {
+            const startRes = await fetch('{{ url_for('payroll.automation_email_all_payslips') }}', { method: 'POST', body: formData });
+            const startData = await startRes.json();
+            if (!startData.ok) {
+                payslipBulkStatus.textContent = startData.message || 'تعذر بدء الإرسال';
+                if (emailAllBtn) emailAllBtn.disabled = false;
+                if (whatsappAllBtn) whatsappAllBtn.disabled = false;
+                return;
+            }
+
+            const jobId = startData.job_id;
+            const timer = setInterval(async () => {
+                const statusRes = await fetch(`{{ url_for('payroll.automation_payslip_job_status', job_id='__JOB__') }}`.replace('__JOB__', jobId));
+                const statusData = await statusRes.json();
+                if (!statusData.ok) {
+                    clearInterval(timer);
+                    payslipBulkStatus.textContent = 'تعذر متابعة حالة المهمة';
+                    if (emailAllBtn) emailAllBtn.disabled = false;
+                    if (whatsappAllBtn) whatsappAllBtn.disabled = false;
+                    return;
+                }
+
+                const job = statusData.job || {};
+                const mode = job.channel === 'whatsapp' ? 'واتساب' : 'البريد';
+                payslipBulkStatus.textContent = `${job.message || ''} | channel: ${mode} | sent: ${job.sent || 0} failed: ${job.failed || 0}`;
+
+                if (job.channel === 'whatsapp' && Array.isArray(job.whatsapp_links) && payslipBulkLinks) {
+                    const links = job.whatsapp_links.slice(0, 20);
+                    payslipBulkLinks.innerHTML = links.map((row, idx) => {
+                        const label = row.employee || `Employee ${idx + 1}`;
+                        const link = row.link || '#';
+                        return `<a class="btn btn-sm btn-outline-success" target="_blank" href="${link}">واتساب: ${label}</a>`;
+                    }).join('');
+                }
+
+                if (job.status === 'done' || job.status === 'failed') {
+                    clearInterval(timer);
+                    if (emailAllBtn) emailAllBtn.disabled = false;
+                    if (whatsappAllBtn) whatsappAllBtn.disabled = false;
+                }
+            }, 2000);
+        } catch (error) {
+            payslipBulkStatus.textContent = 'حدث خطأ أثناء الإرسال الجماعي';
+            if (emailAllBtn) emailAllBtn.disabled = false;
+            if (whatsappAllBtn) whatsappAllBtn.disabled = false;
+        }
+    };
+
+    if (emailAllBtn) {
+        emailAllBtn.addEventListener('click', async () => {
+            await startBulkSend('email');
+        });
+    }
+
+    if (whatsappAllBtn) {
+        whatsappAllBtn.addEventListener('click', async () => {
+            await startBulkSend('whatsapp');
+        });
+    }
+})();
+</script>
+{% endblock %}

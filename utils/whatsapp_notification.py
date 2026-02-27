@@ -1,6 +1,10 @@
 import os
-from twilio.rest import Client
 from datetime import datetime
+
+try:
+    from twilio.rest import Client
+except Exception:
+    Client = None
 
 # الحصول على بيانات الاعتماد من متغيرات البيئة
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
@@ -21,6 +25,9 @@ def send_salary_notification_whatsapp(employee, salary):
         Boolean: True إذا تم الإرسال بنجاح، False إذا فشل الإرسال
     """
     try:
+        if Client is None:
+            return False, "مكتبة Twilio غير مثبتة على الخادم"
+
         # التحقق من وجود رقم هاتف للموظف
         if not employee.mobile:
             return False, "لا يوجد رقم هاتف مسجل للموظف"
@@ -83,6 +90,9 @@ def send_salary_deduction_notification_whatsapp(employee, salary, deduction_reas
         Boolean: True إذا تم الإرسال بنجاح، False إذا فشل الإرسال
     """
     try:
+        if Client is None:
+            return False, "مكتبة Twilio غير مثبتة على الخادم"
+
         # التحقق من وجود رقم هاتف للموظف
         if not employee.mobile:
             return False, "لا يوجد رقم هاتف مسجل للموظف"
@@ -243,6 +253,9 @@ def send_vehicle_handover_whatsapp(handover, recipient_phone, message_text=None)
         Boolean: True إذا تم الإرسال بنجاح، False إذا فشل الإرسال
     """
     try:
+        if Client is None:
+            return False, "مكتبة Twilio غير مثبتة على الخادم"
+
         # التحقق من وجود بيانات اعتماد Twilio
         if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN or not TWILIO_PHONE_NUMBER:
             return False, "لم يتم تكوين بيانات اعتماد Twilio"

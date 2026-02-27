@@ -331,6 +331,9 @@
                 </div>
             </div>
             <div class="hero-actions">
+                <a href="/accounting/contracts/{{ contract.id }}/invoice" class="btn-hero">
+                    <i class="fas fa-file-invoice-dollar me-1"></i> Generate ZATCA Invoice
+                </a>
                 <a href="{{ url_for('profitability.report', department_id=contract.department_id) }}" class="btn-hero">
                     <i class="fas fa-chart-bar me-1"></i> تقرير الربحية
                 </a>
@@ -484,6 +487,211 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             alert('تم تحديث سعر الفوترة لـ ' + count + ' موظف');
+        });
+    }
+
+    var dryRunBtn = document.getElementById('dryRunBtn');
+    var finalizeBtn = document.getElementById('finalizeInvoiceBtn');
+    var spinner = document.getElementById('invoiceSpinner');
+    var monthInput = document.getElementById('invoiceMonth');
+    var yearInput = document.getElementById('invoiceYear');
+    var taxRateInput = document.getElementById('invoiceTaxRate');
+    var discountInput = document.getElementById('invoiceDiscount');
+    var paymentTermsInput = document.getElementById('invoicePaymentTerms');
+    var manualOtHoursInput = document.getElementById('invoiceManualOtHours');
+    var previewRows = document.getElementById('invoicePreviewRows');
+    var subtotalText = document.getElementById('subtotalText');
+    var taxText = document.getElementById('taxText');
+    var totalText = document.getElementById('totalText');
+    var toastEl = document.getElementById('invoiceToast');
+    var toastBody = document.getElementById('invoiceToastBody');
+    var toast = toastEl ? new bootstrap.Toast(toastEl) : null;
+    var invoiceModalEl = document.getElementById('invoiceModal');
+    var invoiceModal = invoiceModalEl ? bootstrap.Modal.getOrCreateInstance(invoiceModalEl) : null;
+    var activeJobId = null;
+    var statusPollTimer = null;
+    var lastJobMessage = '';
+
+    if (monthInput && yearInput && (!monthInput.value || !yearInput.value)) {
+        var today = new Date();
+        monthInput.value = today.getMonth() + 1;
+        yearInput.value = today.getFullYear();
+    }
+
+    function showToast(message) {
+        if (toast && toastBody) {
+            toastBody.textContent = message;
+            toast.show();
+            return;
+        }
+        alert(message);
+    }
+
+    function payload() {
+        return {
+            month: parseInt(monthInput.value || 0, 10),
+            year: parseInt(yearInput.value || 0, 10),
+            tax_rate: parseFloat(taxRateInput.value || 0),
+            discount: parseFloat(discountInput.value || 0),
+            payment_terms: paymentTermsInput.value || '',
+            manual_ot_hours: parseFloat((manualOtHoursInput && manualOtHoursInput.value) || 0)
+        };
+    }
+
+    function setLoading(loading) {
+        if (!spinner) return;
+        if (loading) {
+            spinner.classList.remove('d-none');
+            finalizeBtn.setAttribute('disabled', 'disabled');
+            dryRunBtn.setAttribute('disabled', 'disabled');
+        } else {
+            spinner.classList.add('d-none');
+            finalizeBtn.removeAttribute('disabled');
+            dryRunBtn.removeAttribute('disabled');
+        }
+    }
+
+    function stopPolling() {
+        if (statusPollTimer) {
+            clearInterval(statusPollTimer);
+            statusPollTimer = null;
+        }
+    }
+
+    function pollJobStatus(jobId) {
+        stopPolling();
+        statusPollTimer = setInterval(function() {
+            fetch(`{{ url_for('finance_bridge.invoice_job_status', job_id='__JOB_ID__') }}`.replace('__JOB_ID__', jobId), {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (!data.ok || !data.job) {
+                    stopPolling();
+                    setLoading(false);
+                    showToast(data.message || 'فشل متابعة حالة الفاتورة');
+                    return;
+                }
+
+                var job = data.job;
+                if (job.message && job.message !== lastJobMessage) {
+                    lastJobMessage = job.message;
+                    showToast(job.message);
+                }
+
+                if (job.status === 'done') {
+                    stopPolling();
+                    setLoading(false);
+                    activeJobId = null;
+                    showToast(job.message || 'تم إصدار الفاتورة بنجاح');
+                    if (job.result && job.result.pdf_url) {
+                        window.open(job.result.pdf_url, '_blank');
+                    }
+                    return;
+                }
+
+                if (job.status === 'failed') {
+                    stopPolling();
+                    setLoading(false);
+                    activeJobId = null;
+                    showToast(job.message || 'فشل إصدار الفاتورة');
+                }
+            })
+            .catch(function() {
+                stopPolling();
+                setLoading(false);
+                activeJobId = null;
+                showToast('تعذر متابعة حالة الفاتورة');
+            });
+        }, 1800);
+    }
+
+    if (dryRunBtn) {
+        dryRunBtn.addEventListener('click', function() {
+            setLoading(true);
+            fetch("{{ url_for('finance_bridge.preview_contract_invoice', contract_id=contract.id) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(payload())
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (!data.ok) {
+                    showToast(data.message || 'Preview failed');
+                    return;
+                }
+
+                if (!data.lines || data.lines.length === 0) {
+                    previewRows.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">لا توجد بنود قابلة للفوترة</td></tr>';
+                } else {
+                    previewRows.innerHTML = data.lines.map(function(line) {
+                        return '<tr>' +
+                            '<td>' + (line.employee_name || '-') + '</td>' +
+                            '<td>' + (line.days_worked || 0) + '</td>' +
+                            '<td>' + (line.description || '-') + '</td>' +
+                            '<td class="text-end">' + (line.amount || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + ' SAR</td>' +
+                        '</tr>';
+                    }).join('');
+                }
+
+                subtotalText.textContent = data.subtotal_formatted || '0.00 SAR';
+                taxText.textContent = data.tax_amount_formatted || '0.00 SAR';
+                totalText.textContent = data.grand_total_formatted || '0.00 SAR';
+                showToast('تم تجهيز المعاينة بنجاح');
+            })
+            .catch(function() {
+                showToast('فشل في تنفيذ المعاينة');
+            })
+            .finally(function() {
+                setLoading(false);
+            });
+        });
+    }
+
+    if (finalizeBtn) {
+        finalizeBtn.addEventListener('click', function() {
+            if (activeJobId) {
+                showToast('توجد عملية فوترة قيد التنفيذ، انتظر حتى تكتمل');
+                return;
+            }
+            setLoading(true);
+            fetch("{{ url_for('finance_bridge.generate_contract_invoice', contract_id=contract.id) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(Object.assign(payload(), { async: true }))
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (!data.ok) {
+                    showToast(data.message || 'Invoice generation failed');
+                    setLoading(false);
+                    return;
+                }
+                if (data.queued && data.job_id) {
+                    activeJobId = data.job_id;
+                    lastJobMessage = '';
+                    setLoading(false);
+                    if (invoiceModal) {
+                        invoiceModal.hide();
+                    }
+                    showToast('تم إرسال الطلب للمعالجة الخلفية، جاري المتابعة...');
+                    pollJobStatus(data.job_id);
+                    return;
+                }
+                showToast(data.message || 'تم إصدار الفاتورة بنجاح');
+                setLoading(false);
+            })
+            .catch(function() {
+                setLoading(false);
+                showToast('تعذر التواصل مع الخادم');
+            });
         });
     }
 });

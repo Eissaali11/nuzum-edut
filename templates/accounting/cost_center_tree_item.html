@@ -34,12 +34,12 @@
             
             <!-- الإجراءات -->
             <div class="btn-group btn-group-sm">
-                <a href="{{ url_for('accounting.view_cost_center', center_id=center.id) }}" 
+                <a href="{{ url_for('accounting_costcenters.view_cost_center', center_id=center.id) }}" 
                    class="btn btn-outline-primary" title="عرض التفاصيل">
                     <i class="fas fa-eye"></i>
                 </a>
                 {% if current_user.role.value == 'admin' %}
-                <a href="{{ url_for('accounting.edit_cost_center', center_id=center.id) }}" 
+                <a href="{{ url_for('accounting_costcenters.edit_cost_center', center_id=center.id) }}" 
                    class="btn btn-outline-warning" title="تعديل">
                     <i class="fas fa-edit"></i>
                 </a>

@@ -1,0 +1,164 @@
+{% extends "layout.html" %}
+
+{% block title %}رادار النظافة المحاسبية{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4" dir="rtl">
+    <div class="card border-0 shadow-sm mb-3" style="background: linear-gradient(135deg, #001f3f, #39cccc); color:#fff;">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h5 class="mb-1"><i class="fas fa-radar me-2"></i>رادار كشف الأخطاء المحاسبية</h5>
+                <div class="small opacity-75">مسح القيود في ERPNext + دمج الحسابات الآمن داخل نُظم</div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('finance_bridge.integration_settings') }}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-link me-1"></i>إعدادات الربط
+                </a>
+                <a href="{{ url_for('accounting_accounts.accounts') }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-right me-1"></i>العودة لدليل الحسابات
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <strong>مصدر التقرير الحالي:</strong>
+                {% if report and report.source == 'erp' %}
+                    <span class="badge bg-success">ERPNext</span>
+                {% elif report and report.source == 'local' %}
+                    <span class="badge bg-secondary">NUZUM Local</span>
+                {% else %}
+                    <span class="badge bg-secondary">غير متاح</span>
+                {% endif %}
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('accounting_accounts.accounting_health_report', source='erp') }}" class="btn btn-sm {% if requested_source == 'erp' %}btn-primary{% else %}btn-outline-primary{% endif %}">مسح ERP</a>
+                <a href="{{ url_for('accounting_accounts.accounting_health_report', source='local') }}" class="btn btn-sm {% if requested_source == 'local' %}btn-dark{% else %}btn-outline-dark{% endif %}">مسح محلي</a>
+                <a href="{{ url_for('accounting_transactions.add_transaction') }}" class="btn btn-sm btn-success">إضافة قيد جديد</a>
+            </div>
+        </div>
+    </div>
+
+    {% if report and report.scanned_journal_entries == 0 %}
+    <div class="alert" style="border:1px solid #ff4136; background:#fff5f5; color:#b1001d;">
+        لا توجد قيود حالياً، لذلك التقرير يظهر فارغ. ابدأ بالتهيئة الأولية ثم أضف أول قيد يومية.
+        <form method="post" action="{{ url_for('accounting_accounts.bootstrap_accounting') }}" class="d-inline-block ms-2">
+            <button type="submit" class="btn btn-sm text-white" style="background:#001f3f;">تهيئة محاسبية أولية</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if report_error %}
+    <div class="alert" style="border:1px solid #ff4136; background:#fff5f5; color:#b1001d;">
+        <i class="fas fa-triangle-exclamation me-1"></i>{{ report_error }}
+    </div>
+    {% endif %}
+
+    {% if report %}
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong>Clean-up Progress</strong>
+                <span>{{ report.cleanliness_score }}%</span>
+            </div>
+            <div class="progress" style="height:12px;">
+                <div class="progress-bar" role="progressbar" style="width: {{ report.cleanliness_score }}%; background:#001f3f;"></div>
+            </div>
+            <div class="mt-2 small text-muted">
+                تم فحص {{ report.scanned_journal_entries }} قيد و {{ report.scanned_journal_lines }} سطر قيود — إجمالي الملاحظات {{ report.issues_total }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header" style="background:#001f3f;color:#fff;">قيود غير متوازنة ({{ report.unbalanced_entries|length }})</div>
+                <div class="card-body">
+                    {% if report.unbalanced_entries %}
+                        {% for row in report.unbalanced_entries[:20] %}
+                        <div class="p-2 mb-2" style="border-right:3px solid #ff4136; background:#fff5f5;">
+                            <div><strong>{{ row.name }}</strong> - {{ row.posting_date }}</div>
+                            <div class="small text-danger">مدين {{ row.total_debit }} | دائن {{ row.total_credit }} | فرق {{ row.difference }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-success">لا توجد قيود غير متوازنة.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header" style="background:#001f3f;color:#fff;">مراجع مكررة ({{ report.duplicate_references|length }})</div>
+                <div class="card-body">
+                    {% if report.duplicate_references %}
+                        {% for row in report.duplicate_references[:20] %}
+                        <div class="p-2 mb-2" style="border-right:3px solid #ff4136; background:#fff5f5;">
+                            <div><strong>{{ row.reference_no }}</strong> - {{ row.posting_date }}</div>
+                            <div class="small text-danger">عدد التكرارات: {{ row.count }} | القيمة: {{ row.amount }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-success">لا توجد مراجع مكررة.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header" style="background:#001f3f;color:#fff;">حسابات تجميعية عليها حركة ({{ report.group_accounts_with_transactions|length }})</div>
+                <div class="card-body">
+                    {% if report.group_accounts_with_transactions %}
+                        {% for row in report.group_accounts_with_transactions[:20] %}
+                        <div class="p-2 mb-2" style="border-right:3px solid #ff4136; background:#fff5f5;">
+                            <div><strong>{{ row.account_name }}</strong></div>
+                            <div class="small text-danger">{{ row.account }} | مثال قيد: {{ row.sample_journal_entry or '-' }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-success">لا توجد حركات على حسابات تجميعية.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card border-0 shadow-sm mt-3">
+        <div class="card-header" style="background:#001f3f;color:#fff;">دمج الحسابات الآمن (Account Merger)</div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('accounting_accounts.merge_accounts') }}" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">الحساب القديم (سيتم تعطيله)</label>
+                    <select class="form-select" name="source_account_id" required>
+                        <option value="">اختر الحساب القديم</option>
+                        {% for account in accounts %}
+                        <option value="{{ account.id }}">{{ account.code }} - {{ account.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">الحساب الهدف (سيستقبل جميع المراجع)</label>
+                    <select class="form-select" name="target_account_id" required>
+                        <option value="">اختر الحساب الهدف</option>
+                        {% for account in accounts %}
+                        <option value="{{ account.id }}">{{ account.code }} - {{ account.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn text-white" style="background:#001f3f;">
+                        <i class="fas fa-code-merge me-1"></i>تنفيذ الدمج
+                    </button>
+                </div>
+            </form>
+            <div class="small mt-2" style="color:#ff4136;">تنبيه: الدمج ينقل القيود والميزانيات والحسابات الفرعية ويعطّل الحساب القديم.</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

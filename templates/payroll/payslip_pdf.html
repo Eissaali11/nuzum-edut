@@ -1,0 +1,320 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<style>
+    @page {
+        size: A4 portrait;
+        margin: 8mm;
+    }
+
+    .payslip-container {
+        max-width: 980px;
+        margin: 0 auto;
+    }
+
+    .payslip-sheet {
+        border-top: 5px solid #001f3f;
+    }
+    .payslip-head-title {
+        color: #001f3f;
+    }
+    .payslip-company-ar,
+    .payslip-company-en,
+    .payslip-company-tax {
+        color: #111827;
+    }
+    .payslip-net-box {
+        background: #001f3f;
+        color: #ffffff;
+    }
+    .payslip-legal {
+        background: #f8f9fa;
+        color: #111827;
+        border: 1px solid #dbe2ea;
+    }
+    .payslip-legal strong,
+    .payslip-legal div {
+        color: #111827 !important;
+    }
+    .payslip-sign-box {
+        min-height: 90px;
+        border: 1px dashed #9ca3af;
+        border-radius: 8px;
+        padding: 10px;
+        background: #ffffff;
+    }
+
+    {% if standalone %}
+    .sidebar,
+    .sidebar-toggle-btn,
+    .sidebar-backdrop,
+    .notification-sidebar-btn,
+    nav,
+    header,
+    footer {
+        display: none !important;
+    }
+    .content-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
+    .fade-in {
+        padding: 0 !important;
+    }
+    .payslip-container {
+        max-width: 980px;
+        margin: 8px auto;
+    }
+    {% endif %}
+
+    @media print {
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+        body {
+            background: #ffffff !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-size: 10.5px !important;
+            line-height: 1.2 !important;
+        }
+        .sidebar,
+        .sidebar-toggle-btn,
+        .sidebar-backdrop,
+        .navbar,
+        .no-print {
+            display: none !important;
+        }
+        .container,
+        .container-fluid {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .payslip-container {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        .card {
+            box-shadow: none !important;
+            border: 1px solid #d1d5db !important;
+            page-break-inside: avoid;
+        }
+        .card-body {
+            padding: 8px !important;
+        }
+        .row {
+            --bs-gutter-x: 0.55rem !important;
+            --bs-gutter-y: 0.45rem !important;
+        }
+        h4 {
+            font-size: 20px !important;
+            margin-bottom: 1px !important;
+        }
+        h6 {
+            font-size: 12px !important;
+            margin-bottom: 2px !important;
+        }
+        .payslip-sign-box {
+            min-height: 56px !important;
+            padding: 6px !important;
+        }
+        .payslip-net-box {
+            background: #ffffff !important;
+            color: #111827 !important;
+            border: 2px solid #001f3f !important;
+        }
+        .payslip-net-box * {
+            color: #111827 !important;
+        }
+        .payslip-legal,
+        .payslip-legal * {
+            color: #111827 !important;
+            background: #ffffff !important;
+        }
+        .card-header,
+        .card-header * {
+            background: #ffffff !important;
+            color: #111827 !important;
+            border-color: #d1d5db !important;
+        }
+        .text-muted,
+        small,
+        .small {
+            color: #374151 !important;
+        }
+        .payslip-head-title,
+        .fw-bold,
+        .fw-semibold {
+            color: #111827 !important;
+        }
+        .payslip-company-ar,
+        .payslip-company-en,
+        .payslip-company-tax {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        .table th,
+        .table td {
+            color: #111827 !important;
+            background: #ffffff !important;
+            padding: 0.16rem 0.22rem !important;
+            font-size: 10px !important;
+        }
+        .optional-print,
+        .optional-print * {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        .mb-3 {
+            margin-bottom: 0.35rem !important;
+        }
+        .mt-3 {
+            margin-top: 0.35rem !important;
+        }
+        .my-2 {
+            margin-top: 0.2rem !important;
+            margin-bottom: 0.2rem !important;
+        }
+        .fs-5 {
+            font-size: 1rem !important;
+        }
+    }
+</style>
+<div class="container py-3 payslip-container" dir="rtl">
+    <div class="card shadow-sm payslip-sheet">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="text-end optional-print">
+                    <img src="{{ qr_url }}" alt="qr" style="width:90px;height:90px;">
+                </div>
+                <div class="text-center flex-grow-1">
+                    {% if company_logo_url %}
+                    <img src="{{ company_logo_url }}" alt="logo" style="max-height:72px;max-width:200px;object-fit:contain;">
+                    {% endif %}
+                    <div class="fw-bold payslip-company-ar" style="color:#001f3f;">{{ company_name_ar }}</div>
+                    <div class="fw-semibold payslip-company-en">{{ company_name_en }}</div>
+                    <div class="small text-muted payslip-company-tax">الرقم الضريبي / Tax Number: {{ company_tax_number }}</div>
+                    <h4 class="mb-0 mt-2 payslip-head-title">قسيمة راتب / Payslip</h4>
+                    <small class="text-muted">{{ year }}-{{ '%02d'|format(month) }}</small>
+                </div>
+                <div style="width:100px;"></div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="p-3 border rounded">
+                        <div><strong>الاسم / Name:</strong> {{ employee.name }}</div>
+                        <div><strong>الرقم الوظيفي / Employee ID:</strong> {{ employee.employee_id }}</div>
+                        <div><strong>رقم الهوية / National ID:</strong> {{ employee.national_id or '-' }}</div>
+                        <div><strong>المشروع / Project:</strong> {{ employee.project or '-' }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 border rounded">
+                        <div><strong>الفترة / Period:</strong> {{ year }}-{{ '%02d'|format(month) }}</div>
+                        <div><strong>الحالة / Status:</strong> {{ payroll.payment_status }}</div>
+                        <div><strong>تاريخ الإصدار / Generated:</strong> {{ generated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header text-white" style="background:#001f3f;">الاستحقاقات / Earnings</div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm mb-0">
+                                <thead><tr><th>البند</th><th>Item</th><th class="text-end">SAR</th></tr></thead>
+                                <tbody>
+                                    {% for item in earnings %}
+                                    <tr>
+                                        <td>{{ item.label_ar }}</td>
+                                        <td>{{ item.label_en }}</td>
+                                        <td class="text-end">{{ '{:,.2f}'.format(item.amount) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header text-white" style="background:#0f766e;">الاستقطاعات / Deductions</div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm mb-0">
+                                <thead><tr><th>البند</th><th>Item</th><th class="text-end">SAR</th></tr></thead>
+                                <tbody>
+                                    {% for item in deductions %}
+                                    <tr>
+                                        <td>{{ item.label_ar }}</td>
+                                        <td>{{ item.label_en }}</td>
+                                        <td class="text-end">{{ '{:,.2f}'.format(item.amount) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-md-6 optional-print">
+                    <div class="p-3 border rounded">
+                        <h6 class="mb-2">Attendance Summary</h6>
+                        <div class="small">Present: {{ attendance_stats.present }} | Absent: {{ attendance_stats.absent }} | Leave: {{ attendance_stats.leave }} | Sick: {{ attendance_stats.sick_leave }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 rounded payslip-net-box">
+                        <div class="d-flex justify-content-between"><span>Gross</span><strong>{{ '{:,.2f}'.format(totals.gross) }} SAR</strong></div>
+                        <div class="d-flex justify-content-between"><span>Deductions</span><strong>{{ '{:,.2f}'.format(totals.deductions) }} SAR</strong></div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between fs-5"><span>صافي الراتب / Net</span><strong>{{ '{:,.2f}'.format(totals.net) }} SAR</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 p-3 rounded payslip-legal">
+                <div><strong>المبلغ كتابة:</strong> {{ tafqeet.ar }}</div>
+                <div><strong>Amount in words:</strong> {{ tafqeet.en }}</div>
+            </div>
+
+            <div class="mt-3 p-3 border rounded">
+                <div class="fw-bold mb-2" style="color:#001f3f;">الاعتماد والتوقيع / Approval & Signature</div>
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <div class="payslip-sign-box">
+                            <div class="fw-semibold mb-2">توقيع الموظف</div>
+                            <div class="small text-muted">Employee Signature</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="payslip-sign-box text-center">
+                            <div class="fw-semibold mb-2">البصمة / الختم</div>
+                            <div class="small text-muted">Fingerprint / Company Stamp</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="payslip-sign-box">
+                            <div class="fw-semibold mb-2">اعتماد الموارد البشرية</div>
+                            <div class="small text-muted">HR Approval Signature</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 d-flex gap-2 no-print {% if standalone %}d-none{% endif %}">
+                <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print me-1"></i>طباعة / Print</button>
+                <a class="btn btn-outline-secondary" href="{{ url_for('payroll.hr_command_center', month=month, year=year) }}">رجوع</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

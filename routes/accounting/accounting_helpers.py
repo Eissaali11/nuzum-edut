@@ -11,6 +11,28 @@ from decimal import Decimal
 from sqlalchemy import func, desc
 from core.extensions import db
 
+
+ARABIC_MONTHS = [
+    (1, 'يناير'), (2, 'فبراير'), (3, 'مارس'), (4, 'أبريل'),
+    (5, 'مايو'), (6, 'يونيو'), (7, 'يوليو'), (8, 'أغسطس'),
+    (9, 'سبتمبر'), (10, 'أكتوبر'), (11, 'نوفمبر'), (12, 'ديسمبر'),
+]
+
+
+def get_arabic_months():
+    """الحصول على قائمة الأشهر العربية"""
+    return list(ARABIC_MONTHS)
+
+
+def parse_non_negative_float(value, default=0.0):
+    """تحويل آمن إلى float مع منع القيم السالبة"""
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return float(default)
+
+    return max(0.0, parsed)
+
 # ────────────────────────────────────────────────────────────────────────────
 # ✓ التحقق من الصلاحيات
 # ────────────────────────────────────────────────────────────────────────────
@@ -189,8 +211,16 @@ def get_monthly_expenses_data(months=6):
 
 def validate_transaction_balance(debits, credits, tolerance=0.01):
     """التحقق من توازن القيد"""
-    total_debits = sum(float(amount) if amount else 0 for amount in debits)
-    total_credits = sum(float(amount) if amount else 0 for amount in credits)
+    if isinstance(debits, (int, float, Decimal)):
+        total_debits = float(debits or 0)
+    else:
+        total_debits = sum(float(amount) if amount else 0 for amount in debits)
+
+    if isinstance(credits, (int, float, Decimal)):
+        total_credits = float(credits or 0)
+    else:
+        total_credits = sum(float(amount) if amount else 0 for amount in credits)
+
     return abs(total_debits - total_credits) <= tolerance
 
 
@@ -232,12 +262,21 @@ def get_next_transaction_number(prefix='TXN'):
     return transaction_number
 
 
-def apply_changes_to_account_balance(account_id, debit_amount=0, credit_amount=0):
+def apply_changes_to_account_balance(account_id, debit_amount=0, credit_amount=0, amount=None, entry_type=None):
     """تطبيق التغييرات على رصيد الحساب"""
     from models_accounting import Account
     
     try:
         account = Account.query.get(account_id)
+
+        if amount is not None and entry_type:
+            normalized_type = str(entry_type).strip().lower()
+            if normalized_type == 'debit':
+                debit_amount = amount
+                credit_amount = 0
+            elif normalized_type == 'credit':
+                credit_amount = amount
+                debit_amount = 0
         
         if account:
             # حساب التغيير بناءً على نوع الحساب
@@ -261,12 +300,15 @@ def apply_changes_to_account_balance(account_id, debit_amount=0, credit_amount=0
 # ✓ البحث والتصفية
 # ────────────────────────────────────────────────────────────────────────────
 
-def search_accounts(search_term, account_type_filter=None):
+def search_accounts(search_term='', account_type_filter=None, account_type=None, is_active=None):
     """البحث في الحسابات"""
     from models_accounting import Account
     from sqlalchemy import or_
     
     query = Account.query
+
+    if is_active is not None:
+        query = query.filter(Account.is_active == bool(is_active))
     
     if search_term:
         query = query.filter(or_(
@@ -274,10 +316,11 @@ def search_accounts(search_term, account_type_filter=None):
             Account.code.contains(search_term)
         ))
     
-    if account_type_filter:
-        query = query.filter(Account.account_type == account_type_filter)
+    account_type_value = account_type_filter or account_type
+    if account_type_value:
+        query = query.filter(Account.account_type == account_type_value)
     
-    return query.order_by(Account.code).all()
+    return query.order_by(Account.code)
 
 
 def search_transactions(search_term=None, transaction_type=None, 

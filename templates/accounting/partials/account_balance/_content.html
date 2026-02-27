@@ -5,7 +5,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url_for('accounting.dashboard') }}">المحاسبة</a></li>
-                    <li class="breadcrumb-item"><a href="{{ url_for('accounting.chart_of_accounts') }}">شجرة الحسابات</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('accounting_charts.chart_of_accounts') }}">شجرة الحسابات</a></li>
                     <li class="breadcrumb-item active">{{ account.code }}</li>
                 </ol>
             </nav>
@@ -16,11 +16,11 @@
         </div>
         
         <div class="d-flex gap-2">
-            <a href="{{ url_for('accounting.chart_of_accounts') }}" class="btn btn-outline-secondary">
+            <a href="{{ url_for('accounting_charts.chart_of_accounts') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-right me-2"></i>العودة للشجرة
             </a>
             {% if current_user.role.value == 'admin' %}
-            <a href="{{ url_for('accounting.edit_account', account_id=account.id) }}" class="btn btn-warning">
+            <a href="{{ url_for('accounting_accounts.edit_account', account_id=account.id) }}" class="btn btn-warning">
                 <i class="fas fa-edit me-2"></i>تعديل الحساب
             </a>
             <button type="button" class="btn btn-danger" onclick="confirmDelete()">
@@ -130,7 +130,7 @@
                             {% for acc in hierarchy %}
                             <li class="breadcrumb-item {% if loop.last %}active{% endif %}">
                                 {% if not loop.last %}
-                                <a href="{{ url_for('accounting.account_balance_page', account_id=acc.id) }}">
+                                <a href="{{ url_for('accounting_charts.account_balance_page', account_id=acc.id) }}">
                                     {{ acc.code }} - {{ acc.name }}
                                 </a>
                                 {% else %}
@@ -233,7 +233,7 @@
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ url_for('accounting.account_balance_page', account_id=child.id) }}" 
+                                        <a href="{{ url_for('accounting_charts.account_balance_page', account_id=child.id) }}" 
                                            class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-eye"></i> عرض التفاصيل
                                         </a>
@@ -275,7 +275,7 @@
                                 {% for entry in recent_transactions %}
                                 <tr>
                                     <td>
-                                        <a href="{{ url_for('accounting.view_transaction', transaction_id=entry.transaction.id) }}" 
+                                        <a href="{{ url_for('accounting_transactions.view_transaction', transaction_id=entry.transaction.id) }}" 
                                            class="text-primary fw-bold">
                                             {{ entry.transaction.transaction_number }}
                                         </a>
@@ -308,7 +308,7 @@
                     </div>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{{ url_for('accounting.transactions') }}?account_id={{ account.id }}" class="btn btn-outline-primary">
+                    <a href="{{ url_for('accounting_transactions.transactions') }}?account_id={{ account.id }}" class="btn btn-outline-primary">
                         عرض جميع معاملات هذا الحساب
                     </a>
                 </div>
@@ -398,7 +398,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                 {% if not children and not recent_transactions and account.balance == 0 %}
-                <form method="POST" action="{{ url_for('accounting.delete_account', account_id=account.id) }}" style="display: inline;">
+                <form method="POST" action="{{ url_for('accounting_charts.delete_account', account_id=account.id) }}" style="display: inline;">
                     <button type="submit" class="btn btn-danger">
                         <i class="fas fa-trash me-2"></i>تأكيد الحذف
                     </button>

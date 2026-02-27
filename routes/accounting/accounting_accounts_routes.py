@@ -9,12 +9,16 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from datetime import datetime, date, timedelta
+from decimal import Decimal
 from sqlalchemy import func, desc
+from collections import defaultdict
 
 from core.extensions import db
 from models import UserRole, Module
-from models_accounting import Account, AccountType, Transaction, TransactionEntry, EntryType
+from models_accounting import Account, AccountType, Budget, CostCenter, Transaction, TransactionEntry, EntryType
 from forms.accounting import AccountForm
+from services.finance_bridge import ERPNextClient, ERPNextBridgeError
+from services.finance_bridge_app_service import FinanceBridgeSettingsService
 from utils.helpers import log_activity
 
 from .accounting_helpers import (
@@ -22,6 +26,94 @@ from .accounting_helpers import (
     validate_account_code_unique,
     search_accounts
 )
+
+
+def _is_descendant_account(parent_account, target_account_id):
+    stack = list(parent_account.children or [])
+    visited = set()
+    while stack:
+        node = stack.pop()
+        if node.id in visited:
+            continue
+        visited.add(node.id)
+        if int(node.id) == int(target_account_id):
+            return True
+        stack.extend(list(node.children or []))
+    return False
+
+
+def _build_local_accounting_health_report(limit=500):
+    transactions = (
+        Transaction.query.order_by(desc(Transaction.transaction_date), desc(Transaction.id)).limit(limit).all()
+    )
+
+    unbalanced_entries = []
+    duplicate_buckets = defaultdict(list)
+    group_accounts = []
+
+    for tx in transactions:
+        debit_total = Decimal('0.00')
+        credit_total = Decimal('0.00')
+        for entry in tx.entries:
+            amount = Decimal(str(entry.amount or 0))
+            if entry.entry_type == EntryType.DEBIT:
+                debit_total += amount
+            else:
+                credit_total += amount
+
+            has_children = Account.query.filter_by(parent_id=entry.account_id).count() > 0
+            if has_children:
+                group_accounts.append({
+                    'account': entry.account.code,
+                    'account_name': entry.account.name,
+                    'disabled': not entry.account.is_active,
+                    'sample_journal_entry': tx.transaction_number,
+                })
+
+        if debit_total != credit_total:
+            unbalanced_entries.append({
+                'name': tx.transaction_number,
+                'posting_date': tx.transaction_date.isoformat() if tx.transaction_date else None,
+                'total_debit': float(debit_total),
+                'total_credit': float(credit_total),
+                'difference': float(debit_total - credit_total),
+            })
+
+        reference_no = str(tx.reference_number or '').strip()
+        if reference_no:
+            duplicate_buckets[(tx.transaction_date, reference_no, float(tx.total_amount or 0))].append(tx)
+
+    duplicate_references = []
+    for (posting_date, reference_no, amount_value), rows in duplicate_buckets.items():
+        if len(rows) > 1:
+            duplicate_references.append({
+                'posting_date': posting_date.isoformat() if posting_date else None,
+                'reference_no': reference_no,
+                'amount': amount_value,
+                'entries': [row.transaction_number for row in rows],
+                'count': len(rows),
+            })
+
+    unique_group_accounts = {}
+    for item in group_accounts:
+        unique_group_accounts[item['account']] = item
+
+    issues_total = len(unbalanced_entries) + len(duplicate_references) + len(unique_group_accounts)
+    scanned_count = max(1, len(transactions))
+    cleanliness_score = max(0, int(round((1 - min(1.0, issues_total / scanned_count)) * 100)))
+
+    return {
+        'ok': True,
+        'source': 'local',
+        'scanned_journal_entries': len(transactions),
+        'scanned_journal_lines': sum(len(tx.entries) for tx in transactions),
+        'cleanliness_score': cleanliness_score,
+        'issues_total': issues_total,
+        'unbalanced_entries': unbalanced_entries,
+        'duplicate_references': duplicate_references,
+        'group_accounts_with_transactions': list(unique_group_accounts.values()),
+        'generated_at': datetime.utcnow().isoformat(),
+    }
 
 # ────────────────────────────────────────────────────────────────────────────
 # 🔧 إنشاء البلوبرينت
@@ -351,3 +443,215 @@ def view_account(account_id):
     except Exception as e:
         flash(f'خطأ في جلب بيانات الحساب: {str(e)}', 'danger')
         return redirect(url_for('accounting_accounts.accounts'))
+
+
+@accounts_bp.route('/health-report')
+@login_required
+def accounting_health_report():
+    if not check_accounting_access(current_user):
+        flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    settings_data = FinanceBridgeSettingsService.load_settings()
+    client = ERPNextClient(config_overrides=settings_data)
+    requested_source = (request.args.get('source') or 'erp').strip().lower()
+    if requested_source not in ('erp', 'local'):
+        requested_source = 'erp'
+
+    health_report = None
+    report_error = None
+    if requested_source == 'local':
+        health_report = _build_local_accounting_health_report(limit=500)
+    elif client.is_configured():
+        try:
+            health_report = client.get_accounting_health_report(limit=300)
+            health_report['source'] = 'erp'
+        except ERPNextBridgeError as exc:
+            report_error = f"{exc} | تم التحويل تلقائياً إلى تقرير NUZUM المحلي"
+            health_report = _build_local_accounting_health_report(limit=500)
+    else:
+        report_error = 'بيانات الربط مع ERPNext غير مكتملة. تم عرض تقرير NUZUM المحلي.'
+        health_report = _build_local_accounting_health_report(limit=500)
+
+    accounts_list = Account.query.filter_by(is_active=True).order_by(Account.code).all()
+    return render_template(
+        'accounting/accounts/health_report.html',
+        report=health_report,
+        report_error=report_error,
+        requested_source=requested_source,
+        accounts=accounts_list,
+    )
+
+
+@accounts_bp.route('/merge-accounts', methods=['GET', 'POST'])
+@login_required
+def merge_accounts():
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
+        flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    if request.method == 'POST':
+        source_account_id = request.form.get('source_account_id', type=int)
+        target_account_id = request.form.get('target_account_id', type=int)
+
+        if not source_account_id or not target_account_id:
+            flash('اختر الحساب القديم والحساب الهدف', 'danger')
+            return redirect(url_for('accounting_accounts.accounting_health_report'))
+
+        if source_account_id == target_account_id:
+            flash('لا يمكن دمج الحساب في نفسه', 'danger')
+            return redirect(url_for('accounting_accounts.accounting_health_report'))
+
+        source_account = Account.query.get_or_404(source_account_id)
+        target_account = Account.query.get_or_404(target_account_id)
+
+        if _is_descendant_account(source_account, target_account.id):
+            flash('لا يمكن دمج حساب أب داخل حساب فرعي له', 'danger')
+            return redirect(url_for('accounting_accounts.accounting_health_report'))
+
+        if not source_account.is_active:
+            flash('الحساب القديم غير نشط بالفعل', 'warning')
+            return redirect(url_for('accounting_accounts.accounting_health_report'))
+
+        try:
+            source_balance = Decimal(str(source_account.balance or 0))
+            target_balance = Decimal(str(target_account.balance or 0))
+
+            moved_entries = TransactionEntry.query.filter_by(account_id=source_account.id).update(
+                {TransactionEntry.account_id: target_account.id},
+                synchronize_session=False,
+            )
+            moved_budgets = Budget.query.filter_by(account_id=source_account.id).update(
+                {Budget.account_id: target_account.id},
+                synchronize_session=False,
+            )
+            moved_children = Account.query.filter_by(parent_id=source_account.id).update(
+                {Account.parent_id: target_account.id},
+                synchronize_session=False,
+            )
+
+            source_account.balance = Decimal('0.00')
+            source_account.is_active = False
+            source_account.updated_at = datetime.utcnow()
+            target_account.balance = target_balance + source_balance
+            target_account.updated_at = datetime.utcnow()
+
+            erp_sync_note = 'ERP: لم يتم الربط'
+            settings_data = FinanceBridgeSettingsService.load_settings()
+            client = ERPNextClient(config_overrides=settings_data)
+            if client.is_configured():
+                try:
+                    erp_result = client.disable_account_by_code_or_name(
+                        account_code=source_account.code,
+                        account_name=source_account.name,
+                    )
+                    if erp_result.get('disabled'):
+                        erp_sync_note = f"ERP: تم تعطيل {erp_result.get('updated', 0)} حساب"
+                    else:
+                        erp_sync_note = 'ERP: الحساب غير موجود للتعطيل'
+                except ERPNextBridgeError as exc:
+                    erp_sync_note = f'ERP: فشل التعطيل ({exc})'
+
+            db.session.commit()
+
+            log_activity(
+                f"دمج الحساب {source_account.code} -> {target_account.code} | "
+                f"entries={moved_entries}, budgets={moved_budgets}, children={moved_children}"
+            )
+            flash(
+                (
+                    f'تم الدمج بنجاح: {source_account.code} -> {target_account.code} | '
+                    f'القيود المنقولة: {moved_entries} | الميزانيات: {moved_budgets} | '
+                    f'الحسابات الفرعية: {moved_children} | {erp_sync_note}'
+                ),
+                'success',
+            )
+        except Exception as exc:
+            db.session.rollback()
+            flash(f'فشل دمج الحسابات: {exc}', 'danger')
+
+        return redirect(url_for('accounting_accounts.accounting_health_report'))
+
+    return redirect(url_for('accounting_accounts.accounting_health_report'))
+
+
+@accounts_bp.route('/bootstrap-accounting', methods=['POST'])
+@login_required
+def bootstrap_accounting():
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
+        flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    try:
+        today = date.today()
+        fiscal_year = FiscalYear.query.filter_by(is_active=True, is_closed=False).first()
+        if not fiscal_year:
+            fiscal_year = FiscalYear(
+                name=f"السنة المالية {today.year}",
+                year=today.year,
+                start_date=date(today.year, 1, 1),
+                end_date=date(today.year, 12, 31),
+                is_active=True,
+                is_closed=False,
+            )
+            db.session.add(fiscal_year)
+
+        settings = AccountingSettings.query.first()
+        if not settings:
+            settings = AccountingSettings(
+                company_name='NUZUM',
+                base_currency='SAR',
+                decimal_places=2,
+                transaction_prefix='JV',
+                next_transaction_number=1,
+                fiscal_year_start_month=1,
+            )
+            db.session.add(settings)
+
+        defaults = [
+            ('1001', 'الصندوق', 'Cash', AccountType.ASSETS),
+            ('1101', 'البنك', 'Bank', AccountType.ASSETS),
+            ('2101', 'ذمم دائنة', 'Accounts Payable', AccountType.LIABILITIES),
+            ('3101', 'حقوق الملكية', 'Equity', AccountType.EQUITY),
+            ('4101', 'مصروف الرواتب', 'Salary Expense', AccountType.EXPENSES),
+            ('4201', 'مصروفات تشغيلية', 'Operating Expense', AccountType.EXPENSES),
+            ('5101', 'إيرادات الخدمات', 'Service Revenue', AccountType.REVENUE),
+        ]
+
+        created_accounts = 0
+        for code, name, name_en, account_type in defaults:
+            existing = Account.query.filter_by(code=code).first()
+            if existing:
+                continue
+            db.session.add(Account(
+                code=code,
+                name=name,
+                name_en=name_en,
+                account_type=account_type,
+                level=0,
+                is_active=True,
+                balance=0,
+            ))
+            created_accounts += 1
+
+        default_cost_center = CostCenter.query.filter_by(code='CC-001').first()
+        if not default_cost_center:
+            db.session.add(CostCenter(
+                code='CC-001',
+                name='المركز الرئيسي',
+                name_en='Main Cost Center',
+                description='مركز تكلفة افتراضي تم إنشاؤه تلقائياً',
+                budget_amount=0,
+                is_active=True,
+            ))
+
+        db.session.commit()
+        flash(
+            f'تمت التهيئة بنجاح: سنة مالية نشطة + إعدادات أساسية + {created_accounts} حساب افتراضي.',
+            'success',
+        )
+    except Exception as exc:
+        db.session.rollback()
+        flash(f'فشلت التهيئة المحاسبية: {exc}', 'danger')
+
+    return redirect(url_for('accounting_accounts.accounting_health_report', source='local'))
