@@ -11,7 +11,7 @@ def admin_required(f):
     """Decorator to require admin access"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role != UserRole.ADMIN:
+        if not current_user.is_authenticated or not current_user._is_admin_role():
             flash('ليس لديك صلاحية للوصول إلى هذه الصفحة', 'error')
             return redirect(url_for('attendance.dashboard'))
         return f(*args, **kwargs)

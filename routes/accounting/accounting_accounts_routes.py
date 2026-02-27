@@ -85,7 +85,7 @@ def accounts():
 @login_required
 def add_account():
     """إضافة حساب جديد من شجرة الحسابات"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -188,7 +188,7 @@ def create_account():
 @login_required
 def edit_account(account_id):
     """تعديل حساب"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -243,7 +243,7 @@ def edit_account(account_id):
 @login_required
 def confirm_delete_account(account_id):
     """صفحة تأكيد حذف الحساب"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     

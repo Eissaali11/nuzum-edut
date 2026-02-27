@@ -127,7 +127,7 @@ def review_accident_report(accident_id):
 def delete_accident_reports():
     """حذف مجموعة من تقارير الحوادث"""
     
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('operations_accidents.list_accident_reports'))
     

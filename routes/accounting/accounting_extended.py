@@ -28,7 +28,7 @@ accounting_ext_bp = Blueprint('accounting_ext', __name__, url_prefix='/accountin
 @login_required
 def quick_entry():
     """القيد السريع"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -137,7 +137,7 @@ def quick_entry():
 @login_required
 def salary_processing():
     """معالجة رواتب الموظفين"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -287,7 +287,7 @@ def salary_processing():
 @login_required
 def vehicle_expenses():
     """إدخال مصروفات المركبات"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -402,7 +402,7 @@ def vehicle_expenses():
 @login_required
 def trial_balance():
     """تقرير ميزان المراجعة"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -504,7 +504,7 @@ def trial_balance():
 @login_required
 def balance_sheet():
     """تقرير الميزانية العمومية"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     

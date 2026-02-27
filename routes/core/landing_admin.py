@@ -13,7 +13,7 @@ landing_admin_bp = Blueprint('landing_admin', __name__, url_prefix='/landing-adm
 def admin_required(f):
     """ديكوريتر للتحقق من صلاحيات المدير"""
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role != UserRole.ADMIN:
+        if not current_user.is_authenticated or not current_user._is_admin_role():
             flash('ليس لديك صلاحية للوصول لهذه الصفحة', 'error')
             return redirect(url_for('landing_admin.admin_login'))
         return f(*args, **kwargs)
@@ -40,7 +40,7 @@ def admin_login():
         print(f"DEBUG: دور المستخدم: {user.role if user else 'لا يوجد'}")
         print(f"DEBUG: نشط: {user.is_active if user else 'لا يوجد'}")
         
-        if user and user.role == UserRole.ADMIN and user.is_active:
+        if user and user._is_admin_role() and user.is_active:
             if check_password_hash(user.password_hash, password):
                 print("DEBUG: كلمة المرور صحيحة - تسجيل الدخول")
                 login_user(user)

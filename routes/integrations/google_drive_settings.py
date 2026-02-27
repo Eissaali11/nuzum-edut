@@ -18,7 +18,7 @@ def google_drive():
     """صفحة إعدادات Google Drive"""
     
     # التحقق من أن المستخدم admin
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مصرح لك بالوصول إلى هذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     

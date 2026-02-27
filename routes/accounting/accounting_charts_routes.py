@@ -40,7 +40,7 @@ charts_bp = Blueprint(
 @login_required
 def chart_of_accounts():
     """عرض شجرة الحسابات"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -63,7 +63,7 @@ def chart_of_accounts():
 @login_required
 def create_default_accounts():
     """إنشاء الحسابات الافتراضية"""
-    if not current_user.role == UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مسموح لك بتنفيذ هذا الإجراء', 'danger')
         return redirect(url_for('accounting_charts.chart_of_accounts'))
     
@@ -84,7 +84,7 @@ def create_default_accounts():
 @login_required
 def account_balance(account_id):
     """عرض رصيد حساب مع التفاصيل"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         return jsonify({'error': 'غير مسموح'}), 403
     
     try:
@@ -122,7 +122,7 @@ def account_balance(account_id):
 @login_required
 def account_balance_page(account_id):
     """صفحة تفاصيل رصيد الحساب"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -155,7 +155,7 @@ def account_balance_page(account_id):
 @login_required
 def delete_account(account_id):
     """حذف حساب"""
-    if not current_user.role == UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مسموح لك بتنفيذ هذا الإجراء', 'danger')
         return redirect(url_for('accounting_charts.chart_of_accounts'))
     

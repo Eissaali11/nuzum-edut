@@ -35,7 +35,7 @@ employee_requests_controller_bp = employee_requests_refactored_bp
 
 def check_access():
     """Check if current user has admin access."""
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         return False
     return True
 

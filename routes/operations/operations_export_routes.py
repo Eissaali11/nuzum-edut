@@ -54,7 +54,7 @@ def get_operation_type_name(operation_type):
 def export_operation_excel(operation_id):
     """تصدير جميع بيانات العملية إلى Excel"""
     
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     

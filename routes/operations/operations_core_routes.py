@@ -20,7 +20,7 @@ operations_core_bp = Blueprint('operations_core', __name__, url_prefix='/operati
 def operations_dashboard():
     """لوحة إدارة العمليات الرئيسية مع إمكانية البحث"""
 
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
 
@@ -59,7 +59,7 @@ def operations_dashboard():
 def operations_list():
     """قائمة جميع العمليات مع فلترة"""
     
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -106,7 +106,7 @@ def operations_list():
 def view_operation(operation_id):
     """عرض تفاصيل العملية"""
     
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -206,7 +206,7 @@ def view_operation(operation_id):
 def delete_operation(id):
     """حذف العملية"""
     
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مسموح لك بحذف العمليات', 'error')
         return redirect(url_for('operations_core.operations_list'))
     

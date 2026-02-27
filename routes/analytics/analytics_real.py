@@ -17,7 +17,7 @@ def dashboard():
     """لوحة التحليل المالي مع البيانات الحقيقية"""
     
     # التحقق من الصلاحيات
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         return redirect(url_for('dashboard.index'))
     
     # جلب البيانات الحقيقية

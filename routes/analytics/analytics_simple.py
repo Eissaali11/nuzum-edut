@@ -17,7 +17,7 @@ def dashboard():
     """لوحة التحليل المالي المبسطة"""
     
     # التحقق من الصلاحيات
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         return redirect(url_for('dashboard.index'))
     
     # جلب البيانات المبسطة
@@ -127,7 +127,7 @@ def get_fallback_data():
 @login_required
 def api_ai_predictions():
     """API للحصول على تنبؤات الذكاء الاصطناعي"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         return jsonify({'error': 'غير مسموح'}), 403
     
     try:
@@ -142,7 +142,7 @@ def api_ai_predictions():
 @login_required 
 def api_pattern_analysis():
     """API لتحليل أنماط المعاملات"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         return jsonify({'error': 'غير مسموح'}), 403
     
     try:
@@ -157,7 +157,7 @@ def api_pattern_analysis():
 @login_required
 def api_budget_recommendations():
     """API لتوصيات الميزانية"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         return jsonify({'error': 'غير مسموح'}), 403
     
     try:

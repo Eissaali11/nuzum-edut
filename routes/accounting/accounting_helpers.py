@@ -18,7 +18,7 @@ from core.extensions import db
 def check_accounting_access(current_user):
     """التحقق من صلاحية الوصول للنظام المحاسبي"""
     from models import UserRole, Module
-    return (current_user.role == UserRole.ADMIN or 
+    return (current_user._is_admin_role() or 
             current_user.has_module_access(Module.ACCOUNTING))
 
 

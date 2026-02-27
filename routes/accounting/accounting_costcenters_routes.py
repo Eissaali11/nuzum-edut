@@ -36,7 +36,7 @@ costcenters_bp = Blueprint(
 @login_required
 def cost_centers():
     """عرض مراكز التكلفة"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -59,7 +59,7 @@ def cost_centers():
 @login_required
 def create_cost_center():
     """إنشاء مركز تكلفة جديد"""
-    if not current_user.role == UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('accounting_costcenters.cost_centers'))
     
@@ -103,7 +103,7 @@ def create_cost_center():
 @login_required
 def view_cost_center(center_id):
     """عرض تفاصيل مركز التكلفة"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -121,7 +121,7 @@ def view_cost_center(center_id):
 @login_required
 def edit_cost_center(center_id):
     """تعديل مركز التكلفة"""
-    if not current_user.role == UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('accounting_costcenters.cost_centers'))
     
@@ -169,7 +169,7 @@ def edit_cost_center(center_id):
 @login_required
 def delete_cost_center(center_id):
     """حذف مركز التكلفة"""
-    if not current_user.role == UserRole.ADMIN:
+    if not current_user._is_admin_role():
         flash('غير مسموح لك بالوصول لهذه الصفحة', 'danger')
         return redirect(url_for('accounting_costcenters.cost_centers'))
     

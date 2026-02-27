@@ -25,7 +25,7 @@ analytics_bp = Blueprint('accounting_analytics',
 
 def has_accounting_access():
     """التحقق من صلاحية الوصول للنظام المحاسبي"""
-    return current_user.role == UserRole.ADMIN or current_user.has_module_access(
+    return current_user._is_admin_role() or current_user.has_module_access(
         Module.ACCOUNTING)
 
 

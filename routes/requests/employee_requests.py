@@ -20,7 +20,7 @@ employee_requests_bp = employee_requests
 
 
 def check_access():
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         return False
     return True
 

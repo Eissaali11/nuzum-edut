@@ -19,7 +19,7 @@ e_invoicing_bp = Blueprint('e_invoicing', __name__, url_prefix='/e-invoicing')
 @login_required
 def dashboard():
     """لوحة تحكم الفاتورة الإلكترونية"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('ليس لديك صلاحية للوصول لهذا القسم', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -65,7 +65,7 @@ def dashboard():
 @login_required
 def create_invoice():
     """إنشاء فاتورة إلكترونية جديدة"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('ليس لديك صلاحية للوصول لهذا القسم', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -132,7 +132,7 @@ def view_invoice(invoice_id):
     """عرض الفاتورة الإلكترونية"""
     invoice = EInvoice.query.get_or_404(invoice_id)
     
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('ليس لديك صلاحية للوصول لهذه الفاتورة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -145,7 +145,7 @@ def submit_invoice(invoice_id):
     """إرسال الفاتورة إلى ZATCA"""
     invoice = EInvoice.query.get_or_404(invoice_id)
     
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('ليس لديك صلاحية للوصول لهذه الفاتورة', 'danger')
         return redirect(url_for('dashboard.index'))
     
@@ -178,7 +178,7 @@ def submit_invoice(invoice_id):
 @login_required
 def vat_report():
     """تقرير الضريبة المضافة"""
-    if not (current_user.role == UserRole.ADMIN or current_user.has_module_access(Module.ACCOUNTING)):
+    if not (current_user._is_admin_role() or current_user.has_module_access(Module.ACCOUNTING)):
         flash('ليس لديك صلاحية للوصول لهذا التقرير', 'danger')
         return redirect(url_for('dashboard.index'))
     

@@ -127,7 +127,7 @@ def get_unread_notifications_count(user_id):
 def approve_operation(operation_id):
     """الموافقة على العملية مع تفعيل السجل المرتبط"""
     
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         return jsonify({'success': False, 'message': 'غير مسموح لك بالقيام بهذا الإجراء'})
 
     operation = OperationRequest.query.get_or_404(operation_id)
@@ -188,7 +188,7 @@ def approve_operation(operation_id):
 def reject_operation(operation_id):
     """رفض العملية"""
     
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         return jsonify({'success': False, 'message': 'غير مسموح'})
     
     operation = OperationRequest.query.get_or_404(operation_id)
@@ -245,7 +245,7 @@ def reject_operation(operation_id):
 def set_under_review(operation_id):
     """وضع العملية تحت المراجعة"""
     
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         return jsonify({'success': False, 'message': 'غير مسموح'})
     
     operation = OperationRequest.query.get_or_404(operation_id)
@@ -354,7 +354,7 @@ def test_operations_notifications():
 def api_operations_count():
     """API للحصول على إحصائيات العمليات"""
     
-    if current_user.role != UserRole.ADMIN:
+    if not current_user._is_admin_role():
         return jsonify({'error': 'غير مسموح'})
     
     pending_count = OperationRequest.query.filter_by(status='pending').count()
