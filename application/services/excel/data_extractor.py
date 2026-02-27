@@ -92,7 +92,7 @@ class DataExtractor:
     def get_dashboard_metrics(self) -> Dict[str, Any]:
         """استخراج مقاييس لوحة القيادة"""
         try:
-            from app import db
+            from core.extensions import db
             from application.models.statistics import Statistics
             from datetime import datetime as dt, timedelta
             
@@ -132,7 +132,7 @@ class DataExtractor:
     def get_category_distribution(self) -> pd.DataFrame:
         """استخراج توزيع الفئات"""
         try:
-            from app import db
+            from core.extensions import db
             from sqlalchemy import func
             
             # بيانات وهمية احترافية للتطوير
