@@ -15,6 +15,11 @@ logger = logging.getLogger(__name__)
 
 ZERO = Decimal('0')
 
+IQAMA_ANNUAL_COST = Decimal('650')
+INSURANCE_ANNUAL_COST = Decimal('1800')
+IQAMA_MONTHLY = IQAMA_ANNUAL_COST / Decimal('12')
+INSURANCE_MONTHLY = INSURANCE_ANNUAL_COST / Decimal('12')
+
 
 def _get_employee_vehicle_cost(employee_id, month, year):
     last_handover = (
@@ -69,6 +74,7 @@ def calculate_project_profitability(department_id, month, year):
         'gosi_cost': ZERO,
         'vehicle_cost': ZERO,
         'overhead': ZERO,
+        'iqama_insurance': ZERO,
         'total_cost': ZERO,
         'profit': ZERO,
     }
@@ -119,12 +125,15 @@ def calculate_project_profitability(department_id, month, year):
 
         vehicle_cost = _get_employee_vehicle_cost(emp.id, month, year)
 
+        iqama_cost = IQAMA_MONTHLY
+        insurance_cost = INSURANCE_MONTHLY
+
         if billing_type == 'daily':
             revenue = billing_rate * Decimal(str(present_days))
         else:
             revenue = billing_rate
 
-        total_cost = salary_cost + gosi_company + vehicle_cost + overhead + housing
+        total_cost = salary_cost + gosi_company + vehicle_cost + overhead + housing + iqama_cost + insurance_cost
         net_profit = revenue - total_cost
         margin_pct = (net_profit / revenue * 100) if revenue > 0 else ZERO
 
@@ -142,6 +151,8 @@ def calculate_project_profitability(department_id, month, year):
             'vehicle_cost': float(vehicle_cost),
             'overhead': float(overhead),
             'housing': float(housing),
+            'iqama_cost': float(iqama_cost),
+            'insurance_cost': float(insurance_cost),
             'total_cost': float(total_cost),
             'net_profit': float(net_profit),
             'margin_pct': float(margin_pct),
@@ -153,6 +164,7 @@ def calculate_project_profitability(department_id, month, year):
         totals['gosi_cost'] += gosi_company
         totals['vehicle_cost'] += vehicle_cost
         totals['overhead'] += overhead + housing
+        totals['iqama_insurance'] = totals.get('iqama_insurance', ZERO) + iqama_cost + insurance_cost
         totals['total_cost'] += total_cost
         totals['profit'] += net_profit
 

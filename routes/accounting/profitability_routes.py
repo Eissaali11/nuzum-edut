@@ -115,13 +115,13 @@ def _export_project_excel(result):
     center = Alignment(horizontal='center', vertical='center', wrap_text=True)
     right_align = Alignment(horizontal='right', vertical='center')
 
-    ws.merge_cells('A1:L1')
+    ws.merge_cells('A1:O1')
     ws['A1'] = f"تقرير ربحية المشروع — {result['department']['name']}"
     ws['A1'].font = Font(color='FFFFFF', bold=True, size=16)
     ws['A1'].fill = navy
     ws['A1'].alignment = center
 
-    ws.merge_cells('A2:L2')
+    ws.merge_cells('A2:O2')
     ws['A2'] = f"العميل: {result['contract']['client_name']} | الفترة: {result['period']['month_name']} {result['period']['year']} | النوع: {result['contract']['contract_type_ar']}"
     ws['A2'].font = Font(color='FFFFFF', size=11)
     ws['A2'].fill = teal
@@ -133,6 +133,7 @@ def _export_project_excel(result):
         ('إجمالي التكاليف', f"{result['totals']['total_cost']:,.2f} ريال"),
         ('صافي الربح', f"{result['totals']['profit']:,.2f} ريال"),
         ('هامش الربح', f"{result['overall_margin']:.1f}%"),
+        ('إقامة + تأمين', f"{result['totals'].get('iqama_insurance', 0):,.0f} ريال"),
     ]
     for i, (label, value) in enumerate(kpis):
         col = 1 + i * 3
@@ -146,11 +147,12 @@ def _export_project_excel(result):
     header_row = 6
     headers = [
         '#', 'الموظف', 'الرقم الوظيفي', 'المسمى', 'سعر الفوترة',
-        'نوع الفوترة', 'الإيراد', 'الراتب', 'GOSI', 'تكلفة السيارة',
-        'مصاريف أخرى', 'إجمالي التكلفة', 'صافي الربح', 'الهامش %'
+        'الإيراد', 'الراتب', 'GOSI', 'تكلفة السيارة',
+        'بدل السكن', 'إقامة/تأمين', 'مصاريف أخرى',
+        'إجمالي التكلفة', 'صافي الربح', 'الهامش %'
     ]
 
-    col_widths = [5, 22, 14, 16, 14, 12, 14, 14, 10, 14, 14, 14, 14, 10]
+    col_widths = [5, 22, 14, 16, 14, 14, 14, 10, 14, 12, 12, 12, 14, 14, 10]
     for i, w in enumerate(col_widths):
         ws.column_dimensions[get_column_letter(i + 1)].width = w
 
@@ -165,9 +167,11 @@ def _export_project_excel(result):
         row = header_row + idx
         values = [
             idx, emp['employee_name'], emp['employee_code'], emp['job_title'],
-            emp['billing_rate'], emp['billing_type'],
+            emp['billing_rate'],
             emp['revenue'], emp['salary_cost'], emp['gosi_cost'],
-            emp['vehicle_cost'], emp['overhead'] + emp['housing'],
+            emp['vehicle_cost'], emp['housing'],
+            emp.get('iqama_cost', 0) + emp.get('insurance_cost', 0),
+            emp['overhead'],
             emp['total_cost'], emp['net_profit'], f"{emp['margin_pct']:.1f}%"
         ]
         for col_idx, val in enumerate(values, 1):
@@ -178,53 +182,37 @@ def _export_project_excel(result):
             if idx % 2 == 0:
                 cell.fill = light_gray
 
-        profit_cell = ws.cell(row=row, column=13)
+        profit_cell = ws.cell(row=row, column=14)
         if emp['net_profit'] >= 0:
             profit_cell.fill = green_fill
         else:
             profit_cell.fill = red_fill
 
     totals_row = header_row + len(result['employees']) + 1
-    ws.cell(row=totals_row, column=1, value='').border = thin_border
-    ws.cell(row=totals_row, column=2, value='الإجمالي').font = bold_font
-    ws.cell(row=totals_row, column=2).fill = teal
-    ws.cell(row=totals_row, column=2).font = Font(color='FFFFFF', bold=True)
-    ws.cell(row=totals_row, column=2).alignment = center
-    ws.cell(row=totals_row, column=2).border = thin_border
-
-    for col in range(3, 7):
-        c = ws.cell(row=totals_row, column=col, value='')
+    for col in range(1, 16):
+        c = ws.cell(row=totals_row, column=col)
         c.fill = teal
         c.border = thin_border
+        c.font = Font(color='FFFFFF', bold=True)
+        c.alignment = center
 
-    total_cols = {
-        7: result['totals']['revenue'],
-        8: result['totals']['salary_cost'],
-        9: result['totals']['gosi_cost'],
-        10: result['totals']['vehicle_cost'],
-        11: result['totals']['overhead'],
-        12: result['totals']['total_cost'],
-        13: result['totals']['profit'],
-    }
-    for col, val in total_cols.items():
-        cell = ws.cell(row=totals_row, column=col, value=val)
-        cell.font = Font(color='FFFFFF', bold=True)
-        cell.fill = teal
-        cell.alignment = center
-        cell.border = thin_border
-
-    margin_cell = ws.cell(row=totals_row, column=14, value=f"{result['overall_margin']:.1f}%")
-    margin_cell.font = Font(color='FFFFFF', bold=True)
-    margin_cell.fill = teal
-    margin_cell.alignment = center
-    margin_cell.border = thin_border
+    ws.cell(row=totals_row, column=2, value='الإجمالي')
+    ws.cell(row=totals_row, column=6, value=result['totals']['revenue'])
+    ws.cell(row=totals_row, column=7, value=result['totals']['salary_cost'])
+    ws.cell(row=totals_row, column=8, value=result['totals']['gosi_cost'])
+    ws.cell(row=totals_row, column=9, value=result['totals']['vehicle_cost'])
+    ws.cell(row=totals_row, column=10, value=result['totals']['overhead'])
+    ws.cell(row=totals_row, column=11, value=result['totals'].get('iqama_insurance', 0))
+    ws.cell(row=totals_row, column=13, value=result['totals']['total_cost'])
+    ws.cell(row=totals_row, column=14, value=result['totals']['profit'])
+    ws.cell(row=totals_row, column=15, value=f"{result['overall_margin']:.1f}%")
 
     sig_row = totals_row + 3
-    ws.merge_cells(start_row=sig_row, start_column=1, end_row=sig_row, end_column=4)
+    ws.merge_cells(start_row=sig_row, start_column=1, end_row=sig_row, end_column=5)
     ws.cell(row=sig_row, column=1, value='المدير المالي: _______________').font = bold_font
 
-    ws.merge_cells(start_row=sig_row, start_column=8, end_row=sig_row, end_column=12)
-    ws.cell(row=sig_row, column=8, value='المدير العام: _______________').font = bold_font
+    ws.merge_cells(start_row=sig_row, start_column=9, end_row=sig_row, end_column=13)
+    ws.cell(row=sig_row, column=9, value='المدير العام: _______________').font = bold_font
 
     output = BytesIO()
     wb.save(output)
