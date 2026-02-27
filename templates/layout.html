@@ -581,18 +581,6 @@
                                     <span>الوثائق</span>
                                 </a>
                             </li>
-                            {% endif %} {# التحقق من صلاحيات تكاليف الرسوم #} {%
-                            if current_user._is_admin_role() or
-                            current_user|check_module_access(Module.FEES) %}
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{{ url_for('fees_costs.index') }}"
-                                    class="nav-link nav-link-custom {% if '/fees-costs' in request.path %}active{% endif %}"
-                                >
-                                    <i class="fas fa-money-check-alt me-2"></i>
-                                    <span>تكاليف الرسوم</span>
-                                </a>
-                            </li>
                             {% endif %} {# قسم المحاسبة والتحليل المالي الموحد #} {% if
                             current_user._is_admin_role() or
                             current_user|check_module_access(Module.ACCOUNTING) %}
@@ -600,15 +588,15 @@
                                 <a
                                     href="#accountingSubmenu"
                                     data-bs-toggle="collapse"
-                                    class="nav-link nav-link-custom {% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}active{% endif %}"
-                                    aria-expanded="{% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}true{% else %}false{% endif %}"
+                                    class="nav-link nav-link-custom {% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/fees-costs' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}active{% endif %}"
+                                    aria-expanded="{% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/fees-costs' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}true{% else %}false{% endif %}"
                                 >
                                     <i class="fas fa-calculator me-2"></i>
                                     <span>المحاسبة والتحليل المالي</span>
                                     <i class="fas fa-chevron-down ms-auto"></i>
                                 </a>
                                 <ul
-                                    class="collapse {% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    class="collapse {% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/fees-costs' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}show{% endif %} list-unstyled ps-4"
                                     id="accountingSubmenu"
                                 >
                                     <li class="nav-item mb-1">
@@ -645,6 +633,15 @@
                                         >
                                             <i class="fas fa-bolt me-2"></i>
                                             <span>توزيع الفواتير</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('fees_costs.index') }}"
+                                            class="nav-link nav-link-custom {% if '/fees-costs' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-money-check-alt me-2"></i>
+                                            <span>تكاليف الرسوم</span>
                                         </a>
                                     </li>
                                     <li class="nav-item mb-1">
