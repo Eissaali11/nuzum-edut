@@ -189,7 +189,10 @@ def process():
             total_deductions = sum((p.total_deductions or Decimal('0')) for p in payrolls)
             total_net_payable = sum((p.net_payable or Decimal('0')) for p in payrolls)
 
-            wants_json = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            wants_json = (
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+                or 'application/json' in request.headers.get('Accept', '')
+            )
             if wants_json:
                 return jsonify({
                     'success': True,

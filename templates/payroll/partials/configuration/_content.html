@@ -206,6 +206,10 @@ function submitForm(event) {
     
     fetch('{{ url_for("payroll.save_configuration") }}', {
         method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
         body: formData
     })
     .then(response => response.json())

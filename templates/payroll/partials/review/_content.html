@@ -301,7 +301,7 @@ function confirmApprove() {
     var notes = document.getElementById('approveNotes').value;
     fetch(buildPayrollActionUrl(approvePayrollUrlTemplate, currentPayrollId, 'approve'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
         body: 'notes=' + encodeURIComponent(notes)
     })
     .then(function(r) { return r.json(); })
@@ -327,7 +327,7 @@ function confirmReject() {
     if (!reason.trim()) { alert('يجب إدخال سبب الرفض'); return; }
     fetch(buildPayrollActionUrl(rejectPayrollUrlTemplate, currentPayrollId, 'reject'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
         body: 'reason=' + encodeURIComponent(reason)
     })
     .then(function(r) { return r.json(); })
@@ -349,7 +349,7 @@ function batchApprove() {
     if (confirm('هل تريد الموافقة على ' + selected.length + ' راتب؟')) {
         fetch('{{ url_for("payroll.batch_approve") }}', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
             body: JSON.stringify({ payroll_ids: selected })
         })
         .then(function(r) { return r.json(); })
