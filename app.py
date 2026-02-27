@@ -251,7 +251,7 @@ def root():
 
 
 def _seed_admin_if_empty():
-    """Create a default admin user if the user table is empty."""
+    """Create a default admin user if the user table is empty, or fix existing seed."""
     try:
         from models import User, UserRole
         from werkzeug.security import generate_password_hash
@@ -260,16 +260,21 @@ def _seed_admin_if_empty():
             logger.info("No users found — seeding default admin account...")
             admin = User()
             admin.username = 'admin'
-            admin.email = 'admin@nuzum.sa'
+            admin.email = 'admin@nuzum.com'
             admin.password_hash = generate_password_hash('admin123')
             admin.role = UserRole.ADMIN.value
             admin.is_admin = True
             admin.is_active = True
             db.session.add(admin)
             db.session.commit()
-            logger.info("Default admin user created: admin@nuzum.sa")
+            logger.info("Default admin user created: admin@nuzum.com")
         else:
-            logger.info(f"Database has {user_count} users — skipping seed.")
+            old_admin = User.query.filter_by(email='admin@nuzum.sa').first()
+            if old_admin:
+                old_admin.email = 'admin@nuzum.com'
+                db.session.commit()
+                logger.info("Fixed admin email: admin@nuzum.sa -> admin@nuzum.com")
+            logger.info(f"Database has {user_count} users — seed check complete.")
     except Exception as e:
         logger.warning(f"Admin seed skipped: {e}")
         db.session.rollback()
