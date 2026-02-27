@@ -224,7 +224,261 @@
                                     <span>لوحة التحكم</span>
                                 </a>
                             </li>
-                            {% endif %} {# إحصائيات الموظفين متاحة لمن لديه
+                            {% endif %} {# قسم إدارة الموظفين الموحد #} {% if
+                            current_user._is_admin_role() or
+                            current_user|check_module_access(Module.EMPLOYEES)
+                            %}
+                            <li class="nav-item mb-1">
+                                <a
+                                    href="#employeesSubmenu"
+                                    data-bs-toggle="collapse"
+                                    class="nav-link nav-link-custom {% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}active{% endif %}"
+                                    aria-expanded="{% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}true{% else %}false{% endif %}"
+                                >
+                                    <i class="fas fa-user-group me-2"></i>
+                                    <span>إدارة الموظفين</span>
+                                    <i class="fas fa-chevron-down ms-auto"></i>
+                                </a>
+                                <ul
+                                    class="collapse {% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    id="employeesSubmenu"
+                                >
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('employees.index') }}"
+                                            class="nav-link nav-link-custom {% if '/employees' in request.path and '/tracking' not in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-users me-2"></i>
+                                            <span>الموظفين</span>
+                                        </a>
+                                    </li>
+                                    {% if current_user._is_admin_role() %}
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('employees.tracking') }}"
+                                            class="nav-link nav-link-custom {% if '/employees/tracking' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-location-dot me-2"></i>
+                                            <span>تتبع الموظفين</span>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('attendance.index') }}"
+                                            class="nav-link nav-link-custom {% if '/attendance' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-calendar-days me-2"></i>
+                                            <span>الحضور</span>
+                                        </a>
+                                    </li>
+                                    {# طلبات الموظفين #}
+                                    {% if current_user._is_admin_role() %}
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="#employeeRequestsSubmenu"
+                                            data-bs-toggle="collapse"
+                                            class="nav-link nav-link-custom {% if '/employee-requests' in request.path %}active{% endif %}"
+                                            aria-expanded="{% if '/employee-requests' in request.path %}true{% else %}false{% endif %}"
+                                        >
+                                            <i class="fas fa-clipboard-list me-2"></i>
+                                            <span>طلبات الموظفين</span>
+                                            <i class="fas fa-chevron-down ms-auto"></i>
+                                        </a>
+                                        <ul
+                                            class="collapse {% if '/employee-requests' in request.path %}show{% endif %} list-unstyled ps-4"
+                                            id="employeeRequestsSubmenu"
+                                        >
+                                            <li class="nav-item mb-1">
+                                                <a
+                                                    href="{{ url_for('employee_requests.index') }}"
+                                                    class="nav-link nav-link-custom {% if request.path == url_for('employee_requests.index') %}active{% endif %}"
+                                                >
+                                                    <i class="fas fa-list me-2"></i>
+                                                    <span>جميع الطلبات</span>
+                                                </a>
+                                            </li>
+                                            <li class="nav-item mb-1">
+                                                <a
+                                                    href="{{ url_for('employee_requests.invoices') }}"
+                                                    class="nav-link nav-link-custom {% if '/employee-requests/invoices' in request.path %}active{% endif %}"
+                                                >
+                                                    <i class="fas fa-file-invoice me-2"></i>
+                                                    <span>الفواتير</span>
+                                                </a>
+                                            </li>
+                                            <li class="nav-item mb-1">
+                                                <a
+                                                    href="{{ url_for('employee_requests.advance_payments') }}"
+                                                    class="nav-link nav-link-custom {% if '/employee-requests/advance-payments' in request.path %}active{% endif %}"
+                                                >
+                                                    <i class="fas fa-money-bill-wave me-2"></i>
+                                                    <span>السلف المالية</span>
+                                                </a>
+                                            </li>
+                                            <li class="nav-item mb-1">
+                                                <a
+                                                    href="{{ url_for('employee_requests.liabilities') }}"
+                                                    class="nav-link nav-link-custom {% if '/employee-requests/liabilities' in request.path %}active{% endif %}"
+                                                >
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                                    <span>الالتزامات المالية</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </li>
+                            {% endif %} {# التحقق من صلاحيات المركبات #} {% if
+                            current_user._is_admin_role() or
+                            current_user|check_module_access(Module.VEHICLES) %}
+                            <li class="nav-item mb-1">
+                                <a
+                                    href="#vehiclesSubmenu"
+                                    data-bs-toggle="collapse"
+                                    class="nav-link nav-link-custom {% if '/vehicles' in request.path %}active{% endif %}"
+                                    aria-expanded="{% if '/vehicles' in request.path %}true{% else %}false{% endif %}"
+                                >
+                                    <i class="fas fa-car me-2"></i>
+                                    <span>إدارة السيارات</span>
+                                    <span class="badge bg-danger rounded-pill ms-2" id="vehicleAlertBadge" style="display: none; font-size: 0.75rem;">0</span>
+                                    <i class="fas fa-chevron-down ms-auto"></i>
+                                </a>
+                                <ul
+                                    class="collapse {% if '/vehicles' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    id="vehiclesSubmenu"
+                                >
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('vehicles.index') }}"
+                                            class="nav-link nav-link-custom {% if '/vehicles' in request.path and '/handovers' not in request.path and '/admin/external-safety-checks' not in request.path and '/share-links' not in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-car-side me-2"></i>
+                                            <span>قائمة السيارات</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('vehicles.handovers_list') }}"
+                                            class="nav-link nav-link-custom {% if '/vehicles/handovers' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-exchange-alt me-2"></i>
+                                            <span>السيارات المخصصة حالياً</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        {% set external_safety_admin_endpoint = 'external_safety.admin_external_safety_checks' %}
+                                        {% set external_safety_share_endpoint = 'external_safety.share_links' %}
+                                        {% if endpoint_exists is defined and endpoint_exists(external_safety_admin_endpoint) %}
+                                        <a
+                                            href="{{ url_for(external_safety_admin_endpoint) }}"
+                                            class="nav-link nav-link-custom {% if '/admin/external-safety-checks' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-shield-alt me-2"></i>
+                                            <span>إدارة فحوصات السلامة</span>
+                                        </a>
+                                        {% endif %}
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        {% if endpoint_exists is defined and endpoint_exists(external_safety_share_endpoint) %}
+                                        <a
+                                            href="{{ url_for(external_safety_share_endpoint) }}"
+                                            class="nav-link nav-link-custom {% if '/share-links' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-share-alt me-2"></i>
+                                            <span>مشاركة روابط الفحص</span>
+                                        </a>
+                                        {% endif %}
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('vehicle_operations.vehicle_operations_list') }}"
+                                            class="nav-link nav-link-custom {% if '/vehicle-operations' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-history me-2"></i>
+                                            <span>سجل العمليات الشامل</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('drive_browser.browser') }}"
+                                            class="nav-link nav-link-custom {% if '/drive' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-cloud me-2"></i>
+                                            <span>مستعرض Google Drive</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            {% if is_admin %}
+                            <li class="nav-item mb-1">
+                                <a
+                                    href="{% if endpoint_exists is defined and endpoint_exists('operations.operations_dashboard') %}{{ url_for('operations.operations_dashboard') }}{% elif endpoint_exists is defined and endpoint_exists('operations_core.operations_dashboard') %}{{ url_for('operations_core.operations_dashboard') }}{% else %}/operations/dashboard{% endif %}"
+                                    class="nav-link nav-link-custom {% if '/operations' in request.path %}active{% endif %}"
+                                >
+                                    <i class="fas fa-wrench me-2"></i>
+                                    <span>ادارة العمليات</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% endif %} {# إدارة الأجهزة المحمولة #}
+                            {% if current_user._is_admin_role() %}
+                            <li class="nav-item mb-1">
+                                <a
+                                    href="#mobileDevicesSubmenu"
+                                    data-bs-toggle="collapse"
+                                    class="nav-link nav-link-custom {% if '/mobile-devices' in request.path %}active{% endif %}"
+                                    aria-expanded="{% if '/mobile-devices' in request.path %}true{% else %}false{% endif %}"
+                                >
+                                    <i class="fas fa-mobile-screen-button me-2"></i>
+                                    <span>الأجهزة المحمولة</span>
+                                    <i class="fas fa-chevron-down ms-auto"></i>
+                                </a>
+                                <ul
+                                    class="collapse {% if '/mobile-devices' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    id="mobileDevicesSubmenu"
+                                >
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('mobile_devices.dashboard') }}"
+                                            class="nav-link nav-link-custom {% if '/mobile-devices/dashboard' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-chart-bar me-2"></i>
+                                            <span>لوحة المعلومات</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('device_management.index') }}"
+                                            class="nav-link nav-link-custom {% if '/device-management' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-tablet me-2"></i>
+                                            <span>إدارة الأجهزة</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('sim_management.index') }}"
+                                            class="nav-link nav-link-custom {% if '/sim-management' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-sim-card me-2"></i>
+                                            <span>إدارة أرقام SIM</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('device_assignment.index') }}"
+                                            class="nav-link nav-link-custom {% if '/device-assignment' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-link me-2"></i>
+                                            <span>ربط الأجهزة</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            {% endif %}
+                            {# إدارة الموارد البشرية #}
                             {% if current_user._is_admin_role() %}
                             <li class="nav-item mb-1">
                                 <a
@@ -383,188 +637,8 @@
                                     </li>
                                 </ul>
                             </li>
-                            {% endif %} {# قسم إدارة الموظفين الموحد #} {% if
-                            current_user._is_admin_role() or
-                            current_user|check_module_access(Module.EMPLOYEES)
-                            %}
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="#employeesSubmenu"
-                                    data-bs-toggle="collapse"
-                                    class="nav-link nav-link-custom {% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}active{% endif %}"
-                                    aria-expanded="{% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}true{% else %}false{% endif %}"
-                                >
-                                    <i class="fas fa-user-group me-2"></i>
-                                    <span>إدارة الموظفين</span>
-                                    <i class="fas fa-chevron-down ms-auto"></i>
-                                </a>
-                                <ul
-                                    class="collapse {% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}show{% endif %} list-unstyled ps-4"
-                                    id="employeesSubmenu"
-                                >
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('employees.index') }}"
-                                            class="nav-link nav-link-custom {% if '/employees' in request.path and '/tracking' not in request.path %}active{% endif %}"
-                                        >
-                                            <i class="fas fa-users me-2"></i>
-                                            <span>الموظفين</span>
-                                        </a>
-                                    </li>
-                                    {% if current_user._is_admin_role() %}
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('employees.tracking') }}"
-                                            class="nav-link nav-link-custom {% if '/employees/tracking' in request.path %}active{% endif %}"
-                                        >
-                                            <i class="fas fa-location-dot me-2"></i>
-                                            <span>تتبع الموظفين</span>
-                                        </a>
-                                    </li>
-                                    {% endif %}
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('attendance.index') }}"
-                                            class="nav-link nav-link-custom {% if '/attendance' in request.path %}active{% endif %}"
-                                        >
-                                            <i class="fas fa-calendar-days me-2"></i>
-                                            <span>الحضور</span>
-                                        </a>
-                                    </li>
-                                    {# طلبات الموظفين #}
-                                    {% if current_user._is_admin_role() %}
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="#employeeRequestsSubmenu"
-                                            data-bs-toggle="collapse"
-                                            class="nav-link nav-link-custom {% if '/employee-requests' in request.path %}active{% endif %}"
-                                            aria-expanded="{% if '/employee-requests' in request.path %}true{% else %}false{% endif %}"
-                                        >
-                                            <i class="fas fa-clipboard-list me-2"></i>
-                                            <span>طلبات الموظفين</span>
-                                            <i class="fas fa-chevron-down ms-auto"></i>
-                                        </a>
-                                        <ul
-                                            class="collapse {% if '/employee-requests' in request.path %}show{% endif %} list-unstyled ps-4"
-                                            id="employeeRequestsSubmenu"
-                                        >
-                                            <li class="nav-item mb-1">
-                                                <a
-                                                    href="{{ url_for('employee_requests.index') }}"
-                                                    class="nav-link nav-link-custom {% if request.path == url_for('employee_requests.index') %}active{% endif %}"
-                                                >
-                                                    <i class="fas fa-list me-2"></i>
-                                                    <span>جميع الطلبات</span>
-                                                </a>
-                                            </li>
-                                            <li class="nav-item mb-1">
-                                                <a
-                                                    href="{{ url_for('employee_requests.invoices') }}"
-                                                    class="nav-link nav-link-custom {% if '/employee-requests/invoices' in request.path %}active{% endif %}"
-                                                >
-                                                    <i class="fas fa-file-invoice me-2"></i>
-                                                    <span>الفواتير</span>
-                                                </a>
-                                            </li>
-                                            <li class="nav-item mb-1">
-                                                <a
-                                                    href="{{ url_for('employee_requests.advance_payments') }}"
-                                                    class="nav-link nav-link-custom {% if '/employee-requests/advance-payments' in request.path %}active{% endif %}"
-                                                >
-                                                    <i class="fas fa-money-bill-wave me-2"></i>
-                                                    <span>السلف المالية</span>
-                                                </a>
-                                            </li>
-                                            <li class="nav-item mb-1">
-                                                <a
-                                                    href="{{ url_for('employee_requests.liabilities') }}"
-                                                    class="nav-link nav-link-custom {% if '/employee-requests/liabilities' in request.path %}active{% endif %}"
-                                                >
-                                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                                    <span>الالتزامات المالية</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    {% endif %}
-                                </ul>
-                            </li>
-                            {# إدارة الأجهزة المحمولة #}
-                            {% if current_user._is_admin_role() %}
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="#mobileDevicesSubmenu"
-                                    data-bs-toggle="collapse"
-                                    class="nav-link nav-link-custom {% if '/mobile-devices' in request.path %}active{% endif %}"
-                                    aria-expanded="false"
-                                >
-                                    <i class="fas fa-mobile-screen-button me-2"></i>
-                                    <span>الأجهزة المحمولة</span>
-                                    <i class="fas fa-chevron-down ms-auto"></i>
-                                </a>
-                                <ul
-                                    class="collapse {% if '/mobile-devices' in request.path %}show{% endif %} list-unstyled ps-4"
-                                    id="mobileDevicesSubmenu"
-                                >
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('mobile_devices.dashboard') }}"
-                                            class="nav-link nav-link-custom {% if '/mobile-devices/dashboard' in request.path %}active{% endif %}"
-                                        >
-                                            <i class="fas fa-chart-bar me-2"></i>
-                                            <span>لوحة المعلومات</span>
-                                        </a>
-                                    </li>
-
-                                    <!-- <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('mobile_devices.create') }}"
-                                            class="nav-link nav-link-custom"
-                                        >
-                                            <i class="fas fa-plus me-2"></i>
-                                            <span>إضافة جهاز</span>
-                                        </a>
-                                    </li> -->
-                                    <!-- <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('mobile_devices.import_excel') }}"
-                                            class="nav-link nav-link-custom"
-                                        >
-                                            <i class="fas fa-file-excel me-2"></i>
-                                            <span>استيراد Excel</span>
-                                        </a>
-                                    </li> -->
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('device_management.index') }}"
-                                            class="nav-link nav-link-custom {% if '/device-management' in request.path %}active{% endif %}"
-                                        >
-                                            <i class="fas fa-tablet me-2"></i>
-                                            <span>إدارة الأجهزة</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('sim_management.index') }}"
-                                            class="nav-link nav-link-custom {% if '/sim-management' in request.path %}active{% endif %}"
-                                        >
-                                            <i class="fas fa-sim-card me-2"></i>
-                                            <span>إدارة أرقام SIM</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('device_assignment.index') }}"
-                                            class="nav-link nav-link-custom {% if '/device-assignment' in request.path %}active{% endif %}"
-                                        >
-                                            <i class="fas fa-link me-2"></i>
-                                            <span>ربط الأجهزة</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
                             {% endif %}
-                            {% endif %} {# التحقق من صلاحيات الأقسام #} {% if
+                            {# التحقق من صلاحيات الأقسام #} {% if
                             current_user._is_admin_role() or
                             current_user|check_module_access(Module.DEPARTMENTS)
                             %}
@@ -674,110 +748,7 @@
                                     </li>
                                 </ul>
                             </li>
-                            {% endif %} {# التحقق من صلاحيات المركبات #} {% if
-                            current_user._is_admin_role() or
-                            current_user|check_module_access(Module.VEHICLES) %}
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="#vehiclesSubmenu"
-                                    data-bs-toggle="collapse"
-                                    class="nav-link nav-link-custom {% if '/vehicles' in request.path %}active{% endif %}"
-                                    aria-expanded="false"
-                                >
-                                    <i class="fas fa-car me-2"></i>
-                                    <span>إدارة السيارات</span>
-                                    <span class="badge bg-danger rounded-pill ms-2" id="vehicleAlertBadge" style="display: none; font-size: 0.75rem;">0</span>
-                                    <i class="fas fa-chevron-down ms-auto"></i>
-                                </a>
-                                <ul
-                                    class="collapse {% if '/vehicles' in request.path %}show{% endif %} list-unstyled ps-4"
-                                    id="vehiclesSubmenu"
-                                >
-                                    <li class="nav-item mb-1">
-                                <a
-                                    href="{{ url_for('vehicles.index') }}"
-                                    class="nav-link nav-link-custom {% if '/vehicles' in request.path and '/handovers' not in request.path and '/admin/external-safety-checks' not in request.path and '/share-links' not in request.path %}active{% endif %}"
-                                >
-                                    <i class="fas fa-car-side me-2"></i>
-                                    <span>قائمة السيارات</span>
-                                </a>
-                                    </li>
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('vehicles.handovers_list') }}"
-                                            class="nav-link nav-link-custom {% if '/vehicles/handovers' in request.path %}active{% endif %}"
-                                        >
-                                            <i
-                                                class="fas fa-exchange-alt me-2"
-                                            ></i>
-                                            <span>السيارات المخصصة حالياً</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item mb-1">
-                                        {% set external_safety_admin_endpoint = 'external_safety.admin_external_safety_checks' %}
-                                        {% set external_safety_share_endpoint = 'external_safety.share_links' %}
-                                        {% if endpoint_exists is defined and endpoint_exists(external_safety_admin_endpoint) %}
-                                        <a
-                                            href="{{ url_for(external_safety_admin_endpoint) }}"
-                                            class="nav-link nav-link-custom {% if '/admin/external-safety-checks' in request.path %}active{% endif %}"
-                                        >
-                                            <i
-                                                class="fas fa-shield-alt me-2"
-                                            ></i>
-                                            <span>إدارة فحوصات السلامة</span>
-                                        </a>
-                                        {% endif %}
-                                    </li>
-                                    <li class="nav-item mb-1">
-                                        {% if endpoint_exists is defined and endpoint_exists(external_safety_share_endpoint) %}
-                                        <a
-                                            href="{{ url_for(external_safety_share_endpoint) }}"
-                                            class="nav-link nav-link-custom {% if '/share-links' in request.path %}active{% endif %}"
-                                        >
-                                            <i
-                                                class="fas fa-share-alt me-2"
-                                            ></i>
-                                            <span>مشاركة روابط الفحص</span>
-                                        </a>
-                                        {% endif %}
-                                    </li>
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('vehicle_operations.vehicle_operations_list') }}"
-                                            class="nav-link nav-link-custom {% if '/vehicle-operations' in request.path %}active{% endif %}"
-                                        >
-                                            <i
-                                                class="fas fa-history me-2"
-                                            ></i>
-                                            <span>سجل العمليات الشامل</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('drive_browser.browser') }}"
-                                            class="nav-link nav-link-custom {% if '/drive' in request.path %}active{% endif %}"
-                                        >
-                                            <i class="fas fa-cloud me-2"></i>
-                                            <span>مستعرض Google Drive</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            
-                            {% if is_admin %}
-                            <li class="nav-item mb-1">
-                                <a
-                                        href="{% if endpoint_exists is defined and endpoint_exists('operations.operations_dashboard') %}{{ url_for('operations.operations_dashboard') }}{% elif endpoint_exists is defined and endpoint_exists('operations_core.operations_dashboard') %}{{ url_for('operations_core.operations_dashboard') }}{% else %}/operations/dashboard{% endif %}"
-                                    class="nav-link nav-link-custom {% if '/operations' in request.path %}active{% endif %}"
-                                >
-                                    <i class="fas fa-wrench me-2"></i>
-                                    <span>ادارة العمليات</span>
-                                </a>
-                            </li>
                             {% endif %}
-                            
-                            
-                            
                             {# إدارة العقارات المستأجرة #}
                             {% if is_admin %}
                             <li class="nav-item mb-1">
@@ -817,9 +788,7 @@
                             </li>
                             {% endif %}
                             {% endif %}
-                            {% endif %} {# التحقق من صلاحيات المستخدمين #}
-                            
-                        
+                            {# التحقق من صلاحيات المستخدمين #}
                             {% if
                             current_user.role in [UserRole.ADMIN,
                             UserRole.MANAGER] or
