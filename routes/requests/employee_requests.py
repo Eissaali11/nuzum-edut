@@ -30,7 +30,7 @@ def check_access():
 def index():
     if not check_access():
         flash('ليس لديك صلاحية الوصول إلى هذا القسم', 'error')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard.index'))
     
     page = request.args.get('page', 1, type=int)
     per_page = 20
@@ -82,7 +82,7 @@ def index():
 def view_request(request_id):
     if not check_access():
         flash('ليس لديك صلاحية الوصول إلى هذا القسم', 'error')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard.index'))
     
     emp_request = EmployeeRequest.query.get_or_404(request_id)
     
@@ -108,7 +108,7 @@ def view_request(request_id):
 def edit_request(request_id):
     if not check_access():
         flash('ليس لديك صلاحية الوصول إلى هذا القسم', 'error')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard.index'))
     
     emp_request = EmployeeRequest.query.get_or_404(request_id)
     
@@ -265,7 +265,7 @@ def delete_request(request_id):
 def advance_payments():
     if not check_access():
         flash('ليس لديك صلاحية الوصول إلى هذا القسم', 'error')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard.index'))
     
     page = request.args.get('page', 1, type=int)
     per_page = 20
@@ -304,7 +304,7 @@ def advance_payments():
 def liabilities():
     if not check_access():
         flash('ليس لديك صلاحية الوصول إلى هذا القسم', 'error')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard.index'))
     
     page = request.args.get('page', 1, type=int)
     per_page = 20
@@ -342,7 +342,7 @@ def liabilities():
 def invoices():
     if not check_access():
         flash('ليس لديك صلاحية الوصول إلى هذا القسم', 'error')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard.index'))
     
     page = request.args.get('page', 1, type=int)
     per_page = 20
@@ -538,7 +538,7 @@ def edit_advance_payment(request_id):
     """تعديل طلب سلفة"""
     if not check_access():
         flash('ليس لديك صلاحية الوصول إلى هذا القسم', 'error')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard.index'))
     
     emp_request = EmployeeRequest.query.get_or_404(request_id)
     
@@ -648,7 +648,7 @@ def edit_car_wash(request_id):
     """تعديل طلب غسيل سيارة"""
     if not check_access():
         flash('ليس لديك صلاحية الوصول إلى هذا القسم', 'error')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard.index'))
     
     emp_request = EmployeeRequest.query.get_or_404(request_id)
     
