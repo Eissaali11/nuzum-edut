@@ -33,7 +33,7 @@ def departments():
             
             # التحقق من البيانات
             if not department_ids:
-                flash('يرجى اختيار قسم واحد على الأقل', 'warning')
+                flash('يرجى اختيار مشروع واحد على الأقل', 'warning')
                 return redirect(url_for('mass.departments'))
             
             # معالجة التواريخ
@@ -115,7 +115,7 @@ def departments():
             
             # عرض رسالة نجاح
             days_count = (end_date - start_date).days + 1
-            flash(f'تم تسجيل الحضور لـ {dept_count} قسم و {emp_count} موظف خلال {days_count} يوم بإجمالي {record_count} سجل', 'success')
+            flash(f'تم تسجيل الحضور لـ {dept_count} مشروع و {emp_count} موظف خلال {days_count} يوم بإجمالي {record_count} سجل', 'success')
             
             # العودة لصفحة الحضور
             return redirect(url_for('attendance.index'))
@@ -130,7 +130,7 @@ def departments():
         departments = Department.query.all()
     except Exception as e:
         departments = []
-        flash(f'خطأ في تحميل الأقسام: {str(e)}', 'warning')
+        flash(f'خطأ في تحميل المشاريع: {str(e)}', 'warning')
     
     # تقديم القالب
     return render_template(
