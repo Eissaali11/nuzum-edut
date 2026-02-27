@@ -75,7 +75,11 @@
                                             <td>
                                                 <input type="checkbox" name="tables" value="{{ table_name }}" class="form-check-input table-checkbox" checked>
                                             </td>
-                                            <td>{{ table_name }}</td>
+                                            <td>
+                                                <span class="fw-bold" style="color: #00D4AA;">{{ table_arabic_names.get(table_name, table_name) }}</span>
+                                                <br>
+                                                <small class="text-muted">{{ table_name }}</small>
+                                            </td>
                                             <td class="text-center">
                                                 <span class="badge" style="background: linear-gradient(135deg, #00D4AA 0%, #00D4FF 100%);">
                                                     {{ count }}
@@ -160,9 +164,9 @@
                     <div class="row">
                         {% for table_name, count in table_stats.items() %}
                         <div class="col-md-3 col-sm-6 mb-3">
-                            <a href="{{ url_for('database_backup.export_single_table', table_name=table_name) }}" class="btn btn-outline-info w-100 single-export-link">
+                            <a href="{{ url_for('database_backup.export_single_table', table_name=table_name) }}" class="btn btn-outline-info w-100 single-export-link text-start">
                                 <i class="fas fa-file-export me-1"></i>
-                                {{ table_name }}
+                                {{ table_arabic_names.get(table_name, table_name) }}
                                 <span class="badge bg-secondary ms-1">{{ count }}</span>
                             </a>
                         </div>

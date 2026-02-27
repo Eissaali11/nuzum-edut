@@ -44,7 +44,7 @@
                         <div class="form-check mb-2">
                             <input type="checkbox" name="tables" value="{{ table_name }}" class="form-check-input table-checkbox" id="table-{{ loop.index }}" checked>
                             <label class="form-check-label d-flex justify-content-between align-items-center w-100" for="table-{{ loop.index }}">
-                                <span>{{ table_name }}</span>
+                                <span>{{ table_arabic_names.get(table_name, table_name) }}</span>
                                 <span class="badge bg-primary">{{ count }}</span>
                             </label>
                         </div>
@@ -124,7 +124,7 @@
                        class="btn btn-outline-info w-100" 
                        style="border-radius: 8px; padding: 10px; position: relative; font-size: 13px;">
                         <i class="fas fa-file-export me-1"></i>
-                        {{ table_name }}
+                        {{ table_arabic_names.get(table_name, table_name) }}
                         <span class="badge bg-info position-absolute top-0 end-0 m-1" style="font-size: 10px;">{{ count }}</span>
                     </a>
                 </div>
