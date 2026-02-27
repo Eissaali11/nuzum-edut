@@ -7,148 +7,164 @@
 {% set total_net_payable = total_net_payable|default(0) %}
 {% set total_gosi_company = total_gosi_company|default(0) %}
 {% set recent_payrolls = recent_payrolls|default([]) %}
-<div class="dashboard-container">
-    <div class="dashboard-shell">
-    <!-- رأس الصفحة -->
-    <div class="page-header">
+{% set total_processed = pending_count + approved_count + rejected_count + paid_count %}
+
+<div class="pr-dash">
+
+    <div class="pr-header">
         <div>
-            <h1><i class="fas fa-chart-line"></i> لوحة تحكم الرواتب</h1>
-            <p>ملخص عام لنظام الرواتب والمكافآت</p>
+            <h1><i class="fas fa-wallet"></i> لوحة تحكم الرواتب</h1>
+            <p>ملخص شامل لنظام الرواتب والمستحقات المالية</p>
         </div>
-        <div class="period-badge">الشهر {{ current_month }}/{{ current_year }}</div>
+        <div class="pr-period"><i class="far fa-calendar-alt"></i> {{ current_month }}/{{ current_year }}</div>
     </div>
-    
-    <!-- الكاردات الرئيسية -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">إجمالي الموظفين</div>
-            <div class="stat-value">{{ total_employees }}</div>
-            <div class="stat-subtext">النشطين في النظام</div>
+
+    <div class="pr-kpi-row">
+        <div class="pr-kpi blue">
+            <div class="pr-kpi-icon"><i class="fas fa-users"></i></div>
+            <div class="pr-kpi-label">إجمالي الموظفين</div>
+            <div class="pr-kpi-value">{{ total_employees }}</div>
+            <div class="pr-kpi-sub">النشطين في النظام</div>
         </div>
-        
-        <div class="stat-card warning">
-            <div class="stat-label">قيد الانتظار</div>
-            <div class="stat-value">{{ pending_count }}</div>
-            <div class="stat-subtext">بانتظار الموافقة</div>
+        <div class="pr-kpi orange">
+            <div class="pr-kpi-icon"><i class="fas fa-clock"></i></div>
+            <div class="pr-kpi-label">قيد الانتظار</div>
+            <div class="pr-kpi-value">{{ pending_count }}</div>
+            <div class="pr-kpi-sub">بانتظار الموافقة</div>
         </div>
-        
-        <div class="stat-card success">
-            <div class="stat-label">معتمدة</div>
-            <div class="stat-value">{{ approved_count }}</div>
-            <div class="stat-subtext">معتمدة ومجهزة للدفع</div>
+        <div class="pr-kpi green">
+            <div class="pr-kpi-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="pr-kpi-label">معتمدة</div>
+            <div class="pr-kpi-value">{{ approved_count }}</div>
+            <div class="pr-kpi-sub">جاهزة للدفع</div>
         </div>
-        
-        <div class="stat-card danger">
-            <div class="stat-label">مرفوضة</div>
-            <div class="stat-value">{{ rejected_count }}</div>
-            <div class="stat-subtext">تحتاج إعادة معالجة</div>
+        <div class="pr-kpi red">
+            <div class="pr-kpi-icon"><i class="fas fa-times-circle"></i></div>
+            <div class="pr-kpi-label">مرفوضة</div>
+            <div class="pr-kpi-value">{{ rejected_count }}</div>
+            <div class="pr-kpi-sub">تحتاج إعادة معالجة</div>
         </div>
     </div>
-    
-    <!-- أزرار الإجراءات -->
-    <div class="action-buttons">
-        <a href="{{ url_for('payroll.process') }}" class="btn-action success">
+
+    <div class="pr-actions">
+        <a href="{{ url_for('payroll.process') }}" class="pr-action-btn act-process">
             <i class="fas fa-cog"></i> معالجة الرواتب
         </a>
-        <a href="{{ url_for('payroll.review') }}" class="btn-action">
+        <a href="{{ url_for('payroll.review') }}" class="pr-action-btn act-review">
             <i class="fas fa-list-check"></i> مراجعة الرواتب
         </a>
-        <a href="{{ url_for('payroll.configuration') }}" class="btn-action warning">
-            <i class="fas fa-sliders-h"></i> إعدادات الرواتب
+        <a href="{{ url_for('payroll.configuration') }}" class="pr-action-btn act-settings">
+            <i class="fas fa-sliders-h"></i> الإعدادات
         </a>
     </div>
-    
-    <!-- ملخص الحالة -->
-    <div class="section-card">
-        <h2 class="section-title">توزيع حالات الرواتب</h2>
-        <div class="status-breakdown">
-            <div class="status-item pending">
-                <div class="status-count">{{ pending_count }}</div>
-                <div class="status-label">قيد الانتظار</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ (pending_count / total_employees * 100) if total_employees > 0 else 0 }}%"></div>
-                </div>
-            </div>
-            
-            <div class="status-item approved">
-                <div class="status-count">{{ approved_count }}</div>
-                <div class="status-label">معتمدة</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ (approved_count / total_employees * 100) if total_employees > 0 else 0 }}%; background: var(--success)"></div>
-                </div>
-            </div>
-            
-            <div class="status-item rejected">
-                <div class="status-count">{{ rejected_count }}</div>
-                <div class="status-label">مرفوضة</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ (rejected_count / total_employees * 100) if total_employees > 0 else 0 }}%; background: var(--warning)"></div>
-                </div>
-            </div>
-            
-            <div class="status-item paid">
-                <div class="status-count">{{ paid_count }}</div>
-                <div class="status-label">مدفوعة</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ (paid_count / total_employees * 100) if total_employees > 0 else 0 }}%; background: #4299e1"></div>
-                </div>
-            </div>
+
+    <div class="pr-money-grid">
+        <div class="pr-money-card mc-gross">
+            <div class="pr-money-label">الراتب الإجمالي</div>
+            <div class="pr-money-value">{{ "{:,.2f}".format(total_gross_salary) }}</div>
+            <div class="pr-money-unit">ريال سعودي</div>
+        </div>
+        <div class="pr-money-card mc-ded">
+            <div class="pr-money-label">إجمالي الخصومات</div>
+            <div class="pr-money-value">{{ "{:,.2f}".format(total_deductions) }}</div>
+            <div class="pr-money-unit">ريال سعودي</div>
+        </div>
+        <div class="pr-money-card mc-net">
+            <div class="pr-money-label">صافي المستحقات</div>
+            <div class="pr-money-value">{{ "{:,.2f}".format(total_net_payable) }}</div>
+            <div class="pr-money-unit">ريال سعودي</div>
+        </div>
+        <div class="pr-money-card mc-gosi">
+            <div class="pr-money-label">التأمينات الاجتماعية (حصة الشركة)</div>
+            <div class="pr-money-value">{{ "{:,.2f}".format(total_gosi_company) }}</div>
+            <div class="pr-money-unit">ريال سعودي</div>
         </div>
     </div>
-    
-    <!-- ملخص المبالغ المالية -->
-    <div class="section-card">
-        <h2 class="section-title">ملخص المبالغ المالية</h2>
-        <div class="quick-stats">
-            <div class="quick-stat">
-                <div class="quick-stat-label">الراتب الإجمالي</div>
-                <div class="quick-stat-value" style="color: var(--success);">{{ "%.2f"|format(total_gross_salary) }}</div>
+
+    <div class="pr-charts-row">
+        <div class="pr-card">
+            <div class="pr-card-title"><i class="fas fa-chart-pie"></i> توزيع حالات الرواتب</div>
+            <div class="pr-chart-wrap">
+                <canvas id="statusDonut"></canvas>
+                <div class="pr-chart-center-label">
+                    <span class="ccl-value">{{ total_processed }}</span>
+                    <span class="ccl-sub">مسير رواتب</span>
+                </div>
             </div>
-            
-            <div class="quick-stat">
-                <div class="quick-stat-label">الخصومات الإجمالية</div>
-                <div class="quick-stat-value" style="color: var(--danger);">{{ "%.2f"|format(total_deductions) }}</div>
-            </div>
-            
-            <div class="quick-stat">
-                <div class="quick-stat-label">الراتب الصافي المستحق</div>
-                <div class="quick-stat-value" style="color: var(--primary);">{{ "%.2f"|format(total_net_payable) }}</div>
-            </div>
-            
-            <div class="quick-stat">
-                <div class="quick-stat-label">الضمان الاجتماعي (ش)</div>
-                <div class="quick-stat-value" style="color: var(--dark);">{{ "%.2f"|format(total_gosi_company) }}</div>
+            <div class="pr-legend">
+                <span class="pr-legend-item"><span class="pr-legend-dot" style="background:#ed8936"></span> انتظار ({{ pending_count }})</span>
+                <span class="pr-legend-item"><span class="pr-legend-dot" style="background:#48bb78"></span> معتمدة ({{ approved_count }})</span>
+                <span class="pr-legend-item"><span class="pr-legend-dot" style="background:#f56565"></span> مرفوضة ({{ rejected_count }})</span>
+                <span class="pr-legend-item"><span class="pr-legend-dot" style="background:#4299e1"></span> مدفوعة ({{ paid_count }})</span>
             </div>
         </div>
+
+        <div class="pr-card">
+            <div class="pr-card-title"><i class="fas fa-building"></i> الرواتب حسب القسم</div>
+            <div class="pr-chart-wrap">
+                <canvas id="deptDonut"></canvas>
+                <div class="pr-chart-center-label">
+                    <span class="ccl-value">{{ dept_labels|default([])|length }}</span>
+                    <span class="ccl-sub">قسم</span>
+                </div>
+            </div>
+            <div class="pr-legend" id="deptLegend"></div>
+        </div>
     </div>
-    
-    <!-- المعالجات الأخيرة -->
+
+    <div class="pr-charts-row">
+        <div class="pr-card">
+            <div class="pr-card-title"><i class="fas fa-coins"></i> التوزيع المالي</div>
+            <div class="pr-chart-wrap">
+                <canvas id="moneyDonut"></canvas>
+                <div class="pr-chart-center-label">
+                    <span class="ccl-value" style="font-size:1.1rem">{{ "{:,.0f}".format(total_net_payable) }}</span>
+                    <span class="ccl-sub">صافي (ر.س)</span>
+                </div>
+            </div>
+            <div class="pr-legend">
+                <span class="pr-legend-item"><span class="pr-legend-dot" style="background:#48bb78"></span> الراتب الإجمالي</span>
+                <span class="pr-legend-item"><span class="pr-legend-dot" style="background:#f56565"></span> الخصومات</span>
+                <span class="pr-legend-item"><span class="pr-legend-dot" style="background:#4299e1"></span> التأمينات</span>
+            </div>
+        </div>
+
+        <div class="pr-card">
+            <div class="pr-card-title"><i class="fas fa-user-friends"></i> الموظفين حسب القسم</div>
+            <div class="pr-chart-wrap">
+                <canvas id="deptCountDonut"></canvas>
+                <div class="pr-chart-center-label">
+                    <span class="ccl-value">{{ total_processed }}</span>
+                    <span class="ccl-sub">موظف</span>
+                </div>
+            </div>
+            <div class="pr-legend" id="deptCountLegend"></div>
+        </div>
+    </div>
+
     {% if recent_payrolls %}
-    <div class="section-card">
-        <h2 class="section-title">أحدث المعالجات</h2>
-        <div class="timeline">
-            {% for payroll in recent_payrolls[:5] %}
+    <div class="pr-card">
+        <div class="pr-card-title"><i class="fas fa-history"></i> أحدث المعالجات</div>
+        <div class="pr-timeline">
+            {% for payroll in recent_payrolls[:6] %}
             {% set employee_name = payroll.employee.name if payroll.employee and payroll.employee.name else 'غير متاح' %}
             {% set employee_initial = employee_name[:1] if employee_name != 'غير متاح' else '؟' %}
-            <div class="timeline-item">
-                <div class="timeline-date">{{ payroll.calculated_at.strftime('%Y-%m-%d %H:%M') if payroll.calculated_at else 'غير محدد' }}</div>
-                <div class="timeline-text">
-                    <div class="employee-line">
-                        <span class="employee-avatar">{{ employee_initial }}</span>
-                        <span class="employee-name">{{ employee_name }}</span>
-                    </div>
-                    <span style="color: #718096;">— الراتب: {{ "%.2f"|format(payroll.net_payable) }} SR</span>
+            <div class="pr-tl-item">
+                <div class="pr-tl-head">
+                    <span class="pr-tl-avatar">{{ employee_initial }}</span>
+                    <span class="pr-tl-name">{{ employee_name }}</span>
                 </div>
-                <div style="font-size: 0.85rem; color: #a0aec0;">
-                    الحالة: 
+                <div class="pr-tl-meta">
+                    <span><i class="far fa-clock"></i> {{ payroll.calculated_at.strftime('%Y-%m-%d %H:%M') if payroll.calculated_at else 'غير محدد' }}</span>
+                    <span class="pr-tl-amount">{{ "{:,.2f}".format(payroll.net_payable or 0) }} SR</span>
                     {% if payroll.payment_status == 'pending' %}
-                        <span style="color: #c53030;">قيد الانتظار</span>
+                        <span class="pr-tl-status st-pending">قيد الانتظار</span>
                     {% elif payroll.payment_status == 'approved' %}
-                        <span style="color: #22543d;">معتمدة</span>
+                        <span class="pr-tl-status st-approved">معتمدة</span>
                     {% elif payroll.payment_status == 'rejected' %}
-                        <span style="color: #7c2d12;">مرفوضة</span>
+                        <span class="pr-tl-status st-rejected">مرفوضة</span>
                     {% else %}
-                        <span style="color: #2c5282;">مدفوعة</span>
+                        <span class="pr-tl-status st-paid">مدفوعة</span>
                     {% endif %}
                 </div>
             </div>
@@ -156,5 +172,133 @@
         </div>
     </div>
     {% endif %}
-    </div>
+
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    var doughnutDefaults = {
+        cutout: '68%',
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverOffset: 8
+    };
+
+    var tooltipStyle = {
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                rtl: true,
+                textDirection: 'rtl',
+                backgroundColor: '#1a202c',
+                titleFont: { size: 13, weight: 'bold' },
+                bodyFont: { size: 12 },
+                padding: 10,
+                cornerRadius: 8
+            }
+        }
+    };
+
+    new Chart(document.getElementById('statusDonut'), {
+        type: 'doughnut',
+        data: {
+            labels: ['قيد الانتظار', 'معتمدة', 'مرفوضة', 'مدفوعة'],
+            datasets: [{
+                data: [{{ pending_count }}, {{ approved_count }}, {{ rejected_count }}, {{ paid_count }}],
+                backgroundColor: ['#ed8936', '#48bb78', '#f56565', '#4299e1'],
+                ...doughnutDefaults
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: true, ...tooltipStyle }
+    });
+
+    var grossV = {{ total_gross_salary }};
+    var dedV = {{ total_deductions }};
+    var gosiV = {{ total_gosi_company }};
+    new Chart(document.getElementById('moneyDonut'), {
+        type: 'doughnut',
+        data: {
+            labels: ['الراتب الإجمالي', 'الخصومات', 'التأمينات'],
+            datasets: [{
+                data: [grossV, dedV, gosiV],
+                backgroundColor: ['#48bb78', '#f56565', '#4299e1'],
+                ...doughnutDefaults
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            ...tooltipStyle,
+            plugins: {
+                ...tooltipStyle.plugins,
+                tooltip: {
+                    ...tooltipStyle.plugins.tooltip,
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.label + ': ' + ctx.parsed.toLocaleString('en-US', {minimumFractionDigits:2}) + ' SR';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    var deptPalette = ['#667eea','#48bb78','#ed8936','#f56565','#4299e1','#9f7aea','#38b2ac','#e53e3e','#dd6b20','#805ad5','#d69e2e','#319795'];
+    var deptLabels = {{ dept_labels|default([])|tojson }};
+    var deptNetVals = {{ dept_net_values|default([])|tojson }};
+    var deptCounts = {{ dept_counts|default([])|tojson }};
+    var deptColors = deptLabels.map(function(_, i) { return deptPalette[i % deptPalette.length]; });
+
+    new Chart(document.getElementById('deptDonut'), {
+        type: 'doughnut',
+        data: {
+            labels: deptLabels,
+            datasets: [{
+                data: deptNetVals,
+                backgroundColor: deptColors,
+                ...doughnutDefaults
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            ...tooltipStyle,
+            plugins: {
+                ...tooltipStyle.plugins,
+                tooltip: {
+                    ...tooltipStyle.plugins.tooltip,
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.label + ': ' + ctx.parsed.toLocaleString('en-US', {minimumFractionDigits:2}) + ' SR';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    var legendEl = document.getElementById('deptLegend');
+    deptLabels.forEach(function(lbl, i) {
+        legendEl.innerHTML += '<span class="pr-legend-item"><span class="pr-legend-dot" style="background:'+deptColors[i]+'"></span> '+lbl+'</span>';
+    });
+
+    new Chart(document.getElementById('deptCountDonut'), {
+        type: 'doughnut',
+        data: {
+            labels: deptLabels,
+            datasets: [{
+                data: deptCounts,
+                backgroundColor: deptColors,
+                ...doughnutDefaults
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: true, ...tooltipStyle }
+    });
+
+    var countLegendEl = document.getElementById('deptCountLegend');
+    deptLabels.forEach(function(lbl, i) {
+        countLegendEl.innerHTML += '<span class="pr-legend-item"><span class="pr-legend-dot" style="background:'+deptColors[i]+'"></span> '+lbl+' ('+deptCounts[i]+')</span>';
+    });
+})();
+</script>

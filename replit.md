@@ -7,7 +7,7 @@ A comprehensive Flask-based management system for employees, vehicles, attendanc
 The project follows a **Layered Modular Architecture** transitioning from legacy monolith to Clean Architecture:
 
 - **`app.py`** — Main Flask application setup, middleware, blueprint registration
-- **`main.py`** — Entry point for Gunicorn (loads app.py)
+- **`main.py`** — Entry point for Gunicorn (loads app.py); `wsgi.py` deleted
 - **`core/`** — Extensions (db, login), app factory, domain models (User, Roles), scheduler, security
 - **`modules/`** — Domain-driven vertical slices (employees, vehicles, attendance, etc.) each with domain/application/presentation layers
 - **`routes/`** — HTTP route blueprints (legacy + modern)
@@ -31,7 +31,6 @@ The project follows a **Layered Modular Architecture** transitioning from legacy
 
 ## Entry Point
 - Gunicorn runs `main:app` which loads `app.py`
-- `wsgi.py` exists as alternative entry using `core/app_factory.py`
 
 ## Security Notes
 - `SESSION_SECRET` must be set as environment variable (no fallback)
@@ -47,11 +46,22 @@ The project follows a **Layered Modular Architecture** transitioning from legacy
 - DB stores relative paths like `uploads/employees/...` or `static/uploads/vehicles/...`
 
 ## Attendance Module
-- Modular architecture is active by default (7 core files + 3 auxiliary)
+- Modular architecture only (legacy fallback removed, archived to `docs/legacy_archive/attendance/`)
 - Core files: `attendance_list.py`, `attendance_record.py`, `attendance_edit_delete.py`, `attendance_export.py`, `attendance_stats.py`, `attendance_circles.py`, `attendance_api.py`
 - Auxiliary blueprints (registered separately): `mass_attendance.py`, `attendance_dashboard.py`, `leave_management.py`
-- Legacy monolith `routes/legacy/_attendance_main.py` kept as fallback (set `ATTENDANCE_USE_MODULAR=0` to force legacy)
-- Phase 1 and v1/ bridge files have been removed — only modular + legacy fallback remain
+- `__init__.py` builds a single modular blueprint with lazy initialization
+
+## Payroll Module
+- Routes: `routes/admin/payroll_admin.py` (blueprint: `payroll`)
+- Dashboard (`/payroll/dashboard`): Professional design with 4 donut charts (status distribution, department salaries, financial breakdown, employee distribution)
+- Review (`/payroll/review`): Filterable table with summary donut chart, batch approve/reject, modal dialogs
+- Uses Chart.js 4.x via CDN for all charts
+- Models: `PayrollRecord`, `PayrollConfiguration`, `BankTransferFile`, `PayrollHistory` in `modules/payroll/domain/models.py`
+
+## Admin Access Pattern
+- `User.is_admin` DB column is `None` for all users; use `_is_admin_role()` method which checks both `is_admin` flag AND `role == 'admin'`
+- Templates must use `current_user._is_admin_role()` not `current_user.is_admin`
+- Analytics routes use a local `admin_required` decorator that calls `_is_admin_role()`
 
 ## Database
 - PostgreSQL via `DATABASE_URL` environment variable

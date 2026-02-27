@@ -126,6 +126,21 @@ def dashboard():
     total_net_payable = sum((payroll.net_payable or Decimal('0')) for payroll in month_payrolls)
     total_gosi_company = sum((payroll.gosi_company or Decimal('0')) for payroll in month_payrolls)
 
+    dept_salary_map = {}
+    for p in month_payrolls:
+        dept_name = 'غير محدد'
+        if p.employee and p.employee.department:
+            dept_name = p.employee.department.name
+        if dept_name not in dept_salary_map:
+            dept_salary_map[dept_name] = {'gross': Decimal('0'), 'net': Decimal('0'), 'count': 0}
+        dept_salary_map[dept_name]['gross'] += (p.gross_salary or Decimal('0'))
+        dept_salary_map[dept_name]['net'] += (p.net_payable or Decimal('0'))
+        dept_salary_map[dept_name]['count'] += 1
+
+    dept_labels = list(dept_salary_map.keys())
+    dept_net_values = [float(dept_salary_map[k]['net']) for k in dept_labels]
+    dept_counts = [dept_salary_map[k]['count'] for k in dept_labels]
+
     return render_template('payroll/dashboard.html',
         total_employees=total_employees,
         latest_payroll=latest_payroll,
@@ -140,10 +155,9 @@ def dashboard():
         recent_payrolls=month_payrolls,
         current_month=current_month,
         current_year=current_year,
-        pending_payrolls=pending_count,
-        approved_payrolls=approved_count,
-        paid_payrolls=paid_count,
-        total_payroll=float(total_net_payable)
+        dept_labels=dept_labels,
+        dept_net_values=dept_net_values,
+        dept_counts=dept_counts,
     )
 
 
