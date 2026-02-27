@@ -250,6 +250,31 @@ def root():
 
 
 
+def _seed_admin_if_empty():
+    """Create a default admin user if the user table is empty."""
+    try:
+        from models import User, UserRole
+        from werkzeug.security import generate_password_hash
+        user_count = User.query.count()
+        if user_count == 0:
+            logger.info("No users found — seeding default admin account...")
+            admin = User()
+            admin.username = 'admin'
+            admin.email = 'admin@nuzum.sa'
+            admin.password_hash = generate_password_hash('admin123')
+            admin.role = UserRole.ADMIN
+            admin.is_admin = True
+            admin.is_active = True
+            db.session.add(admin)
+            db.session.commit()
+            logger.info("Default admin user created: admin@nuzum.sa")
+        else:
+            logger.info(f"Database has {user_count} users — skipping seed.")
+    except Exception as e:
+        logger.warning(f"Admin seed skipped: {e}")
+        db.session.rollback()
+
+
 # تعطيل استخدام WeasyPrint مؤقتاً
 WEASYPRINT_ENABLED = False
 
@@ -351,6 +376,8 @@ with app.app_context():
         logger.info("Database tables created successfully.")
     except Exception as e:
         logger.info(f"Database tables already exist: {str(e)}")
+
+    _seed_admin_if_empty()
 
 # Register database backup blueprint OUTSIDE app_context to avoid Flask reloader issues
 app.register_blueprint(database_backup_bp, url_prefix='/backup')
