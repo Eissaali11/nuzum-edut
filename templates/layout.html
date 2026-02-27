@@ -208,13 +208,11 @@
                         <hr />
                         {% endif %}
                         {% if current_user.is_authenticated %}
-                        {% set is_admin = (current_user.role == UserRole.ADMIN)
-                            or (current_user.role is string and current_user.role|lower == 'admin')
-                            or (current_user.role is not string and current_user.role.value == 'admin') %}
+                        {% set is_admin = current_user._is_admin_role() %}
                         <ul
                             class="nav nav-pills flex-column mb-auto sidebar-nav"
                         >
-                            {% if current_user.role == UserRole.ADMIN or
+                            {% if current_user._is_admin_role() or
                             current_user|check_module_access(Module.DASHBOARD)
                             %}
                             <li class="nav-item mb-1">
@@ -353,7 +351,7 @@
                                 </a>
                             </li>
                             {% endif %} {# التحقق من صلاحيات التقارير #} {% if
-                            current_user.role == UserRole.ADMIN or
+                            current_user._is_admin_role() or
                             current_user|check_module_access(Module.REPORTS) %}
                             <li class="nav-item mb-1">
                                 <a
@@ -394,7 +392,7 @@
                                 </a>
                             </li>
                             {% endif %} {# التحقق من صلاحيات الموظفين #} {% if
-                            current_user.role == UserRole.ADMIN or
+                            current_user._is_admin_role() or
                             current_user|check_module_access(Module.EMPLOYEES)
                             %}
                             <li class="nav-item mb-1">
@@ -407,7 +405,7 @@
                                 </a>
                             </li>
                             {# طلبات الموظفين #}
-                            {% if current_user.role == UserRole.ADMIN %}
+                            {% if current_user._is_admin_role() %}
                             <li class="nav-item mb-1">
                                 <a
                                     href="#employeeRequestsSubmenu"
@@ -465,7 +463,7 @@
                             
                             
                             {# تتبع الموظفين - للمديرين فقط #}
-                            {% if current_user.role == UserRole.ADMIN %}
+                            {% if current_user._is_admin_role() %}
                             <li class="nav-item mb-1">
                                 <a
                                     href="{{ url_for('employees.tracking') }}"
@@ -477,7 +475,7 @@
                             </li>
                             {% endif %}
                             {# إدارة الأجهزة المحمولة #}
-                            {% if current_user.role == UserRole.ADMIN %}
+                            {% if current_user._is_admin_role() %}
                             <li class="nav-item mb-1">
                                 <a
                                     href="#mobileDevicesSubmenu"
@@ -552,7 +550,7 @@
                             </li>
                             {% endif %}
                             {% endif %} {# التحقق من صلاحيات الأقسام #} {% if
-                            current_user.role == UserRole.ADMIN or
+                            current_user._is_admin_role() or
                             current_user|check_module_access(Module.DEPARTMENTS)
                             %}
                             <li class="nav-item mb-1">
@@ -575,7 +573,7 @@
                             </li>
                             {% endif %} {# التحقق من صلاحيات التقارير #}
                             {# التحقق من صلاحيات الموظفين #} {% if
-                            current_user.role == UserRole.ADMIN or
+                            current_user._is_admin_role() or
                             current_user|check_module_access(Module.EMPLOYEES)
                             %}
                             <li class="nav-item mb-1">
@@ -588,7 +586,7 @@
                                 </a>
                             </li>
                             {% endif %} {# التحقق من صلاحيات الوثائق #} {% if
-                            current_user.role == UserRole.ADMIN or
+                            current_user._is_admin_role() or
                             current_user|check_module_access(Module.DOCUMENTS)
                             %}
                             <li class="nav-item mb-1">
@@ -601,7 +599,7 @@
                                 </a>
                             </li>
                             {% endif %} {# التحقق من صلاحيات تكاليف الرسوم #} {%
-                            if current_user.role == UserRole.ADMIN or
+                            if current_user._is_admin_role() or
                             current_user|check_module_access(Module.FEES) %}
                             <li class="nav-item mb-1">
                                 <a
@@ -613,7 +611,7 @@
                                 </a>
                             </li>
                             {% endif %} {# التحقق من صلاحيات النظام المحاسبي #} {% if
-                            current_user.role == UserRole.ADMIN or
+                            current_user._is_admin_role() or
                             current_user|check_module_access(Module.ACCOUNTING) %}
                             <li class="nav-item mb-1">
                                 <a
@@ -652,7 +650,7 @@
                                 </a>
                             </li>
                             {% endif %} {# التحقق من صلاحيات المركبات #} {% if
-                            current_user.role == UserRole.ADMIN or
+                            current_user._is_admin_role() or
                             current_user|check_module_access(Module.VEHICLES) %}
                             <li class="nav-item mb-1">
                                 <a
@@ -811,7 +809,7 @@
                                 </a>
                             </li>
                             {% endif %} {# سجل النشاط - للمديرين فقط #} {% if
-                            current_user.role == UserRole.ADMIN %}
+                            current_user._is_admin_role() %}
                             <li class="nav-item mb-1">
                                 <a
                                     href="{{ url_for('users.activity_logs') }}"
