@@ -67,6 +67,60 @@
     }
     .btn-save-all:hover { color: white; opacity: 0.9; }
     .salary-info { font-size: 0.8rem; color: #6c757d; }
+    .filter-bar {
+        background: white;
+        border-radius: 14px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .filter-bar label { font-weight: 600; color: #1B2A4A; margin: 0; white-space: nowrap; }
+    .filter-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.9rem;
+        min-width: 160px;
+    }
+    .filter-select:focus { border-color: #0D7377; outline: none; box-shadow: 0 0 0 3px rgba(13,115,119,0.15); }
+    .bulk-rate-box {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-right: auto;
+    }
+    .bulk-rate-box input {
+        width: 130px;
+        text-align: center;
+        border: 2px solid #0D7377;
+        border-radius: 8px;
+        padding: 0.4rem 0.5rem;
+        font-size: 0.9rem;
+    }
+    .btn-bulk {
+        background: #1B2A4A;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.4rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .btn-bulk:hover { opacity: 0.85; }
+    tr.filtered-out { display: none; }
+    .count-badge {
+        background: rgba(13,115,119,0.15);
+        color: #0D7377;
+        padding: 0.2rem 0.7rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
 </style>
 {% endblock %}
 
@@ -101,6 +155,29 @@
         <p class="text-muted">تأكد من ربط الموظفين بالمشروع في صفحة إدارة الموظفين</p>
     </div>
     {% else %}
+
+    <div class="filter-bar">
+        <label><i class="fas fa-filter me-1"></i>تصفية حسب الفئة:</label>
+        <select id="categoryFilter" class="filter-select">
+            <option value="all">جميع الفئات</option>
+            {% set job_titles = employees_data|map(attribute='employee')|map(attribute='job_title')|unique|sort %}
+            {% for title in job_titles %}
+            {% if title %}
+            <option value="{{ title }}">{{ title }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+        <span id="filterCount" class="count-badge">{{ employees_data|length }} موظف</span>
+
+        <div class="bulk-rate-box">
+            <label>تعيين سعر جماعي:</label>
+            <input type="number" id="bulkRate" step="0.01" min="0" placeholder="السعر">
+            <button type="button" id="applyBulkRate" class="btn-bulk">
+                <i class="fas fa-check me-1"></i>تطبيق على الظاهرين
+            </button>
+        </div>
+    </div>
+
     <form method="POST">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="resources-card">
@@ -119,19 +196,19 @@
                             <th>بدل سكن</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="resourcesBody">
                         {% for item in employees_data %}
-                        <tr>
+                        <tr data-job-title="{{ item.employee.job_title or '' }}">
                             <td>{{ loop.index }}</td>
                             <td class="fw-bold text-start">{{ item.employee.name }}</td>
                             <td>{{ item.employee.employee_id }}</td>
-                            <td>{{ item.employee.job_title }}</td>
+                            <td><span class="count-badge">{{ item.employee.job_title }}</span></td>
                             <td>
                                 <span class="salary-info">{{ "{:,.0f}".format(item.employee.basic_salary or 0) }}</span>
                             </td>
                             <td>
                                 <input type="hidden" name="employee_ids" value="{{ item.employee.id }}">
-                                <input type="number" name="billing_rates" class="rate-input"
+                                <input type="number" name="billing_rates" class="rate-input billing-rate-field"
                                        value="{{ item.billing_rate }}" step="0.01" min="0">
                             </td>
                             <td>
@@ -163,4 +240,55 @@
     </form>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var filter = document.getElementById('categoryFilter');
+    var countBadge = document.getElementById('filterCount');
+    var bulkBtn = document.getElementById('applyBulkRate');
+    var bulkInput = document.getElementById('bulkRate');
+    var tbody = document.getElementById('resourcesBody');
+
+    if (!filter || !tbody) return;
+
+    filter.addEventListener('change', function() {
+        var selected = this.value;
+        var rows = tbody.querySelectorAll('tr');
+        var visible = 0;
+        rows.forEach(function(row) {
+            if (selected === 'all' || row.dataset.jobTitle === selected) {
+                row.classList.remove('filtered-out');
+                visible++;
+            } else {
+                row.classList.add('filtered-out');
+            }
+        });
+        if (countBadge) countBadge.textContent = visible + ' موظف';
+    });
+
+    if (bulkBtn) {
+        bulkBtn.addEventListener('click', function() {
+            var rate = parseFloat(bulkInput.value);
+            if (isNaN(rate) || rate < 0) {
+                alert('أدخل سعر صحيح');
+                return;
+            }
+            var rows = tbody.querySelectorAll('tr:not(.filtered-out)');
+            var count = 0;
+            rows.forEach(function(row) {
+                var inp = row.querySelector('.billing-rate-field');
+                if (inp) {
+                    inp.value = rate;
+                    inp.style.borderColor = '#0D7377';
+                    setTimeout(function() { inp.style.borderColor = '#e2e8f0'; }, 1500);
+                    count++;
+                }
+            });
+            alert('تم تحديث سعر الفوترة لـ ' + count + ' موظف');
+        });
+    }
+});
+</script>
 {% endblock %}
