@@ -260,21 +260,21 @@
                                 </ul>
                             </li>
                             {% endif %}
-                            {# قسم الرواتب المنفصل #}
+                            {# قسم الرواتب الموحد #}
                             {% if current_user._is_admin_role() %}
                             <li class="nav-item mb-1">
                                 <a
                                     href="#payrollSubmenu"
                                     data-bs-toggle="collapse"
-                                    class="nav-link nav-link-custom {% if '/payroll' in request.path %}active{% endif %}"
-                                    aria-expanded="false"
+                                    class="nav-link nav-link-custom {% if '/payroll' in request.path or '/salaries' in request.path %}active{% endif %}"
+                                    aria-expanded="{% if '/payroll' in request.path or '/salaries' in request.path %}true{% else %}false{% endif %}"
                                 >
                                     <i class="fas fa-money-bill-wave me-2"></i>
                                     <span>إدارة الرواتب</span>
                                     <i class="fas fa-chevron-down ms-auto"></i>
                                 </a>
                                 <ul
-                                    class="collapse {% if '/payroll' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    class="collapse {% if '/payroll' in request.path or '/salaries' in request.path %}show{% endif %} list-unstyled ps-4"
                                     id="payrollSubmenu"
                                 >
                                     <li class="nav-item mb-1">
@@ -284,6 +284,15 @@
                                         >
                                             <i class="fas fa-chart-bar me-2"></i>
                                             <span>لوحة الرواتب</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('salaries.index') }}"
+                                            class="nav-link nav-link-custom {% if '/salaries' in request.path and '/salaries/report' not in request.path and '/salaries/export' not in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-sack-dollar me-2"></i>
+                                            <span>سجل الرواتب</span>
                                         </a>
                                     </li>
                                     <li class="nav-item mb-1">
@@ -302,6 +311,24 @@
                                         >
                                             <i class="fas fa-cogs me-2"></i>
                                             <span>معالجة الرواتب</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('salaries.report') }}"
+                                            class="nav-link nav-link-custom {% if '/salaries/report' in request.path or '/salaries/comprehensive_report' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-file-invoice-dollar me-2"></i>
+                                            <span>تقارير الرواتب</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('payroll.configuration') }}"
+                                            class="nav-link nav-link-custom {% if '/payroll/configuration' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-sliders-h me-2"></i>
+                                            <span>إعدادات الرواتب</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -554,18 +581,6 @@
                                 >
                                     <i class="fas fa-calendar-days me-2"></i>
                                     <span>الحضور</span>
-                                </a>
-                            </li>
-                            {% endif %} {# التحقق من صلاحيات الرواتب #} {% if
-                            current_user.role == UserRole.ADMIN or
-                            current_user|check_module_access(Module.SALARIES) %}
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{{ url_for('salaries.index') }}"
-                                    class="nav-link nav-link-custom {% if '/salaries' in request.path %}active{% endif %}"
-                                >
-                                    <i class="fas fa-sack-dollar me-2"></i>
-                                    <span>الرواتب</span>
                                 </a>
                             </li>
                             {% endif %} {# التحقق من صلاحيات الوثائق #} {% if
