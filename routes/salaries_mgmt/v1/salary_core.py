@@ -284,19 +284,24 @@ def index():
 @salaries_bp.route('/report')
 def report():
     """Generate a salary report for a specific month and year"""
-    # Get filter parameters
-    month = request.args.get('month', str(datetime.now().month))
-    year = request.args.get('year', str(datetime.now().year))
+    month_param = request.args.get('month', None)
+    year_param = request.args.get('year', None)
     
-    # Validate parameters
-    if not month.isdigit() or not year.isdigit():
-        flash('يرجى اختيار شهر وسنة صالحين', 'danger')
-        return redirect(url_for('salaries.index'))
+    if month_param and year_param:
+        if not month_param.isdigit() or not year_param.isdigit():
+            flash('يرجى اختيار شهر وسنة صالحين', 'danger')
+            return redirect(url_for('salaries.index'))
+        month = int(month_param)
+        year = int(year_param)
+    else:
+        latest_salary = Salary.query.order_by(Salary.year.desc(), Salary.month.desc()).first()
+        if latest_salary:
+            month = latest_salary.month
+            year = latest_salary.year
+        else:
+            month = datetime.now().month
+            year = datetime.now().year
     
-    month = int(month)
-    year = int(year)
-    
-    # Get salary records for the selected month and year
     salaries = Salary.query.filter_by(month=month, year=year).all()
     
     if not salaries:
