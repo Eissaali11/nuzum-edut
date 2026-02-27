@@ -1,0 +1,493 @@
+/* ===================================================
+   NUZUM Mobile-First Responsive Overrides
+   نظام نُظم — التصميم المستجيب للجوال
+   =================================================== */
+
+/* ── 1. Global Layout Fixes ────────────────────── */
+@media (max-width: 991.98px) {
+    .sidebar.p-0 {
+        position: fixed !important;
+        top: 0;
+        right: -280px;
+        width: 260px !important;
+        height: 100vh;
+        z-index: 1050;
+        transition: right 0.3s ease;
+        overflow-y: auto;
+    }
+    .sidebar.p-0.sidebar-open {
+        right: 0 !important;
+    }
+    .col-lg-10.col-md-9.content-wrapper {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        padding: 12px !important;
+    }
+    .col-lg-2.col-md-3 {
+        display: block !important;
+    }
+    .sidebar-toggle-btn {
+        display: flex !important;
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        z-index: 1060;
+        width: 44px;
+        height: 44px;
+        align-items: center;
+        justify-content: center;
+        background: var(--bs-primary, #0d6efd);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.4rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,.25);
+    }
+    .sidebar-backdrop.active {
+        display: block !important;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.45);
+        z-index: 1040;
+    }
+}
+
+/* ── 2. Page Header & Action Buttons ───────────── */
+@media (max-width: 767.98px) {
+    .page-header .d-flex,
+    .vehicles-header .d-flex,
+    .employees-page-shell .page-header .d-flex {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px;
+    }
+    .page-header h1,
+    .vehicles-header h2 {
+        font-size: 1.3rem !important;
+        text-align: center;
+    }
+    .page-header .d-flex > div:last-child,
+    .action-btn-group {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        justify-content: center;
+    }
+    .page-header .btn,
+    .action-btn-group .action-btn,
+    .action-btn-group .btn {
+        flex: 1 1 calc(50% - 6px) !important;
+        min-width: 0 !important;
+        font-size: 0.78rem !important;
+        padding: 8px 6px !important;
+        white-space: nowrap;
+        text-align: center;
+    }
+    .action-bar .d-flex {
+        flex-direction: column !important;
+        gap: 8px;
+    }
+}
+
+/* ── 3. Dashboard Stat Cards ───────────────────── */
+@media (max-width: 767.98px) {
+    .page-dashboard .col-md-3 {
+        flex: 0 0 50% !important;
+        max-width: 50% !important;
+        padding: 4px !important;
+    }
+    .dashboard-card .card-body {
+        padding: 12px !important;
+    }
+    .dashboard-card .counter-value {
+        font-size: 1.6rem !important;
+    }
+    .dashboard-card .card-subtitle {
+        font-size: 0.75rem !important;
+    }
+    .dashboard-card .card-icon-wrapper {
+        display: none !important;
+    }
+    .dashboard-card .card-footer .btn {
+        font-size: 0.75rem !important;
+        padding: 6px 8px !important;
+    }
+    .dashboard-card .card-footer .d-flex.gap-2 {
+        flex-direction: column;
+    }
+    .welcome-header .d-flex {
+        flex-direction: column !important;
+        text-align: center;
+    }
+    .welcome-header .display-6 {
+        font-size: 1.4rem !important;
+    }
+    .welcome-header .date-display {
+        margin-top: 8px;
+        font-size: 0.85rem;
+    }
+}
+@media (max-width: 575.98px) {
+    .page-dashboard .col-md-3 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* ── 4. Charts Responsive ──────────────────────── */
+@media (max-width: 767.98px) {
+    .page-dashboard .col-md-4 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+    .chart-card .card-body {
+        padding: 10px !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .chart-card canvas {
+        min-width: 280px;
+    }
+}
+
+/* ── 5. Table-to-Card Transformation ───────────── */
+@media (max-width: 767.98px) {
+    .nuzum-responsive-table {
+        border: none !important;
+    }
+    .nuzum-responsive-table thead {
+        display: none !important;
+    }
+    .nuzum-responsive-table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .nuzum-responsive-table tbody tr {
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        transition: box-shadow 0.2s;
+    }
+    .nuzum-responsive-table tbody tr:active {
+        box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    }
+    .nuzum-responsive-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0 !important;
+        border: none !important;
+        border-bottom: 1px solid #f3f4f6 !important;
+        font-size: 0.88rem;
+        color: #374151;
+    }
+    .nuzum-responsive-table tbody td:last-child {
+        border-bottom: none !important;
+        padding-top: 10px !important;
+        justify-content: center;
+    }
+    .nuzum-responsive-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: #1e3a5f;
+        flex-shrink: 0;
+        margin-left: 12px;
+        font-size: 0.82rem;
+    }
+    .nuzum-responsive-table tbody td .btn-group,
+    .nuzum-responsive-table tbody td .btn-group-enhanced {
+        display: flex;
+        gap: 6px;
+        width: 100%;
+        justify-content: center;
+    }
+    .nuzum-responsive-table tbody td .btn-group .btn,
+    .nuzum-responsive-table tbody td .btn-group-enhanced .btn {
+        flex: 1;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        border-radius: 8px !important;
+    }
+    .nuzum-responsive-table tbody tr,
+    .nuzum-responsive-table tbody td {
+        color: #374151 !important;
+    }
+    .nuzum-responsive-table tbody td strong,
+    .nuzum-responsive-table tbody td .fw-bold {
+        color: #1e3a5f !important;
+    }
+    .nuzum-responsive-table tbody td .text-muted {
+        color: #6b7280 !important;
+    }
+    .nuzum-responsive-table tbody td .badge {
+        color: #fff !important;
+    }
+    .table-horizontal-scroll {
+        overflow-x: visible !important;
+    }
+}
+
+/* ── 6. Filter Sections ────────────────────────── */
+@media (max-width: 767.98px) {
+    .filter-section .row .col-md-2,
+    .filter-section .row .col-md-3,
+    .filter-section .row .col-md-4,
+    .filter-card .row .col-md-3 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+    .filter-section .col-md-6,
+    .filter-section .col-md-8 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+    .filter-section {
+        padding: 10px !important;
+    }
+    .form-select,
+    .form-control {
+        font-size: 0.88rem !important;
+        min-height: 44px;
+    }
+    .filter-card .d-flex.align-items-center {
+        flex-direction: column !important;
+        gap: 6px;
+    }
+    .filter-card .d-flex.align-items-center .btn,
+    .filter-card .d-flex.align-items-center .action-btn {
+        width: 100% !important;
+    }
+}
+
+/* ── 7. Operations Page ────────────────────────── */
+@media (max-width: 767.98px) {
+    .container-fluid.mt-4 .col-md-3 {
+        flex: 0 0 50% !important;
+        max-width: 50% !important;
+    }
+    .container-fluid.mt-4 .col-md-12 .d-grid .btn {
+        min-height: 48px;
+        font-size: 1rem;
+    }
+    .btn-group.btn-group-sm {
+        display: flex !important;
+        gap: 4px;
+    }
+    .btn-group.btn-group-sm .btn {
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px !important;
+    }
+}
+
+/* ── 8. Card & Content Spacing ─────────────────── */
+@media (max-width: 767.98px) {
+    .card {
+        border-radius: 10px !important;
+    }
+    .card-header {
+        padding: 10px 12px !important;
+    }
+    .card-header h5 {
+        font-size: 0.95rem !important;
+    }
+    .card-body {
+        padding: 12px !important;
+    }
+    .container-fluid {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+    .mb-4 {
+        margin-bottom: 12px !important;
+    }
+}
+
+/* ── 9. Vehicle Dashboard Stats ────────────────── */
+@media (max-width: 575.98px) {
+    .vehicles-header .action-btn-group {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+    .vehicles-header .action-btn-group .action-btn {
+        font-size: 0.72rem !important;
+        padding: 8px 4px !important;
+        text-align: center;
+    }
+}
+
+/* ── 10. Employee Status Badges ────────────────── */
+@media (max-width: 767.98px) {
+    .emp-status {
+        font-size: 0.8rem;
+    }
+    .badge {
+        font-size: 0.72rem;
+        padding: 4px 6px;
+    }
+    .status-badge {
+        font-size: 0.72rem;
+        padding: 4px 8px;
+    }
+}
+
+/* ── 11. Pagination ────────────────────────────── */
+@media (max-width: 767.98px) {
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2px;
+    }
+    .pagination .page-link {
+        min-width: 36px;
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.82rem;
+    }
+    .d-flex.justify-content-between.align-items-center.flex-wrap {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+}
+
+/* ── 12. Action Bar (Top Nav) ──────────────────── */
+@media (max-width: 767.98px) {
+    .action-bar {
+        padding: 8px 12px !important;
+    }
+    .action-bar h4 {
+        font-size: 1rem !important;
+    }
+    .action-bar .d-flex.gap-3 {
+        gap: 8px !important;
+    }
+    .action-bar .btn {
+        padding: 4px 8px !important;
+        font-size: 0.8rem !important;
+    }
+}
+
+/* ── 13. Touch-Friendly Global ─────────────────── */
+@media (max-width: 767.98px) {
+    a.btn, button.btn, .btn {
+        min-height: 40px;
+    }
+    .dropdown-item {
+        padding: 10px 16px !important;
+        font-size: 0.9rem;
+    }
+    .nav-link {
+        padding: 10px 14px !important;
+    }
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* ── 14. Floating Add Button (FAB) ─────────────── */
+@media (max-width: 767.98px) {
+    .nuzum-fab {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 1030;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        color: #fff;
+        border: none;
+        box-shadow: 0 6px 20px rgba(13,110,253,.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .nuzum-fab:active {
+        transform: scale(0.92);
+        box-shadow: 0 3px 10px rgba(13,110,253,.3);
+    }
+}
+
+/* ── 15. Scrollbar hiding on mobile for cleaner UI */
+@media (max-width: 767.98px) {
+    .table-responsive::-webkit-scrollbar {
+        height: 4px;
+    }
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+}
+
+/* ── 16. Employee Page Specific ────────────────── */
+@media (max-width: 767.98px) {
+    .employees-page-shell .page-header .d-flex > div:last-child {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+    .employees-page-shell .page-header .btn {
+        font-size: 0.75rem !important;
+        padding: 8px 6px !important;
+    }
+    #rowsPerPage {
+        min-width: 70px !important;
+    }
+    .d-flex.justify-content-end.align-items-center.gap-3.flex-wrap {
+        justify-content: center !important;
+        flex-direction: column;
+        gap: 6px !important;
+    }
+}
+
+/* ── 17. Operations Filter on Mobile ───────────── */
+@media (max-width: 767.98px) {
+    .container-fluid.mt-4 .row.g-3 .col-md-3 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* ── 18. Vehicle Color Badge ───────────────────── */
+@media (max-width: 767.98px) {
+    .color-badge {
+        width: 14px;
+        height: 14px;
+        display: inline-block;
+        border-radius: 50%;
+        vertical-align: middle;
+    }
+}
+
+/* ── 19. Print: no mobile transforms ───────────── */
+@media print {
+    .nuzum-responsive-table thead { display: table-header-group !important; }
+    .nuzum-responsive-table tbody tr { display: table-row !important; }
+    .nuzum-responsive-table tbody td { display: table-cell !important; }
+    .nuzum-responsive-table tbody td::before { display: none !important; }
+    .sidebar-toggle-btn { display: none !important; }
+    .nuzum-fab { display: none !important; }
+}

@@ -95,7 +95,7 @@
                 <div class="card-body p-0">
                     {% if operations %}
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover mb-0 nuzum-responsive-table">
                             <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
@@ -112,8 +112,8 @@
                             <tbody>
                                 {% for operation in operations %}
                                 <tr>
-                                    <td><span class="badge bg-secondary">#{{ operation.id }}</span></td>
-                                    <td>
+                                    <td data-label="ID"><span class="badge bg-secondary">#{{ operation.id }}</span></td>
+                                    <td data-label="نوع العملية">
                                         {% if operation.operation_type == 'handover' %}
                                             <span class="badge bg-info">تسليم/استلام</span>
                                         {% elif operation.operation_type == 'workshop' %}
@@ -124,27 +124,27 @@
                                             <span class="badge bg-success">فحص سلامة</span>
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td data-label="العنوان">
                                         <div class="text-truncate" style="max-width: 200px;" title="{{ operation.title }}">
                                             {{ operation.title }}
                                         </div>
                                     </td>
-                                    <td>
+                                    <td data-label="السيارة">
                                         {% if operation.vehicle %}
                                             <span class="badge bg-secondary">{{ operation.vehicle.plate_number }}</span>
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td data-label="الطالب">
                                         {% if operation.requester %}
                                             {{ operation.requester.username }}
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td data-label="التاريخ">
                                         <small class="text-muted">
                                             {{ operation.requested_at.strftime('%Y/%m/%d %H:%M') }}
                                         </small>
                                     </td>
-                                    <td>
+                                    <td data-label="الحالة">
                                         {% if operation.status == 'pending' %}
                                             <span class="badge bg-warning">معلقة</span>
                                         {% elif operation.status == 'under_review' %}
@@ -155,7 +155,7 @@
                                             <span class="badge bg-danger">مرفوضة</span>
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td data-label="الأولوية">
                                         {% if operation.priority == 'urgent' %}
                                             <span class="badge bg-danger">عاجل</span>
                                         {% elif operation.priority == 'high' %}
@@ -166,7 +166,7 @@
                                             <span class="badge bg-secondary">منخفض</span>
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td data-label="الإجراءات">
                                         <div class="btn-group btn-group-sm">
                                             <a href="{{ url_for('operations_core.view_operation', operation_id=operation.id) }}" 
                                                class="btn btn-outline-primary btn-sm" title="عرض التفاصيل">

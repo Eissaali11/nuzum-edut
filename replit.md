@@ -63,6 +63,14 @@ The project follows a **Layered Modular Architecture** transitioning from legacy
 - Templates must use `current_user._is_admin_role()` not `current_user.is_admin`
 - Analytics routes use a local `admin_required` decorator that calls `_is_admin_role()`
 
+## Responsive Design (Mobile)
+- Master responsive CSS: `static/css/nuzum_mobile.css` (linked in `layout.html`)
+- Table-to-card transformation: Tables with class `nuzum-responsive-table` + `data-label` attributes on `<td>` elements convert to cards on mobile (<768px)
+- Dashboard: Stats cards use `col-6` on mobile (2 per row), charts stack full-width
+- Sidebar: Fixed overlay on mobile with toggle button, backdrop, auto-close on link click
+- Touch targets: All buttons enforce minimum 40-44px height on mobile
+- Applied to: Dashboard, Employee list, Vehicle list, Operations list
+
 ## Database
 - PostgreSQL via `DATABASE_URL` environment variable
 - Models defined in `core/domain/models.py` and `modules/*/domain/models.py`

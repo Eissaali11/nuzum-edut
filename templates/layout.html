@@ -166,6 +166,10 @@
             href="{{ url_for('static', filename='css/logo.css') }}?v={{ now.timestamp()|int }}"
             rel="stylesheet"
         />
+        <link
+            href="{{ url_for('static', filename='css/nuzum_mobile.css') }}?v={{ now.timestamp()|int }}"
+            rel="stylesheet"
+        />
         {% block styles %} {% endblock %}
 
         {% block extra_css%} {% endblock%}
