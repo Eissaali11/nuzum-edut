@@ -232,15 +232,15 @@
                                 <a
                                     href="#employeesSubmenu"
                                     data-bs-toggle="collapse"
-                                    class="nav-link nav-link-custom {% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}active{% endif %}"
-                                    aria-expanded="{% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}true{% else %}false{% endif %}"
+                                    class="nav-link nav-link-custom {% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path or '/leaves' in request.path %}active{% endif %}"
+                                    aria-expanded="{% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path or '/leaves' in request.path %}true{% else %}false{% endif %}"
                                 >
                                     <i class="fas fa-user-group me-2"></i>
                                     <span>إدارة الموظفين</span>
                                     <i class="fas fa-chevron-down ms-auto"></i>
                                 </a>
                                 <ul
-                                    class="collapse {% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    class="collapse {% if '/employees' in request.path or '/attendance' in request.path or '/employee-requests' in request.path or '/leaves' in request.path %}show{% endif %} list-unstyled ps-4"
                                     id="employeesSubmenu"
                                 >
                                     <li class="nav-item mb-1">
@@ -272,6 +272,27 @@
                                             <span>الحضور</span>
                                         </a>
                                     </li>
+                                    {# إدارة الموارد البشرية #}
+                                    {% if current_user._is_admin_role() %}
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('leaves.manager_dashboard') }}"
+                                            class="nav-link nav-link-custom {% if '/leaves/manager' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-user-check me-2"></i>
+                                            <span>طلبات الموافقات</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('leaves.leave_balances') }}"
+                                            class="nav-link nav-link-custom {% if '/leaves/balances' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-layer-group me-2"></i>
+                                            <span>أرصدة الإجازات</span>
+                                        </a>
+                                    </li>
+                                    {% endif %}
                                     {# طلبات الموظفين #}
                                     {% if current_user._is_admin_role() %}
                                     <li class="nav-item mb-1">
@@ -473,44 +494,6 @@
                                         >
                                             <i class="fas fa-link me-2"></i>
                                             <span>ربط الأجهزة</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            {% endif %}
-                            {# إدارة الموارد البشرية #}
-                            {% if current_user._is_admin_role() %}
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="#hrManagementSubmenu"
-                                    data-bs-toggle="collapse"
-                                    class="nav-link nav-link-custom {% if '/leaves' in request.path or '/departments' in request.path %}active{% endif %}"
-                                    aria-expanded="false"
-                                >
-                                    <i class="bi bi-people-fill me-2"></i>
-                                    <span>إدارة الموارد البشرية (HR)</span>
-                                    <i class="fas fa-chevron-down ms-auto"></i>
-                                </a>
-                                <ul
-                                    class="collapse {% if '/leaves' in request.path %}show{% endif %} list-unstyled ps-4"
-                                    id="hrManagementSubmenu"
-                                >
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('leaves.manager_dashboard') }}"
-                                            class="nav-link nav-link-custom {% if '/leaves/manager' in request.path %}active{% endif %}"
-                                        >
-                                            <i class="fas fa-user-check me-2"></i>
-                                            <span>طلبات الموافقات</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item mb-1">
-                                        <a
-                                            href="{{ url_for('leaves.leave_balances') }}"
-                                            class="nav-link nav-link-custom {% if '/leaves/balances' in request.path %}active{% endif %}"
-                                        >
-                                            <i class="fas fa-layer-group me-2"></i>
-                                            <span>أرصدة الإجازات</span>
                                         </a>
                                     </li>
                                 </ul>
