@@ -141,7 +141,7 @@ def vehicles():
 @login_required
 @admin_required
 def departments():
-    """إدارة الأقسام"""
+    """إدارة المشاريع"""
     departments = Department.query.all()
     return render_template('admin_dashboard/departments.html',
                          departments=departments)

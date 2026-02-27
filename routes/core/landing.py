@@ -112,7 +112,7 @@ def index():
             ]
         },
         {
-            'title': 'إدارة الأقسام',
+            'title': 'إدارة المشاريع',
             'description': 'تنظيم هيكلي للإدارات والأقسام المختلفة',
             'icon': 'fas fa-sitemap',
             'capabilities': [
