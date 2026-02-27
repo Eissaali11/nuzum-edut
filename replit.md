@@ -55,6 +55,7 @@ The project follows a **Layered Modular Architecture** transitioning from legacy
 - Routes: `routes/admin/payroll_admin.py` (blueprint: `payroll`)
 - Dashboard (`/payroll/dashboard`): Professional design with 4 donut charts (status distribution, department salaries, financial breakdown, employee distribution)
 - Review (`/payroll/review`): Filterable table with summary donut chart, batch approve/reject, modal dialogs
+- Excel Export (`/payroll/review/export-excel`): Professional openpyxl export with navy/teal styling, KPI summary row, attendance deduction columns, totals row, signature fields (accountant, HR manager, GM)
 - Uses Chart.js 4.x via CDN for all charts
 - Models: `PayrollRecord`, `PayrollConfiguration`, `BankTransferFile`, `PayrollHistory` in `modules/payroll/domain/models.py`
 

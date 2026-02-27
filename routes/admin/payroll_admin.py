@@ -7,6 +7,8 @@ from flask_login import login_required, current_user
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy import func, and_
+from sqlalchemy.orm import joinedload
+from io import BytesIO
 from core.extensions import db
 from models import Employee, User, Module, Permission, Department
 from modules.payroll.domain.models import PayrollRecord, PayrollConfiguration, BankTransferFile
@@ -522,3 +524,300 @@ def save_configuration():
     
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 400
+
+
+@payroll_bp.route('/review/export-excel')
+@login_required
+def export_review_excel():
+    """تصدير كشف مراجعة الرواتب إلى Excel احترافي"""
+    if not check_payroll_access():
+        flash('ليس لديك صلاحية', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    month = request.args.get('month', datetime.now().month, type=int)
+    year = request.args.get('year', datetime.now().year, type=int)
+    status = request.args.get('status', 'pending')
+    department_id = request.args.get('department_id', type=int)
+
+    query = PayrollRecord.query.join(Employee, PayrollRecord.employee_id == Employee.id).options(
+        joinedload(PayrollRecord.employee).joinedload(Employee.departments)
+    ).filter(
+        and_(
+            PayrollRecord.pay_period_month == month,
+            PayrollRecord.pay_period_year == year,
+            PayrollRecord.payment_status == status
+        )
+    )
+    if department_id:
+        query = query.filter(Employee.department_id == department_id)
+
+    payrolls = query.order_by(Employee.name).all()
+
+    STATUS_AR = {
+        'pending': 'قيد الانتظار',
+        'approved': 'معتمدة',
+        'rejected': 'مرفوضة',
+        'paid': 'مدفوعة',
+    }
+
+    MONTH_AR = [
+        '', 'يناير', 'فبراير', 'مارس', 'إبريل', 'مايو', 'يونيو',
+        'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    ]
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "كشف الرواتب"
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.sheet_view.rightToLeft = True
+
+    navy = "1A237E"
+    navy_fill = PatternFill(start_color=navy, end_color=navy, fill_type="solid")
+    white_font_xl = Font(bold=True, color="FFFFFF", size=18)
+    white_font_md = Font(bold=True, color="FFFFFF", size=12)
+    white_font_sm = Font(bold=True, color="FFFFFF", size=10)
+
+    teal = "18B2B0"
+    teal_fill = PatternFill(start_color=teal, end_color=teal, fill_type="solid")
+
+    green_fill = PatternFill(start_color="D4EDDA", end_color="D4EDDA", fill_type="solid")
+    red_fill = PatternFill(start_color="F8D7DA", end_color="F8D7DA", fill_type="solid")
+    orange_fill = PatternFill(start_color="FFF3CD", end_color="FFF3CD", fill_type="solid")
+    blue_fill = PatternFill(start_color="D1ECF1", end_color="D1ECF1", fill_type="solid")
+    light_gray_fill = PatternFill(start_color="F8F9FA", end_color="F8F9FA", fill_type="solid")
+
+    green_font = Font(bold=True, color="155724", size=11)
+    red_font = Font(bold=True, color="721C24", size=11)
+    blue_font = Font(bold=True, color="0C5460", size=11)
+    orange_font = Font(bold=True, color="856404", size=11)
+
+    thin_border = Border(
+        left=Side(style='thin', color='D0D0D0'),
+        right=Side(style='thin', color='D0D0D0'),
+        top=Side(style='thin', color='D0D0D0'),
+        bottom=Side(style='thin', color='D0D0D0')
+    )
+
+    center = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    right_align = Alignment(horizontal='right', vertical='center', wrap_text=True)
+
+    total_gross = sum(float(p.gross_salary or 0) for p in payrolls)
+    total_deductions = sum(float(p.total_deductions or 0) for p in payrolls)
+    total_net = sum(float(p.net_payable or 0) for p in payrolls)
+
+    ws.merge_cells('A1:N1')
+    title_cell = ws['A1']
+    title_cell.value = "كشف مراجعة الرواتب"
+    title_cell.font = white_font_xl
+    title_cell.fill = navy_fill
+    title_cell.alignment = center
+    ws.row_dimensions[1].height = 40
+
+    ws.merge_cells('A2:N2')
+    subtitle_cell = ws['A2']
+    status_label = STATUS_AR.get(status, status)
+    month_label = MONTH_AR[month] if 1 <= month <= 12 else str(month)
+    dept_obj = Department.query.get(department_id) if department_id else None
+    dept_label = dept_obj.name if dept_obj else 'جميع الأقسام'
+    subtitle_cell.value = f"الفترة: {month_label} {year}  |  الحالة: {status_label}  |  القسم: {dept_label}  |  تاريخ التصدير: {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+    subtitle_cell.font = Font(bold=True, color="FFFFFF", size=11)
+    subtitle_cell.fill = PatternFill(start_color="283593", end_color="283593", fill_type="solid")
+    subtitle_cell.alignment = center
+    ws.row_dimensions[2].height = 28
+
+    kpi_row = 4
+    kpi_data = [
+        ('A', 'C', 'عدد الموظفين', str(len(payrolls)), blue_fill, blue_font),
+        ('D', 'F', 'إجمالي الراتب', f'{total_gross:,.2f} ر.س', green_fill, green_font),
+        ('G', 'I', 'إجمالي الخصومات', f'{total_deductions:,.2f} ر.س', red_fill, red_font),
+        ('J', 'L', 'صافي المستحقات', f'{total_net:,.2f} ر.س', orange_fill, orange_font),
+    ]
+    for start_col, end_col, label, value, fill, font in kpi_data:
+        ws.merge_cells(f'{start_col}{kpi_row}:{end_col}{kpi_row}')
+        label_cell = ws[f'{start_col}{kpi_row}']
+        label_cell.value = label
+        label_cell.font = Font(bold=True, size=10, color="555555")
+        label_cell.alignment = center
+        label_cell.fill = PatternFill(start_color="E9ECEF", end_color="E9ECEF", fill_type="solid")
+
+        val_row = kpi_row + 1
+        ws.merge_cells(f'{start_col}{val_row}:{end_col}{val_row}')
+        val_cell = ws[f'{start_col}{val_row}']
+        val_cell.value = value
+        val_cell.font = font
+        val_cell.alignment = center
+        val_cell.fill = fill
+
+    ws.row_dimensions[kpi_row].height = 22
+    ws.row_dimensions[kpi_row + 1].height = 30
+
+    header_row = 7
+    headers = [
+        ('#', 5),
+        ('رقم الموظف', 14),
+        ('اسم الموظف', 28),
+        ('القسم', 18),
+        ('الراتب الأساسي', 16),
+        ('بدل السكن', 14),
+        ('بدل المواصلات', 14),
+        ('بدل الطعام', 13),
+        ('الراتب الإجمالي', 16),
+        ('خصم الغياب', 13),
+        ('خصم التأخير', 13),
+        ('GOSI', 12),
+        ('إجمالي الخصومات', 16),
+        ('الراتب الصافي', 16),
+    ]
+
+    for col_idx, (header_text, width) in enumerate(headers, 1):
+        cell = ws.cell(row=header_row, column=col_idx)
+        cell.value = header_text
+        cell.font = white_font_sm
+        cell.fill = teal_fill
+        cell.alignment = center
+        cell.border = thin_border
+        ws.column_dimensions[get_column_letter(col_idx)].width = width
+
+    ws.row_dimensions[header_row].height = 30
+
+    row_num = header_row + 1
+    for idx, p in enumerate(payrolls, 1):
+        emp = p.employee
+        emp_name = emp.name if emp else 'غير متاح'
+        dept_name = ''
+        if emp:
+            if hasattr(emp, 'departments') and emp.departments:
+                dept_name = ', '.join(d.name for d in emp.departments)
+            elif hasattr(emp, 'department') and emp.department:
+                dept_name = emp.department.name
+
+        row_data = [
+            idx,
+            emp.employee_id if emp else '-',
+            emp_name,
+            dept_name or '-',
+            float(p.basic_salary or 0),
+            float(p.housing_allowance or 0),
+            float(p.transportation or 0),
+            float(p.meal_allowance or 0),
+            float(p.gross_salary or 0),
+            float(p.absence_deduction or 0),
+            float(p.late_deduction or 0),
+            float(p.gosi_employee or 0),
+            float(p.total_deductions or 0),
+            float(p.net_payable or 0),
+        ]
+
+        for col_idx, value in enumerate(row_data, 1):
+            cell = ws.cell(row=row_num, column=col_idx)
+            cell.value = value
+            cell.alignment = center
+            cell.border = thin_border
+
+            if idx % 2 == 0:
+                cell.fill = light_gray_fill
+
+            if col_idx == 3:
+                cell.font = Font(bold=True, size=10)
+                cell.alignment = right_align
+            elif col_idx >= 5:
+                cell.number_format = '#,##0.00'
+                if col_idx == 9:
+                    cell.font = green_font
+                elif col_idx in (10, 11, 12, 13):
+                    cell.font = red_font
+                elif col_idx == 14:
+                    cell.font = blue_font
+
+        ws.row_dimensions[row_num].height = 24
+        row_num += 1
+
+    if payrolls:
+        total_row = row_num
+        ws.merge_cells(f'A{total_row}:D{total_row}')
+        total_label = ws.cell(row=total_row, column=1)
+        total_label.value = "الإجمالي"
+        total_label.font = Font(bold=True, color="FFFFFF", size=12)
+        total_label.fill = navy_fill
+        total_label.alignment = center
+
+        for col in range(2, 5):
+            c = ws.cell(row=total_row, column=col)
+            c.fill = navy_fill
+
+        total_cols = {
+            5: sum(float(p.basic_salary or 0) for p in payrolls),
+            6: sum(float(p.housing_allowance or 0) for p in payrolls),
+            7: sum(float(p.transportation or 0) for p in payrolls),
+            8: sum(float(p.meal_allowance or 0) for p in payrolls),
+            9: total_gross,
+            10: sum(float(p.absence_deduction or 0) for p in payrolls),
+            11: sum(float(p.late_deduction or 0) for p in payrolls),
+            12: sum(float(p.gosi_employee or 0) for p in payrolls),
+            13: total_deductions,
+            14: total_net,
+        }
+
+        for col_idx, total_val in total_cols.items():
+            cell = ws.cell(row=total_row, column=col_idx)
+            cell.value = total_val
+            cell.number_format = '#,##0.00'
+            cell.font = Font(bold=True, color="FFFFFF", size=11)
+            cell.fill = navy_fill
+            cell.alignment = center
+            cell.border = thin_border
+
+        ws.row_dimensions[total_row].height = 30
+        row_num = total_row + 1
+
+    sign_row = row_num + 3
+    ws.merge_cells(f'A{sign_row}:D{sign_row}')
+    ws.cell(row=sign_row, column=1).value = "المحاسب: ________________"
+    ws.cell(row=sign_row, column=1).font = Font(size=11, bold=True)
+    ws.cell(row=sign_row, column=1).alignment = right_align
+
+    ws.merge_cells(f'F{sign_row}:I{sign_row}')
+    ws.cell(row=sign_row, column=6).value = "مدير الموارد البشرية: ________________"
+    ws.cell(row=sign_row, column=6).font = Font(size=11, bold=True)
+    ws.cell(row=sign_row, column=6).alignment = right_align
+
+    ws.merge_cells(f'K{sign_row}:N{sign_row}')
+    ws.cell(row=sign_row, column=11).value = "المدير العام: ________________"
+    ws.cell(row=sign_row, column=11).font = Font(size=11, bold=True)
+    ws.cell(row=sign_row, column=11).alignment = right_align
+
+    ws.row_dimensions[sign_row].height = 35
+
+    date_row = sign_row + 1
+    ws.merge_cells(f'A{date_row}:D{date_row}')
+    ws.cell(row=date_row, column=1).value = f"التاريخ: ____/____/________"
+    ws.cell(row=date_row, column=1).font = Font(size=9, color="777777")
+    ws.cell(row=date_row, column=1).alignment = right_align
+
+    ws.merge_cells(f'F{date_row}:I{date_row}')
+    ws.cell(row=date_row, column=6).value = f"التاريخ: ____/____/________"
+    ws.cell(row=date_row, column=6).font = Font(size=9, color="777777")
+    ws.cell(row=date_row, column=6).alignment = right_align
+
+    ws.merge_cells(f'K{date_row}:N{date_row}')
+    ws.cell(row=date_row, column=11).value = f"التاريخ: ____/____/________"
+    ws.cell(row=date_row, column=11).font = Font(size=9, color="777777")
+    ws.cell(row=date_row, column=11).alignment = right_align
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    status_en = status.capitalize()
+    filename = f"Payroll_Review_{status_en}_{month}_{year}.xlsx"
+
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=filename
+    )

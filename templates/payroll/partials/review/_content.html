@@ -5,7 +5,12 @@
             <h1><i class="fas fa-list-check"></i> مراجعة الرواتب</h1>
             <p>مراجعة واعتماد مسيرات الرواتب قبل إجراءات الدفع</p>
         </div>
-        <div class="rv-period"><i class="far fa-calendar-alt"></i> {{ month }}/{{ year }} &mdash; {{ status }}</div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <a href="{{ url_for('payroll.export_review_excel', month=month, year=year, status=status, department_id=selected_department_id or '') }}" class="rv-btn b-view" style="padding:8px 18px;font-size:14px;text-decoration:none;border-radius:8px;background:linear-gradient(135deg,#155724,#28a745);color:#fff;border:none;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-file-excel"></i> تصدير Excel
+            </a>
+            <div class="rv-period"><i class="far fa-calendar-alt"></i> {{ month }}/{{ year }} &mdash; {{ status }}</div>
+        </div>
     </div>
 
     <div class="rv-stats-row">
