@@ -73,10 +73,11 @@ class FileService:
             unique_filename = FileService.generate_unique_filename(secure_name)
             file_path = os.path.join(upload_folder, unique_filename)
             
-            # حفظ الملف
             file.save(file_path)
             
-            # تسجيل العملية في السجل
+            from utils.storage_helper import sync_to_cloud
+            sync_to_cloud(file_path)
+            
             log_activity(
                 action='file_upload',
                 entity_type='file',
