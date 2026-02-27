@@ -362,11 +362,6 @@
                                     <span>أبعاد البيانات</span>
                                 </a>
                             </li>
-                                    <i class="fas fa-chart-line me-2" style="color: #F2C811 !important;"></i>
-                                    <span>لوحة التحليلات</span>
-                                    <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">BI</span>
-                                </a>
-                            </li>
                             {% endif %} {# التحقق من صلاحيات الموظفين #} {% if
                             current_user.role == UserRole.ADMIN or
                             current_user|check_module_access(Module.EMPLOYEES)
