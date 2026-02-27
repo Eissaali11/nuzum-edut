@@ -1,0 +1,234 @@
+{% extends "layout.html" %}
+{% block title %}فواتير — {{ prop.city }} {{ prop.address[:30] }}{% endblock %}
+
+{% block styles %}
+<style>
+    .manage-page { background: #f0f2f5; min-height: 100vh; }
+    .manage-header {
+        background: linear-gradient(135deg, #1B2A4A 0%, #0D7377 100%);
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .bill-form-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        margin-bottom: 1.5rem;
+    }
+    .bill-form-card .card-header {
+        background: #f8fafc;
+        padding: 1rem 1.5rem;
+        font-weight: 700;
+        color: #1B2A4A;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .bill-form-card .card-body { padding: 1.5rem; }
+    .bill-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .bill-row:last-child { border-bottom: none; }
+    .bill-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+    }
+    .bill-label { flex: 1; font-weight: 600; color: #1B2A4A; }
+    .bill-input {
+        width: 180px;
+        text-align: center;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    .bill-input:focus {
+        border-color: #0D7377;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13, 115, 119, 0.15);
+    }
+    .btn-save {
+        background: linear-gradient(135deg, #0D7377, #14919B);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 2.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    .btn-save:hover { color: white; opacity: 0.9; }
+    .residents-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .residents-card .card-header {
+        background: #f8fafc;
+        padding: 1rem 1.5rem;
+        font-weight: 700;
+        color: #1B2A4A;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .resident-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 1.5rem;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    .resident-item:last-child { border: none; }
+    .summary-box {
+        background: linear-gradient(135deg, #0D7377, #14919B);
+        color: white;
+        border-radius: 14px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .icon-electricity { background: linear-gradient(135deg, #F59E0B, #FBBF24); }
+    .icon-water { background: linear-gradient(135deg, #3B82F6, #60A5FA); }
+    .icon-gas { background: linear-gradient(135deg, #EF4444, #F87171); }
+    .icon-internet { background: linear-gradient(135deg, #6366F1, #818CF8); }
+    .icon-other { background: linear-gradient(135deg, #6B7280, #9CA3AF); }
+    .period-select {
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 8px;
+        padding: 0.3rem 0.5rem;
+        color: white;
+        background: rgba(255,255,255,0.1);
+        font-size: 0.9rem;
+    }
+    .period-select option { color: #333; background: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="manage-page p-4">
+    <div class="manage-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-file-invoice-dollar me-2"></i>تسجيل فواتير الخدمات</h2>
+                <p class="mb-0 opacity-75">
+                    {{ prop.city }} — {{ prop.address }} |
+                    {{ residents|length }} ساكن نشط
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('utility_bills.index', month=selected_month, year=selected_year) }}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-right me-2"></i>رجوع
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <form method="POST" action="{{ url_for('utility_bills.manage', property_id=prop.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="month" value="{{ selected_month }}">
+                <input type="hidden" name="year" value="{{ selected_year }}">
+
+                <div class="summary-box d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <div>
+                        <i class="fas fa-calendar-alt me-1"></i>
+                        <strong>الفترة:</strong>
+                        {% for m, name in months %}{% if m == selected_month %}{{ name }}{% endif %}{% endfor %} {{ selected_year }}
+                    </div>
+                    <div>
+                        <strong>الإيجار الشهري:</strong>
+                        {{ "{:,.0f}".format(prop.annual_rent_amount / 12 if prop.annual_rent_amount else 0) }} ريال
+                    </div>
+                    <div>
+                        <strong>لكل موظف:</strong>
+                        {{ "{:,.0f}".format((prop.annual_rent_amount / 12) / residents|length if residents else 0) }} ريال
+                    </div>
+                </div>
+
+                <div class="bill-form-card">
+                    <div class="card-header">
+                        <i class="fas fa-receipt me-2"></i>فواتير الشهر
+                    </div>
+                    <div class="card-body">
+                        <div class="bill-row">
+                            <div class="bill-icon icon-electricity"><i class="fas fa-bolt"></i></div>
+                            <div class="bill-label">الكهرباء</div>
+                            <input type="number" name="amount_electricity" class="bill-input" step="0.01" min="0"
+                                   value="{{ bills.get('electricity', '') }}" placeholder="0.00">
+                            <span class="text-muted">ريال</span>
+                        </div>
+                        <div class="bill-row">
+                            <div class="bill-icon icon-water"><i class="fas fa-tint"></i></div>
+                            <div class="bill-label">الماء</div>
+                            <input type="number" name="amount_water" class="bill-input" step="0.01" min="0"
+                                   value="{{ bills.get('water', '') }}" placeholder="0.00">
+                            <span class="text-muted">ريال</span>
+                        </div>
+                        <div class="bill-row">
+                            <div class="bill-icon icon-gas"><i class="fas fa-fire"></i></div>
+                            <div class="bill-label">الغاز</div>
+                            <input type="number" name="amount_gas" class="bill-input" step="0.01" min="0"
+                                   value="{{ bills.get('gas', '') }}" placeholder="0.00">
+                            <span class="text-muted">ريال</span>
+                        </div>
+                        <div class="bill-row">
+                            <div class="bill-icon icon-internet"><i class="fas fa-wifi"></i></div>
+                            <div class="bill-label">الإنترنت</div>
+                            <input type="number" name="amount_internet" class="bill-input" step="0.01" min="0"
+                                   value="{{ bills.get('internet', '') }}" placeholder="0.00">
+                            <span class="text-muted">ريال</span>
+                        </div>
+                        <div class="bill-row">
+                            <div class="bill-icon icon-other"><i class="fas fa-ellipsis-h"></i></div>
+                            <div class="bill-label">أخرى</div>
+                            <input type="number" name="amount_other" class="bill-input" step="0.01" min="0"
+                                   value="{{ bills.get('other', '') }}" placeholder="0.00">
+                            <span class="text-muted">ريال</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn btn-save">
+                        <i class="fas fa-save me-2"></i>حفظ الفواتير
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="residents-card">
+                <div class="card-header">
+                    <i class="fas fa-users me-2"></i>السكان الحاليون ({{ residents|length }})
+                </div>
+                {% if residents %}
+                {% for emp in residents %}
+                <div class="resident-item">
+                    <div>
+                        <i class="fas fa-user-circle me-2 text-muted"></i>
+                        <strong>{{ emp.name }}</strong>
+                    </div>
+                    <small class="text-muted">{{ emp.job_title or '-' }}</small>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-user-slash mb-2 d-block"></i>
+                    لا يوجد سكان مسجلين
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

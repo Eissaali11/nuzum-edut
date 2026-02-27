@@ -7,6 +7,7 @@ import logging
 from core.extensions import db
 from models import Employee, Department, employee_departments
 from modules.accounting.domain.profitability_models import ProjectContract, ContractResource
+from modules.properties.domain.models import RentalProperty, PropertyUtilityBill
 from modules.accounting.application.profitability_service import (
     calculate_project_profitability,
     get_all_projects_summary,
@@ -148,11 +149,12 @@ def _export_project_excel(result):
     headers = [
         '#', 'الموظف', 'الرقم الوظيفي', 'المسمى', 'سعر الفوترة',
         'الإيراد', 'الراتب', 'GOSI', 'تكلفة السيارة',
-        'بدل السكن', 'إقامة/تأمين', 'مصاريف أخرى',
+        'بدل السكن', 'إيجار السكن', 'فواتير خدمات',
+        'إقامة/تأمين', 'مصاريف أخرى',
         'إجمالي التكلفة', 'صافي الربح', 'الهامش %'
     ]
 
-    col_widths = [5, 22, 14, 16, 14, 14, 14, 10, 14, 12, 12, 12, 14, 14, 10]
+    col_widths = [5, 22, 14, 16, 14, 14, 14, 10, 14, 12, 12, 12, 12, 12, 14, 14, 10]
     for i, w in enumerate(col_widths):
         ws.column_dimensions[get_column_letter(i + 1)].width = w
 
@@ -163,6 +165,8 @@ def _export_project_excel(result):
         cell.alignment = center
         cell.border = thin_border
 
+    num_cols = len(headers)
+
     for idx, emp in enumerate(result['employees'], 1):
         row = header_row + idx
         values = [
@@ -170,6 +174,7 @@ def _export_project_excel(result):
             emp['billing_rate'],
             emp['revenue'], emp['salary_cost'], emp['gosi_cost'],
             emp['vehicle_cost'], emp['housing'],
+            emp.get('housing_rent', 0), emp.get('utility_cost', 0),
             emp.get('iqama_cost', 0) + emp.get('insurance_cost', 0),
             emp['overhead'],
             emp['total_cost'], emp['net_profit'], f"{emp['margin_pct']:.1f}%"
@@ -182,14 +187,14 @@ def _export_project_excel(result):
             if idx % 2 == 0:
                 cell.fill = light_gray
 
-        profit_cell = ws.cell(row=row, column=14)
+        profit_cell = ws.cell(row=row, column=num_cols - 1)
         if emp['net_profit'] >= 0:
             profit_cell.fill = green_fill
         else:
             profit_cell.fill = red_fill
 
     totals_row = header_row + len(result['employees']) + 1
-    for col in range(1, 16):
+    for col in range(1, num_cols + 1):
         c = ws.cell(row=totals_row, column=col)
         c.fill = teal
         c.border = thin_border
@@ -202,17 +207,19 @@ def _export_project_excel(result):
     ws.cell(row=totals_row, column=8, value=result['totals']['gosi_cost'])
     ws.cell(row=totals_row, column=9, value=result['totals']['vehicle_cost'])
     ws.cell(row=totals_row, column=10, value=result['totals']['overhead'])
-    ws.cell(row=totals_row, column=11, value=result['totals'].get('iqama_insurance', 0))
-    ws.cell(row=totals_row, column=13, value=result['totals']['total_cost'])
-    ws.cell(row=totals_row, column=14, value=result['totals']['profit'])
-    ws.cell(row=totals_row, column=15, value=f"{result['overall_margin']:.1f}%")
+    ws.cell(row=totals_row, column=11, value=result['totals'].get('housing_rent', 0))
+    ws.cell(row=totals_row, column=12, value=result['totals'].get('utility_cost', 0))
+    ws.cell(row=totals_row, column=13, value=result['totals'].get('iqama_insurance', 0))
+    ws.cell(row=totals_row, column=15, value=result['totals']['total_cost'])
+    ws.cell(row=totals_row, column=16, value=result['totals']['profit'])
+    ws.cell(row=totals_row, column=17, value=f"{result['overall_margin']:.1f}%")
 
     sig_row = totals_row + 3
     ws.merge_cells(start_row=sig_row, start_column=1, end_row=sig_row, end_column=5)
     ws.cell(row=sig_row, column=1, value='المدير المالي: _______________').font = bold_font
 
-    ws.merge_cells(start_row=sig_row, start_column=9, end_row=sig_row, end_column=13)
-    ws.cell(row=sig_row, column=9, value='المدير العام: _______________').font = bold_font
+    ws.merge_cells(start_row=sig_row, start_column=10, end_row=sig_row, end_column=15)
+    ws.cell(row=sig_row, column=10, value='المدير العام: _______________').font = bold_font
 
     output = BytesIO()
     wb.save(output)
@@ -495,4 +502,118 @@ def resources(contract_id):
         'accounting/contracts/resources.html',
         contract=contract,
         employees_data=employees_data,
+    )
+
+
+utility_bp = Blueprint('utility_bills', __name__, url_prefix='/accounting/utility-bills')
+
+
+@utility_bp.route('/')
+@login_required
+def index():
+    month = request.args.get('month', type=int, default=datetime.now().month)
+    year = request.args.get('year', type=int, default=datetime.now().year)
+
+    properties = RentalProperty.query.filter_by(status='active').order_by(RentalProperty.city).all()
+
+    props_data = []
+    for prop in properties:
+        resident_count = len([r for r in prop.residents if r.status == 'active'])
+        bills = PropertyUtilityBill.query.filter_by(
+            property_id=prop.id, month=month, year=year
+        ).all()
+        bills_dict = {b.bill_type: float(b.amount) for b in bills}
+        bills_total = sum(bills_dict.values())
+
+        props_data.append({
+            'property': prop,
+            'residents': resident_count,
+            'bills': bills_dict,
+            'bills_total': bills_total,
+            'monthly_rent': prop.annual_rent_amount / 12 if prop.annual_rent_amount else 0,
+            'per_person': (bills_total + (prop.annual_rent_amount / 12 if prop.annual_rent_amount else 0)) / resident_count if resident_count > 0 else 0,
+        })
+
+    months = [
+        (1, 'يناير'), (2, 'فبراير'), (3, 'مارس'), (4, 'أبريل'),
+        (5, 'مايو'), (6, 'يونيو'), (7, 'يوليو'), (8, 'أغسطس'),
+        (9, 'سبتمبر'), (10, 'أكتوبر'), (11, 'نوفمبر'), (12, 'ديسمبر'),
+    ]
+
+    return render_template(
+        'accounting/utility_bills/index.html',
+        properties=props_data,
+        months=months,
+        selected_month=month,
+        selected_year=year,
+        bill_types=PropertyUtilityBill.BILL_TYPES,
+    )
+
+
+@utility_bp.route('/<int:property_id>', methods=['GET', 'POST'])
+@login_required
+def manage(property_id):
+    prop = RentalProperty.query.get_or_404(property_id)
+    month = request.args.get('month', type=int, default=datetime.now().month)
+    year = request.args.get('year', type=int, default=datetime.now().year)
+
+    if request.method == 'POST':
+        month = int(request.form.get('month', month))
+        year = int(request.form.get('year', year))
+
+        for bill_type in PropertyUtilityBill.BILL_TYPES.keys():
+            amount_str = request.form.get(f'amount_{bill_type}', '0')
+            try:
+                amount = float(amount_str)
+            except (ValueError, TypeError):
+                amount = 0
+
+            if amount < 0:
+                amount = 0
+
+            existing = PropertyUtilityBill.query.filter_by(
+                property_id=property_id, bill_type=bill_type, month=month, year=year
+            ).first()
+
+            if amount > 0:
+                if existing:
+                    existing.amount = amount
+                else:
+                    bill = PropertyUtilityBill(
+                        property_id=property_id,
+                        bill_type=bill_type,
+                        month=month,
+                        year=year,
+                        amount=amount,
+                    )
+                    db.session.add(bill)
+            elif existing:
+                db.session.delete(existing)
+
+        db.session.commit()
+        flash('تم حفظ الفواتير بنجاح', 'success')
+        return redirect(url_for('utility_bills.index', month=month, year=year))
+
+    bills = PropertyUtilityBill.query.filter_by(
+        property_id=property_id, month=month, year=year
+    ).all()
+    bills_dict = {b.bill_type: float(b.amount) for b in bills}
+
+    residents = [r for r in prop.residents if r.status == 'active']
+
+    months = [
+        (1, 'يناير'), (2, 'فبراير'), (3, 'مارس'), (4, 'أبريل'),
+        (5, 'مايو'), (6, 'يونيو'), (7, 'يوليو'), (8, 'أغسطس'),
+        (9, 'سبتمبر'), (10, 'أكتوبر'), (11, 'نوفمبر'), (12, 'ديسمبر'),
+    ]
+
+    return render_template(
+        'accounting/utility_bills/manage.html',
+        prop=prop,
+        bills=bills_dict,
+        residents=residents,
+        months=months,
+        selected_month=month,
+        selected_year=year,
+        bill_types=PropertyUtilityBill.BILL_TYPES,
     )

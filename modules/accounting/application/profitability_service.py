@@ -10,6 +10,9 @@ from modules.payroll.domain.models import PayrollRecord
 from modules.vehicles.domain.models import Vehicle
 from modules.vehicles.domain.handover_models import VehicleHandover
 from modules.accounting.domain.profitability_models import ProjectContract, ContractResource
+from modules.properties.domain.models import (
+    RentalProperty, property_employees, PropertyUtilityBill
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +43,58 @@ def _get_employee_vehicle_cost(employee_id, month, year):
         return ZERO
 
     return Decimal(str(vehicle.monthly_fixed_cost or 0))
+
+
+def _get_employee_housing_utility_cost(employee_id, month, year):
+    props = (
+        db.session.query(RentalProperty)
+        .join(property_employees, property_employees.c.property_id == RentalProperty.id)
+        .filter(
+            property_employees.c.employee_id == employee_id,
+            RentalProperty.status == 'active',
+        )
+        .all()
+    )
+    if not props:
+        return ZERO, ZERO, []
+
+    total_rent_share = ZERO
+    total_utility_share = ZERO
+    breakdown = []
+
+    for prop in props:
+        resident_count = (
+            db.session.query(func.count(property_employees.c.employee_id))
+            .filter(
+                property_employees.c.property_id == prop.id,
+                property_employees.c.move_out_date.is_(None)
+            )
+            .scalar() or 1
+        )
+
+        monthly_rent = Decimal(str(prop.annual_rent_amount or 0)) / Decimal('12')
+        rent_share = monthly_rent / Decimal(str(resident_count))
+        total_rent_share += rent_share
+
+        utility_bills = (
+            PropertyUtilityBill.query
+            .filter_by(property_id=prop.id, month=month, year=year)
+            .all()
+        )
+        utility_total = sum(Decimal(str(b.amount or 0)) for b in utility_bills)
+        utility_share = utility_total / Decimal(str(resident_count)) if utility_total > 0 else ZERO
+        total_utility_share += utility_share
+
+        breakdown.append({
+            'property_id': prop.id,
+            'address': prop.address,
+            'city': prop.city,
+            'residents': resident_count,
+            'rent_share': float(rent_share),
+            'utility_share': float(utility_share),
+        })
+
+    return total_rent_share, total_utility_share, breakdown
 
 
 def calculate_project_profitability(department_id, month, year):
@@ -75,6 +130,8 @@ def calculate_project_profitability(department_id, month, year):
         'vehicle_cost': ZERO,
         'overhead': ZERO,
         'iqama_insurance': ZERO,
+        'housing_rent': ZERO,
+        'utility_cost': ZERO,
         'total_cost': ZERO,
         'profit': ZERO,
     }
@@ -128,12 +185,15 @@ def calculate_project_profitability(department_id, month, year):
         iqama_cost = IQAMA_MONTHLY
         insurance_cost = INSURANCE_MONTHLY
 
+        rent_share, utility_share, housing_breakdown = _get_employee_housing_utility_cost(emp.id, month, year)
+
         if billing_type == 'daily':
             revenue = billing_rate * Decimal(str(present_days))
         else:
             revenue = billing_rate
 
-        total_cost = salary_cost + gosi_company + vehicle_cost + overhead + housing + iqama_cost + insurance_cost
+        total_cost = (salary_cost + gosi_company + vehicle_cost + overhead + housing
+                      + iqama_cost + insurance_cost + rent_share + utility_share)
         net_profit = revenue - total_cost
         margin_pct = (net_profit / revenue * 100) if revenue > 0 else ZERO
 
@@ -153,6 +213,9 @@ def calculate_project_profitability(department_id, month, year):
             'housing': float(housing),
             'iqama_cost': float(iqama_cost),
             'insurance_cost': float(insurance_cost),
+            'housing_rent': float(rent_share),
+            'utility_cost': float(utility_share),
+            'housing_breakdown': housing_breakdown,
             'total_cost': float(total_cost),
             'net_profit': float(net_profit),
             'margin_pct': float(margin_pct),
@@ -165,6 +228,8 @@ def calculate_project_profitability(department_id, month, year):
         totals['vehicle_cost'] += vehicle_cost
         totals['overhead'] += overhead + housing
         totals['iqama_insurance'] = totals.get('iqama_insurance', ZERO) + iqama_cost + insurance_cost
+        totals['housing_rent'] += rent_share
+        totals['utility_cost'] += utility_share
         totals['total_cost'] += total_cost
         totals['profit'] += net_profit
 

@@ -1,0 +1,180 @@
+{% extends "layout.html" %}
+{% block title %}محرك توزيع الفواتير{% endblock %}
+
+{% block styles %}
+<style>
+    .utility-page { background: #f0f2f5; min-height: 100vh; }
+    .utility-header {
+        background: linear-gradient(135deg, #1B2A4A 0%, #0D7377 100%);
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .property-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s;
+    }
+    .property-card:hover { transform: translateY(-2px); }
+    .property-card-header {
+        background: linear-gradient(135deg, #1B2A4A, #0D7377);
+        color: white;
+        padding: 1rem 1.5rem;
+    }
+    .property-card-body { padding: 1.25rem 1.5rem; }
+    .bill-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin: 0.2rem;
+    }
+    .bill-electricity { background: #FEF3C7; color: #92400E; }
+    .bill-water { background: #DBEAFE; color: #1E40AF; }
+    .bill-gas { background: #FEE2E2; color: #991B1B; }
+    .bill-internet { background: #E0E7FF; color: #3730A3; }
+    .bill-other { background: #F3F4F6; color: #374151; }
+    .stat-box {
+        text-align: center;
+        padding: 0.75rem;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+    .stat-box .value { font-size: 1.2rem; font-weight: 700; color: #1B2A4A; }
+    .stat-box .label { font-size: 0.75rem; color: #6b7280; }
+    .filter-section {
+        background: white;
+        border-radius: 14px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .filter-section label { font-weight: 600; color: #1B2A4A; margin: 0; }
+    .filter-section select {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    .btn-manage {
+        background: linear-gradient(135deg, #0D7377, #14919B);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    .btn-manage:hover { color: white; opacity: 0.9; }
+    .no-bills { color: #9ca3af; font-style: italic; font-size: 0.85rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="utility-page p-4">
+    <div class="utility-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-bolt me-2"></i>محرك توزيع الفواتير</h2>
+                <p class="mb-0 opacity-75">توزيع فواتير الكهرباء والماء والغاز على الموظفين حسب سكنهم</p>
+            </div>
+            <a href="{{ url_for('profitability.dashboard') }}" class="btn btn-outline-light">
+                <i class="fas fa-chart-bar me-2"></i>لوحة الربحية
+            </a>
+        </div>
+    </div>
+
+    <div class="filter-section">
+        <label><i class="fas fa-calendar-alt me-1"></i>الفترة:</label>
+        <form method="GET" class="d-flex align-items-center gap-2">
+            <select name="month" onchange="this.form.submit()">
+                {% for m, name in months %}
+                <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+            <select name="year" onchange="this.form.submit()">
+                {% for y in range(selected_year - 2, selected_year + 2) %}
+                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <span class="ms-auto fw-bold" style="color: #0D7377;">{{ properties|length }} عقار نشط</span>
+    </div>
+
+    {% if not properties %}
+    <div class="text-center py-5">
+        <i class="fas fa-building fa-3x text-muted mb-3 d-block"></i>
+        <h5 class="text-muted">لا توجد عقارات نشطة</h5>
+        <p class="text-muted">أضف عقارات في قسم إدارة العقارات أولاً</p>
+    </div>
+    {% else %}
+    <div class="row">
+        {% for item in properties %}
+        <div class="col-lg-6 col-xl-4">
+            <div class="property-card">
+                <div class="property-card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0 fw-bold">{{ item.property.city }} — {{ item.property.address[:40] }}</h6>
+                            <small class="opacity-75">عقد: {{ item.property.contract_number or '-' }}</small>
+                        </div>
+                        <span class="badge bg-light text-dark">{{ item.residents }} ساكن</span>
+                    </div>
+                </div>
+                <div class="property-card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <div class="stat-box">
+                                <div class="value">{{ "{:,.0f}".format(item.monthly_rent) }}</div>
+                                <div class="label">إيجار شهري</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-box">
+                                <div class="value" style="color: #EA580C;">{{ "{:,.0f}".format(item.bills_total) }}</div>
+                                <div class="label">فواتير الشهر</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-box">
+                                <div class="value" style="color: #0D7377;">{{ "{:,.0f}".format(item.per_person) }}</div>
+                                <div class="label">لكل موظف</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {% if item.bills %}
+                            {% for btype, amount in item.bills.items() %}
+                            <span class="bill-chip bill-{{ btype }}">
+                                {{ bill_types.get(btype, btype) }}: {{ "{:,.0f}".format(amount) }}
+                            </span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="no-bills"><i class="fas fa-info-circle me-1"></i>لم تُسجل فواتير لهذا الشهر</span>
+                        {% endif %}
+                    </div>
+
+                    <a href="{{ url_for('utility_bills.manage', property_id=item.property.id, month=selected_month, year=selected_year) }}"
+                       class="btn btn-manage w-100">
+                        <i class="fas fa-edit me-2"></i>تسجيل / تعديل الفواتير
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

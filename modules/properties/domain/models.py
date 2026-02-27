@@ -192,3 +192,40 @@ class PropertyFurnishing(db.Model):
     
     def __repr__(self):
         return f'<PropertyFurnishing {self.id} - Property {self.property_id}>'
+
+
+class PropertyUtilityBill(db.Model):
+    __tablename__ = 'property_utility_bills'
+
+    id = db.Column(db.Integer, primary_key=True)
+    property_id = db.Column(db.Integer, db.ForeignKey('rental_properties.id', ondelete='CASCADE'), nullable=False)
+
+    bill_type = db.Column(db.String(30), nullable=False)
+    month = db.Column(db.Integer, nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    notes = db.Column(db.Text, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    rental_property = db.relationship('RentalProperty', backref=db.backref('utility_bills', cascade='all, delete-orphan'))
+
+    __table_args__ = (
+        db.UniqueConstraint('property_id', 'bill_type', 'month', 'year', name='uq_property_utility_period'),
+    )
+
+    BILL_TYPES = {
+        'electricity': 'كهرباء',
+        'water': 'ماء',
+        'gas': 'غاز',
+        'internet': 'إنترنت',
+        'other': 'أخرى',
+    }
+
+    @property
+    def bill_type_ar(self):
+        return self.BILL_TYPES.get(self.bill_type, self.bill_type)
+
+    def __repr__(self):
+        return f'<UtilityBill {self.bill_type} {self.month}/{self.year} - {self.amount} SAR>'

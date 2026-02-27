@@ -633,6 +633,15 @@
                                     <span>ربحية المشاريع</span>
                                 </a>
                             </li>
+                            <li class="nav-item mb-1">
+                                <a
+                                    href="{{ url_for('utility_bills.index') }}"
+                                    class="nav-link nav-link-custom {% if '/utility-bills' in request.path %}active{% endif %}"
+                                >
+                                    <i class="fas fa-bolt me-2"></i>
+                                    <span>توزيع الفواتير</span>
+                                </a>
+                            </li>
                             {% endif %} {# التحقق من صلاحيات المركبات #} {% if
                             current_user.role == UserRole.ADMIN or
                             current_user|check_module_access(Module.VEHICLES) %}
