@@ -21,7 +21,6 @@ modules = [
     ('google_drive_settings', 'google_drive_settings_bp'),
     ('drive_browser', 'drive_browser_bp'),
     ('external_safety', 'external_safety_bp'),
-    ('external_safety_refactored', 'external_safety_bp'),
     ('geofences', 'geofences_bp'),
 ]
 

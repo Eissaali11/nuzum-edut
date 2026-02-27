@@ -39,7 +39,9 @@ The project follows a **Layered Modular Architecture** transitioning from legacy
 - Static upload serving uses `safe_join` + `realpath` validation to prevent path traversal
 
 ## File Uploads
-- All uploads stored in `static/uploads/` (absolute path via `app.config["UPLOAD_FOLDER"]`)
+- All uploads stored locally in `static/uploads/` AND synced to **Replit Object Storage** (cloud-persistent)
+- `utils/storage_helper.py` handles dual-write: local + cloud. Downloads restore from cloud if local file missing (autoscale-safe)
+- `services/file_service.py` calls `sync_to_cloud()` after every save
 - Employee images: `static/uploads/employees/`
 - Vehicle files: `static/uploads/vehicles/` (registration_forms, plates, insurance)
 - Other: handovers, maintenance, safety_checks, workshop, properties, accidents, invoices
