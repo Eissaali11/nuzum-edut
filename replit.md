@@ -84,6 +84,14 @@ The project follows a **Layered Modular Architecture** transitioning from legacy
 - Chart.js charts: Revenue vs Cost bar chart, Margin % donut chart
 - Excel export: Navy/teal styling matching payroll exports, KPI summary, per-employee breakdown, totals row, signature fields
 
+## Leave Management Module
+- **Routes**: `routes/attendance/leave_management.py` (blueprint: `leaves`, url_prefix: `/leaves`)
+- **Templates**: `templates/leave/manager_dashboard.html` (premium redesign with KPI cards, tabs, calendar), `templates/leave/leave_balances.html` (search, filters, progress bars, low-balance alerts)
+- **Manager Dashboard** (`/leaves/manager`): KPI stats, pending requests table with approve/reject, monthly calendar with Arabic day names, color-coded events
+- **Leave Balances** (`/leaves/balances`): Year filter, search by name, filter by leave type, utilization rate, type summary cards, progress bars, low-balance warnings
+- **Access**: Manager/HR/Admin only via `_is_manager()` check
+- **Weekend**: Friday + Saturday highlighted in calendar (Saudi standard)
+
 ## Database
 - PostgreSQL via `DATABASE_URL` environment variable
 - Models defined in `core/domain/models.py` and `modules/*/domain/models.py`
