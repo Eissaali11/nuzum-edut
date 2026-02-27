@@ -223,7 +223,7 @@
                                 </a>
                             </li>
                             {% endif %} {# إحصائيات الموظفين متاحة لمن لديه
-                            {% if current_user.is_admin %}
+                            {% if current_user._is_admin_role() %}
                             <li class="nav-item mb-1">
                                 <a
                                     href="#hrManagementSubmenu"
@@ -261,7 +261,7 @@
                             </li>
                             {% endif %}
                             {# قسم الرواتب المنفصل #}
-                            {% if current_user.is_admin %}
+                            {% if current_user._is_admin_role() %}
                             <li class="nav-item mb-1">
                                 <a
                                     href="#payrollSubmenu"
