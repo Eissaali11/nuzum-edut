@@ -336,21 +336,7 @@
                                 </ul>
                             </li>
                             {% endif %}
-                            {# إحصائيات الموظفين متاحة لمن لديه
-                            صلاحية العرض على الموظفين #} {% if current_user.role
-                            == UserRole.ADMIN or
-                            current_user|check_module_access(Module.EMPLOYEES,
-                            Permission.VIEW) %}
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{{ url_for('dashboard.employee_stats') }}"
-                                    class="nav-link nav-link-custom {% if '/employee-stats' in request.path %}active{% endif %}"
-                                >
-                                    <i class="fas fa-chart-pie me-2"></i>
-                                    <span>إحصائيات الموظفين</span>
-                                </a>
-                            </li>
-                            {% endif %} {# التحقق من صلاحيات التقارير #} {% if
+                            {# التحقق من صلاحيات التقارير #} {% if
                             current_user._is_admin_role() or
                             current_user|check_module_access(Module.REPORTS) %}
                             <li class="nav-item mb-1">
@@ -380,15 +366,6 @@
                                 >
                                     <i class="fas fa-chart-line me-2" style="color: #00D4AA;"></i>
                                     <span>ذكاء الأعمال</span>
-                                </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{% if endpoint_exists is defined and endpoint_exists('analytics.dimensions_dashboard') %}{{ url_for('analytics.dimensions_dashboard') }}{% else %}/analytics/dimensions{% endif %}"
-                                    class="nav-link nav-link-custom {% if '/analytics/dimensions' in request.path %}active{% endif %}"
-                                >
-                                    <i class="fas fa-layer-group me-2"></i>
-                                    <span>أبعاد البيانات</span>
                                 </a>
                             </li>
                             {% endif %} {# التحقق من صلاحيات الموظفين #} {% if
@@ -610,44 +587,79 @@
                                     <span>تكاليف الرسوم</span>
                                 </a>
                             </li>
-                            {% endif %} {# التحقق من صلاحيات النظام المحاسبي #} {% if
+                            {% endif %} {# قسم المحاسبة والتحليل المالي الموحد #} {% if
                             current_user._is_admin_role() or
                             current_user|check_module_access(Module.ACCOUNTING) %}
                             <li class="nav-item mb-1">
                                 <a
-                                    href="{{ url_for('accounting.dashboard') }}"
-                                    class="nav-link nav-link-custom {% if '/accounting' in request.path and '/profitability' not in request.path and '/contracts' not in request.path %}active{% endif %}"
+                                    href="#accountingSubmenu"
+                                    data-bs-toggle="collapse"
+                                    class="nav-link nav-link-custom {% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}active{% endif %}"
+                                    aria-expanded="{% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}true{% else %}false{% endif %}"
                                 >
                                     <i class="fas fa-calculator me-2"></i>
-                                    <span>المحاسبة</span>
+                                    <span>المحاسبة والتحليل المالي</span>
+                                    <i class="fas fa-chevron-down ms-auto"></i>
                                 </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{{ url_for('contracts.index') }}"
-                                    class="nav-link nav-link-custom {% if '/contracts' in request.path %}active{% endif %}"
+                                <ul
+                                    class="collapse {% if '/accounting' in request.path or '/profitability' in request.path or '/contracts' in request.path or '/utility-bills' in request.path or '/analytics/dimensions' in request.path or '/employee-stats' in request.path %}show{% endif %} list-unstyled ps-4"
+                                    id="accountingSubmenu"
                                 >
-                                    <i class="fas fa-file-contract me-2"></i>
-                                    <span>إدارة العقود والأسعار</span>
-                                </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{{ url_for('profitability.dashboard') }}"
-                                    class="nav-link nav-link-custom {% if '/profitability' in request.path %}active{% endif %}"
-                                >
-                                    <i class="fas fa-chart-line me-2"></i>
-                                    <span>ربحية المشاريع</span>
-                                </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a
-                                    href="{{ url_for('utility_bills.index') }}"
-                                    class="nav-link nav-link-custom {% if '/utility-bills' in request.path %}active{% endif %}"
-                                >
-                                    <i class="fas fa-bolt me-2"></i>
-                                    <span>توزيع الفواتير</span>
-                                </a>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('accounting.dashboard') }}"
+                                            class="nav-link nav-link-custom {% if '/accounting/dashboard' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-tachometer-alt me-2"></i>
+                                            <span>لوحة المحاسبة</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('contracts.index') }}"
+                                            class="nav-link nav-link-custom {% if '/contracts' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-file-contract me-2"></i>
+                                            <span>إدارة العقود والأسعار</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('profitability.dashboard') }}"
+                                            class="nav-link nav-link-custom {% if '/profitability' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-chart-line me-2"></i>
+                                            <span>ربحية المشاريع</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('utility_bills.index') }}"
+                                            class="nav-link nav-link-custom {% if '/utility-bills' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-bolt me-2"></i>
+                                            <span>توزيع الفواتير</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{{ url_for('dashboard.employee_stats') }}"
+                                            class="nav-link nav-link-custom {% if '/employee-stats' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-chart-pie me-2"></i>
+                                            <span>إحصائيات الموظفين</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <a
+                                            href="{% if endpoint_exists is defined and endpoint_exists('analytics.dimensions_dashboard') %}{{ url_for('analytics.dimensions_dashboard') }}{% else %}/analytics/dimensions{% endif %}"
+                                            class="nav-link nav-link-custom {% if '/analytics/dimensions' in request.path %}active{% endif %}"
+                                        >
+                                            <i class="fas fa-layer-group me-2"></i>
+                                            <span>أبعاد البيانات</span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                             {% endif %} {# التحقق من صلاحيات المركبات #} {% if
                             current_user._is_admin_role() or
